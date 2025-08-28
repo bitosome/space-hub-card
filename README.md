@@ -179,7 +179,12 @@ switch_rows:
 - Default main tile actions apply when you do not set tile- or card-level HA actions.
 - `badge_size` controls both the AC top-right badge size and the thermostat badge height.
 - Main tile badges: tap toggles the configured `tap_entity` (`lock` uses lock/unlock; `cover`/`gate` uses open/close). Hold opens more-info for `hold_entity` (defaults to `entity`). You can also provide HA-native `tap_action`/`hold_action`/`double_tap_action` per badge to override defaults.
- - Main tile badges: tap toggles the configured `tap_entity` (`lock` uses lock/unlock; `cover`/`gate` uses open/close). Hold opens more-info for `hold_entity` (defaults to `entity`). You can also provide HA-native `tap_action`/`hold_action`/`double_tap_action` per badge to override defaults. Gate badge colors: closed = green, open = red.
+- Main tile badges:
+  - Default tap: toggles the configured `tap_entity` for most types.
+  - Lock badge: tap opens more-info by default (safety). To unlock/lock on tap, set an explicit `tap_action`.
+  - Cover/Gate badge: tap toggles open/close; colors: closed = green, open = red.
+  - Hold: opens more-info for `hold_entity` (defaults to `entity`).
+  - You can provide HA-native `tap_action`/`hold_action`/`double_tap_action` per badge to override defaults.
 - Title is optional; omit `title` to render the card without a header.
 - Hover: each tile (main, AC, thermostat, switches) raises slightly with a stronger shadow.
 

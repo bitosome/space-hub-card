@@ -390,13 +390,16 @@ export class BitosomeRoomCard extends LitElement {
     const hval = this._fmt2(h.humidity_sensor, 2, '%');
     const hasHold = true; // main supports hold by default (for more-info)
     const hasDbl = !!(h?.double_tap_action || this._config?.double_tap_action);
+    // Entity driving the bulb state (and default toggling when no HA actions)
+    const hasBulb = !!h.light_group_entity;
     const ctrl = h.light_group_entity || h.tap_entity || h.entity;
-    const isOn = this._isOn(ctrl);
+    const isOn = hasBulb && this._isOn(ctrl);
     const bulbBg = isOn ? 'linear-gradient(135deg,#ffcf57,#ffb200)' : 'rgba(0,0,0,0.06)';
     const bulbIconColor = isOn ? '#ffffff' : 'var(--secondary-text-color)';
+    const defaultToggleTarget = h.light_group_entity || h.tap_entity || h.entity;
     return html`
       <div class="main-tile"
-           @action=${(ev: CustomEvent) => this._onMainAction(ev, h, h.tap_entity, h.hold_entity, h.light_group_entity)}
+           @action=${(ev: CustomEvent) => this._onMainAction(ev, h, h.tap_entity, h.hold_entity, defaultToggleTarget)}
            .actionHandler=${actionHandler({ hasHold, hasDoubleClick: hasDbl })}
            role="button" tabindex="0">
         <ha-icon class="main-icon" .icon=${icon}></ha-icon>
@@ -408,13 +411,122 @@ export class BitosomeRoomCard extends LitElement {
           <span class="hval">${hval}</span>
         </div>
         <div class="main-badges-br" data-role="badges">
-          <div class="badge" style=${`background:${bulbBg}`}>
-            <ha-icon .icon=${'mdi:lightbulb'} style=${`color:${bulbIconColor}`}></ha-icon>
-          </div>
+          ${hasBulb ? html`
+            <div class="badge" style=${`background:${bulbBg}`}>
+              <ha-icon .icon=${'mdi:lightbulb'} style=${`color:${bulbIconColor}`}></ha-icon>
+            </div>` : nothing}
+          ${Array.isArray(h?.badges) && h.badges.length
+            ? html`${h.badges.map((b: any) => this._renderExtraBadge(b))}`
+            : nothing}
         </div>
         <div class="main-name">${name}</div>
       </div>
     `;
+  }
+
+  private _renderExtraBadge(b: any): TemplateResult | typeof nothing {
+    const entity: string | undefined = b?.entity || b?.tap_entity;
+    const type = String(b?.type || '').toLowerCase();
+    const iconFromCfg: string | undefined = b?.icon;
+    const st = entity && this.hass ? this.hass.states[entity] : undefined;
+    const state = (st?.state || '').toLowerCase();
+
+    // Determine visuals
+    let bg = 'rgba(0,0,0,0.06)';
+    let icon = iconFromCfg || 'mdi:checkbox-blank-circle-outline';
+    let icoColor = 'var(--secondary-text-color)';
+
+    const isActive = (s: string): boolean => {
+      if (!s) return false;
+      if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) return s === 'locked';
+      if (entity?.startsWith('cover.') ?? false) return s !== 'closed' && s !== 'closing';
+      return s === 'on' || s === 'open' || s === 'opening';
+    };
+
+    const active = isActive(state);
+
+    if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) {
+      icon = iconFromCfg || (active ? 'mdi:lock' : 'mdi:lock-open-variant');
+      if (active) { bg = '#66bb6a'; icoColor = '#ffffff'; }
+    } else if (type === 'gate' || (entity?.startsWith('cover.') ?? false) || (entity?.startsWith('binary_sensor.') ?? false)) {
+      const domain = (entity || '').split('.')[0];
+      const dc = (st?.attributes?.device_class || '').toLowerCase();
+      const gateLike = type === 'gate' || domain === 'cover' || (domain === 'binary_sensor' && /(door|window|garage|opening|gate)/.test(dc));
+      if (gateLike) {
+        const s = state;
+        let isOpen = false;
+        if (domain === 'cover') {
+          isOpen = s === 'open' || s === 'opening' || (s !== 'closed' && s !== 'closing' && s !== 'unknown' && s !== 'unavailable');
+        } else if (domain === 'binary_sensor') {
+          // For contact sensors, on/open => open; off/closed => closed
+          isOpen = s === 'on' || s === 'open' || s === 'opening';
+        } else {
+          isOpen = s === 'open' || s === 'opening' || s === 'on';
+        }
+        icon = iconFromCfg || (isOpen ? 'mdi:gate-open' : 'mdi:gate');
+        // Color rule: closed -> green, open -> red
+        if (isOpen) { bg = '#e53935'; icoColor = '#ffffff'; }
+        else { bg = '#66bb6a'; icoColor = '#ffffff'; }
+      } else {
+        // Not a gate-like entity; fall back to generic handling below
+      }
+    } else {
+      // Generic on/off-like badge
+      icon = iconFromCfg || (active ? 'mdi:check-circle' : 'mdi:checkbox-blank-circle-outline');
+      if (active) { bg = '#42a5f5'; icoColor = '#ffffff'; }
+    }
+
+    const hasDbl = !!b?.double_tap_action;
+
+    return html`
+      <div class="badge clickable"
+           style=${`background:${bg}`}
+           @action=${(ev: CustomEvent) => this._onBadgeAction(ev, b)}
+           .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: hasDbl })}
+           role="button" tabindex="0">
+        <ha-icon .icon=${icon} style=${`color:${icoColor}`}></ha-icon>
+      </div>
+    `;
+  }
+
+  private _onBadgeAction(ev: CustomEvent, b?: any): void {
+    const act = (ev.detail && ev.detail.action) || 'tap';
+    // If HA-native actions are provided, use them
+    if (this.hass && b && (b.tap_action || b.hold_action || b.double_tap_action)) {
+      handleAction(this, this.hass, b as any, act);
+      return;
+    }
+    const tap = b?.tap_entity || b?.entity;
+    const hold = b?.hold_entity || b?.entity;
+    if (act === 'hold') {
+      this._openMoreInfo(hold || tap);
+      return;
+    }
+    const domain = (tap || '').split('.')[0];
+    // Safety default: lock badges open more-info on tap unless actions are explicitly provided
+    if (domain === 'lock') {
+      this._openMoreInfo(hold || tap);
+      return;
+    }
+    this._toggleByDomain(tap);
+  }
+
+  private _toggleByDomain(entityId?: string | null): void {
+    if (!entityId || !this.hass) return;
+    const st = this.hass.states[entityId];
+    const domain = entityId.split('.')[0];
+    const s = (st?.state || '').toLowerCase();
+    if (domain === 'lock') {
+      const next = s === 'locked' ? 'unlock' : 'lock';
+      this.hass.callService('lock', next, { entity_id: entityId });
+      return;
+    }
+    if (domain === 'cover') {
+      const next = (s === 'open' || s === 'opening') ? 'close_cover' : 'open_cover';
+      this.hass.callService('cover', next, { entity_id: entityId });
+      return;
+    }
+    this._toggleGeneric(entityId);
   }
 
   private _renderACTile(entityId: string, _cfg?: any): TemplateResult {
@@ -649,12 +761,13 @@ export class BitosomeRoomCard extends LitElement {
     const main: any = {
       tap_entity: mainRaw.tap_entity,
       hold_entity: mainRaw.hold_entity || mainRaw.tap_entity,
+      light_group_entity: mainRaw.light_group_entity,
       temp_sensor: mainRaw.temp_sensor,
       humidity_sensor: mainRaw.humidity_sensor,
     };
     const ac = h.ac || {} as any;
     const thermostat = h.thermostat || {} as any;
-    ids.push(main?.tap_entity, main?.hold_entity, main?.temp_sensor, main?.humidity_sensor, ac?.entity, thermostat?.entity);
+    ids.push(main?.tap_entity, main?.hold_entity, main?.light_group_entity, main?.temp_sensor, main?.humidity_sensor, ac?.entity, thermostat?.entity);
     const rows = (c.switch_rows || []) as any[];
     rows.forEach((row) => {
       const items = Array.isArray(row) ? row : (Array.isArray((row as any)?.row) ? (row as any).row : []);
