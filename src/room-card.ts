@@ -7,33 +7,49 @@ import { actionHandler } from './action-handler-directive';
 import { CARD_VERSION } from './const';
 
 export interface HeaderMain {
+  // Legacy
   entity?: string;
   name?: string;
   icon?: string;
+  // Switch-like config
+  tap_entity?: string;
+  hold_entity?: string;
+  light_group_entity?: string;
+  main_name?: string;
+  main_icon?: string;
+  // Sensors (can be at header level as well)
   temp_sensor?: string;
   humidity_sensor?: string;
   badges?: unknown[];
+  // Optional per-tile HA actions
+  tap_action?: import('custom-card-helpers').ActionConfig;
+  hold_action?: import('custom-card-helpers').ActionConfig;
+  double_tap_action?: import('custom-card-helpers').ActionConfig;
 }
 
-export interface HeaderAC { entity?: string }
-export interface HeaderThermostat { entity?: string }
+export interface HeaderAC {
+  entity?: string;
+  tap_action?: import('custom-card-helpers').ActionConfig;
+  hold_action?: import('custom-card-helpers').ActionConfig;
+  double_tap_action?: import('custom-card-helpers').ActionConfig;
+}
+export interface HeaderThermostat {
+  entity?: string;
+  tap_action?: import('custom-card-helpers').ActionConfig;
+  hold_action?: import('custom-card-helpers').ActionConfig;
+  double_tap_action?: import('custom-card-helpers').ActionConfig;
+}
 
 export interface RoomCardHeader {
   // New structured format
   main?: HeaderMain;
   ac?: HeaderAC;
   thermostat?: HeaderThermostat;
-
-  // Back-compat (legacy flat fields supported during transition)
-  layout?: 'all' | 'main_ac' | 'main_thermo' | 'main_only';
-  main_entity?: string;
-  main_name?: string;
-  main_icon?: string;
-  temp_sensor?: string;
-  humidity_sensor?: string;
-  ac_entity?: string;
-  thermo_entity?: string;
-  badges?: unknown[];
+  // No legacy fields
+  // Optional per-header icon sizing override
+  main_icon_size?: number;
+  // Typo tolerance (maicon_size)
+  maicon_size?: number;
 }
 
 export interface RoomCardConfig {
@@ -78,9 +94,9 @@ export class BitosomeRoomCard extends LitElement {
       unavailable_pulse_color: '#ff3b30',
       header: {
         main: {
-          entity: 'switch.living_room_light_group',
-          name: 'Living room',
-          icon: 'mdi:sofa-outline',
+          tap_entity: 'switch.living_room_light_group',
+          main_name: 'Living room',
+          main_icon: 'mdi:sofa-outline',
           temp_sensor: 'sensor.kitchen_living_room_temparature_average',
           humidity_sensor: 'sensor.kitchen_living_room_humidity_average',
           badges: [],
@@ -95,7 +111,6 @@ export class BitosomeRoomCard extends LitElement {
   public setConfig(config: RoomCardConfig): void {
     const c = clone(config || BitosomeRoomCard.getStubConfig());
     c.header = c.header || {};
-    if (!Array.isArray(c.header.badges)) c.header.badges = [];
     if (!Array.isArray(c.switch_rows)) c.switch_rows = [];
     this._config = c;
   }
@@ -122,6 +137,7 @@ export class BitosomeRoomCard extends LitElement {
       box-shadow: 0 10px 30px var(--panel-shadow-color);
       padding: 12px;
       color: var(--primary-text-color);
+      transition: filter 0.12s ease, box-shadow 0.12s ease;
     }
     ha-card.unavailable {
       animation: cardPulse 2.8s ease-in-out infinite;
@@ -251,10 +267,15 @@ export class BitosomeRoomCard extends LitElement {
       display: grid; place-items: center;
       color: var(--secondary-text-color);
     }
-    /* Native-like hover feedback */
+    /* (Removed) embedded card styles */
+    /* Native-like hover feedback per-tile: slight lift + stronger shadow */
     .main-tile:hover,
     .square:hover,
-    .switch-tile:hover { filter: brightness(1.03); }
+    .switch-tile:hover {
+      filter: brightness(1.03);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.16);
+    }
     .tile-inner { display:grid; gap:4px; place-items:center; justify-items:center; text-align:center; }
     .switch-tile .name { font-weight: 600; font-size: 12px; }
     .switch-icon { width: 28px; height: 28px; color: var(--secondary-text-color); line-height:0; }
@@ -301,12 +322,17 @@ export class BitosomeRoomCard extends LitElement {
   protected render(): TemplateResult | typeof nothing {
     if (!this._config) return nothing;
     const c = { ...BitosomeRoomCard.getStubConfig(), ...this._config } as RoomCardConfig;
-    const h = { ...BitosomeRoomCard.getStubConfig().header, ...(c.header || {}) } as RoomCardHeader;
+    // Do NOT merge header with stub defaults; respect user omission of AC/Thermostat
+    const h = (c.header || {}) as RoomCardHeader;
 
     const tileH = Number(c.tile_height) || 80;
     const badgeSize = Number(c.badge_size) || 22;
     const badgeIcon = Number(c.badge_icon_size) || 14;
-    const mainIcon = Number(c.main_icon_size) || 48;
+    // Allow header-level override for main icon size
+    const headerMainIconSize = Number((h as any)?.main_icon_size ?? (h as any)?.maicon_size);
+    const mainIcon = Number.isFinite(headerMainIconSize) && headerMainIconSize > 0
+      ? headerMainIconSize
+      : (Number(c.main_icon_size) || 48);
     const panelShadowColor = this._rgbaFromColor(c.card_shadow_color, c.card_shadow_intensity);
     const chipFont = Number(c.chip_font_size) || 12;
     const unavailColor = c.unavailable_pulse_color || '#ff3b30';
@@ -329,17 +355,30 @@ export class BitosomeRoomCard extends LitElement {
   }
 
   private _renderHeaderRow(h: RoomCardHeader): TemplateResult {
-    const main = h.main || { entity: h.main_entity, name: h.main_name, icon: h.main_icon, temp_sensor: h.temp_sensor, humidity_sensor: h.humidity_sensor, badges: h.badges };
-    const ac = h.ac || { entity: h.ac_entity };
-    const thermostat = h.thermostat || { entity: h.thermo_entity };
+    const mainRaw: any = h.main || {};
+    const main: any = {
+      tap_entity: mainRaw.tap_entity,
+      hold_entity: mainRaw.hold_entity || mainRaw.tap_entity,
+      light_group_entity: mainRaw.light_group_entity,
+      name: mainRaw.main_name || mainRaw.name,
+      icon: mainRaw.main_icon || mainRaw.icon,
+      temp_sensor: mainRaw.temp_sensor,
+      humidity_sensor: mainRaw.humidity_sensor,
+      badges: Array.isArray(mainRaw.badges) ? mainRaw.badges : [],
+      tap_action: mainRaw.tap_action,
+      hold_action: mainRaw.hold_action,
+      double_tap_action: mainRaw.double_tap_action,
+    };
+    const ac = h.ac || {} as any;
+    const thermostat = h.thermostat || {} as any;
     const showAC = !!ac?.entity;
     const showThermo = !!thermostat?.entity;
     const cls = !showAC && !showThermo ? 'header-row only-main' : (showAC && showThermo ? 'header-row' : 'header-row main-plus-one');
     return html`
       <div class=${cls}>
         ${this._renderMainTile(main as any)}
-        ${showAC ? this._renderACTile(ac.entity as string) : nothing}
-        ${showThermo ? this._renderThermoTile(thermostat.entity as string) : nothing}
+        ${showAC ? this._renderACTile(ac.entity as string, ac as any) : nothing}
+        ${showThermo ? this._renderThermoTile(thermostat.entity as string, thermostat as any) : nothing}
       </div>
     `;
   }
@@ -349,38 +388,36 @@ export class BitosomeRoomCard extends LitElement {
     const name = h.name || '';
     const tval = this._fmt2(h.temp_sensor, 2, '°');
     const hval = this._fmt2(h.humidity_sensor, 2, '%');
-    const hasHold = !!this._config?.hold_action;
-    const hasDbl = !!this._config?.double_tap_action;
+    const hasHold = true; // main supports hold by default (for more-info)
+    const hasDbl = !!(h?.double_tap_action || this._config?.double_tap_action);
+    const ctrl = h.light_group_entity || h.tap_entity || h.entity;
+    const isOn = this._isOn(ctrl);
+    const bulbBg = isOn ? 'linear-gradient(135deg,#ffcf57,#ffb200)' : 'rgba(0,0,0,0.06)';
+    const bulbIconColor = isOn ? '#ffffff' : 'var(--secondary-text-color)';
     return html`
       <div class="main-tile"
-           @action=${(ev: CustomEvent) => this._onMainAction(ev, h.entity)}
+           @action=${(ev: CustomEvent) => this._onMainAction(ev, h, h.tap_entity, h.hold_entity, h.light_group_entity)}
            .actionHandler=${actionHandler({ hasHold, hasDoubleClick: hasDbl })}
            role="button" tabindex="0">
         <ha-icon class="main-icon" .icon=${icon}></ha-icon>
         <div class="chip-tr" data-role="chip">
-          <ha-icon icon="mdi:thermometer"
-                   class="chip-ico"
-                   @action=${() => this._openMoreInfo(h.temp_sensor)}
-                   .actionHandler=${actionHandler({})}></ha-icon>
-          <span class="tval"
-                @action=${() => this._openMoreInfo(h.temp_sensor)}
-                .actionHandler=${actionHandler({})}>${tval}</span>
+          <ha-icon icon="mdi:thermometer" class="chip-ico"></ha-icon>
+          <span class="tval">${tval}</span>
           <span style="opacity:.6;">|</span>
-          <ha-icon icon="mdi:water-percent"
-                   class="chip-ico"
-                   @action=${() => this._openMoreInfo(h.humidity_sensor)}
-                   .actionHandler=${actionHandler({})}></ha-icon>
-          <span class="hval"
-                @action=${() => this._openMoreInfo(h.humidity_sensor)}
-                .actionHandler=${actionHandler({})}>${hval}</span>
+          <ha-icon icon="mdi:water-percent" class="chip-ico"></ha-icon>
+          <span class="hval">${hval}</span>
         </div>
-        <div class="main-badges-br" data-role="badges"></div>
+        <div class="main-badges-br" data-role="badges">
+          <div class="badge" style=${`background:${bulbBg}`}>
+            <ha-icon .icon=${'mdi:lightbulb'} style=${`color:${bulbIconColor}`}></ha-icon>
+          </div>
+        </div>
         <div class="main-name">${name}</div>
       </div>
     `;
   }
 
-  private _renderACTile(entityId: string): TemplateResult {
+  private _renderACTile(entityId: string, _cfg?: any): TemplateResult {
     const mode = (this.hass?.states?.[entityId]?.state || '').toLowerCase();
     const active = !!mode && mode !== 'off';
     const { bg, icon } = this._acBadge(mode);
@@ -402,7 +439,7 @@ export class BitosomeRoomCard extends LitElement {
     `;
   }
 
-  private _renderThermoTile(entityId: string): TemplateResult {
+  private _renderThermoTile(entityId: string, _cfg?: any): TemplateResult {
     const st = this.hass?.states?.[entityId];
     const target = st?.attributes?.temperature ?? st?.attributes?.target_temp ?? st?.attributes?.target_temperature;
     const tStr = this._fmtNumber(target, 1) + '°';
@@ -425,15 +462,21 @@ export class BitosomeRoomCard extends LitElement {
     `;
   }
 
-  private _onMainAction(ev: CustomEvent, entity?: string): void {
+  private _onMainAction(ev: CustomEvent, tileCfg?: any, tap?: string, hold?: string, lightGroup?: string): void {
     const action = (ev.detail && (ev.detail as any).action) || 'tap';
+    // Tile-level actions override card-level
+    if (this.hass && tileCfg && (tileCfg.tap_action || tileCfg.hold_action || tileCfg.double_tap_action)) {
+      handleAction(this, this.hass, tileCfg as any, action);
+      return;
+    }
     // If configured, use boilerplate handleAction against card-level actions
     if (this.hass && this._config && (this._config.tap_action || this._config.hold_action || this._config.double_tap_action)) {
       handleAction(this, this.hass, this._config as any, action);
       return;
     }
-    // Fallback: open more-info for the main entity
-    if (entity) this._openMoreInfo(entity);
+    // Switch-like behavior for main tile
+    if (action === 'hold') this._openMoreInfo(hold || tap);
+    else this._toggleGeneric(lightGroup || tap);
   }
 
   private _onACAction(ev: CustomEvent, entity: string): void {
@@ -451,36 +494,52 @@ export class BitosomeRoomCard extends LitElement {
   private _renderSwitchRows(rows?: any[]): TemplateResult | typeof nothing {
     if (!rows || !rows.length) return nothing;
     return html`${rows.map((row) => {
-      const items = Array.isArray(row) ? row : (Array.isArray((row as any)?.row) ? (row as any).row : []);
+      const r: any = row as any;
+      const items = Array.isArray(row) ? row : (Array.isArray(r?.row) ? r.row : []);
       const cols = Math.max(1, items.length || 1);
       return html`<div class="switch-row" style=${`--cols:${cols}`}>${items.map((sw) => this._renderSwitchTile(sw))}</div>`;
     })}`;
   }
 
   private _renderSwitchTile(sw: any): TemplateResult {
-    const tap = sw?.tap_entity || '';
-    const hold = sw?.hold_entity || sw?.tap_entity || '';
+    const tap = sw?.entity || '';
+    const hold = sw?.hold_entity || sw?.entity || '';
     const icon = sw?.icon || '';
     const name = sw?.name || '';
     const type = String(sw?.type || 'switch').toLowerCase();
     const isSmart = type === 'smart_plug';
     const on = this._isOn(tap);
+    const iconSize = sw?.icon_size || sw?.['icon-size'] || sw?.['icon_size'];
+    const nameWeight = sw?.font_weight || sw?.['font-weight'];
+    const nameSize = sw?.font_size || sw?.['font-size'];
+    const toPx = (v: any) => (v === undefined || v === null || v === '') ? '' : (String(v).match(/px|em|rem|%$/) ? String(v) : `${Number(v)}px`);
+    const iconDim = toPx(iconSize);
+    const iconStyle = iconDim ? `width:${iconDim};height:${iconDim};--mdc-icon-size:${iconDim};` : '';
+    const nameStyle = `${nameWeight ? `font-weight:${nameWeight};` : ''}${nameSize ? `font-size:${toPx(nameSize)};` : ''}`;
     const cls = `switch-tile ${isSmart ? 'smart' : ''} ${on ? 'on' : ''}`;
     return html`
       <div class=${cls}
-           @action=${(ev: CustomEvent) => this._onSwitchAction(ev, tap, hold)}
-           .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
+           @action=${(ev: CustomEvent) => this._onSwitchAction(ev, sw)}
+           .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
            role="button" tabindex="0">
         <div class="tile-inner">
-          ${icon ? html`<ha-icon class="switch-icon" .icon=${icon}></ha-icon>` : nothing}
-          ${name ? html`<div class="name">${name}</div>` : nothing}
+          ${icon ? html`<ha-icon class="switch-icon" .icon=${icon} style=${iconStyle}></ha-icon>` : nothing}
+          ${name ? html`<div class="name" style=${nameStyle}>${name}</div>` : nothing}
         </div>
       </div>
     `;
   }
 
-  private _onSwitchAction(ev: CustomEvent, tap?: string, hold?: string): void {
+  // (Removed) Embedded Lovelace cards functionality
+
+  private _onSwitchAction(ev: CustomEvent, sw?: any): void {
     const act = (ev.detail && ev.detail.action) || 'tap';
+    if (this.hass && sw && (sw.tap_action || sw.hold_action || sw.double_tap_action)) {
+      handleAction(this, this.hass, sw as any, act);
+      return;
+    }
+    const tap = sw?.entity;
+    const hold = sw?.hold_entity || tap;
     if (act === 'hold') this._openMoreInfo(hold || tap);
     else this._toggleGeneric(tap);
   }
@@ -586,14 +645,20 @@ export class BitosomeRoomCard extends LitElement {
   private _hasAnyUnavailable(c: RoomCardConfig, h: RoomCardHeader): boolean {
     if (!this.hass) return false;
     const ids: Array<string | undefined> = [];
-    const main = h.main || { entity: h.main_entity, temp_sensor: h.temp_sensor, humidity_sensor: h.humidity_sensor } as any;
-    const ac = h.ac || { entity: h.ac_entity } as any;
-    const thermostat = h.thermostat || { entity: h.thermo_entity } as any;
-    ids.push(main?.entity, main?.temp_sensor, main?.humidity_sensor, ac?.entity, thermostat?.entity);
+    const mainRaw: any = h.main || {};
+    const main: any = {
+      tap_entity: mainRaw.tap_entity,
+      hold_entity: mainRaw.hold_entity || mainRaw.tap_entity,
+      temp_sensor: mainRaw.temp_sensor,
+      humidity_sensor: mainRaw.humidity_sensor,
+    };
+    const ac = h.ac || {} as any;
+    const thermostat = h.thermostat || {} as any;
+    ids.push(main?.tap_entity, main?.hold_entity, main?.temp_sensor, main?.humidity_sensor, ac?.entity, thermostat?.entity);
     const rows = (c.switch_rows || []) as any[];
     rows.forEach((row) => {
       const items = Array.isArray(row) ? row : (Array.isArray((row as any)?.row) ? (row as any).row : []);
-      items.forEach((sw: any) => ids.push(sw?.tap_entity, sw?.hold_entity));
+      items.forEach((sw: any) => ids.push(sw?.entity, sw?.hold_entity));
     });
     const bad = new Set(['unavailable', 'unknown', 'offline']);
     return ids.some((id) => {
