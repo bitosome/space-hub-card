@@ -1,5 +1,6 @@
 import { html, TemplateResult, nothing } from 'lit';
 import { actionHandler } from '../action-handler-directive';
+import { switchStyle } from '../glow';
 
 export function renderSwitchTile(ctx: any, sw: any): TemplateResult {
   const tap = sw?.entity || '';
@@ -16,13 +17,25 @@ export function renderSwitchTile(ctx: any, sw: any): TemplateResult {
   const iconStyle = iconDim ? `width:${iconDim};height:${iconDim};--mdc-icon-size:${iconDim};` : '';
   const nameStyle = `${nameWeight ? `font-weight:${nameWeight};` : ''}${nameSize ? `font-size:${toPx(nameSize)};` : ''}`;
   const hasChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
-  const btnCls = `switch-tile-btn ${isSmart ? 'smart' : ''} ${on ? 'on' : ''}`;
+  // Glow style from glow.ts
+  const glow = switchStyle(type, on, (sw?.glow_mode as any));
+  let glowCls = '';
+  let glowStyle = '';
+  if (glow.type === 'pulse' && glow.active) {
+    glowCls = ' tile-pulse';
+    glowStyle = `--pulse-weak:${glow.colors.weak};--pulse-strong:${glow.colors.strong};`;
+  } else if (glow.type === 'glow' && glow.active) {
+    glowCls = ' tile-glow';
+    glowStyle = `--tile-glow-color:${glow.color};`;
+  }
+  const btnCls = `switch-tile-btn ${isSmart ? 'smart' : ''} ${on ? 'on' : ''}${glowCls}`;
   return html`
     <ha-control-button
       class=${btnCls}
       @action=${(ev: CustomEvent) => ctx._onSwitchAction(ev, sw)}
       .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
       role="button" tabindex="0"
+      style=${glowStyle}
     >
       <div class="tile-inner">
         ${hasChip
@@ -38,4 +51,3 @@ export function renderSwitchTile(ctx: any, sw: any): TemplateResult {
     </ha-control-button>
   `;
 }
-

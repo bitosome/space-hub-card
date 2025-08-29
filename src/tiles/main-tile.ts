@@ -1,5 +1,6 @@
 import { html, TemplateResult, nothing } from 'lit';
 import { actionHandler } from '../action-handler-directive';
+import { switchStyle } from '../glow';
 
 export function renderMainTile(ctx: any, h: any): TemplateResult {
   const icon = h.icon || 'mdi:sofa-outline';
@@ -18,12 +19,25 @@ export function renderMainTile(ctx: any, h: any): TemplateResult {
     ? (h.badges as any[]).find((b) => String(b?.type || '').toLowerCase() === 'illuminance')
     : undefined;
   const illumTpl = illumBadge ? ctx._renderIlluminanceBadge(illumBadge) : nothing;
+  // Apply glow based on switch-like state of the main tile
+  const glow = switchStyle('switch', hasBulb && isOn, h?.glow_mode);
+  let glowCls = '';
+  let glowStyle = '';
+  if (glow.type === 'pulse' && glow.active) {
+    glowCls = ' tile-pulse';
+    glowStyle = `--pulse-weak:${glow.colors.weak};--pulse-strong:${glow.colors.strong};`;
+  } else if (glow.type === 'glow' && glow.active) {
+    glowCls = ' tile-glow';
+    glowStyle = `--tile-glow-color:${glow.color};`;
+  }
+
   return html`
     <ha-control-button
-      class="main-tile"
+      class="main-tile${glowCls}"
       @action=${(ev: CustomEvent) => ctx._onMainAction(ev, h, h.tap_entity, h.hold_entity, defaultToggleTarget)}
       .actionHandler=${actionHandler({ hasHold, hasDoubleClick: hasDbl })}
       role="button" tabindex="0"
+      style=${glowStyle}
     >
       <ha-icon class="main-icon" .icon=${icon}></ha-icon>
       <div class="chip-tr" data-role="chip">

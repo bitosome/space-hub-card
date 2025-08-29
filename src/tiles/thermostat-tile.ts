@@ -1,7 +1,8 @@
 import { html, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
+import { thermostatStyle } from '../glow';
 
-export function renderThermostatTile(ctx: any, entityId: string): TemplateResult {
+export function renderThermostatTile(ctx: any, entityId: string, glowMode?: 'pulse' | 'glow'): TemplateResult {
   const st = ctx.hass?.states?.[entityId];
   const target = st?.attributes?.temperature ?? st?.attributes?.target_temp ?? st?.attributes?.target_temperature;
   const tStr = ctx._fmtNumber(target, 1) + '°';
@@ -16,12 +17,25 @@ export function renderThermostatTile(ctx: any, entityId: string): TemplateResult
     ? 'var(--primary-background-color, #fff)'
     : 'var(--secondary-text-color)';
   const hasHaChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
+  // Glow style from glow.ts
+  const glow = thermostatStyle(hvacAction, state, glowMode);
+  let glowCls = '';
+  let glowStyle = '';
+  if (glow.type === 'pulse' && glow.active) {
+    glowCls = ' tile-pulse';
+    glowStyle = `--pulse-weak:${glow.colors.weak};--pulse-strong:${glow.colors.strong};`;
+  } else if (glow.type === 'glow' && glow.active) {
+    glowCls = ' tile-glow';
+    glowStyle = `--tile-glow-color:${glow.color};`;
+  }
+
   return html`
     <ha-control-button
-      class="square thermostat-tile ${isHeating ? 'on' : ''}"
+      class="square thermostat-tile ${isHeating ? 'on' : ''}${glowCls}"
       @action=${(ev: CustomEvent) => ctx._onThermoAction(ev, entityId)}
       .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
       role="button" tabindex="0"
+      style=${glowStyle}
     >
       <div class="temp-chip-tr">
         ${hasHaChip

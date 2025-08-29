@@ -60,12 +60,13 @@ export function switchGlow(typeRaw?: string, on?: boolean): SwitchGlow {
   return { active: !!on, color };
 }
 
-export type GlowStrategy = 'pulse' | 'glow';
+export type GlowStrategy = 'pulse' | 'glow' | 'none';
 let STRATEGY: GlowStrategy = 'pulse';
 export function setGlowStrategy(mode: GlowStrategy) { STRATEGY = mode; }
 export function getGlowStrategy(): GlowStrategy { return STRATEGY; }
 export function applyGlowConfig(config: { glow_mode?: GlowStrategy } | undefined) {
-  if (!config) return; if (config.glow_mode === 'pulse' || config.glow_mode === 'glow') STRATEGY = config.glow_mode;
+  if (!config) return;
+  if (config.glow_mode === 'pulse' || config.glow_mode === 'glow' || config.glow_mode === 'none') STRATEGY = config.glow_mode;
 }
 
 export type GlowStyle =
@@ -103,6 +104,9 @@ export function colorWithAlpha(color: string, alpha: number): string {
 
 export function acStyle(modeRaw?: string, mode?: GlowStrategy): GlowStyle {
   const strat = mode ?? STRATEGY;
+  if (strat === 'none') {
+    return { type: 'pulse', active: false, colors: TRANSPARENT };
+  }
   if (strat === 'glow') {
     const mode = (modeRaw || '').toLowerCase();
     const active = !!mode && mode !== 'off';
@@ -116,6 +120,9 @@ export function acStyle(modeRaw?: string, mode?: GlowStrategy): GlowStyle {
 export function thermostatStyle(hvacActionRaw?: string, stateRaw?: string, mode?: GlowStrategy): GlowStyle {
   const g = thermostatGlow(hvacActionRaw, stateRaw);
   const strat = mode ?? STRATEGY;
+  if (strat === 'none') {
+    return { type: 'pulse', active: false, colors: TRANSPARENT };
+  }
   if (strat === 'glow') {
     const color = g.active ? THERMOSTAT_HEAT_PULSE.strong : TRANSPARENT_GLOW;
     return { type: 'glow', active: g.active, color };
@@ -125,6 +132,9 @@ export function thermostatStyle(hvacActionRaw?: string, stateRaw?: string, mode?
 
 export function switchStyle(typeRaw?: string, on?: boolean, mode?: GlowStrategy): GlowStyle {
   const strat = mode ?? STRATEGY;
+  if (strat === 'none') {
+    return { type: 'pulse', active: false, colors: TRANSPARENT };
+  }
   if (strat === 'pulse') {
     const t = (typeRaw || '').toLowerCase();
     const smart = t.includes('smart') || t.includes('plug') || t === 'smart_plug';
@@ -149,7 +159,7 @@ function pulseFromBaseColor(base: string, weakAlpha = 0.18, strongAlpha = 0.36):
 export function cardUnavailableStyle(active: boolean, baseColor?: string, mode?: GlowStrategy): GlowStyle {
   const color = baseColor || DEFAULT_UNAVAIL_COLOR;
   const strat = mode ?? STRATEGY;
-  if (!active) {
+  if (strat === 'none' || !active) {
     return strat === 'pulse'
       ? { type: 'pulse', active: false, colors: TRANSPARENT }
       : { type: 'glow', active: false, color: TRANSPARENT_GLOW };

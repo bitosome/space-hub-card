@@ -30,6 +30,8 @@ export interface HeaderMain {
   tap_action?: import('custom-card-helpers').ActionConfig;
   hold_action?: import('custom-card-helpers').ActionConfig;
   double_tap_action?: import('custom-card-helpers').ActionConfig;
+  // Per-tile glow strategy override
+  glow_mode?: 'pulse' | 'glow' | 'none';
 }
 
 export interface HeaderAC {
@@ -37,12 +39,16 @@ export interface HeaderAC {
   tap_action?: import('custom-card-helpers').ActionConfig;
   hold_action?: import('custom-card-helpers').ActionConfig;
   double_tap_action?: import('custom-card-helpers').ActionConfig;
+  // Per-tile glow strategy override
+  glow_mode?: 'pulse' | 'glow' | 'none';
 }
 export interface HeaderThermostat {
   entity?: string;
   tap_action?: import('custom-card-helpers').ActionConfig;
   hold_action?: import('custom-card-helpers').ActionConfig;
   double_tap_action?: import('custom-card-helpers').ActionConfig;
+  // Per-tile glow strategy override
+  glow_mode?: 'pulse' | 'glow' | 'none';
 }
 
 export interface RoomCardHeader {
@@ -67,7 +73,7 @@ export interface RoomCardConfig {
   chip_font_size?: number;
   card_shadow_color?: string;
   card_shadow_intensity?: number;
-  glow_mode?: 'pulse' | 'glow';
+  glow_mode?: 'pulse' | 'glow' | 'none';
   /**
    * Deprecated in favor of unavailable_glow_color, kept for compatibility
    */
@@ -294,6 +300,9 @@ export class BitosomeRoomCard extends LitElement {
       50%  { box-shadow: 0 28px 56px var(--pulse-strong); }
       100% { box-shadow: 0 10px 20px var(--pulse-weak); }
     }
+    /* Generic helpers applied by tile renderers */
+    .tile-pulse { animation: glowPulse 2.4s ease-in-out infinite; }
+    .tile-glow { box-shadow: 0 10px 30px var(--tile-glow-color); }
     @keyframes cardPulse {
       0%   { box-shadow: 0 10px 30px var(--panel-shadow-color); }
       50%  { box-shadow: 0 10px 30px var(--panel-shadow-color), 0 0 36px var(--unavail-strong); }
@@ -413,7 +422,7 @@ export class BitosomeRoomCard extends LitElement {
     const unavailStrong = unavailStyle.type === 'pulse'
       ? unavailStyle.colors.strong
       : this._rgbaFromColor(unavailBase, 0.36);
-    const cardClass = hasUnavail
+    const cardClass = (hasUnavail && unavailStyle.active)
       ? (unavailStyle.type === 'pulse' ? 'unavailable' : 'unavailable-glow')
       : '';
 
@@ -445,6 +454,7 @@ export class BitosomeRoomCard extends LitElement {
       tap_action: mainRaw.tap_action,
       hold_action: mainRaw.hold_action,
       double_tap_action: mainRaw.double_tap_action,
+      glow_mode: mainRaw.glow_mode,
     };
     const ac = h.ac || {} as any;
     const thermostat = h.thermostat || {} as any;
@@ -454,8 +464,8 @@ export class BitosomeRoomCard extends LitElement {
     return html`
       <div class=${cls}>
         ${this._renderMainTile(main as any)}
-        ${showAC ? this._renderACTile(ac.entity as string) : nothing}
-        ${showThermo ? this._renderThermostatTile(thermostat.entity as string) : nothing}
+        ${showAC ? this._renderACTile(ac.entity as string, ac.glow_mode as any) : nothing}
+        ${showThermo ? this._renderThermostatTile(thermostat.entity as string, thermostat.glow_mode as any) : nothing}
       </div>
     `;
   }
@@ -598,9 +608,9 @@ export class BitosomeRoomCard extends LitElement {
     this._toggleGeneric(entityId);
   }
 
-  private _renderACTile(entityId: string): TemplateResult { return renderACTile(this, entityId); }
+  private _renderACTile(entityId: string, glowMode?: 'pulse' | 'glow'): TemplateResult { return renderACTile(this, entityId, glowMode); }
 
-  private _renderThermostatTile(entityId: string): TemplateResult { return renderThermostatTile(this, entityId); }
+  private _renderThermostatTile(entityId: string, glowMode?: 'pulse' | 'glow'): TemplateResult { return renderThermostatTile(this, entityId, glowMode); }
 
   private _onMainAction(ev: CustomEvent, tileCfg?: any, tap?: string, hold?: string, lightGroup?: string): void {
     const action = (ev.detail && (ev.detail as any).action) || 'tap';
