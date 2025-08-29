@@ -10,6 +10,10 @@ Custom Room card for Home Assistant, built on the boilerplate using LitElement. 
 - Switch rows with per-tile tap/hold entities, including smart plug style
 - Optional card header title (omit `title` to hide)
 - Unavailable pulse: card shadow pulses if any used entity is unavailable/unknown/offline
+- Glow containment: internal glows/shadows are clipped to the card bounds so they never overlay surrounding cards
+- Multiple headers: render one or more header rows via `headers: [...]` (keeps `header:` for backwards compatibility)
+- Illuminance badge: optional chip-style badge on the main tile (type `illuminance`), aligned to the right edge and vertically centered (e.g., `109 lx`)
+- Border radii follow HA theme: card, tiles, badges, and chips use `--ha-card-border-radius`, `--ha-badge-border-radius`, and `--ha-chip-border-radius` (with sensible fallbacks)
 
 ## Configuration Reference
 
@@ -23,7 +27,7 @@ Custom Room card for Home Assistant, built on the boilerplate using LitElement. 
 - card_shadow_color: base panel shadow color.
 - card_shadow_intensity: base shadow intensity (0..1).
 - unavailable_pulse_color: color for unavailability pulse.
-- header:
+ - header:  # or `headers: [ ... ]` for multiple
   - main:
     - tap_action/hold_action: preferred HA-native actions for tap/hold. If set, these override defaults.
     - light_group_entity: optional; drives the main bulb indicator state and default toggling when no actions are set. The bulb badge renders only when this is provided.
@@ -32,7 +36,9 @@ Custom Room card for Home Assistant, built on the boilerplate using LitElement. 
     - main_icon: MDI/HA icon for the main tile.
     - temp_sensor: temperature entity for the chip.
     - humidity_sensor: humidity entity for the chip.
-    - badges: list of small badges on the main tile (bottom-right). Each item supports `type`, `entity`, `tap_entity`, `hold_entity`, optional `icon`. Currently supported types: `lock`, `gate`, or generic.
+    - badges: list of badges for the main tile.
+      - Bottom-right badges (round): types `lock`, `gate`, or generic.
+      - Illuminance badge (right-center): add `{ type: illuminance, entity: <sensor>, icon?: <mdi> }` to render a chip-style badge aligned to the right edge and vertically centered with the sensor value (e.g., `109 lx`). Supports `tap_action`/`hold_action`/`double_tap_action` like other badges.
     - tap_action / hold_action / double_tap_action: HA-native tile actions.
   - ac:
     - entity: climate entity id.
@@ -80,12 +86,16 @@ header:
     main_icon: mdi:sofa-outline
     temp_sensor: sensor.kitchen_living_room_temparature_average
     humidity_sensor: sensor.kitchen_living_room_humidity_average
+    badges:
+      - type: illuminance
+        entity: sensor.aqara_light_sensor_1_illuminance
+        icon: mdi:brightness-5
   ac:
     entity: climate.living_room_ac
   thermostat:
     entity: climate.thermostat_5_7_group
 
-With all options:
+With all options (single header shown; use `headers: [ ... ]` to add multiple):
 
 type: custom:bitosome-room-card
 # title is optional; remove to hide the ha-card header
@@ -131,9 +141,12 @@ header:
       tap_action:
         action: toggle
         entity: lock.front_door
-      hold_action:
-        action: more-info
-        entity: lock.front_door
+    hold_action:
+      action: more-info
+      entity: lock.front_door
+    - type: illuminance
+      entity: sensor.aqara_light_sensor_1_illuminance
+      icon: mdi:brightness-5
 
 # Switch rows
 switch_rows:

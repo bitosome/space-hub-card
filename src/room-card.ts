@@ -2,7 +2,7 @@
 import { LitElement, html, css, CSSResultGroup, TemplateResult, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import type { HomeAssistant } from 'custom-card-helpers';
-import { handleAction } from 'custom-card-helpers';
+import { handleAction, fireEvent } from 'custom-card-helpers';
 import { actionHandler } from './action-handler-directive';
 import { CARD_VERSION } from './const';
 
@@ -63,7 +63,8 @@ export interface RoomCardConfig {
   card_shadow_color?: string;
   card_shadow_intensity?: number;
   unavailable_pulse_color?: string;
-  header?: RoomCardHeader;
+  header?: RoomCardHeader; // legacy single header
+  headers?: RoomCardHeader[]; // new: multiple headers
   switch_rows?: unknown[];
   // Main tile actions (boilerplate-style)
   tap_action?: import('custom-card-helpers').ActionConfig;
@@ -73,6 +74,16 @@ export interface RoomCardConfig {
 
 function clone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
+}
+
+// Haptic feedback helper (dispatches HA's global 'haptic' event)
+function haptic(type: any): void {
+  try {
+    // `type` can be a string like 'success' | 'warning' | 'failure' | 'light' | 'medium' | 'heavy'
+    fireEvent(window as any, 'haptic', type);
+  } catch (_e) {
+    // no-op
+  }
 }
 
 @customElement('bitosome-room-card')
@@ -110,7 +121,15 @@ export class BitosomeRoomCard extends LitElement {
 
   public setConfig(config: RoomCardConfig): void {
     const c = clone(config || BitosomeRoomCard.getStubConfig());
-    c.header = c.header || {};
+    // Normalize headers: support both `header` and `headers`
+    if (Array.isArray((c as any).headers)) {
+      // keep as-is, but also expose first as legacy header for backward references
+      const arr = (c as any).headers as RoomCardHeader[];
+      (c as any).header = arr[0] || c.header || {};
+    } else {
+      c.header = c.header || {};
+      (c as any).headers = c.header ? [c.header] : [];
+    }
     if (!Array.isArray(c.switch_rows)) c.switch_rows = [];
     this._config = c;
   }
@@ -128,22 +147,23 @@ export class BitosomeRoomCard extends LitElement {
     }
 
     ha-card {
-      border-radius: 16px;
-      background: linear-gradient(
-        180deg,
-        rgba(var(--rgb-card-background-color, 255,255,255), 0.92),
-        rgba(var(--rgb-card-background-color, 250,250,250), 0.85)
-      );
+      border-radius: var(--ha-card-border-radius, 16px);
+      background: var(--ha-card-background, var(--card-background-color));
       box-shadow: 0 10px 30px var(--panel-shadow-color);
       padding: 12px;
       color: var(--primary-text-color);
       transition: filter 0.12s ease, box-shadow 0.12s ease;
+      position: relative;
+      /* Allow pulsing glows to spill outside to neighboring cards */
+      overflow: visible;
     }
     ha-card.unavailable {
       animation: cardPulse 2.8s ease-in-out infinite;
     }
 
     .root { display: grid; gap: 12px; }
+
+    /* Removed surface wrapper to rely on ha-card styling */
 
     /* Header row */
     .header-row {
@@ -159,13 +179,38 @@ export class BitosomeRoomCard extends LitElement {
     /* MAIN tile */
     .main-tile {
       position: relative;
+      /* Ensure full-width layout even inside flex hosts like ha-control-button */
+      width: 100%;
       height: var(--tile-h);
-      border-radius: 12px;
+      border-radius: var(--ha-card-border-radius, 12px);
       box-shadow: 0 6px 18px rgba(0,0,0,0.10);
       background: var(--ha-card-background, var(--card-background-color));
       padding-left: 16px;
       overflow: hidden;
       transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+    /* When wrapped in ha-control-button, inherit the native radius */
+    .main-control .main-tile { border-radius: inherit; }
+    /* Size the main control wrapper to match tile dimensions */
+    .main-control {
+      height: var(--tile-h);
+      width: 100%;
+      display: grid;
+      place-items: center;
+      border-radius: var(--ha-card-border-radius, 12px);
+      /* Match switch button surface colors/shadow */
+      background: var(--ha-card-background, var(--card-background-color));
+      color: var(--secondary-text-color);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+      overflow: visible;
+    }
+    /* Ensure the internal HA button element matches the tile size */
+    .main-control::part(button) {
+      width: 100%;
+      height: var(--tile-h);
+      display: block;
+      padding: 0;
+      border-radius: inherit;
     }
     .main-icon {
       position: absolute; left: 12px; top: 8px;
@@ -176,7 +221,7 @@ export class BitosomeRoomCard extends LitElement {
     .chip-tr {
       position: absolute; right: 8px; top: 8px; z-index: 3;
       display: inline-flex; align-items: center; gap: 2px;
-      padding: 2px 6px; border-radius: 999px;
+      padding: 2px 6px; border-radius: var(--ha-chip-border-radius, 999px);
       background: rgba(0,0,0,0.06);
       font-size: var(--chip-font-size, 12px); color: var(--secondary-text-color); line-height: 1; white-space: nowrap;
     }
@@ -186,7 +231,7 @@ export class BitosomeRoomCard extends LitElement {
     /* badge basics (bulb/lock/gate) */
     .badge {
       width: var(--badge); height: var(--badge);
-      border-radius: 999px;
+      border-radius: var(--ha-badge-border-radius, 999px);
       display:flex; align-items:center; justify-content:center;
       line-height:0;
       background: rgba(0,0,0,0.06);
@@ -208,19 +253,45 @@ export class BitosomeRoomCard extends LitElement {
       font-weight: 500; font-size: 14px; color: var(--primary-text-color);
     }
 
+    /* Illuminance badge on main tile (right-center, same chip pattern) */
+    .illum-badge {
+      position: absolute; right: 8px; top: 50%; z-index: 3;
+      transform: translateY(-50%);
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 2px 8px; border-radius: var(--ha-chip-border-radius, 999px);
+      background: rgba(0,0,0,0.06);
+      font-size: var(--chip-font-size, 12px); color: var(--secondary-text-color); line-height: 1; white-space: nowrap;
+    }
+    .illum-badge ha-icon { width: 12px; height: 12px; line-height:0; --mdc-icon-size:12px; }
+
     /* AC & THERMOSTAT squares — width == height == --tile-h */
     .square {
       position: relative;
       width: var(--tile-h); height: var(--tile-h);
       aspect-ratio: 1 / 1;
-      border-radius: 12px;
-      background: var(--card-background-color);
+      border-radius: var(--ha-card-border-radius, 12px);
+      background: var(--ha-card-background, var(--card-background-color));
       backdrop-filter: blur(10px);
       transition: transform 0.18s ease, box-shadow 0.28s ease, filter 0.12s ease;
       box-shadow: 0 6px 18px rgba(0,0,0,0.10);
       overflow: hidden;
       display: grid; place-items: center;
     }
+
+    /* Ensure inner tiles inherit native button border when wrapped in ha-control-button */
+    .ac-control, .thermo-control {
+      height: var(--tile-h);
+      width: var(--tile-h);
+      display:grid;
+      place-items:center;
+      /* Always apply HA theme surface + radius like switch button */
+      background: var(--ha-card-background, var(--card-background-color));
+      color: var(--secondary-text-color);
+      border-radius: var(--ha-card-border-radius, 12px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+      overflow: visible;
+    }
+    .ac-control .square, .thermo-control .square { border-radius: inherit; }
 
     .center-xy { position: static; transform: none; display:flex; align-items:center; justify-content:center; pointer-events:none; user-select:none; line-height:0; }
     .ac-fan, .thermo-icon {
@@ -235,7 +306,8 @@ export class BitosomeRoomCard extends LitElement {
 
     /* Thermostat temp chip (top-right) */
     .temp-chip-tr { position: absolute; right: 8px; top: 8px; z-index: 3; display:inline-flex; align-items:center; }
-    .temp-pill { display:inline-flex; align-items:center; justify-content:center; padding: 0 6px; border-radius: 999px; background:#ff7043; font-size: var(--chip-font-size, 12px); color:#fff; line-height:1; white-space:nowrap; font-weight:700; max-width: calc(var(--tile-h) - 16px); min-height: var(--badge); }
+    .temp-pill { display:inline-flex; align-items:center; justify-content:center; padding: 0 6px; border-radius: var(--ha-chip-border-radius, 999px); background: var(--chip-background-color, rgba(0,0,0,0.06)); font-size: var(--chip-font-size, 12px); color: var(--secondary-text-color); line-height:1; white-space:nowrap; font-weight:700; max-width: calc(var(--tile-h) - 16px); min-height: var(--badge); }
+    .temp-chip-tr ha-chip { font-size: var(--chip-font-size, 12px); }
 
     /* Animations */
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -249,6 +321,12 @@ export class BitosomeRoomCard extends LitElement {
       50%  { box-shadow: 0 0 30px rgba(255,112,67,0.32); }
       100% { box-shadow: 0 6px 18px rgba(0,0,0,0.10); }
     }
+    /* Pure glow (no movement/scale) */
+    @keyframes glowPulse {
+      0%   { box-shadow: 0 10px 20px var(--pulse-weak); }
+      50%  { box-shadow: 0 28px 56px var(--pulse-strong); }
+      100% { box-shadow: 0 10px 20px var(--pulse-weak); }
+    }
     @keyframes cardPulse {
       0%   { box-shadow: 0 10px 30px var(--panel-shadow-color); }
       50%  { box-shadow: 0 10px 30px var(--panel-shadow-color), 0 0 36px var(--unavail-strong); }
@@ -257,11 +335,75 @@ export class BitosomeRoomCard extends LitElement {
 
     /* Switch rows */
     .switch-row { display:grid; grid-template-columns: repeat(var(--cols,3), 1fr); gap: 12px; }
+    /* Native HA control button variant for switch tiles */
+    .switch-tile-btn {
+      height: var(--tile-h);
+      width: 100%;
+      display: grid; place-items: center;
+      position: relative;
+      overflow: visible;
+      color: var(--secondary-text-color);
+      /* Give button variant a visible surface like tiles */
+      background: var(--ha-card-background, var(--card-background-color));
+      border-radius: var(--ha-card-border-radius, 12px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+    /* Hover feedback (align with tile hover); do not override ON glow */
+    .switch-tile-btn:not(.on):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.16);
+      border-radius: var(--ha-card-border-radius, 12px);
+    }
+    /* ON state for native HA button: persistent glow on same layer as hover (no brightness) */
+    .switch-tile-btn.on {
+      border-radius: var(--ha-card-border-radius, 12px);
+      position: relative;
+      /* Ensure glow animation has defined colors */
+      --pulse-weak: rgba(255,193,7,0.16);
+      --pulse-strong: rgba(255,193,7,0.30);
+      box-shadow:
+        0 18px 40px rgba(255,193,7,0.30),
+        0 6px 18px rgba(255,193,7,0.16);
+      /* Static glow (no pulsing for switches) */
+      will-change: box-shadow, filter;
+    }
+    .switch-tile-btn.on:hover,
+    .switch-tile-btn.on:hover > .tile-inner {
+      /* Ensure ON hover keeps glow even if generic hover sets a shadow */
+      border-radius: var(--ha-card-border-radius, 12px);
+      transform: translateY(-1px);
+      box-shadow:
+        0 18px 40px rgba(255,193,7,0.30) !important,
+        0 6px 18px rgba(255,193,7,0.16) !important;
+      /* Use only box-shadow to ensure radius consistency */
+    }
+    /* Smart plug ON: persistent green glow on same layer as hover (no brightness) */
+    .switch-tile-btn.smart.on {
+      /* Ensure glow animation has defined colors (green for smart plugs) */
+      --pulse-weak: rgba(0,200,83,0.16);
+      --pulse-strong: rgba(0,200,83,0.30);
+      box-shadow:
+        0 18px 40px rgba(0,200,83,0.30),
+        0 6px 18px rgba(0,200,83,0.16);
+      /* Static glow (no pulsing for switches) */
+      will-change: box-shadow, filter;
+    }
+    .switch-tile-btn.smart.on:hover,
+    .switch-tile-btn.smart.on:hover > .tile-inner {
+      /* Ensure SMART ON hover keeps GREEN glow */
+      border-radius: var(--ha-card-border-radius, 12px);
+      transform: translateY(-1px);
+      box-shadow:
+        0 18px 40px rgba(0,200,83,0.30) !important,
+        0 6px 18px rgba(0,200,83,0.16) !important;
+      /* Use only box-shadow to ensure radius consistency */
+    }
     .switch-tile {
       position: relative;
       height: var(--tile-h);
-      border-radius: 12px;
-      background: var(--card-background-color);
+      border-radius: var(--ha-card-border-radius, 12px);
+      background: var(--ha-card-background, var(--card-background-color));
       box-shadow: 0 6px 18px rgba(0,0,0,0.10);
       transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
       display: grid; place-items: center;
@@ -271,28 +413,62 @@ export class BitosomeRoomCard extends LitElement {
     /* Native-like hover feedback per-tile: slight lift + stronger shadow */
     .main-tile:hover,
     .square:hover,
-    .switch-tile:hover {
-      filter: brightness(1.03);
+    .switch-tile:not(.on):hover {
       transform: translateY(-1px);
       box-shadow: 0 12px 24px rgba(0,0,0,0.16);
+      border-radius: var(--ha-card-border-radius, 12px);
+    }
+    /* Hover for main control wrapper */
+    .main-control:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(0,0,0,0.16); }
+    /* Match hover for ha-control-button wrappers (AC/Thermo) */
+    .ac-control:hover,
+    .thermo-control:hover,
+    .switch-tile-btn:not(.on):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.16);
+    }
+
+    /* Thermostat: pulsing glow only (no movement) */
+    .thermo-control.on {
+      border-radius: var(--ha-card-border-radius, 12px);
+      box-shadow:
+        0 18px 40px var(--pulse-strong, rgba(255,112,67,0.30)),
+        0 6px 18px var(--pulse-weak, rgba(255,112,67,0.16));
+      animation: glowPulse 2.4s ease-in-out infinite;
+    }
+
+    /* AC: pulsing glow on wrapper when active (no movement) */
+    .ac-control.on {
+      border-radius: var(--ha-card-border-radius, 12px);
+      box-shadow:
+        0 18px 40px var(--pulse-strong, rgba(0,170,255,0.30)),
+        0 6px 18px var(--pulse-weak, rgba(0,170,255,0.16));
+      animation: glowPulse 2.4s ease-in-out infinite;
     }
     .tile-inner { display:grid; gap:4px; place-items:center; justify-items:center; text-align:center; }
     .switch-tile .name { font-weight: 600; font-size: 12px; }
     .switch-icon { width: 28px; height: 28px; color: var(--secondary-text-color); line-height:0; }
+    .tile-inner ha-chip { font-size: var(--chip-font-size, 12px); }
 
-    /* ON base style */
+    /* ON base style (non-button): persistent glow on same layer as hover (no brightness) */
     .switch-tile.on {
-      background: var(--primary-color);
-      color: var(--primary-background-color);
-      transform: translateY(2px);
+      /* Ensure glow animation has defined colors */
+      --pulse-weak: rgba(255,193,7,0.16);
+      --pulse-strong: rgba(255,193,7,0.30);
       box-shadow:
-        inset 0 6px 14px rgba(0,0,0,0.20),
         0 18px 40px rgba(255,193,7,0.30),
         0 6px 18px rgba(255,193,7,0.16);
-      filter: drop-shadow(0 18px 32px rgba(255,193,7,0.22));
-      z-index: 2;
+      /* Glow visible even without hover */
+      border-radius: var(--ha-card-border-radius, 12px);
     }
-    .switch-tile.on .switch-icon { color: var(--primary-background-color); }
+    .switch-tile.on:hover {
+      /* Ensure ON hover keeps glow even if generic hover sets a shadow */
+      transform: translateY(-1px);
+      box-shadow:
+        0 18px 40px rgba(255,193,7,0.30) !important,
+        0 6px 18px rgba(255,193,7,0.16) !important;
+      border-radius: var(--ha-card-border-radius, 12px);
+    }
 
     /* Smart plug: animated band + GREEN glow (not yellow) */
     @keyframes chase {
@@ -301,19 +477,22 @@ export class BitosomeRoomCard extends LitElement {
       100% { background-position: 250% 0, 0 0; }
     }
     .switch-tile.smart.on {
-      background:
-        linear-gradient(90deg, rgba(0,200,83,0.00) 0%, rgba(0,200,83,0.45) 50%, rgba(0,200,83,0.00) 100%),
-        var(--primary-color);
-      background-size: 30% 100%, 100% 100%;
-      background-repeat: no-repeat;
-      animation: chase 2s linear infinite;
-
-      /* Override the yellow base glow with GREEN */
+      /* Ensure glow animation has defined colors (green for smart plugs) */
+      --pulse-weak: rgba(0,200,83,0.16);
+      --pulse-strong: rgba(0,200,83,0.30);
       box-shadow:
-        inset 0 6px 14px rgba(0,0,0,0.20),
         0 18px 40px rgba(0,200,83,0.30),
         0 6px 18px rgba(0,200,83,0.16);
-      filter: drop-shadow(0 18px 32px rgba(0,200,83,0.22));
+      /* Glow visible even without hover */
+      border-radius: var(--ha-card-border-radius, 12px);
+    }
+    .switch-tile.smart.on:hover {
+      /* Ensure SMART ON hover keeps GREEN glow */
+      transform: translateY(-1px);
+      box-shadow:
+        0 18px 40px rgba(0,200,83,0.30) !important,
+        0 6px 18px rgba(0,200,83,0.16) !important;
+      border-radius: var(--ha-card-border-radius, 12px);
     }
 
     .clickable { cursor: pointer; }
@@ -322,21 +501,24 @@ export class BitosomeRoomCard extends LitElement {
   protected render(): TemplateResult | typeof nothing {
     if (!this._config) return nothing;
     const c = { ...BitosomeRoomCard.getStubConfig(), ...this._config } as RoomCardConfig;
-    // Do NOT merge header with stub defaults; respect user omission of AC/Thermostat
-    const h = (c.header || {}) as RoomCardHeader;
+    // Prefer multiple headers; fall back to single
+    const headers: RoomCardHeader[] = Array.isArray((c as any).headers) && (c as any).headers.length
+      ? ((c as any).headers as RoomCardHeader[])
+      : [((c.header || {}) as RoomCardHeader)];
 
     const tileH = Number(c.tile_height) || 80;
     const badgeSize = Number(c.badge_size) || 22;
     const badgeIcon = Number(c.badge_icon_size) || 14;
-    // Allow header-level override for main icon size
-    const headerMainIconSize = Number((h as any)?.main_icon_size ?? (h as any)?.maicon_size);
+    // Allow header-level override for main icon size (use first header if provided)
+    const headerCfg: any = headers[0] || {};
+    const headerMainIconSize = Number(headerCfg?.main_icon_size ?? headerCfg?.maicon_size);
     const mainIcon = Number.isFinite(headerMainIconSize) && headerMainIconSize > 0
       ? headerMainIconSize
       : (Number(c.main_icon_size) || 48);
     const panelShadowColor = this._rgbaFromColor(c.card_shadow_color, c.card_shadow_intensity);
     const chipFont = Number(c.chip_font_size) || 12;
     const unavailColor = c.unavailable_pulse_color || '#ff3b30';
-    const hasUnavail = this._hasAnyUnavailable(c, h);
+    const hasUnavail = this._hasAnyUnavailable(c, headers);
     const unavailWeak = this._rgbaFromColor(unavailColor, 0.18);
     const unavailStrong = this._rgbaFromColor(unavailColor, 0.36);
 
@@ -346,7 +528,7 @@ export class BitosomeRoomCard extends LitElement {
                .header=${this._config?.title || undefined}>
         <div class="metrics" style=${`--tile-h:${tileH}px; --badge:${badgeSize}px; --badge-icon:${badgeIcon}px; --main-icon-size:${mainIcon}px; --chip-font-size:${chipFont}px;`}>
           <div class="root">
-            ${this._renderHeaderRow(h)}
+            ${headers.map((h) => this._renderHeaderRow(h))}
             ${this._renderSwitchRows(c.switch_rows as any[])}
           </div>
         </div>
@@ -377,8 +559,8 @@ export class BitosomeRoomCard extends LitElement {
     return html`
       <div class=${cls}>
         ${this._renderMainTile(main as any)}
-        ${showAC ? this._renderACTile(ac.entity as string, ac as any) : nothing}
-        ${showThermo ? this._renderThermoTile(thermostat.entity as string, thermostat as any) : nothing}
+        ${showAC ? this._renderACTile(ac.entity as string) : nothing}
+        ${showThermo ? this._renderThermoTile(thermostat.entity as string) : nothing}
       </div>
     `;
   }
@@ -397,6 +579,46 @@ export class BitosomeRoomCard extends LitElement {
     const bulbBg = isOn ? 'linear-gradient(135deg,#ffcf57,#ffb200)' : 'rgba(0,0,0,0.06)';
     const bulbIconColor = isOn ? '#ffffff' : 'var(--secondary-text-color)';
     const defaultToggleTarget = h.light_group_entity || h.tap_entity || h.entity;
+    // Optional vertical illuminance badge: allow via badges array using type: 'illuminance'
+    const illumBadge = Array.isArray(h?.badges)
+      ? (h.badges as any[]).find((b) => String(b?.type || '').toLowerCase() === 'illuminance')
+      : undefined;
+    const illumTpl = illumBadge ? this._renderIlluminanceBadge(illumBadge) : nothing;
+    const hasControlBtn = typeof customElements !== 'undefined' && !!customElements.get('ha-control-button');
+    if (hasControlBtn) {
+      return html`
+        <ha-control-button
+          class="main-control"
+          @action=${(ev: CustomEvent) => this._onMainAction(ev, h, h.tap_entity, h.hold_entity, defaultToggleTarget)}
+          .actionHandler=${actionHandler({ hasHold, hasDoubleClick: hasDbl })}
+          role="button" tabindex="0"
+        >
+          <div class="main-tile">
+            <ha-icon class="main-icon" .icon=${icon}></ha-icon>
+            <div class="chip-tr" data-role="chip">
+              <ha-icon icon="mdi:thermometer" class="chip-ico"></ha-icon>
+              <span class="tval">${tval}</span>
+              <span style="opacity:.6;">|</span>
+              <ha-icon icon="mdi:water-percent" class="chip-ico"></ha-icon>
+              <span class="hval">${hval}</span>
+            </div>
+            ${illumTpl}
+            <div class="main-badges-br" data-role="badges">
+              ${hasBulb ? html`
+                <div class="badge" style=${`background:${bulbBg}`}>
+                  <ha-icon .icon=${'mdi:lightbulb'} style=${`color:${bulbIconColor}`}></ha-icon>
+                </div>` : nothing}
+              ${Array.isArray(h?.badges) && h.badges.length
+                ? html`${h.badges
+                    .filter((b: any) => String(b?.type || '').toLowerCase() !== 'illuminance')
+                    .map((b: any) => this._renderExtraBadge(b))}`
+                : nothing}
+            </div>
+            <div class="main-name">${name}</div>
+          </div>
+        </ha-control-button>
+      `;
+    }
     return html`
       <div class="main-tile"
            @action=${(ev: CustomEvent) => this._onMainAction(ev, h, h.tap_entity, h.hold_entity, defaultToggleTarget)}
@@ -410,16 +632,45 @@ export class BitosomeRoomCard extends LitElement {
           <ha-icon icon="mdi:water-percent" class="chip-ico"></ha-icon>
           <span class="hval">${hval}</span>
         </div>
+        ${illumTpl}
         <div class="main-badges-br" data-role="badges">
           ${hasBulb ? html`
             <div class="badge" style=${`background:${bulbBg}`}>
               <ha-icon .icon=${'mdi:lightbulb'} style=${`color:${bulbIconColor}`}></ha-icon>
             </div>` : nothing}
           ${Array.isArray(h?.badges) && h.badges.length
-            ? html`${h.badges.map((b: any) => this._renderExtraBadge(b))}`
+            ? html`${h.badges
+                .filter((b: any) => String(b?.type || '').toLowerCase() !== 'illuminance')
+                .map((b: any) => this._renderExtraBadge(b))}`
             : nothing}
         </div>
         <div class="main-name">${name}</div>
+      </div>
+    `;
+  }
+
+  private _renderIlluminanceBadge(b: any): TemplateResult {
+    const entity: string | undefined = b?.entity || b?.tap_entity;
+    const icon = b?.icon || 'mdi:brightness-5';
+    const val = this._fmt2(entity, 0, ' lx');
+    // Click: open more-info by default, or if actions supplied, use them
+    const hasHAAction = !!(b?.tap_action || b?.hold_action || b?.double_tap_action);
+    const onAction = (ev: CustomEvent) => {
+      const act = (ev.detail && ev.detail.action) || 'tap';
+      if (hasHAAction) {
+        handleAction(this, this.hass, b as any, act);
+        return;
+      }
+      if (act === 'hold') { haptic('medium'); this._openMoreInfo(entity); }
+      else this._openMoreInfo(entity);
+    };
+    return html`
+      <div class="illum-badge"
+           @action=${onAction}
+           .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!b?.double_tap_action })}
+           role="button" tabindex="0">
+        <ha-icon .icon=${icon}></ha-icon>
+        <span class="illum-val">${val}</span>
       </div>
     `;
   }
@@ -499,6 +750,8 @@ export class BitosomeRoomCard extends LitElement {
     const tap = b?.tap_entity || b?.entity;
     const hold = b?.hold_entity || b?.entity;
     if (act === 'hold') {
+      // Haptic feedback: medium on long press
+      haptic('medium');
       this._openMoreInfo(hold || tap);
       return;
     }
@@ -529,13 +782,35 @@ export class BitosomeRoomCard extends LitElement {
     this._toggleGeneric(entityId);
   }
 
-  private _renderACTile(entityId: string, _cfg?: any): TemplateResult {
+  private _renderACTile(entityId: string): TemplateResult {
     const mode = (this.hass?.states?.[entityId]?.state || '').toLowerCase();
     const active = !!mode && mode !== 'off';
     const { bg, icon } = this._acBadge(mode);
     const fanStyle = `color:${this._acModeColor(mode)}; ${active ? 'animation:spin 1.5s linear infinite;' : ''}`;
     const pulse = this._acPulseColors(mode);
-    const tileStyle = `${active ? 'animation:activePulse 2.4s ease-in-out infinite;' : ''} --pulse-weak:${pulse.weak}; --pulse-strong:${pulse.strong};`;
+    const hasControlBtn = typeof customElements !== 'undefined' && !!customElements.get('ha-control-button');
+    if (hasControlBtn) {
+      const wrapStyle = `${active ? `--pulse-weak:${pulse.weak}; --pulse-strong:${pulse.strong};` : ''}`;
+      return html`
+        <ha-control-button
+          class="ac-control ${active ? 'on' : ''}"
+          style=${wrapStyle}
+          @action=${(ev: CustomEvent) => this._onACAction(ev, entityId)}
+          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
+          role="button" tabindex="0"
+        >
+          <div class="square ac-tile">
+            <div class="badge badge-tr" style=${`background:${bg}`}> 
+              <ha-icon .icon=${icon} style="color:#fff"></ha-icon>
+            </div>
+            <div class="center-xy">
+              <ha-icon class="ac-fan" icon="mdi:fan" style=${fanStyle}></ha-icon>
+            </div>
+          </div>
+        </ha-control-button>
+      `;
+    }
+    const tileStyle = `${active ? 'animation:glowPulse 2.4s ease-in-out infinite;' : ''} --pulse-weak:${pulse.weak}; --pulse-strong:${pulse.strong};`;
     return html`
       <div class="square ac-tile" style=${tileStyle}
            @action=${(ev: CustomEvent) => this._onACAction(ev, entityId)}
@@ -551,21 +826,61 @@ export class BitosomeRoomCard extends LitElement {
     `;
   }
 
-  private _renderThermoTile(entityId: string, _cfg?: any): TemplateResult {
+  private _renderThermoTile(entityId: string): TemplateResult {
     const st = this.hass?.states?.[entityId];
     const target = st?.attributes?.temperature ?? st?.attributes?.target_temp ?? st?.attributes?.target_temperature;
     const tStr = this._fmtNumber(target, 1) + '°';
     const hvacAction = (st?.attributes?.hvac_action || '').toLowerCase();
     const state = (st?.state || '').toLowerCase();
     const color = state === 'off' ? 'gray' : (hvacAction === 'heating' || state === 'heating') ? '#ff7043' : '#66bb6a';
-    const tileStyle = `${(hvacAction === 'heating' || state === 'heating') ? 'animation:heatingGlow 2.4s ease-in-out infinite;' : ''}`;
+    // Glow strictly when actively heating. No glow when idle or just in heat mode.
+    const isHeating = (hvacAction === 'heating');
+    // Non-wrapper: apply pure glow pulse (no movement) to tile itself
+    const tileStyle = `${(!customElements || !customElements.get('ha-control-button')) && isHeating
+      ? 'animation:glowPulse 2.4s ease-in-out infinite; --pulse-weak: rgba(255,112,67,0.12); --pulse-strong: rgba(255,112,67,0.26);'
+      : ''}`;
+    const pillBg = isHeating
+      ? 'var(--state-climate-heat-color, #ff7043)'
+      : 'var(--chip-background-color, rgba(0,0,0,0.06))';
+    const pillFg = isHeating
+      ? 'var(--primary-background-color, #fff)'
+      : 'var(--secondary-text-color)';
+    const hasHaChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
+    const hasControlBtn2 = typeof customElements !== 'undefined' && !!customElements.get('ha-control-button');
+    const wrapStyle = isHeating
+      ? `--pulse-weak: rgba(255,112,67,0.12); --pulse-strong: rgba(255,112,67,0.26);`
+      : '';
+    if (hasControlBtn2) {
+      return html`
+        <ha-control-button
+          class="thermo-control ${isHeating ? 'on' : ''}"
+          style=${wrapStyle}
+          @action=${(ev: CustomEvent) => this._onThermoAction(ev, entityId)}
+          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
+          role="button" tabindex="0"
+        >
+          <div class="square thermo-tile" style=${tileStyle}>
+            <div class="temp-chip-tr">
+              ${hasHaChip
+                ? html`<ha-chip style=${`--ha-chip-background-color:${pillBg};--chip-background-color:${pillBg};--ha-chip-text-color:${pillFg};color:${pillFg};font-weight:700;`}>${tStr}</ha-chip>`
+                : html`<div class="temp-pill" style=${`background:${pillBg};color:${pillFg};`}><span class="thermo-target">${tStr}</span></div>`}
+            </div>
+            <div class="center-xy">
+              <ha-icon class="thermo-icon" icon="mdi:thermostat" style=${`color:${color}`}></ha-icon>
+            </div>
+          </div>
+        </ha-control-button>
+      `;
+    }
     return html`
       <div class="square thermo-tile" style=${tileStyle}
            @action=${(ev: CustomEvent) => this._onThermoAction(ev, entityId)}
            .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
            role="button" tabindex="0">
         <div class="temp-chip-tr">
-          <div class="temp-pill"><span class="thermo-target">${tStr}</span></div>
+          ${hasHaChip
+            ? html`<ha-chip style=${`--ha-chip-background-color:${pillBg};--chip-background-color:${pillBg};--ha-chip-text-color:${pillFg};color:${pillFg};font-weight:700;`}>${tStr}</ha-chip>`
+            : html`<div class="temp-pill" style=${`background:${pillBg};color:${pillFg};`}><span class="thermo-target">${tStr}</span></div>`}
         </div>
         <div class="center-xy">
           <ha-icon class="thermo-icon" icon="mdi:thermostat" style=${`color:${color}`}></ha-icon>
@@ -587,20 +902,39 @@ export class BitosomeRoomCard extends LitElement {
       return;
     }
     // Switch-like behavior for main tile
-    if (action === 'hold') this._openMoreInfo(hold || tap);
-    else this._toggleGeneric(lightGroup || tap);
+    if (action === 'hold') {
+      // Haptic feedback: medium on long press
+      haptic('medium');
+      this._openMoreInfo(hold || tap);
+    } else {
+      this._toggleGeneric(lightGroup || tap);
+    }
   }
 
   private _onACAction(ev: CustomEvent, entity: string): void {
     const act = (ev.detail && ev.detail.action) || 'tap';
-    if (act === 'hold') this._openMoreInfo(entity);
-    else this._acToggle(entity);
+    if (act === 'hold') {
+      // Haptic feedback: medium on long press
+      haptic('medium');
+      this._openMoreInfo(entity);
+    } else {
+      // Haptic feedback: success on tap
+      haptic('success');
+      this._acToggle(entity);
+    }
   }
 
   private _onThermoAction(ev: CustomEvent, entity: string): void {
     const act = (ev.detail && ev.detail.action) || 'tap';
-    if (act === 'hold') this._openMoreInfo(entity);
-    else this._thermoToggle(entity);
+    if (act === 'hold') {
+      // Haptic feedback: medium on long press
+      haptic('medium');
+      this._openMoreInfo(entity);
+    } else {
+      // Haptic feedback: success on tap
+      haptic('success');
+      this._thermoToggle(entity);
+    }
   }
 
   private _renderSwitchRows(rows?: any[]): TemplateResult | typeof nothing {
@@ -615,7 +949,6 @@ export class BitosomeRoomCard extends LitElement {
 
   private _renderSwitchTile(sw: any): TemplateResult {
     const tap = sw?.entity || '';
-    const hold = sw?.hold_entity || sw?.entity || '';
     const icon = sw?.icon || '';
     const name = sw?.name || '';
     const type = String(sw?.type || 'switch').toLowerCase();
@@ -629,14 +962,51 @@ export class BitosomeRoomCard extends LitElement {
     const iconStyle = iconDim ? `width:${iconDim};height:${iconDim};--mdc-icon-size:${iconDim};` : '';
     const nameStyle = `${nameWeight ? `font-weight:${nameWeight};` : ''}${nameSize ? `font-size:${toPx(nameSize)};` : ''}`;
     const cls = `switch-tile ${isSmart ? 'smart' : ''} ${on ? 'on' : ''}`;
+    const hasChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
+    const hasControlBtn = typeof customElements !== 'undefined' && !!customElements.get('ha-control-button');
+    const onColor = isSmart ? 'var(--switch-on-green, #00c853)' : 'var(--switch-on-yellow, #ffc107)';
+    const chipBg = 'var(--chip-background-color, rgba(0,0,0,0.06))';
+    const chipFg = on ? onColor : 'var(--secondary-text-color)';
+    // Prefer native HA control button styling when available
+    if (hasControlBtn) {
+      const btnCls = `switch-tile-btn ${isSmart ? 'smart' : ''} ${on ? 'on' : ''}`;
+      return html`
+        <ha-control-button
+          class=${btnCls}
+          @action=${(ev: CustomEvent) => this._onSwitchAction(ev, sw)}
+          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
+          role="button" tabindex="0"
+        >
+          <div class="tile-inner">
+            ${hasChip
+              ? html`<ha-chip style=${`--ha-chip-background-color:${chipBg};--chip-background-color:${chipBg};--ha-chip-text-color:${chipFg};color:${chipFg};font-weight:600;`}>
+                  ${icon ? html`<ha-icon .icon=${icon} style=${`margin-right:6px;${iconStyle}color:${chipFg};`}></ha-icon>` : nothing}
+                  ${name || tap}
+                </ha-chip>`
+              : html`
+                  ${icon ? html`<ha-icon class="switch-icon" .icon=${icon} style=${`${iconStyle}${on ? `color:${onColor};` : ''}`}></ha-icon>` : nothing}
+                  ${name ? html`<div class="name" style=${`${nameStyle}${on ? `color:${onColor};` : ''}`}>${name}</div>` : nothing}
+                `}
+          </div>
+        </ha-control-button>
+      `;
+    }
+    // Fallback: tile container (previous styling)
     return html`
       <div class=${cls}
            @action=${(ev: CustomEvent) => this._onSwitchAction(ev, sw)}
            .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
            role="button" tabindex="0">
         <div class="tile-inner">
-          ${icon ? html`<ha-icon class="switch-icon" .icon=${icon} style=${iconStyle}></ha-icon>` : nothing}
-          ${name ? html`<div class="name" style=${nameStyle}>${name}</div>` : nothing}
+          ${hasChip
+            ? html`<ha-chip style=${`--ha-chip-background-color:${chipBg};--chip-background-color:${chipBg};--ha-chip-text-color:${chipFg};color:${chipFg};font-weight:600;`}>
+                ${icon ? html`<ha-icon .icon=${icon} style=${`margin-right:6px;${iconStyle}color:${chipFg};`}></ha-icon>` : nothing}
+                ${name || tap}
+              </ha-chip>`
+            : html`
+                ${icon ? html`<ha-icon class="switch-icon" .icon=${icon} style=${`${iconStyle}${on ? `color:${onColor};` : ''}`}></ha-icon>` : nothing}
+                ${name ? html`<div class="name" style=${`${nameStyle}${on ? `color:${onColor};` : ''}`}>${name}</div>` : nothing}
+              `}
         </div>
       </div>
     `;
@@ -652,8 +1022,13 @@ export class BitosomeRoomCard extends LitElement {
     }
     const tap = sw?.entity;
     const hold = sw?.hold_entity || tap;
-    if (act === 'hold') this._openMoreInfo(hold || tap);
-    else this._toggleGeneric(tap);
+    if (act === 'hold') {
+      // Haptic feedback: medium on long press
+      haptic('medium');
+      this._openMoreInfo(hold || tap);
+    } else {
+      this._toggleGeneric(tap);
+    }
   }
 
   private _fmt2(entityId: string | undefined, digits: number, suffix: string): string {
@@ -754,20 +1129,23 @@ export class BitosomeRoomCard extends LitElement {
     return `rgba(0,0,0,${a})`;
   }
 
-  private _hasAnyUnavailable(c: RoomCardConfig, h: RoomCardHeader): boolean {
+  private _hasAnyUnavailable(c: RoomCardConfig, h: RoomCardHeader | RoomCardHeader[]): boolean {
     if (!this.hass) return false;
     const ids: Array<string | undefined> = [];
-    const mainRaw: any = h.main || {};
-    const main: any = {
-      tap_entity: mainRaw.tap_entity,
-      hold_entity: mainRaw.hold_entity || mainRaw.tap_entity,
-      light_group_entity: mainRaw.light_group_entity,
-      temp_sensor: mainRaw.temp_sensor,
-      humidity_sensor: mainRaw.humidity_sensor,
-    };
-    const ac = h.ac || {} as any;
-    const thermostat = h.thermostat || {} as any;
-    ids.push(main?.tap_entity, main?.hold_entity, main?.light_group_entity, main?.temp_sensor, main?.humidity_sensor, ac?.entity, thermostat?.entity);
+    const headers: RoomCardHeader[] = Array.isArray(h) ? h : [h];
+    headers.forEach((hdr) => {
+      const mainRaw: any = hdr?.main || {};
+      const main: any = {
+        tap_entity: mainRaw.tap_entity,
+        hold_entity: mainRaw.hold_entity || mainRaw.tap_entity,
+        light_group_entity: mainRaw.light_group_entity,
+        temp_sensor: mainRaw.temp_sensor,
+        humidity_sensor: mainRaw.humidity_sensor,
+      };
+      const ac = hdr?.ac || ({} as any);
+      const thermostat = hdr?.thermostat || ({} as any);
+      ids.push(main?.tap_entity, main?.hold_entity, main?.light_group_entity, main?.temp_sensor, main?.humidity_sensor, ac?.entity, thermostat?.entity);
+    });
     const rows = (c.switch_rows || []) as any[];
     rows.forEach((row) => {
       const items = Array.isArray(row) ? row : (Array.isArray((row as any)?.row) ? (row as any).row : []);
