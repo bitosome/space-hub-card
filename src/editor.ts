@@ -113,23 +113,23 @@ export class BoilerplateCardEditor extends ScopedRegistryHost(LitElement) implem
     this._helpers = await (window as any).loadCardHelpers();
   }
 
-  private _valueChanged(ev): void {
+  private _valueChanged(ev: Event): void {
     if (!this._config || !this.hass) {
       return;
     }
-    const target = ev.target;
-    if (this[`_${target.configValue}`] === target.value) {
+    const target = ev.target as HTMLInputElement & { configValue?: string };
+    if (target.configValue && (this as any)[`_${target.configValue}`] === (target as any).value) {
       return;
     }
     if (target.configValue) {
-      if (target.value === '') {
+      if ((target as any).value === '') {
         const tmpConfig = { ...this._config };
-        delete tmpConfig[target.configValue];
+        delete (tmpConfig as any)[target.configValue];
         this._config = tmpConfig;
       } else {
         this._config = {
           ...this._config,
-          [target.configValue]: target.checked !== undefined ? target.checked : target.value,
+          [target.configValue]: (target as any).checked !== undefined ? (target as any).checked : (target as any).value,
         };
       }
     }

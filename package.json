@@ -10,7 +10,8 @@
     "lovelace",
     "custom-cards"
   ],
-  "module": "room-card.js",
+  "main": "dist/bitosome-room-card.js",
+  "module": "dist/bitosome-room-card.js",
   "repository": "git@github.com:custom_cards/boilerplate-card.git",
   "author": "Ian Richardson <iantrich@gmail.com>",
   "license": "MIT",
@@ -59,7 +60,7 @@
   "scripts": {
     "start": "rollup -c rollup.config.dev.js --watch",
     "build": "npm run lint && npm run rollup",
-    "lint": "eslint src/*.ts",
+    "lint": "eslint 'src/**/*.ts'",
     "rollup": "rollup -c"
   },
   "overrides": {
