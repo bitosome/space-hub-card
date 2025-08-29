@@ -20,7 +20,7 @@ export function renderMainTile(ctx: any, h: any): TemplateResult {
     : undefined;
   const illumTpl = illumBadge ? ctx._renderIlluminanceBadge(illumBadge) : nothing;
   // Apply glow based on switch-like state of the main tile
-  const glow = switchStyle('switch', hasBulb && isOn, h?.glow_mode);
+  const glow = switchStyle('switch', hasBulb && isOn, (h?.glow_mode ?? h?.glow_effect));
   let glowCls = '';
   let glowStyle = '';
   if (glow.type === 'pulse' && glow.active) {

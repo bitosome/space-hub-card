@@ -18,7 +18,7 @@ export function renderSwitchTile(ctx: any, sw: any): TemplateResult {
   const nameStyle = `${nameWeight ? `font-weight:${nameWeight};` : ''}${nameSize ? `font-size:${toPx(nameSize)};` : ''}`;
   const hasChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
   // Glow style from glow.ts
-  const glow = switchStyle(type, on, (sw?.glow_mode as any));
+  const glow = switchStyle(type, on, (sw?.glow_mode ?? sw?.glow_effect) as any);
   let glowCls = '';
   let glowStyle = '';
   if (glow.type === 'pulse' && glow.active) {
