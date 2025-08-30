@@ -32,8 +32,6 @@ export interface HeaderMain {
   double_tap_action?: import('custom-card-helpers').ActionConfig;
   // Per-tile glow strategy override
   glow_mode?: 'pulse' | 'glow' | 'none';
-  // Alias for glow_mode
-  glow_effect?: 'pulse' | 'glow' | 'none';
 }
 
 export interface HeaderAC {
@@ -43,7 +41,6 @@ export interface HeaderAC {
   double_tap_action?: import('custom-card-helpers').ActionConfig;
   // Per-tile glow strategy override
   glow_mode?: 'pulse' | 'glow' | 'none';
-  glow_effect?: 'pulse' | 'glow' | 'none';
 }
 export interface HeaderThermostat {
   entity?: string;
@@ -52,7 +49,6 @@ export interface HeaderThermostat {
   double_tap_action?: import('custom-card-helpers').ActionConfig;
   // Per-tile glow strategy override
   glow_mode?: 'pulse' | 'glow' | 'none';
-  glow_effect?: 'pulse' | 'glow' | 'none';
 }
 
 export interface RoomCardHeader {
@@ -78,7 +74,6 @@ export interface RoomCardConfig {
   card_shadow_color?: string;
   card_shadow_intensity?: number;
   glow_mode?: 'pulse' | 'glow' | 'none';
-  glow_effect?: 'pulse' | 'glow' | 'none';
   /**
    * Deprecated in favor of unavailable_glow_color, kept for compatibility
    */
@@ -459,7 +454,7 @@ export class BitosomeRoomCard extends LitElement {
       tap_action: mainRaw.tap_action,
       hold_action: mainRaw.hold_action,
       double_tap_action: mainRaw.double_tap_action,
-      glow_mode: mainRaw.glow_mode ?? mainRaw.glow_effect,
+      glow_mode: mainRaw.glow_mode,
     };
     const ac = h.ac || {} as any;
     const thermostat = h.thermostat || {} as any;
@@ -469,8 +464,8 @@ export class BitosomeRoomCard extends LitElement {
     return html`
       <div class=${cls}>
         ${this._renderMainTile(main as any)}
-        ${showAC ? this._renderACTile(ac.entity as string, (ac.glow_mode ?? ac.glow_effect) as any) : nothing}
-        ${showThermo ? this._renderThermostatTile(thermostat.entity as string, (thermostat.glow_mode ?? thermostat.glow_effect) as any) : nothing}
+        ${showAC ? this._renderACTile(ac.entity as string, ac.glow_mode as any) : nothing}
+        ${showThermo ? this._renderThermostatTile(thermostat.entity as string, thermostat.glow_mode as any) : nothing}
       </div>
     `;
   }

@@ -8,7 +8,6 @@ A custom Lovelace card for [Home Assistant](https://www.home-assistant.io/) that
 - Optional tiles for AC units and thermostats with animated state indicators.
 - Rows of switch tiles with per-tile tap, hold and double-tap actions.
 - Card shadow pulses when referenced entities become unavailable.
-- Configurable glow effect (pulse, glow, or none) for tile highlights.
 
 ## Installation
 ### HACS (recommended)
@@ -34,8 +33,6 @@ header:
     main_icon: mdi:sofa-outline
     temp_sensor: sensor.living_room_temperature
     humidity_sensor: sensor.living_room_humidity
-# Optional global glow style: pulse, glow, or none
-glow_effect: glow
 ```
 See the examples in this repository for more advanced options.
 

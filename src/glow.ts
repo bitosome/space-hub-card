@@ -64,10 +64,9 @@ export type GlowStrategy = 'pulse' | 'glow' | 'none';
 let STRATEGY: GlowStrategy = 'pulse';
 export function setGlowStrategy(mode: GlowStrategy) { STRATEGY = mode; }
 export function getGlowStrategy(): GlowStrategy { return STRATEGY; }
-export function applyGlowConfig(config: { glow_mode?: GlowStrategy; glow_effect?: GlowStrategy } | undefined) {
+export function applyGlowConfig(config: { glow_mode?: GlowStrategy } | undefined) {
   if (!config) return;
-  const mode = config.glow_mode ?? config.glow_effect;
-  if (mode === 'pulse' || mode === 'glow' || mode === 'none') STRATEGY = mode;
+  if (config.glow_mode === 'pulse' || config.glow_mode === 'glow' || config.glow_mode === 'none') STRATEGY = config.glow_mode;
 }
 
 export type GlowStyle =
