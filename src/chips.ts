@@ -2,6 +2,10 @@
 import { html, nothing, TemplateResult } from 'lit';
 import type { HomeAssistant } from 'custom-card-helpers';
 
+// ==============================================
+// CHIP SYSTEM INTERFACES
+// ==============================================
+
 // Lightweight host interface used by chips renderers
 interface CardHost extends HTMLElement {
   hass?: HomeAssistant;
@@ -22,71 +26,152 @@ interface ChipConfig {
   double_tap_action?: unknown;
 }
 
-// Chips rendering helpers extracted from space-hub-card
+// ==============================================
+// CHIP UTILITY FUNCTIONS
+// ==============================================
 
-export function renderIlluminanceChip(host: CardHost, c: ChipConfig): TemplateResult {
-  const entity: string | undefined = c?.entity || c?.tap_entity;
-  const icon = c?.icon || 'mdi:brightness-5';
-  const val = typeof host?._fmt2 === 'function' ? host._fmt2(entity, 0, ' lx') : '— lx';
+/**
+ * Determines if an entity is in an active state based on its type and current state
+ */
+function isEntityActive(entity: string | undefined, state: string, type?: string): boolean {
+  if (!state) return false;
+  
+  if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) {
+    return state === 'locked';
+  }
+  
+  if (entity?.startsWith('cover.') ?? false) {
+    return state !== 'closed' && state !== 'closing';
+  }
+  
+  return state === 'on' || state === 'open' || state === 'opening';
+}
+
+/**
+ * Gets appropriate icon for chip based on type, entity, and state
+ */
+function getChipIcon(type: string, entity: string | undefined, state: string, iconFromConfig?: string, entityState?: any): string {
+  if (iconFromConfig) return iconFromConfig;
+  
+  if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) {
+    const isLocked = state === 'locked';
+    return isLocked ? 'mdi:lock' : 'mdi:lock-open-variant';
+  }
+  
+  if (type === 'gate' || (entity?.startsWith('cover.') ?? false) || (entity?.startsWith('binary_sensor.') ?? false)) {
+    const domain = (entity || '').split('.')[0];
+    const deviceClass = (entityState?.attributes?.device_class || '').toLowerCase();
+    const isGateLike = type === 'gate' || domain === 'cover' || 
+      (domain === 'binary_sensor' && /(door|window|garage|opening|gate)/.test(deviceClass));
+    
+    if (isGateLike) {
+      const isOpen = isEntityActive(entity, state, type);
+      return isOpen ? 'mdi:gate-open' : 'mdi:gate';
+    }
+  }
+  
+  const isActive = isEntityActive(entity, state, type);
+  return isActive ? 'mdi:check-circle' : 'mdi:checkbox-blank-circle-outline';
+}
+
+/**
+ * Gets chip styling (background and icon color) based on state
+ */
+function getChipStyling(type: string, entity: string | undefined, state: string, entityState?: any): { bg: string; iconColor: string } {
+  const isActive = isEntityActive(entity, state, type);
+  
+  if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) {
+    return isActive 
+      ? { bg: '#66bb6a', iconColor: '#ffffff' }
+      : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
+  }
+  
+  if (type === 'gate' || (entity?.startsWith('cover.') ?? false) || (entity?.startsWith('binary_sensor.') ?? false)) {
+    const domain = (entity || '').split('.')[0];
+    const deviceClass = (entityState?.attributes?.device_class || '').toLowerCase();
+    const isGateLike = type === 'gate' || domain === 'cover' || 
+      (domain === 'binary_sensor' && /(door|window|garage|opening|gate)/.test(deviceClass));
+    
+    if (isGateLike) {
+      if (isActive) {
+        return { bg: '#e53935', iconColor: '#ffffff' }; // Open/problem state
+      } else {
+        return { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
+      }
+    }
+  }
+  
+  return isActive 
+    ? { bg: '#42a5f5', iconColor: '#ffffff' }
+    : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
+}
+
+// ==============================================
+// CHIP RENDERERS
+// ==============================================
+
+/**
+ * Renders temperature and humidity chip for main tiles
+ */
+export function renderTemperatureHumidityChip(host: CardHost, tempEntity?: string, humidityEntity?: string): TemplateResult | typeof nothing {
+  if (!tempEntity && !humidityEntity) return nothing;
+  
+  const temperatureValue = typeof host?._fmt2 === 'function' ? host._fmt2(tempEntity, 2, '°') : '—°';
+  const humidityValue = typeof host?._fmt2 === 'function' ? host._fmt2(humidityEntity, 2, '%') : '—%';
+  
   return html`
-  <div class="illum-chip">
-      <ha-icon .icon=${icon}></ha-icon>
-      <span class="illum-val">${val}</span>
+    <div class="chip chip-temperature-humidity" data-role="chip">
+      <ha-icon icon="mdi:thermometer"></ha-icon>
+      <span class="temperature-value">${temperatureValue}</span>
+      <ha-icon icon="mdi:water-percent"></ha-icon>
+      <span class="humidity-value">${humidityValue}</span>
     </div>
   `;
 }
 
-export function renderExtraChip(host: CardHost, c: ChipConfig): TemplateResult | typeof nothing {
+/**
+ * Renders illuminance chip showing light sensor data
+ */
+export function renderIlluminanceChip(host: CardHost, c: ChipConfig): TemplateResult {
   const entity: string | undefined = c?.entity || c?.tap_entity;
-  const type = String(c?.type || '').toLowerCase();
-  const iconFromCfg: string | undefined = c?.icon;
-  const st = entity && host?.hass ? host.hass.states[entity] : undefined;
-  const state = (st?.state || '').toLowerCase();
-
-  let bg = 'rgba(0,0,0,0.06)';
-  let icon = iconFromCfg || 'mdi:checkbox-blank-circle-outline';
-  let icoColor = 'var(--secondary-text-color)';
-
-  const isActive = (s: string): boolean => {
-    if (!s) return false;
-    if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) return s === 'locked';
-    if (entity?.startsWith('cover.') ?? false) return s !== 'closed' && s !== 'closing';
-    return s === 'on' || s === 'open' || s === 'opening';
-  };
-
-  const active = isActive(state);
-
-  if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) {
-    icon = iconFromCfg || (active ? 'mdi:lock' : 'mdi:lock-open-variant');
-    if (active) { bg = '#66bb6a'; icoColor = '#ffffff'; }
-  } else if (type === 'gate' || (entity?.startsWith('cover.') ?? false) || (entity?.startsWith('binary_sensor.') ?? false)) {
-    const domain = (entity || '').split('.')[0];
-    const dc = (st?.attributes?.device_class || '').toLowerCase();
-    const gateLike = type === 'gate' || domain === 'cover' || (domain === 'binary_sensor' && /(door|window|garage|opening|gate)/.test(dc));
-    if (gateLike) {
-      const s = state;
-      let isOpen = false;
-      if (domain === 'cover') {
-        isOpen = s === 'open' || s === 'opening' || (s !== 'closed' && s !== 'closing' && s !== 'unknown' && s !== 'unavailable');
-      } else if (domain === 'binary_sensor') {
-        isOpen = s === 'on' || s === 'open' || s === 'opening';
-      } else {
-        isOpen = s === 'open' || s === 'opening' || s === 'on';
-      }
-      icon = iconFromCfg || (isOpen ? 'mdi:gate-open' : 'mdi:gate');
-      if (isOpen) { bg = '#e53935'; icoColor = '#ffffff'; }
-      else { bg = '#66bb6a'; icoColor = '#ffffff'; }
-    }
-  } else {
-    icon = iconFromCfg || (active ? 'mdi:check-circle' : 'mdi:checkbox-blank-circle-outline');
-    if (active) { bg = '#42a5f5'; icoColor = '#ffffff'; }
-  }
-
+  const icon = c?.icon || 'mdi:brightness-5';
+  const val = typeof host?._fmt2 === 'function' ? host._fmt2(entity, 0, ' lx') : '— lx';
+  
   return html`
-  <div class="chip"
-         style=${`background:${bg}`}
-     >
-      <ha-icon .icon=${icon} style=${`color:${icoColor}`}></ha-icon>
+    <div class="illuminance-chip">
+      <ha-icon .icon=${icon}></ha-icon>
+      <span class="illuminance-value">${val}</span>
     </div>
   `;
+}
+
+/**
+ * Renders interactive chips for locks, gates, sensors, etc.
+ */
+export function renderInteractiveChip(host: CardHost, c: ChipConfig): TemplateResult | typeof nothing {
+  const entity: string | undefined = c?.entity || c?.tap_entity;
+  const type = String(c?.type || '').toLowerCase();
+  const iconFromConfig: string | undefined = c?.icon;
+  const entityState = entity && host?.hass ? host.hass.states[entity] : undefined;
+  const state = (entityState?.state || '').toLowerCase();
+
+  const icon = getChipIcon(type, entity, state, iconFromConfig, entityState);
+  const { bg, iconColor } = getChipStyling(type, entity, state, entityState);
+
+  return html`
+    <div class="chip" style=${`background:${bg}`}>
+      <ha-icon .icon=${icon} style=${`color:${iconColor}`}></ha-icon>
+    </div>
+  `;
+}
+
+// ==============================================
+// LEGACY COMPATIBILITY
+// ==============================================
+
+/**
+ * @deprecated Use renderInteractiveChip instead
+ */
+export function renderExtraChip(host: CardHost, c: ChipConfig): TemplateResult | typeof nothing {
+  return renderInteractiveChip(host, c);
 }

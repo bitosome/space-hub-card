@@ -23,7 +23,7 @@ export function renderACTile(host: any, entityId: string, glowMode?: GlowMode): 
       .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
       role="button" tabindex="0"
     >
-      <div class="chip chip-tr" style=${`background:${bg}`}> 
+      <div class="chip chip-temperature-humidity" style=${`background:${bg}`}> 
         <ha-icon .icon=${icon} style="color:#fff"></ha-icon>
       </div>
       <div class="center-xy">

@@ -7,9 +7,11 @@ import { CARD_VERSION } from './const';
 // glow utilities used by tiles
 import { renderMainTile } from './tiles/main';
 import { renderACTile } from './tiles/ac';
-import { renderThermoTile } from './tiles/thermostat';
+import { renderThermostatTile } from './tiles/thermostat';
 import { renderSwitchRows } from './tiles/switch';
 import { baseStyles } from './styles/base.styles';
+import { chipStyles } from './styles/chip.styles';
+import { animationStyles } from './styles/animation.styles';
 import { mainTileStyles } from './styles/main-tile.styles';
 import { acTileStyles } from './styles/ac-tile.styles';
 import { thermostatTileStyles } from './styles/thermostat-tile.styles';
@@ -130,6 +132,8 @@ export class SpaceHubCard extends LitElement {
 
   static styles: CSSResultGroup = [
     baseStyles,
+    chipStyles,
+    animationStyles,
     mainTileStyles,
     acTileStyles,
     thermostatTileStyles,
@@ -236,7 +240,7 @@ export class SpaceHubCard extends LitElement {
       <div class=${cls}>
         ${hasMain ? renderMainTile(this, main as any) : nothing}
         ${showAC ? renderACTile(this, ac.entity as string, ac.glow_mode) : nothing}
-        ${showThermo ? renderThermoTile(this, thermostat.entity as string, thermostat.glow_mode) : nothing}
+        ${showThermo ? renderThermostatTile(this, thermostat.entity as string, thermostat.glow_mode) : nothing}
       </div>
     `;
     return tpl;

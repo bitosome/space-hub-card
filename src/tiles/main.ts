@@ -7,8 +7,8 @@ import { buildGlow, STATIC_GLOW } from '../glow';
 export function renderMainTile(host: any, h: any): TemplateResult {
   const icon = h?.icon || 'mdi:sofa-outline';
   const name = h?.name || '';
-  const tval = typeof host?._fmt2 === 'function' ? host._fmt2(h?.temp_sensor, 2, '°') : '—°';
-  const hval = typeof host?._fmt2 === 'function' ? host._fmt2(h?.humidity_sensor, 2, '%') : '—%';
+  const temperatureValue = typeof host?._fmt2 === 'function' ? host._fmt2(h?.temp_sensor, 2, '°') : '—°';
+  const humidityValue = typeof host?._fmt2 === 'function' ? host._fmt2(h?.humidity_sensor, 2, '%') : '—%';
   const hasDbl = !!(h?.double_tap_action || host?._config?.double_tap_action);
   const hasBulb = !!h?.light_group_entity;
   const ctrl = h?.light_group_entity || h?.tap_entity || h?.entity;
@@ -42,15 +42,15 @@ export function renderMainTile(host: any, h: any): TemplateResult {
         role="button" tabindex="0"
       >
         <ha-icon class="main-icon" .icon=${icon}></ha-icon>
-        <div class="chip-tr" data-role="chip">
+        <div class="chip-temperature-humidity" data-role="chip">
           <ha-icon icon="mdi:thermometer" class="chip-ico"></ha-icon>
-          <span class="tval">${tval}</span>
+          <span class="temperature-value">${temperatureValue}</span>
           <span style="opacity:.6;">|</span>
           <ha-icon icon="mdi:water-percent" class="chip-ico"></ha-icon>
-          <span class="hval">${hval}</span>
+          <span class="humidity-value">${humidityValue}</span>
         </div>
         ${illumTpl}
-        <div class="main-chips-br" data-role="chips">
+        <div class="main-chips-bottom-right" data-role="chips">
       ${hasBulb
             ? html`<div class="chip" style=${`background:${bulbBg}`}>
                 <ha-icon .icon=${'mdi:lightbulb'} style=${`color:${isOn ? '#ffffff' : 'var(--secondary-text-color)'}`}></ha-icon>

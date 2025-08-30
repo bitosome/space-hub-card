@@ -10,6 +10,8 @@ import { renderACTile } from './tiles/ac';
 import { renderThermostatTile } from './tiles/thermostat';
 import { renderSwitchRows } from './tiles/switch';
 import { baseStyles } from './styles/base.styles';
+import { chipStyles } from './styles/chip.styles';
+import { animationStyles } from './styles/animation.styles';
 import { mainTileStyles } from './styles/main-tile.styles';
 import { acTileStyles } from './styles/ac-tile.styles';
 import { thermostatTileStyles } from './styles/thermostat-tile.styles';
@@ -266,6 +268,8 @@ export class SpaceHubCard extends LitElement {
 
   static styles: CSSResultGroup = [
     baseStyles,
+    chipStyles,
+    animationStyles,
     mainTileStyles,
     acTileStyles,
     thermostatTileStyles,
