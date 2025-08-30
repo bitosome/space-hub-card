@@ -1,11 +1,12 @@
 # bitosome-room-card
 
-Custom Room card for Home Assistant, built on the boilerplate using LitElement. It renders a main tile plus optional AC/Thermostat squares and switch rows, with rich visuals and HA-native actions.
+Custom Room card for Home Assistant, built on the boilerplate using LitElement. It renders one or more main tiles plus optional AC/Thermostat squares and switch rows, with rich visuals and HA-native actions.
 
 ## Features
 
 - LitElement card with HA action handling (tap, hold, double_tap)
-- Main tile with configurable icon size and live temp/humidity chip
+- **Multiple main tiles**: Support for multiple main tiles in a single card via multiple header rows
+- Main tiles with configurable icon size and live temp/humidity chip
 - AC and Thermostat tiles with animated state visuals
 - Switch rows with per-tile tap/hold entities, including smart plug style
 - Optional card header title (omit `title` to hide)
@@ -17,395 +18,239 @@ Custom Room card for Home Assistant, built on the boilerplate using LitElement. 
 
 ## Configuration Reference
 
-- type: use `custom:bitosome-room-card`.
-- title: optional header title shown on the `ha-card`.
-- tile_height: height in px of all tiles.
-- badge_size: size of AC badge and thermostat pill height.
-- badge_icon_size: icon size inside badges/pills.
-- main_icon_size: default main icon size (card-level).
-- chip_font_size: font size of chip text.
-- card_shadow_color: base panel shadow color.
-- card_shadow_intensity: base shadow intensity (0..1).
-- unavailable_pulse_color: color for unavailability pulse.
- - header:  # or `headers: [ ... ]` for multiple
+### Card-Level Options
+
+- **type**: use `custom:bitosome-room-card`
+- **title**: optional header title shown on the `ha-card`
+- **tile_height**: height in px of all tiles (default: 80)
+- **badge_size**: controls AC badge diameter and thermostat pill height in px (default: 22)
+- **badge_icon_size**: icon size inside badges/pills in px (default: 14)
+- **main_icon_size**: default main icon size in px (default: 48)
+- **chip_font_size**: font size of chip text in px (default: 12)
+- **card_shadow_color**: base panel shadow color (default: '#000000')
+- **card_shadow_intensity**: base shadow intensity 0..1 (default: 0.5)
+- **unavailable_pulse_color**: color for the card pulse when any monitored entity is unavailable/unknown/offline (default: '#ff3b30')
+- **glow_mode**: visual glow behavior for the entire card; values: `none`, `glow`, `pulse`
+
+### Header Configuration
+
+Use either `header:` (single) or `headers: [...]` (multiple rows) for backwards compatibility.
+
+**Important**: Each header row can contain a main tile, allowing you to have multiple main tiles in a single card.
+
+#### Main Tile Configuration
+- **main_name**: text shown on the main tile
+- **main_icon**: MDI/HA icon for the main tile
+- **light_group_entity**: optional entity used for toggling and on-state display (preferred over legacy tap_entity)
+- **glow_effect**: optional boolean. When set to `true` on a `main`, the main tile will show a subtle glow/pulse while the `light_group_entity` is `on`. Useful to highlight active lighting groups.
+- **temp_sensor**: optional temperature sensor entity for the temp/humidity chip
+- **humidity_sensor**: optional humidity sensor entity for the temp/humidity chip
+- **main_icon_size**: header-level main icon size override (also accepts `maicon_size` for typo tolerance)
+- **badges**: array of badge objects with the following fields:
+  - **type**: `lock`, `gate`, `illuminance`, or custom (generic)
+  - **entity**: entity id for the badge
+  - **icon**: optional MDI icon override
+  - **tap_action** / **hold_action** / **double_tap_action**: HA-native actions specific to the badge
+- **tap_action** / **hold_action** / **double_tap_action**: HA-native actions for the main tile
+
+#### AC Tile Configuration
+- **entity**: climate entity for the AC tile
+- **tap_action** / **hold_action** / **double_tap_action**: optional HA-native actions
+
+```markdown
+# bitosome-room-card
+
+Custom Room card for Home Assistant, built with Lit. This card renders one or more "main" tiles (each main may include optional AC/thermostat tiles and badges) plus optional switch rows. It focuses on clear visuals, predictable configuration, and Home Assistant-native actions.
+
+## Quick summary
+
+- Multiple `main` tiles supported via `headers: [...]` (backwards-compatible `header:` still accepted)
+- AC and Thermostat tiles are supported inside a `main` block
+- Per-tile glow control via `glow_mode` (values: `static` | `pulse` | `none`); legacy `glow_effect` is supported for compatibility
+- Badges/chips are informational by default; add `*_action` to badge or tile to make them interactive
+- Visuals follow HA theme border radiuses: `--ha-card-border-radius`, `--ha-chip-border-radius`, `--ha-badge-border-radius`
+
+---
+
+## Configuration reference
+
+This section documents the supported keys and recommended usage.
+
+Top-level (card) options
+
+- `type`: `custom:bitosome-room-card`
+- `title`: optional card title shown on the `ha-card`
+- `tile_height`: height in px of tiles (default: `80`)
+- `badge_size`: badge diameter / pill height in px (default: `22`)
+- `badge_icon_size`: icon size inside badges/pills in px (default: `14`)
+- `main_icon_size`: default main icon size in px (default: `48`)
+- `chip_font_size`: font size of chip text in px (default: `12`)
+- `card_shadow_color`: base panel shadow color (default: `#000000`)
+- `card_shadow_intensity`: base shadow intensity `0..1` (default: `0.5`)
+- `unavailable_pulse_color`: color for the card pulse when any monitored entity is unavailable/unknown/offline (default: `#ff3b30`)
+
+Tile glow configuration (per-card / per-tile)
+
+- `glow_mode` (preferred): controls glow behaviour for a tile. Allowed values:
+  - `static` — permanent soft glow (default when unspecified)
+  - `pulse` — animated pulse (recommended for active states like `heating`)
+  - `none` — disable glow
+- Legacy: `glow_effect` (boolean) is still supported for compatibility. `glow_effect: false` is equivalent to `glow_mode: 'none'`. If both appear, `glow_mode` wins.
+
+Headers
+
+Use either `header:` (single) or `headers: [...]` (multiple rows). Each header row may contain an object `main` which holds the main tile definition. The card will only render what you explicitly configure — there is no implicit main.
+
+Main tile (`main`) options
+
+- `main_name`: text shown on the main tile
+- `main_icon`: MDI/HA icon for the main tile
+- `light_group_entity`: optional entity used for toggling and on-state display (preferred over legacy `tap_entity`)
+- `glow_mode`: `static` | `pulse` | `none` (preferred per-main glow control)
+- `glow_effect`: legacy boolean (treated as `glow_mode: 'none'` when `false`)
+- `tap_action` / `hold_action` / `double_tap_action`: Home Assistant action configs for the tile
+- `temp_sensor` / `humidity_sensor`: sensors used for the temp/humidity chip (informational)
+- `main_icon_size`: header-level override for icon size (also supports typo `maicon_size`)
+- `badges`: array of badge objects
+
+Badge object fields
+
+- `type`: `illuminance`, `lock`, `gate`, or custom
+- `entity`: entity id for badge state (informational) or action targets
+- `icon`: optional MDI icon override for the badge
+- `tap_action` / `hold_action` / `double_tap_action`: HA-native actions applied to the badge
+
+AC and Thermostat tiles
+
+- Must be declared inside a `main` block as `ac:` and `thermostat:` respectively. If declared outside `main` they will be ignored (and a console warning will be emitted).
+- Each accepts `entity` and optional `tap_action` / `hold_action` / `double_tap_action`.
+
+Switch rows
+
+- `switch_rows:` an array of rows. Each row may be a bare array or an object `{ row: [...] }`.
+- Per-item options: `entity`, `name`, `icon`, `icon_size`, `font-weight`, `font-size`, `type` (`switch` | `smart_plug`), `glow_mode` (or legacy `glow_effect`), and HA `*_action` entries.
+
+Actions and default behavior
+
+- The card supports Home Assistant action configs (tap, hold, double_tap) for tiles and badges.
+- If tile-level actions aren't provided, the main tile uses `light_group_entity` / `tap_entity` for toggle behavior on tap and `hold` opens `more-info` for the `hold_entity` or `tap_entity`.
+
+---
+
+## Examples
+
+Minimal (single main)
+
+```yaml
+type: custom:bitosome-room-card
+title: Entrance
+headers:
   - main:
-    - tap_action/hold_action: preferred HA-native actions for tap/hold. If set, these override defaults.
-    - light_group_entity: optional; drives the main bulb indicator state and default toggling when no actions are set. The bulb badge renders only when this is provided.
-    - tap_entity/hold_entity: optional legacy defaults; may be omitted when using HA actions.
-    - main_name: text on the main tile.
-    - main_icon: MDI/HA icon for the main tile.
-    - temp_sensor: temperature entity for the chip.
-    - humidity_sensor: humidity entity for the chip.
-    - badges: list of badges for the main tile.
-      - Bottom-right badges (round): types `lock`, `gate`, or generic.
-      - Illuminance badge (right-center): add `{ type: illuminance, entity: <sensor>, icon?: <mdi> }` to render a chip-style badge aligned to the right edge and vertically centered with the sensor value (e.g., `109 lx`). Supports `tap_action`/`hold_action`/`double_tap_action` like other badges.
-    - tap_action / hold_action / double_tap_action: HA-native tile actions.
-  - ac:
-    - entity: climate entity id.
-  - thermostat:
-    - entity: climate entity id.
-  - main_icon_size (maicon_size tolerated): header-level main icon size override.
-- switch_rows: list of rows; each row is an array or `{ row: [...] }`.
-  - Per-tile options:
-    - entity, icon, name, icon_size, font-weight, font-size, type (`switch` or `smart_plug`).
-    - tap_action / hold_action / double_tap_action: preferred HA-native tile actions.
-- tap_action / hold_action / double_tap_action: optional card-level actions for the main tile when tile-level actions are not set.
-
-## Actions
-
-- Main tile (defaults when no HA actions configured):
-  - Tap: toggles `light_group_entity` if set; otherwise toggles `tap_entity` (legacy).
-  - Hold: opens more-info for `hold_entity` (legacy; falls back to `tap_entity`).
-  - Preferred: define `tap_action`/`hold_action` to unify behavior with switches.
-  - Double tap: supported only when `double_tap_action` is configured (tile- or card-level).
-- Main tile HA actions: `header.main.*_action` override defaults and any card-level actions.
-- Card-level actions: apply to the main tile only when tile-level actions are not set.
-- AC tile: tap toggles climate on/off; hold opens more-info; double-tap not used.
-- Thermostat tile: tap toggles heat/off; hold opens more-info; double-tap not used.
-- Switch tiles: defaults are toggle on tap, more-info on hold; tile-level HA actions override; double-tap supported when provided.
-
-## Configuration
-
-Minimal example:
-
-type: custom:bitosome-room-card
-title: Living room
-header:
-  main:
-    # Preferred: use actions for interaction
-    tap_action:
-      action: navigate
-      navigation_path: /lovelace/home-details
-    hold_action:
-      action: call-service
-      service: homeassistant.turn_off
-      service_data:
-        entity_id: switch.living_room_light_group
-    light_group_entity: light.living_room   # optional; toggled on tap if set
-    main_name: Living room
-    main_icon: mdi:sofa-outline
-    temp_sensor: sensor.kitchen_living_room_temparature_average
-    humidity_sensor: sensor.kitchen_living_room_humidity_average
-    badges:
-      - type: illuminance
-        entity: sensor.aqara_light_sensor_1_illuminance
-        icon: mdi:brightness-5
-  ac:
-    entity: climate.living_room_ac
-  thermostat:
-    entity: climate.thermostat_5_7_group
-
-With all options (single header shown; use `headers: [ ... ]` to add multiple):
-
-type: custom:bitosome-room-card
-# title is optional; remove to hide the ha-card header
-title: Living room
-
-# Metrics
-tile_height: 80              # height of every tile (px)
-badge_size: 22               # controls AC badge diameter and thermostat badge height (px)
-badge_icon_size: 14          # icon size inside badges (px)
-main_icon_size: 56           # main icon size (px) [card-level]
-chip_font_size: 12           # temp/humidity chip font size (px)
-card_shadow_color: '#000000' # base shadow color
-card_shadow_intensity: 0.5   # base shadow intensity (0..1)
-unavailable_pulse_color: '#ff3b30' # card pulse color when any entity is unavailable/unknown/offline
-
-header:
-  # Per-header icon size override (optional)
-  main_icon_size: 56         # or use maicon_size for backward tolerance
-  main:
-    # Preferred: use actions for interaction
-    tap_action:
-      action: toggle
-      entity: switch.living_room_light_group
-    hold_action:
-      action: more-info
-      entity: switch.living_room_light_group
-    # Entity that controls the bulb indicator state
-    light_group_entity: light.living_room
-    main_name: Living room   # text on main tile (bottom-left)
-    main_icon: mdi:sofa-outline
-    temp_sensor: sensor.kitchen_living_room_temparature_average
-    humidity_sensor: sensor.kitchen_living_room_humidity_average
-  ac:
-    entity: climate.living_room_ac
-  thermostat:
-    entity: climate.thermostat_5_7_group
-    # thermo_badge_text: ECO  # (not rendered currently; reserved)
-  # Optional badges on main tile (bottom-right)
-  badges:
-    - type: lock
-      entity: lock.front_door
-      # Preferred actions for badge
+      main_name: Entrance
+      main_icon: mdi:door
+      light_group_entity: switch.entrance_light_switch_group
       tap_action:
-        action: toggle
-        entity: lock.front_door
-    hold_action:
-      action: more-info
-      entity: lock.front_door
-    - type: illuminance
-      entity: sensor.aqara_light_sensor_1_illuminance
-      icon: mdi:brightness-5
+        action: navigate
+        navigation_path: /lovelace/entrance
+      hold_action:
+        action: call-service
+        service: homeassistant.turn_off
+        service_data:
+          entity_id: switch.entrance_light_switch_group
+      temp_sensor: sensor.aqara_thp_10_temperature
+      humidity_sensor: sensor.aqara_thp_10_humidity
+      badges:
+        - type: lock
+          entity: lock.front_door
+```
 
-# Switch rows
-switch_rows:
-  - row:
-      - entity: switch.office_light_switch_1_button_a_state
-        name: Ceiling light
-        icon: mdi:ceiling-light-outline
-        icon_size: 30px          # optional per-tile icon size
-        font-weight: 600         # optional per-tile name weight
-        font-size: 12px          # optional per-tile name size
-        type: switch
-        tap_action:
-          action: toggle
-        hold_action:
-          action: more-info
-      - entity: switch.office_light_switch_2_button_a_state
-        name: Storage
-        icon: mdi:wall-sconce-flat-outline
-        icon_size: 26px
-        font-weight: 500
-        font-size: 11px
-        type: switch
-        tap_action:
-          action: toggle
-        hold_action:
-          action: more-info
-  - row:
-      - entity: switch.other
-        name: Other
-        tap_action:
-          action: toggle
-        hold_action:
-          action: more-info
+Multi-header (main + AC + thermostat)
 
-  # (Embedded Lovelace cards removed)
-
-# Optional card-level HA actions (applies when tile-level actions are not set)
-# tap_action/hold_action/double_tap_action supported
-
-## Behavior Notes
-
-- Temp/humidity chip on the main tile is informational only (not clickable).
-- Default main tile actions apply when you do not set tile- or card-level HA actions.
-- `badge_size` controls both the AC top-right badge size and the thermostat badge height.
-- Main tile badges: tap toggles the configured `tap_entity` (`lock` uses lock/unlock; `cover`/`gate` uses open/close). Hold opens more-info for `hold_entity` (defaults to `entity`). You can also provide HA-native `tap_action`/`hold_action`/`double_tap_action` per badge to override defaults.
-- Main tile badges:
-  - Default tap: toggles the configured `tap_entity` for most types.
-  - Lock badge: tap opens more-info by default (safety). To unlock/lock on tap, set an explicit `tap_action`.
-  - Cover/Gate badge: tap toggles open/close; colors: closed = green, open = red.
-  - Hold: opens more-info for `hold_entity` (defaults to `entity`).
-  - You can provide HA-native `tap_action`/`hold_action`/`double_tap_action` per badge to override defaults.
-- Title is optional; omit `title` to render the card without a header.
-- Hover: each tile (main, AC, thermostat, switches) raises slightly with a stronger shadow.
-
-Full example configuration
-
+```yaml
 type: custom:bitosome-room-card
-title: Living room
-tile_height: 80
-badge_size: 22
-badge_icon_size: 14
-main_icon_size: 48
-chip_font_size: 12
-card_shadow_color: "#000000"
-card_shadow_intensity: 0.1
-unavailable_pulse_color: "#ff3b30"
+title: Living floor
+headers:
+  - main:
+      main_name: Living room
+      main_icon: mdi:sofa-outline
+      light_group_entity: switch.living_room_light_group
+      glow_mode: pulse
+      temp_sensor: sensor.kitchen_living_room_temperature_average
+      humidity_sensor: sensor.kitchen_living_room_humidity_average
+      badges:
+        - type: illuminance
+          entity: sensor.aqara_light_sensor_1_illuminance
+    ac:
+      entity: climate.living_room_ac
+    thermostat:
+      entity: climate.thermostat_5_7_group
 
-header:
-  main:
-    # Preferred: define HA actions instead of tap_entity/hold_entity
-    tap_action:
-      action: toggle
-      entity: switch.living_room_light_group
-    hold_action:
-      action: more-info
-      entity: switch.living_room_light_switch_group
-    # Optional: main badge state source when you want the bulb to reflect it
-    # light_group_entity: light.living_room
-    main_name: Living room
-    main_icon: mdi:sofa-outline
-    temp_sensor: sensor.kitchen_living_room_temparature_average
-    humidity_sensor: sensor.kitchen_living_room_humidity_average
-    badges: []
-    # Tile-level HA-native actions (override card-level)
-    tap_action:
-      action: call-service
-      service: homeassistant.turn_off
-      service_data:
-        entity_id: switch.living_room_light_group
-    hold_action:
-      action: more-info
+  - main:
+      main_name: Kitchen
+      main_icon: mdi:chef-hat
+      light_group_entity: light.kitchen
+```
 
-  ac:
-    entity: climate.living_room_ac
+Switch rows sample
 
-  thermostat:
-    entity: climate.thermostat_5_7_group
-
+```yaml
 switch_rows:
   - row:
       - entity: switch.kitchen_tabletop_light_switch_button_a_state
         name: Tabletop
         icon: mdi:countertop-outline
-        icon_size: 30px
-        font-weight: 600
-        font-size: 12px
+        icon_size: "28px"
+        font-weight: "600"
+        font-size: "12px"
         type: switch
+        glow_mode: static
         tap_action:
           action: toggle
-        hold_action:
-          action: more-info
+```
 
-      - entity: switch.kitchen_light_switch_button_a_state
-        name: Sink
-        icon: mdi:faucet-variant
-        icon_size: 30px
-        font-weight: 600
-        font-size: 12px
-        type: switch
-        tap_action:
-          action: toggle
-        hold_action:
-          action: more-info
+---
 
-      - entity: switch.kitchen_light_switch_button_b_state
-        name: Table
-        icon: mdi:table-furniture
-        icon_size: 30px
-        font-weight: 600
-        font-size: 12px
-        type: switch
-        tap_action:
-          action: toggle
-        hold_action:
-          action: more-info
+## Notes and behavior details
 
-  - row:
-      - entity: switch.sofa_light_switch_group
-        name: Sofa
-        icon: mdi:sofa-outline
-        icon_size: 30px
-        font-weight: 600
-        font-size: 12px
-        type: switch
-        tap_action:
-          action: toggle
-        hold_action:
-          action: more-info
+- Glow behavior: tiles use `glow_mode` with values `static` (soft steady glow), `pulse` (animated pulse), or `none` (disabled). `glow_mode` is respected per-tile; for header-level control you can set `glow_mode` on the `main` object and it will be applied to AC/thermostat tiles in that header as well.
+- Backwards compatibility: `glow_effect: false` maps to `glow_mode: 'none'`. If both `glow_mode` and `glow_effect` are present, `glow_mode` takes precedence.
+- Badges and chips are informational by default. To make a badge interactive, add `tap_action` / `hold_action` to the badge object. The main tile can also be given actions which apply to the tile area.
+- There is no implicit `main` tile. The card renders only what you explicitly configure.
 
-      - entity: switch.ikea_tradfri_control_outlet_2
-        name: Ambient light
-        icon: mdi:globe-light-outline
-        icon_size: 30px
-        font-weight: 600
-        font-size: 12px
-        type: switch
-        tap_action:
-          action: toggle
-        hold_action:
-          action: more-info
-
-  - row:
-      - entity: switch.terrace_light_switch_button_a_state
-        name: Terrace
-        icon: mdi:awning-outline
-        icon_size: 30px
-        font-weight: 600
-        font-size: 12px
-        type: switch
-        tap_action:
-          action: toggle
-        hold_action:
-          action: more-info
-
-  # (Embedded Lovelace cards removed)
-
-Notes
-- Main and switch tiles: tile-level `tap_action`/`hold_action`/`double_tap_action` override card-level actions for that tile.
-- AC tile: tap toggles climate on/off; hold opens more-info. Visuals reflect mode (badge, fan color/animation, pulsing).
-- Thermostat tile: tap toggles hvac_mode between heat/off; hold opens more-info. Visuals reflect heating state and show target temperature.
-- Switch tiles use `entity`. If not set, tapping does nothing.
-- Rows with `cards:` are no longer supported.
-- Main tile temp/humidity chip is informational only (not clickable). The entire main tile responds to tap/hold consistently like other tiles. Default tap turns off the defined entity.
-
-Switch tile config
-- entity: primary entity for state and default toggling (when no actions are set)
-- icon: MDI or HA icon
-- icon_size: optional CSS size (e.g., 30px, 1.4rem). Defaults to 28px.
-- name: label text
-- font-weight: optional CSS font-weight for the name (e.g., 600)
-- font-size: optional CSS font-size for the name (e.g., 12px)
-- type: "switch" (default) or "smart_plug" for special visuals
-- tap_action/hold_action/double_tap_action: preferred HA-native actions to unify behavior
-
-Notes
-- If `entity` is not provided, default toggle and on-state are unavailable; provide `tap_action`/`hold_action` for behavior.
+---
 
 ## Development
 
-- Build: `npm run build`
-- Dev server: `npm start` (serves `dist` with CORS)
+- Install dependencies:
 
-## Examples
+```bash
+yarn install
+# or
+npm install
+```
 
-Main tile with navigate on tap and turn off on hold
+- Build:
 
-type: custom:bitosome-room-card
-title: Living room
-header:
-  main:
-    tap_entity: switch.living_room_light_group
-    hold_entity: switch.living_room_light_group
-    main_name: Living room
-    main_icon: mdi:sofa-outline
-    tap_action:
-      action: navigate
-      navigation_path: /lovelace/home-details
-    hold_action:
-      action: call-service
-      service: homeassistant.turn_off
-      service_data:
-        entity_id: switch.living_room_light_group
+```bash
+npm run build
+```
 
-Main tile default behavior using light_group_entity (legacy defaults)
+- Dev (watch):
 
-type: custom:bitosome-room-card
-header:
-  main:
-    # Legacy defaults: if no actions provided
-    tap_entity: switch.living_room_group
-    light_group_entity: light.living_room
-    main_name: Living room
-    main_icon: mdi:sofa-outline
+```bash
+npm start
+```
 
-Double-tap action on main tile (actions preferred)
+---
 
-type: custom:bitosome-room-card
-header:
-  main:
-    # Use actions over tap_entity/hold_entity
-    tap_action:
-      action: toggle
-      entity: switch.living_room
-    double_tap_action:
-      action: call-service
-      service: homeassistant.toggle
-      service_data:
-        entity_id: light.ambient
+## Changelog (high level)
 
-Smart plug switch row with tile-level actions
+- 1.0.0 — Initial public release
+- 1.0.1 — Fixes and style tweaks
+- 1.0.2 — Added multi-header support and improved badge handling
+- 1.0.3+ — Glow unification and `glow_mode` support; AC/Thermostat glow colors; per-main glow driven by `light_group_entity`
 
-type: custom:bitosome-room-card
-switch_rows:
-  - row:
-      - entity: switch.plug_tv
-        name: TV Plug
-        icon: mdi:power-socket-eu
-        type: smart_plug
-        tap_action:
-          action: toggle
-        hold_action:
-          action: more-info
+---
+
+If you'd like me to add a small visual test harness (HTML page) or update example screenshots, say so and I'll add it.
+```

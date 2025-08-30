@@ -1,39 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
-import { actionHandler, handleAction, fireEvent } from 'custom-card-helpers';
+import type { HomeAssistant } from 'custom-card-helpers';
 
-function haptic(type: any): void {
-  try { fireEvent(window as any, 'haptic', type); } catch (_e) { /* no-op */ }
+// Lightweight host interface used by chips renderers
+interface CardHost extends HTMLElement {
+  hass?: HomeAssistant;
+  _fmt2?: (entity?: string | undefined, digits?: number, suffix?: string) => string;
+  _openMoreInfo?: (entity?: string | null) => void;
+  _toggleByDomain?: (entity?: string | null) => void;
+}
+
+// Minimal badge config interface (only fields used by chips)
+interface BadgeConfig {
+  entity?: string;
+  tap_entity?: string;
+  hold_entity?: string;
+  icon?: string;
+  type?: string;
+  tap_action?: unknown;
+  hold_action?: unknown;
+  double_tap_action?: unknown;
 }
 
 // Chips and badges rendering helpers extracted from room-card
 
-export function renderIlluminanceBadge(host: any, b: any): TemplateResult {
+export function renderIlluminanceBadge(host: CardHost, b: BadgeConfig): TemplateResult {
   const entity: string | undefined = b?.entity || b?.tap_entity;
   const icon = b?.icon || 'mdi:brightness-5';
   const val = typeof host?._fmt2 === 'function' ? host._fmt2(entity, 0, ' lx') : '— lx';
-  const hasHAAction = !!(b?.tap_action || b?.hold_action || b?.double_tap_action);
-  const onAction = (ev: CustomEvent) => {
-    const act = (ev.detail && (ev.detail as any).action) || 'tap';
-    if (hasHAAction) {
-      handleAction(host, host?.hass, b as any, act);
-      return;
-    }
-    if (act === 'hold') { haptic('medium'); if (typeof host?._openMoreInfo === 'function') host._openMoreInfo(entity); }
-    else { if (typeof host?._openMoreInfo === 'function') host._openMoreInfo(entity); }
-  };
   return html`
-    <div class="illum-badge"
-         @action=${onAction}
-         .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!b?.double_tap_action })}
-         role="button" tabindex="0">
+  <div class="illum-badge">
       <ha-icon .icon=${icon}></ha-icon>
       <span class="illum-val">${val}</span>
     </div>
   `;
 }
 
-export function renderExtraBadge(host: any, b: any): TemplateResult | typeof nothing {
+export function renderExtraBadge(host: CardHost, b: BadgeConfig): TemplateResult | typeof nothing {
   const entity: string | undefined = b?.entity || b?.tap_entity;
   const type = String(b?.type || '').toLowerCase();
   const iconFromCfg: string | undefined = b?.icon;
@@ -79,31 +82,10 @@ export function renderExtraBadge(host: any, b: any): TemplateResult | typeof not
     if (active) { bg = '#42a5f5'; icoColor = '#ffffff'; }
   }
 
-  const hasDbl = !!b?.double_tap_action;
-
-  const onAction = (ev: CustomEvent) => {
-    const act = (ev.detail && (ev.detail as any).action) || 'tap';
-    if (host?.hass && b && (b.tap_action || b.hold_action || b.double_tap_action)) {
-      handleAction(host, host.hass, b as any, act);
-      return;
-    }
-    const tap = b?.tap_entity || b?.entity;
-    const hold = b?.hold_entity || b?.entity;
-    if (act === 'hold') { haptic('medium'); if (typeof host?._openMoreInfo === 'function') host._openMoreInfo(hold || tap); return; }
-    const domain = (tap || '').split('.')[0];
-    if (domain === 'lock') {
-      if (typeof host?._openMoreInfo === 'function') host._openMoreInfo(hold || tap);
-      return;
-    }
-    if (typeof host?._toggleByDomain === 'function') host._toggleByDomain(tap);
-  };
-
   return html`
-    <div class="badge clickable"
+  <div class="badge"
          style=${`background:${bg}`}
-         @action=${onAction}
-         .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: hasDbl })}
-         role="button" tabindex="0">
+     >
       <ha-icon .icon=${icon} style=${`color:${icoColor}`}></ha-icon>
     </div>
   `;

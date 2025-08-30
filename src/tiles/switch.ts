@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
+import { buildGlow, STATIC_GLOW, SMART_PLUG_GLOW } from '../glow';
 
 export function renderSwitchRows(host: any, rows?: any[]): TemplateResult | typeof nothing {
   if (!rows || !rows.length) return nothing;
@@ -37,35 +38,45 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
     if (typeof host?._onSwitchAction === 'function') host._onSwitchAction(ev, sw);
   };
 
+  // Glow mode per-switch (static|pulse|none). Default to 'static'.
+  const glowMode = (sw?.glow_mode as any) || (sw?.glow_effect === false ? 'none' : 'static');
+  const pulse = isSmart ? SMART_PLUG_GLOW : STATIC_GLOW;
+  const { style: glowStyle, overlay: glowOverlay } = buildGlow(pulse, glowMode as any, on && glowMode !== 'none');
+
   if (hasControlBtn) {
     const btnCls = `switch-tile-btn ${isSmart ? 'smart' : ''} ${on ? 'on' : ''}`;
     return html`
-      <ha-control-button
-        class=${btnCls}
-        @action=${onAction}
-        .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
-        role="button" tabindex="0"
-      >
-        <div class="tile-inner">
-          ${hasChip
-            ? html`<ha-chip style=${`--ha-chip-background-color:${chipBg};--chip-background-color:${chipBg};--ha-chip-text-color:${chipFg};color:${chipFg};font-weight:600;`}>
-                ${icon ? html`<ha-icon .icon=${icon} style=${`margin-right:6px;${iconStyle}color:${chipFg};`}></ha-icon>` : nothing}
-                ${name || tap}
-              </ha-chip>`
-            : html`
-                ${icon ? html`<ha-icon class="switch-icon" .icon=${icon} style=${`${iconStyle}${on ? `color:${onColor};` : ''}`}></ha-icon>` : nothing}
-                ${name ? html`<div class="name" style=${`${nameStyle}${on ? `color:${onColor};` : ''}`}>${name}</div>` : nothing}
-              `}
-        </div>
-      </ha-control-button>
+      <div class="tile-wrap">
+        <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
+        <ha-control-button
+          class=${btnCls}
+          @action=${onAction}
+          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
+          role="button" tabindex="0"
+        >
+          <div class="tile-inner">
+            ${hasChip
+              ? html`<ha-chip style=${`--ha-chip-background-color:${chipBg};--chip-background-color:${chipBg};--ha-chip-text-color:${chipFg};color:${chipFg};font-weight:600;`}>
+                  ${icon ? html`<ha-icon .icon=${icon} style=${`margin-right:6px;${iconStyle}color:${chipFg};`}></ha-icon>` : nothing}
+                  ${name || tap}
+                </ha-chip>`
+              : html`
+                  ${icon ? html`<ha-icon class="switch-icon" .icon=${icon} style=${`${iconStyle}${on ? `color:${onColor};` : ''}`}></ha-icon>` : nothing}
+                  ${name ? html`<div class="name" style=${`${nameStyle}${on ? `color:${onColor};` : ''}`}>${name}</div>` : nothing}
+                `}
+          </div>
+        </ha-control-button>
+      </div>
     `;
   }
 
   return html`
-    <div class=${cls}
+    <div class="tile-wrap ${cls}"
+         style=${glowStyle}
          @action=${onAction}
          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
          role="button" tabindex="0">
+      <div class="glow-under">${glowOverlay}</div>
       <div class="tile-inner">
         ${hasChip
           ? html`<ha-chip style=${`--ha-chip-background-color:${chipBg};--chip-background-color:${chipBg};--ha-chip-text-color:${chipFg};color:${chipFg};font-weight:600;`}>

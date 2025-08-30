@@ -29,13 +29,16 @@ export const baseStyles: CSSResultGroup = css`
   }
   .badge ha-icon { --mdc-icon-size: var(--badge-icon); width: var(--badge-icon); height: var(--badge-icon); display:block; margin:0; padding:0; line-height:0; pointer-events:none; color: var(--secondary-text-color); }
 
+  /* Ensure native HA elements pick up theme border radiuses */
+  ha-chip, ha-badge { border-radius: var(--ha-chip-border-radius, 999px); }
+
   .chip-tr { position: absolute; right: 8px; top: 8px; z-index: 3; display: inline-flex; align-items: center; gap: 2px; padding: 2px 6px; border-radius: var(--ha-chip-border-radius, 999px); background: rgba(0,0,0,0.06); font-size: var(--chip-font-size, 12px); color: var(--secondary-text-color); line-height: 1; white-space: nowrap; }
   .chip-tr ha-icon { width: 10px; height: 10px; line-height:0; --mdc-icon-size:10px; }
   .chip-tr .tval, .chip-tr .hval { font-weight: 700; }
 
   /* Shared tile container for AC/Thermostat */
-  .square { position: relative; width: var(--tile-h); height: var(--tile-h); aspect-ratio: 1/1; border-radius: var(--ha-card-border-radius, 12px); background: var(--ha-card-background, var(--card-background-color)); backdrop-filter: blur(10px); transition: transform 0.18s ease, box-shadow 0.28s ease, filter 0.12s ease; box-shadow: 0 6px 18px rgba(0,0,0,0.10); overflow: hidden; display: grid; place-items: center; }
-  .square::part(button) { width: 100%; height: 100%; padding: 0; margin: 0; box-sizing: border-box; border-radius: inherit; }
+  .square { position: relative; width: var(--tile-h); height: var(--tile-h); aspect-ratio: 1/1; border-radius: var(--ha-card-border-radius, 12px); background: var(--ha-card-background, var(--card-background-color)); backdrop-filter: blur(10px); transition: transform 0.18s ease, box-shadow 0.28s ease, filter 0.12s ease; box-shadow: 0 6px 18px rgba(0,0,0,0.10); overflow: visible; display: grid; place-items: center; }
+  .square::part(button) { width: 100%; height: 100%; padding: 0; margin: 0; box-sizing: border-box; border-radius: var(--ha-card-border-radius, 12px); }
   .square:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(0,0,0,0.16); border-radius: var(--ha-card-border-radius, 12px); }
 
   .center-xy { position: static; transform: none; display:flex; align-items:center; justify-content:center; pointer-events:none; user-select:none; line-height:0; }

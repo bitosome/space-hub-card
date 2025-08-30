@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
-import { THERMO_HEAT_PULSE } from '../glow';
+import { THERMO_HEAT_PULSE, buildGlow } from '../glow';
 
 export function renderThermoTile(host: any, entityId: string): TemplateResult {
   const st = host?.hass?.states?.[entityId];
@@ -19,9 +19,8 @@ export function renderThermoTile(host: any, entityId: string): TemplateResult {
     ? 'var(--primary-background-color, #fff)'
     : 'var(--secondary-text-color)';
   const hasHaChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
-  const wrapStyle = isHeating
-    ? `--pulse-weak: ${THERMO_HEAT_PULSE.weak}; --pulse-strong: ${THERMO_HEAT_PULSE.strong};`
-    : '';
+  const glowMode = (host?._currentHeaderGlowMode) || 'static';
+  const { style: wrapStyle, overlay: glowOverlay } = buildGlow(THERMO_HEAT_PULSE, glowMode as any, isHeating);
   const onAction = (ev: CustomEvent) => {
     if (typeof host?._onThermoAction === 'function') host._onThermoAction(ev, entityId);
   };
@@ -33,6 +32,7 @@ export function renderThermoTile(host: any, entityId: string): TemplateResult {
       .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
       role="button" tabindex="0"
     >
+    
       <div class="temp-chip-tr">
         ${hasHaChip
           ? html`<ha-chip style=${`--ha-chip-background-color:${pillBg};--chip-background-color:${pillBg};--ha-chip-text-color:${pillFg};color:${pillFg};font-weight:700;`}>${tStr}</ha-chip>`
@@ -41,6 +41,7 @@ export function renderThermoTile(host: any, entityId: string): TemplateResult {
       <div class="center-xy">
         <ha-icon class="thermo-icon" icon="mdi:thermostat" style=${`color:${color}`}></ha-icon>
       </div>
+    <div class="tile-end">${glowOverlay}</div>
     </ha-control-button>
   `;
 }

@@ -3,7 +3,6 @@ import { LitElement, html, CSSResultGroup, TemplateResult, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import type { HomeAssistant } from 'custom-card-helpers';
 import { handleAction, fireEvent } from 'custom-card-helpers';
-import { actionHandler } from './action-handler-directive';
 import { CARD_VERSION } from './const';
 // glow utilities used by tiles
 import { renderMainTile } from './tiles/main';
@@ -25,6 +24,9 @@ export interface HeaderMain {
   tap_entity?: string;
   hold_entity?: string;
   light_group_entity?: string;
+  // When true, the main tile will show a subtle glow pulse while the
+  // `light_group_entity` reports `on`.
+  glow_effect?: boolean;
   main_name?: string;
   main_icon?: string;
   // Sensors (can be at header level as well)
@@ -113,24 +115,16 @@ export class BitosomeRoomCard extends LitElement {
       card_shadow_color: '#000000',
       card_shadow_intensity: 0.5,
       unavailable_pulse_color: '#ff3b30',
-      header: {
-        main: {
-          tap_entity: 'switch.living_room_light_group',
-          main_name: 'Living room',
-          main_icon: 'mdi:sofa-outline',
-          temp_sensor: 'sensor.kitchen_living_room_temparature_average',
-          humidity_sensor: 'sensor.kitchen_living_room_humidity_average',
-          badges: [],
-        },
-        ac: { entity: 'climate.living_room_ac' },
-        thermostat: { entity: 'climate.thermostat_5_7_group' },
-      },
+  // Note: stub contains visual defaults only. No default header/main to avoid
+  // accidental rendering of a main tile in user configurations.
       switch_rows: [],
     };
   }
 
   public setConfig(config: RoomCardConfig): void {
-    const c = clone(config || BitosomeRoomCard.getStubConfig());
+    // Don't default to the full stub config (which previously included a header).
+    // Keep the provided config as-is and normalize header(s) only.
+    const c = clone(config || {} as RoomCardConfig);
     // Normalize headers: support both `header` and `headers`
     if (Array.isArray((c as any).headers)) {
       // keep as-is, but also expose first as legacy header for backward references
@@ -158,24 +152,47 @@ export class BitosomeRoomCard extends LitElement {
 
   protected render(): TemplateResult | typeof nothing {
     if (!this._config) return nothing;
-    const c = { ...BitosomeRoomCard.getStubConfig(), ...this._config } as RoomCardConfig;
-    // Prefer multiple headers; fall back to single
+    // Don't merge the full stub (it contains a default header).
+    // Apply visual defaults but keep header(s) strictly from user config.
+    const defaults = BitosomeRoomCard.getStubConfig();
+    const userCfg = this._config || {} as RoomCardConfig;
+
+    // Build a rendering config that uses defaults for visuals only.
+    const c: RoomCardConfig = {
+      title: userCfg.title ?? defaults.title,
+      tile_height: userCfg.tile_height ?? defaults.tile_height,
+      badge_size: userCfg.badge_size ?? defaults.badge_size,
+      badge_icon_size: userCfg.badge_icon_size ?? defaults.badge_icon_size,
+      main_icon_size: userCfg.main_icon_size ?? defaults.main_icon_size,
+      chip_font_size: userCfg.chip_font_size ?? defaults.chip_font_size,
+      card_shadow_color: userCfg.card_shadow_color ?? defaults.card_shadow_color,
+      card_shadow_intensity: userCfg.card_shadow_intensity ?? defaults.card_shadow_intensity,
+      unavailable_pulse_color: userCfg.unavailable_pulse_color ?? defaults.unavailable_pulse_color,
+      // Keep headers exactly as provided by user (no implicit stub header)
+      headers: Array.isArray(userCfg.headers) && userCfg.headers.length ? userCfg.headers : (userCfg.header ? [userCfg.header] : []),
+      switch_rows: Array.isArray(userCfg.switch_rows) ? userCfg.switch_rows : (userCfg.switch_rows || []),
+      tap_action: userCfg.tap_action,
+      hold_action: userCfg.hold_action,
+      double_tap_action: userCfg.double_tap_action,
+    } as RoomCardConfig;
+
+    // Prefer multiple headers; fall back to single (but don't inject defaults)
     const headers: RoomCardHeader[] = Array.isArray((c as any).headers) && (c as any).headers.length
       ? ((c as any).headers as RoomCardHeader[])
       : [((c.header || {}) as RoomCardHeader)];
 
-    const tileH = Number(c.tile_height) || 80;
-    const badgeSize = Number(c.badge_size) || 22;
-    const badgeIcon = Number(c.badge_icon_size) || 14;
+    const tileH = Number(c.tile_height) || Number(defaults.tile_height) || 80;
+    const badgeSize = Number(c.badge_size) || Number(defaults.badge_size) || 22;
+    const badgeIcon = Number(c.badge_icon_size) || Number(defaults.badge_icon_size) || 14;
     // Allow header-level override for main icon size (use first header if provided)
     const headerCfg: any = headers[0] || {};
     const headerMainIconSize = Number(headerCfg?.main_icon_size ?? headerCfg?.maicon_size);
     const mainIcon = Number.isFinite(headerMainIconSize) && headerMainIconSize > 0
       ? headerMainIconSize
-      : (Number(c.main_icon_size) || 48);
-    const panelShadowColor = this._rgbaFromColor(c.card_shadow_color, c.card_shadow_intensity);
-    const chipFont = Number(c.chip_font_size) || 12;
-    const unavailColor = c.unavailable_pulse_color || '#ff3b30';
+      : (Number(c.main_icon_size) || Number(defaults.main_icon_size) || 48);
+    const panelShadowColor = this._rgbaFromColor(c.card_shadow_color || defaults.card_shadow_color, c.card_shadow_intensity ?? defaults.card_shadow_intensity);
+    const chipFont = Number(c.chip_font_size) || Number(defaults.chip_font_size) || 12;
+    const unavailColor = c.unavailable_pulse_color || defaults.unavailable_pulse_color || '#ff3b30';
     const hasUnavail = this._hasAnyUnavailable(c, headers);
     const unavailWeak = this._rgbaFromColor(unavailColor, 0.18);
     const unavailStrong = this._rgbaFromColor(unavailColor, 0.36);
@@ -195,10 +212,13 @@ export class BitosomeRoomCard extends LitElement {
   }
 
   private _renderHeaderRow(h: RoomCardHeader): TemplateResult {
-    const mainRaw: any = h.main || {};
+  const mainRaw: any = h.main || {};
     const main: any = {
       tap_entity: mainRaw.tap_entity,
       hold_entity: mainRaw.hold_entity || mainRaw.tap_entity,
+  // Preserve glow configuration so renderMainTile can honor glow_mode/glow_effect
+  glow_mode: mainRaw.glow_mode,
+  glow_effect: mainRaw.glow_effect,
       light_group_entity: mainRaw.light_group_entity,
       name: mainRaw.main_name || mainRaw.name,
       icon: mainRaw.main_icon || mainRaw.icon,
@@ -209,18 +229,40 @@ export class BitosomeRoomCard extends LitElement {
       hold_action: mainRaw.hold_action,
       double_tap_action: mainRaw.double_tap_action,
     };
-    const ac = h.ac || {} as any;
-    const thermostat = h.thermostat || {} as any;
-    const showAC = !!ac?.entity;
-    const showThermo = !!thermostat?.entity;
-    const cls = !showAC && !showThermo ? 'header-row only-main' : (showAC && showThermo ? 'header-row' : 'header-row main-plus-one');
-    return html`
+  const ac = h.ac || {} as any;
+  const thermostat = h.thermostat || {} as any;
+  const initialShowAC = !!ac?.entity;
+  const initialShowThermo = !!thermostat?.entity;
+    // Determine whether a main is explicitly defined (avoid injecting defaults)
+    const hasMain = !!(mainRaw && (mainRaw.main_name || mainRaw.name || mainRaw.light_group_entity || mainRaw.entity || mainRaw.main_icon || mainRaw.icon || mainRaw.temp_sensor || mainRaw.humidity_sensor || (Array.isArray(mainRaw.badges) && mainRaw.badges.length)));
+
+    // AC/Thermostat must be defined only inside a `main` block. If they exist
+    // outside of main, ignore them and warn the user in the console.
+    const showAC = hasMain && initialShowAC;
+    const showThermo = hasMain && initialShowThermo;
+
+    if (!hasMain && (initialShowAC || initialShowThermo)) {
+      // eslint-disable-next-line no-console
+      console.warn('bitosome-room-card: header contains `ac`/`thermostat` outside of `main` — ignoring per configured rules.');
+    }
+
+    const cls = hasMain
+      ? (!showAC && !showThermo ? 'header-row only-main' : (showAC && showThermo ? 'header-row' : 'header-row main-plus-one'))
+      : (showAC && showThermo ? 'header-row main-plus-one' : 'header-row only-main');
+
+    // Propagate header-level glow_mode (if any) to child tile renderers via a temporary host property
+    const headerGlowMode = (mainRaw && (mainRaw.glow_mode as any)) || (mainRaw && mainRaw.glow_effect === false ? 'none' : undefined);
+    if (headerGlowMode) (this as any)._currentHeaderGlowMode = headerGlowMode;
+    const tpl = html`
       <div class=${cls}>
-        ${renderMainTile(this, main as any)}
+        ${hasMain ? renderMainTile(this, main as any) : nothing}
         ${showAC ? renderACTile(this, ac.entity as string) : nothing}
         ${showThermo ? renderThermoTile(this, thermostat.entity as string) : nothing}
       </div>
     `;
+    // Clean up temporary mode
+    if (headerGlowMode) (this as any)._currentHeaderGlowMode = undefined;
+    return tpl;
   }
 
   // main tile renderer moved to src/tiles/main.ts

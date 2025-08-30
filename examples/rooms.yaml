@@ -1,0 +1,134 @@
+# Examples for bitosome-room-card
+
+# Minimal single-header example
+- type: custom:bitosome-room-card
+  title: Entrance
+  tile_height: 80
+  badge_size: 22
+  badge_icon_size: 14
+  main_icon_size: 40
+  chip_font_size: 11
+  card_shadow_color: '#000000'
+  card_shadow_intensity: 0.3
+  unavailable_pulse_color: '#ff3b30'
+  headers:
+    - main:
+        main_name: Entrance
+        main_icon: mdi:door
+        light_group_entity: switch.entrance_light_switch_group
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/entrance
+        hold_action:
+          action: call-service
+          service: homeassistant.turn_off
+          service_data:
+            entity_id: switch.entrance_light_switch_group
+        temp_sensor: sensor.aqara_thp_10_temperature
+        humidity_sensor: sensor.aqara_thp_10_humidity
+        badges:
+          - type: lock
+            entity: lock.front_door
+    - thermostat:
+        entity: climate.thermostat_4
+  switch_rows:
+    - row:
+        - entity: switch.outdoor_light_switch_button_a_state
+          name: Outdoor lights
+          icon: mdi:outdoor-lamp
+          icon_size: "28px"
+          font-weight: "600"
+          font-size: "12px"
+          type: switch
+          glow_effect: glow
+        - entity: switch.outdoor_light_switch_button_b_state
+          name: Scene
+          icon: mdi:home-export-outline
+          type: switch
+        - entity: switch.entrance_light_switch_group
+          name: Ceiling light
+          icon: mdi:wall-sconce-flat-outline
+          type: switch
+
+# Multi-header example with AC and thermostat
+- type: custom:bitosome-room-card
+  title: Living room
+  tile_height: 80
+  badge_size: 22
+  badge_icon_size: 14
+  main_icon_size: 48
+  chip_font_size: 12
+  card_shadow_color: '#000000'
+  card_shadow_intensity: 0.12
+  glow_mode: none
+  headers:
+    - main:
+        main_name: Living room
+        main_icon: mdi:sofa-outline
+        light_group_entity: switch.living_room_light_group
+        glow_effect: true
+        temp_sensor: sensor.kitchen_living_room_temperature_average
+        humidity_sensor: sensor.kitchen_living_room_humidity_average
+        badges:
+          - type: illuminance
+            entity: sensor.aqara_light_sensor_1_illuminance
+            icon: mdi:brightness-5
+      ac:
+        entity: climate.living_room_ac
+      thermostat:
+        entity: climate.thermostat_5_7_group
+  switch_rows:
+    - row:
+        - entity: switch.kitchen_tabletop_light_switch_button_a_state
+          name: Tabletop
+          icon: mdi:countertop-outline
+          icon_size: "28px"
+          font-weight: "600"
+          font-size: "12px"
+          type: switch
+          tap_action:
+            action: toggle
+        - entity: switch.kitchen_light_switch_button_a_state
+          name: Sink
+          icon: mdi:faucet-variant
+          type: switch
+        - entity: switch.kitchen_light_switch_button_b_state
+          name: Table
+          icon: mdi:table-furniture
+          type: switch
+
+# Smart-plug / storeroom example
+- type: custom:bitosome-room-card
+  title: Storeroom
+  tile_height: 80
+  badge_size: 22
+  badge_icon_size: 14
+  main_icon_size: 40
+  chip_font_size: 11
+  card_shadow_color: '#000000'
+  card_shadow_intensity: 0.1
+  headers:
+    - main:
+        main_name: Storeroom
+        main_icon: mdi:package-variant
+        light_group_entity: switch.storeroom_light_switch_button_a_state
+        temp_sensor: sensor.aqara_thp_4_temperature
+        humidity_sensor: sensor.aqara_thp_4_humidity
+    - thermostat:
+        entity: climate.thermostat_4
+  switch_rows:
+    - row:
+        - entity: switch.storeroom_light_switch_button_a_state
+          name: Ceiling light
+          icon: mdi:wall-sconce-flat-outline
+          type: switch
+        - entity: switch.ikea_inspelning_smart_plug_1
+          name: 3D Printer
+          icon: mdi:printer-3d
+          type: smart_plug
+      glow_effect: glow
+        - entity: switch.ikea_tretakt_smart_plug_1
+          name: Battery charger
+          icon: mdi:battery-high
+          type: smart_plug
+    # tile_height left as global in the example header block

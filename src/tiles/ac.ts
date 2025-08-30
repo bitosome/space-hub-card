@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
-import { acPulseColors } from '../glow';
+import { acPulseColors, buildGlow } from '../glow';
 
 export function renderACTile(host: any, entityId: string): TemplateResult {
   const mode = (host?.hass?.states?.[entityId]?.state || '').toLowerCase();
@@ -10,7 +10,9 @@ export function renderACTile(host: any, entityId: string): TemplateResult {
   const color = typeof host?._acModeColor === 'function' ? host._acModeColor(mode) : 'gray';
   const fanStyle = `color:${color}; ${active ? 'animation:spin 1.5s linear infinite;' : ''}`;
   const pulse = acPulseColors(mode);
-  const wrapStyle = `${active ? `--pulse-weak:${pulse.weak}; --pulse-strong:${pulse.strong};` : ''}`;
+  // glow_mode: 'static'|'pulse'|'none' can be supplied via the calling header object
+  const glowMode = (host?._currentHeaderGlowMode) || 'static';
+  const { style: wrapStyle, overlay: glowOverlay } = buildGlow(pulse, glowMode as any, active);
   const onAction = (ev: CustomEvent) => {
     if (typeof host?._onACAction === 'function') host._onACAction(ev, entityId);
   };
@@ -28,6 +30,7 @@ export function renderACTile(host: any, entityId: string): TemplateResult {
       <div class="center-xy">
         <ha-icon class="ac-fan" icon="mdi:fan" style=${fanStyle}></ha-icon>
       </div>
+  <div class="tile-end">${glowOverlay}</div>
     </ha-control-button>
   `;
 }
