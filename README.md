@@ -211,6 +211,59 @@ If migrating from the legacy bitosome-room-card:
 - **AC/Thermostat placement**: must be declared inside a `main` block. If declared outside `main` they will be ignored (with console warning).
 - **Icon scaling**: AC and thermostat icons automatically scale proportionally with `tile_height` to maintain visual consistency.
 
+## Configuration Validation
+
+The space-hub-card includes comprehensive configuration validation to help users identify and fix configuration issues. When a configuration error is detected, Home Assistant will display detailed error messages explaining what needs to be corrected.
+
+### Validation Rules
+
+The card validates the following configuration aspects:
+
+#### Headers Configuration
+- **AC Tiles**: Must have a valid `entity` field (e.g., `climate.living_room`)
+- **Thermostat Tiles**: Must have a valid `entity` field (e.g., `climate.bedroom`)
+- **Main Tiles**: Must have at least one meaningful configuration:
+  - `main_name` or `main_icon`
+  - `tap_entity`, `light_group_entity`, `temp_sensor`, or `humidity_sensor`
+  - Non-empty `chips` array
+- **AC/Thermostat Placement**: AC and thermostat tiles must be defined within a `main` configuration block
+
+#### Switch Rows Configuration
+- **Switch Items**: Each switch must have a valid `entity` field
+- **Entity Format**: All entity IDs must follow the `domain.entity_name` format
+- **Non-empty Rows**: Switch rows cannot be empty
+
+#### Numeric Values
+- **Positive Numbers**: `tile_height`, `chip_icon_size`, `main_icon_size`, `chip_font_size` must be positive
+- **Shadow Intensity**: `card_shadow_intensity` must be between 0 and 1
+- **Type Validation**: Numeric fields must contain valid numbers
+
+#### Color Values
+- **Color Format**: `card_shadow_color` and `unavailable_pulse_color` must be valid CSS colors
+- **Supported Formats**: Hex colors (#000000), named colors (red, blue), CSS functions (rgb(), hsl())
+
+### Example Validation Errors
+
+When configuration issues are detected, you'll see helpful error messages:
+
+```
+Invalid space-hub-card configuration:
+• Header 1: AC tile requires an 'entity' field
+• Header 1: Main tile must have at least one of: main_name, main_icon, tap_entity, light_group_entity, temp_sensor, humidity_sensor, or chips
+• Switch row 1, item 2: Switch entity 'invalid_entity' must be a valid entity ID
+• Tile height must be a positive number, got: -50
+```
+
+### Using the Visual Editor
+
+The card includes a visual editor for basic settings that provides:
+- **Real-time Validation**: Configuration errors are displayed immediately
+- **Input Validation**: Numeric fields validate ranges and types
+- **Helper Text**: Each field includes guidance on valid values
+- **Error Highlighting**: Invalid configurations are clearly marked
+
+For complex configurations (headers, switch rows), you'll need to edit the YAML directly, but the validation system will guide you to correct any issues.
+
 ## Installation
 
 ### HACS (Recommended)

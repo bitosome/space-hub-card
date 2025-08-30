@@ -19,3 +19,21 @@ export interface BoilerplateCardConfig extends LovelaceCardConfig {
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
 }
+
+// Space Hub Card configuration interfaces (imported from space-hub.ts)
+export interface SpaceHubEditorConfig extends LovelaceCardConfig {
+  type: string;
+  title?: string;
+  tile_height?: number;
+  chip_icon_size?: number;
+  main_icon_size?: number;
+  chip_font_size?: number;
+  card_shadow_color?: string;
+  card_shadow_intensity?: number;
+  unavailable_pulse_color?: string;
+  headers?: unknown[];
+  switch_rows?: unknown[];
+  tap_action?: ActionConfig;
+  hold_action?: ActionConfig;
+  double_tap_action?: ActionConfig;
+}

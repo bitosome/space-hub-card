@@ -1,0 +1,76 @@
+# Example configurations that should trigger validation errors
+# Use these to test the validation system
+
+# Configuration with missing AC entity
+- type: custom:space-hub-card
+  title: "Test Card - Missing AC Entity"
+  headers:
+    - main:
+        main_name: "Living Room"
+      ac: # This should trigger validation error - missing entity
+        glow_mode: "pulse"
+
+# Configuration with invalid entity ID format
+- type: custom:space-hub-card
+  title: "Test Card - Invalid Entity ID"
+  headers:
+    - main:
+        main_name: "Bedroom"
+      thermostat:
+        entity: "invalid_entity_format" # Should trigger error - no domain
+
+# Configuration with empty main tile
+- type: custom:space-hub-card
+  title: "Test Card - Empty Main"
+  headers:
+    - main: {} # Should trigger error - no meaningful content
+      ac:
+        entity: "climate.living_room"
+
+# Configuration with AC/Thermostat without main
+- type: custom:space-hub-card
+  title: "Test Card - No Main Block"
+  headers:
+    - ac: # Should trigger error - AC requires main block
+        entity: "climate.living_room"
+
+# Configuration with invalid switch row
+- type: custom:space-hub-card
+  title: "Test Card - Invalid Switch"
+  switch_rows:
+    - - entity: "not_valid_entity" # Should trigger error - invalid entity format
+
+# Configuration with invalid numeric values
+- type: custom:space-hub-card
+  title: "Test Card - Invalid Numbers"
+  tile_height: -50 # Should trigger error - negative number
+  card_shadow_intensity: 2.0 # Should trigger error - must be 0-1
+  chip_icon_size: "not_a_number" # Should trigger error - not a number
+
+# Valid configuration for comparison
+- type: custom:space-hub-card
+  title: "Test Card - Valid Configuration"
+  tile_height: 80
+  chip_icon_size: 14
+  main_icon_size: 48
+  chip_font_size: 12
+  card_shadow_color: "#000000"
+  card_shadow_intensity: 0.5
+  unavailable_pulse_color: "#ff3b30"
+  headers:
+    - main:
+        main_name: "Living Room"
+        tap_entity: "light.living_room"
+        temp_sensor: "sensor.living_room_temperature"
+        humidity_sensor: "sensor.living_room_humidity"
+      ac:
+        entity: "climate.living_room"
+        glow_mode: "pulse"
+      thermostat:
+        entity: "climate.thermostat"
+        glow_mode: "static"
+  switch_rows:
+    - - entity: "switch.living_room_fan"
+        name: "Fan"
+      - entity: "light.accent_lights"
+        name: "Accent"

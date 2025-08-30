@@ -115,11 +115,149 @@ export class SpaceHubCard extends LitElement {
   }
 
   public setConfig(config: SpaceHubConfig): void {
+    if (!config) {
+      throw new Error('Configuration is required');
+    }
+    
+    // Validate configuration
+    this._validateConfig(config);
+    
     // Keep the provided config as-is and ensure headers is an array
     const c = clone(config || {} as SpaceHubConfig);
     if (!Array.isArray(c.headers)) c.headers = [];
     if (!Array.isArray(c.switch_rows)) c.switch_rows = [];
     this._config = c;
+  }
+
+  private _validateConfig(config: SpaceHubConfig): void {
+    const errors: string[] = [];
+
+    // Validate headers if provided
+    if (config.headers && Array.isArray(config.headers)) {
+      config.headers.forEach((header, index) => {
+        if (!header) {
+          errors.push(`Header ${index + 1}: Header configuration cannot be empty`);
+          return;
+        }
+
+        // Validate AC configuration
+        if (header.ac) {
+          if (!header.ac.entity) {
+            errors.push(`Header ${index + 1}: AC tile requires an 'entity' field`);
+          } else if (typeof header.ac.entity !== 'string' || !header.ac.entity.includes('.')) {
+            errors.push(`Header ${index + 1}: AC entity '${header.ac.entity}' must be a valid entity ID (e.g., 'climate.living_room')`);
+          }
+        }
+
+        // Validate Thermostat configuration
+        if (header.thermostat) {
+          if (!header.thermostat.entity) {
+            errors.push(`Header ${index + 1}: Thermostat tile requires an 'entity' field`);
+          } else if (typeof header.thermostat.entity !== 'string' || !header.thermostat.entity.includes('.')) {
+            errors.push(`Header ${index + 1}: Thermostat entity '${header.thermostat.entity}' must be a valid entity ID (e.g., 'climate.bedroom')`);
+          }
+        }
+
+        // Validate Main configuration
+        if (header.main) {
+          const main = header.main;
+          
+          // Check if main tile has at least one meaningful configuration
+          const hasContent = !!(
+            main.main_name || main.main_icon || main.tap_entity || 
+            main.light_group_entity || main.temp_sensor || main.humidity_sensor ||
+            (Array.isArray(main.chips) && main.chips.length > 0)
+          );
+          
+          if (!hasContent) {
+            errors.push(`Header ${index + 1}: Main tile must have at least one of: main_name, main_icon, tap_entity, light_group_entity, temp_sensor, humidity_sensor, or chips`);
+          }
+
+          // Validate entity IDs if provided
+          const entityFields = ['tap_entity', 'hold_entity', 'light_group_entity', 'temp_sensor', 'humidity_sensor'];
+          entityFields.forEach(field => {
+            const value = main[field as keyof typeof main];
+            if (value && (typeof value !== 'string' || !value.includes('.'))) {
+              errors.push(`Header ${index + 1}: Main tile ${field} '${value}' must be a valid entity ID`);
+            }
+          });
+        }
+
+        // If header has AC or Thermostat but no main, warn about required main configuration
+        if ((header.ac || header.thermostat) && !header.main) {
+          errors.push(`Header ${index + 1}: AC and Thermostat tiles require a 'main' configuration block`);
+        }
+      });
+    }
+
+    // Validate switch_rows if provided
+    if (config.switch_rows && Array.isArray(config.switch_rows)) {
+      config.switch_rows.forEach((row: any, index) => {
+        if (!row) {
+          errors.push(`Switch row ${index + 1}: Switch row configuration cannot be empty`);
+          return;
+        }
+
+        const items = Array.isArray(row) ? row : (Array.isArray(row.row) ? row.row : []);
+        if (!Array.isArray(items) || items.length === 0) {
+          errors.push(`Switch row ${index + 1}: Switch row must contain at least one switch item`);
+          return;
+        }
+
+        items.forEach((item: any, itemIndex) => {
+          if (!item || !item.entity) {
+            errors.push(`Switch row ${index + 1}, item ${itemIndex + 1}: Switch item requires an 'entity' field`);
+          } else if (typeof item.entity !== 'string' || !item.entity.includes('.')) {
+            errors.push(`Switch row ${index + 1}, item ${itemIndex + 1}: Switch entity '${item.entity}' must be a valid entity ID`);
+          }
+        });
+      });
+    }
+
+    // Validate numeric configuration values
+    const numericFields = {
+      tile_height: 'Tile height',
+      chip_icon_size: 'Chip icon size',
+      main_icon_size: 'Main icon size', 
+      chip_font_size: 'Chip font size',
+      card_shadow_intensity: 'Card shadow intensity'
+    };
+
+    Object.entries(numericFields).forEach(([field, label]) => {
+      const value = config[field as keyof SpaceHubConfig];
+      if (value !== undefined && value !== null) {
+        const num = Number(value);
+        if (!Number.isFinite(num) || num < 0) {
+          errors.push(`${label} must be a positive number, got: ${value}`);
+        }
+      }
+    });
+
+    // Validate shadow intensity is between 0 and 1
+    if (config.card_shadow_intensity !== undefined && config.card_shadow_intensity !== null) {
+      const intensity = Number(config.card_shadow_intensity);
+      if (Number.isFinite(intensity) && (intensity < 0 || intensity > 1)) {
+        errors.push(`Card shadow intensity must be between 0 and 1, got: ${intensity}`);
+      }
+    }
+
+    // Validate colors if provided
+    const colorFields = ['card_shadow_color', 'unavailable_pulse_color'];
+    colorFields.forEach(field => {
+      const value = config[field as keyof SpaceHubConfig];
+      if (value && typeof value === 'string') {
+        // Basic color validation - check for hex colors, named colors, or CSS color functions
+        const colorRegex = /^(#[0-9a-fA-F]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+).*$/;
+        if (!colorRegex.test(value)) {
+          errors.push(`${field.replace(/_/g, ' ')} '${value}' is not a valid color format`);
+        }
+      }
+    });
+
+    // If there are validation errors, throw them
+    if (errors.length > 0) {
+      throw new Error(`Invalid space-hub-card configuration:\n${errors.map(e => `• ${e}`).join('\n')}`);
+    }
   }
 
   public getCardSize(): number {
