@@ -123,7 +123,8 @@ Badge object fields
 AC and Thermostat tiles
 
 - Must be declared inside a `main` block as `ac:` and `thermostat:` respectively. If declared outside `main` they will be ignored (and a console warning will be emitted).
-- Each accepts `entity` and optional `tap_action` / `hold_action` / `double_tap_action`.
+- Each accepts `entity`, `glow_mode`, and optional `tap_action` / `hold_action` / `double_tap_action`.
+- `glow_mode`: `static` | `pulse` | `none` - individual glow control for AC and thermostat tiles (independent of main tile glow configuration)
 
 Switch rows
 
@@ -182,13 +183,19 @@ headers:
           entity: sensor.aqara_light_sensor_1_illuminance
     ac:
       entity: climate.living_room_ac
+      glow_mode: pulse
     thermostat:
       entity: climate.thermostat_5_7_group
+      glow_mode: static
 
   - main:
       main_name: Kitchen
       main_icon: mdi:chef-hat
       light_group_entity: light.kitchen
+      glow_mode: none
+    ac:
+      entity: climate.kitchen_ac
+      glow_mode: static  # AC has its own glow config independent of main
 ```
 
 Switch rows sample

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
-import { THERMO_HEAT_PULSE, buildGlow } from '../glow';
+import { THERMO_HEAT_PULSE, buildGlow, GlowMode } from '../glow';
 
-export function renderThermoTile(host: any, entityId: string): TemplateResult {
+export function renderThermoTile(host: any, entityId: string, glowMode?: GlowMode): TemplateResult {
   const st = host?.hass?.states?.[entityId];
   const fmt = typeof host?._fmtNumber === 'function' ? host._fmtNumber.bind(host) : (v: any) => (v === undefined || v === null ? '—' : String(v));
   const target = st?.attributes?.temperature ?? st?.attributes?.target_temp ?? st?.attributes?.target_temperature;
@@ -19,8 +19,9 @@ export function renderThermoTile(host: any, entityId: string): TemplateResult {
     ? 'var(--primary-background-color, #fff)'
     : 'var(--secondary-text-color)';
   const hasHaChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
-  const glowMode = (host?._currentHeaderGlowMode) || 'static';
-  const { style: wrapStyle, overlay: glowOverlay } = buildGlow(THERMO_HEAT_PULSE, glowMode as any, isHeating);
+  // Use the passed glowMode parameter, fallback to _currentHeaderGlowMode for backwards compatibility, then default to 'static'
+  const finalGlowMode = glowMode ?? (host?._currentHeaderGlowMode) ?? 'static';
+  const { style: wrapStyle, overlay: glowOverlay } = buildGlow(THERMO_HEAT_PULSE, finalGlowMode as any, isHeating);
   const onAction = (ev: CustomEvent) => {
     if (typeof host?._onThermoAction === 'function') host._onThermoAction(ev, entityId);
   };

@@ -75,8 +75,10 @@
             icon: mdi:brightness-5
       ac:
         entity: climate.living_room_ac
+        glow_mode: pulse  # AC has its own glow config
       thermostat:
         entity: climate.thermostat_5_7_group
+        glow_mode: static  # Thermostat has independent glow config
   switch_rows:
     - row:
         - entity: switch.kitchen_tabletop_light_switch_button_a_state

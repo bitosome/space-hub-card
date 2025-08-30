@@ -41,12 +41,14 @@ export interface HeaderMain {
 
 export interface HeaderAC {
   entity?: string;
+  glow_mode?: string;
   tap_action?: import('custom-card-helpers').ActionConfig;
   hold_action?: import('custom-card-helpers').ActionConfig;
   double_tap_action?: import('custom-card-helpers').ActionConfig;
 }
 export interface HeaderThermostat {
   entity?: string;
+  glow_mode?: string;
   tap_action?: import('custom-card-helpers').ActionConfig;
   hold_action?: import('custom-card-helpers').ActionConfig;
   double_tap_action?: import('custom-card-helpers').ActionConfig;
@@ -256,8 +258,8 @@ export class BitosomeRoomCard extends LitElement {
     const tpl = html`
       <div class=${cls}>
         ${hasMain ? renderMainTile(this, main as any) : nothing}
-        ${showAC ? renderACTile(this, ac.entity as string) : nothing}
-        ${showThermo ? renderThermoTile(this, thermostat.entity as string) : nothing}
+        ${showAC ? renderACTile(this, ac.entity as string, ac.glow_mode) : nothing}
+        ${showThermo ? renderThermoTile(this, thermostat.entity as string, thermostat.glow_mode) : nothing}
       </div>
     `;
     // Clean up temporary mode
