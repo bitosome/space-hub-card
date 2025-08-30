@@ -6,9 +6,9 @@ import { fireEvent } from 'custom-card-helpers';
 
 const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.maxTouchPoints > 0;
 
-interface IActionHandler extends HTMLElement {
+interface ActionHandler extends HTMLElement {
   holdTime: number;
-  bind(element: Element, options?: ActionHandlerOptions): void;
+  bind(element: Element, options): void;
 }
 interface ActionHandlerElement extends HTMLElement {
   actionHandler?: boolean;
@@ -20,7 +20,7 @@ declare global {
   }
 }
 
-class ActionHandler extends HTMLElement implements IActionHandler {
+class ActionHandler extends HTMLElement implements ActionHandler {
   public holdTime = 500;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -63,7 +63,7 @@ class ActionHandler extends HTMLElement implements IActionHandler {
     });
   }
 
-  public bind(element: ActionHandlerElement, options: ActionHandlerOptions = {}): void {
+  public bind(element: ActionHandlerElement, options): void {
     if (element.actionHandler) {
       return;
     }
@@ -193,6 +193,6 @@ export const actionHandler = directive(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-    render(_options?: ActionHandlerOptions): unknown { return noChange; }
+    render(_options?: ActionHandlerOptions) {}
   },
 );

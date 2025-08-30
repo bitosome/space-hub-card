@@ -39,7 +39,7 @@ const plugins = [
 
 export default [
   {
-    input: 'src/bitosome-room-card.ts',
+    input: 'src/room-card.ts',
     output: {
       dir: 'dist',
       format: 'es',
