@@ -12,6 +12,14 @@ function bumpPatch(v) {
 const pkgPath = path.resolve(__dirname, '../package.json');
 const constPath = path.resolve(__dirname, '../src/const.ts');
 
+// Allow skipping the bump via environment variable or CLI flag:
+// - set SKIP_BUMP=1 in the environment
+// - or pass --no-bump as an argument
+if (process.env.SKIP_BUMP === '1' || process.argv.includes('--no-bump')) {
+  console.log('Skipping version bump (SKIP_BUMP or --no-bump detected)');
+  process.exit(0);
+}
+
 if (!fs.existsSync(pkgPath)) {
   console.error('package.json not found');
   process.exit(1);

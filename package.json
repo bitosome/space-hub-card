@@ -1,6 +1,6 @@
 {
   "name": "boilerplate-card",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Lovelace boilerplate-card",
   "keywords": [
     "home-assistant",
@@ -59,6 +59,7 @@
   "scripts": {
     "start": "rollup -c rollup.config.dev.js --watch",
     "build": "node ./scripts/bump-version.js && npm run lint && npm run rollup",
+    "build:no-bump": "SKIP_BUMP=1 node ./scripts/bump-version.js && npm run lint && npm run rollup",
     "lint": "eslint src/*.ts",
     "rollup": "rollup -c"
   },
