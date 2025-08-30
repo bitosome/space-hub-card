@@ -1,149 +1,78 @@
-# bitosome-room-card
+# space-hub-card
 
-Custom Room card for Home Assistant, built on the boilerplate using LitElement. It renders one or more main tiles plus optional AC/Thermostat squares and switch rows, with rich visuals and HA-native actions.
+Custom Space Hub card for Home Assistant, built with Lit. This card renders one or more "main" tiles (each main may include optional AC/thermostat tiles and chips) plus optional switch rows. It focuses on clear visuals, predictable configuration, and Home Assistant-native actions.
 
 ## Features
 
-- LitElement card with HA action handling (tap, hold, double_tap)
+- **LitElement card** with HA action handling (tap, hold, double_tap)
 - **Multiple main tiles**: Support for multiple main tiles in a single card via multiple header rows
-- Main tiles with configurable icon size and live temp/humidity chip
-- AC and Thermostat tiles with animated state visuals
-- Switch rows with per-tile tap/hold entities, including smart plug style
-- Optional card header title (omit `title` to hide)
-- Unavailable pulse: card shadow pulses if any used entity is unavailable/unknown/offline
-- Glow containment: internal glows/shadows are clipped to the card bounds so they never overlay surrounding cards
-- Multiple headers: render one or more header rows via `headers: [...]` (keeps `header:` for backwards compatibility)
-- Illuminance badge: optional chip-style badge on the main tile (type `illuminance`), aligned to the right edge and vertically centered (e.g., `109 lx`)
-- Border radii follow HA theme: card, tiles, badges, and chips use `--ha-card-border-radius`, `--ha-badge-border-radius`, and `--ha-chip-border-radius` (with sensible fallbacks)
+- **Main tiles** with configurable icon size and live temp/humidity chip
+- **AC and Thermostat tiles** with animated state visuals and responsive icon sizing
+- **Switch rows** with per-tile tap/hold entities, including smart plug style
+- **Optional card header** title (omit `title` to hide)
+- **Unavailable pulse**: card shadow pulses if any used entity is unavailable/unknown/offline
+- **Glow containment**: internal glows/shadows are clipped to the card bounds so they never overlay surrounding cards
+- **Multiple headers**: render one or more header rows via `headers: [...]` array
+- **Illuminance chip**: optional chip-style indicator on the main tile (type `illuminance`), aligned to the right edge and vertically centered (e.g., `109 lx`)
+- **Responsive sizing**: AC/thermostat icons scale proportionally with `tile_height` configuration
+- **Consistent terminology**: uses "chips" instead of "badges" for modern UI consistency
+- **Border radii follow HA theme**: card, tiles, chips use `--ha-card-border-radius`, `--ha-chip-border-radius` (with sensible fallbacks)
+- **Per-tile glow control** via `glow_mode` (values: `static` | `pulse` | `none`)
 
 ## Configuration Reference
 
 ### Card-Level Options
 
-- **type**: use `custom:bitosome-room-card`
+- **type**: use `custom:space-hub-card`
 - **title**: optional header title shown on the `ha-card`
-- **tile_height**: height in px of all tiles (default: 80)
-- **badge_size**: controls AC badge diameter and thermostat pill height in px (default: 22)
-- **badge_icon_size**: icon size inside badges/pills in px (default: 14)
+- **tile_height**: height in px of all tiles (default: 80). AC/thermostat icons scale proportionally (62.5% ratio)
+- **chip_icon_size**: icon size inside chips, temperature/humidity indicators, and illuminance displays in px (default: 14)
 - **main_icon_size**: default main icon size in px (default: 48)
-- **chip_font_size**: font size of chip text in px (default: 12)
+- **chip_font_size**: font size of chip text in px (default: 12). Chip size is responsive to this font size with additional padding
 - **card_shadow_color**: base panel shadow color (default: '#000000')
-- **card_shadow_intensity**: base shadow intensity 0..1 (default: 0.5)
+- **card_shadow_intensity**: base shadow intensity 0..1 (default: 0.1)
 - **unavailable_pulse_color**: color for the card pulse when any monitored entity is unavailable/unknown/offline (default: '#ff3b30')
-- **glow_mode**: visual glow behavior for the entire card; values: `none`, `glow`, `pulse`
 
-### Header Configuration
+### Headers Configuration
 
-Use either `header:` (single) or `headers: [...]` (multiple rows) for backwards compatibility.
-
-**Important**: Each header row can contain a main tile, allowing you to have multiple main tiles in a single card.
+Use `headers: [...]` to define one or more header rows. Each header row can contain a main tile, allowing you to have multiple main tiles in a single card.
 
 #### Main Tile Configuration
 - **main_name**: text shown on the main tile
 - **main_icon**: MDI/HA icon for the main tile
-- **light_group_entity**: optional entity used for toggling and on-state display (preferred over legacy tap_entity)
-- **glow_effect**: optional boolean. When set to `true` on a `main`, the main tile will show a subtle glow/pulse while the `light_group_entity` is `on`. Useful to highlight active lighting groups.
+- **light_group_entity**: entity used for toggling and on-state display
+- **glow_mode**: visual glow behavior - `static` (permanent soft glow), `pulse` (animated pulse), or `none` (disabled)
 - **temp_sensor**: optional temperature sensor entity for the temp/humidity chip
 - **humidity_sensor**: optional humidity sensor entity for the temp/humidity chip
-- **main_icon_size**: header-level main icon size override (also accepts `maicon_size` for typo tolerance)
-- **badges**: array of badge objects with the following fields:
+- **main_icon_size**: header-level main icon size override
+- **chips**: array of chip objects with the following fields:
   - **type**: `lock`, `gate`, `illuminance`, or custom (generic)
-  - **entity**: entity id for the badge
+  - **entity**: entity id for the chip
   - **icon**: optional MDI icon override
-  - **tap_action** / **hold_action** / **double_tap_action**: HA-native actions specific to the badge
+  - **tap_action** / **hold_action** / **double_tap_action**: HA-native actions specific to the chip
 - **tap_action** / **hold_action** / **double_tap_action**: HA-native actions for the main tile
 
 #### AC Tile Configuration
 - **entity**: climate entity for the AC tile
+- **glow_mode**: visual glow behavior - `static`, `pulse`, or `none`
 - **tap_action** / **hold_action** / **double_tap_action**: optional HA-native actions
 
-```markdown
-# bitosome-room-card
+#### Thermostat Tile Configuration  
+- **entity**: climate entity for the thermostat tile
+- **glow_mode**: visual glow behavior - `static`, `pulse`, or `none`
+- **tap_action** / **hold_action** / **double_tap_action**: optional HA-native actions
 
-Custom Room card for Home Assistant, built with Lit. This card renders one or more "main" tiles (each main may include optional AC/thermostat tiles and badges) plus optional switch rows. It focuses on clear visuals, predictable configuration, and Home Assistant-native actions.
+### Switch Rows Configuration
 
-## Quick summary
-
-- Multiple `main` tiles supported via `headers: [...]` (backwards-compatible `header:` still accepted)
-- AC and Thermostat tiles are supported inside a `main` block
-- Per-tile glow control via `glow_mode` (values: `static` | `pulse` | `none`); legacy `glow_effect` is supported for compatibility
-- Badges/chips are informational by default; add `*_action` to badge or tile to make them interactive
-- Visuals follow HA theme border radiuses: `--ha-card-border-radius`, `--ha-chip-border-radius`, `--ha-badge-border-radius`
-
----
-
-## Configuration reference
-
-This section documents the supported keys and recommended usage.
-
-Top-level (card) options
-
-- `type`: `custom:bitosome-room-card`
-- `title`: optional card title shown on the `ha-card`
-- `tile_height`: height in px of tiles (default: `80`)
-- `badge_size`: badge diameter / pill height in px (default: `22`)
-- `badge_icon_size`: icon size inside badges/pills in px (default: `14`)
-- `main_icon_size`: default main icon size in px (default: `48`)
-- `chip_font_size`: font size of chip text in px (default: `12`)
-- `card_shadow_color`: base panel shadow color (default: `#000000`)
-- `card_shadow_intensity`: base shadow intensity `0..1` (default: `0.5`)
-- `unavailable_pulse_color`: color for the card pulse when any monitored entity is unavailable/unknown/offline (default: `#ff3b30`)
-
-Tile glow configuration (per-card / per-tile)
-
-- `glow_mode` (preferred): controls glow behaviour for a tile. Allowed values:
-  - `static` — permanent soft glow (default when unspecified)
-  - `pulse` — animated pulse (recommended for active states like `heating`)
-  - `none` — disable glow
-- Legacy: `glow_effect` (boolean) is still supported for compatibility. `glow_effect: false` is equivalent to `glow_mode: 'none'`. If both appear, `glow_mode` wins.
-
-Headers
-
-Use either `header:` (single) or `headers: [...]` (multiple rows). Each header row may contain an object `main` which holds the main tile definition. The card will only render what you explicitly configure — there is no implicit main.
-
-Main tile (`main`) options
-
-- `main_name`: text shown on the main tile
-- `main_icon`: MDI/HA icon for the main tile
-- `light_group_entity`: optional entity used for toggling and on-state display (preferred over legacy `tap_entity`)
-- `glow_mode`: `static` | `pulse` | `none` (preferred per-main glow control)
-- `glow_effect`: legacy boolean (treated as `glow_mode: 'none'` when `false`)
-- `tap_action` / `hold_action` / `double_tap_action`: Home Assistant action configs for the tile
-- `temp_sensor` / `humidity_sensor`: sensors used for the temp/humidity chip (informational)
-- `main_icon_size`: header-level override for icon size (also supports typo `maicon_size`)
-- `badges`: array of badge objects
-
-Badge object fields
-
-- `type`: `illuminance`, `lock`, `gate`, or custom
-- `entity`: entity id for badge state (informational) or action targets
-- `icon`: optional MDI icon override for the badge
-- `tap_action` / `hold_action` / `double_tap_action`: HA-native actions applied to the badge
-
-AC and Thermostat tiles
-
-- Must be declared inside a `main` block as `ac:` and `thermostat:` respectively. If declared outside `main` they will be ignored (and a console warning will be emitted).
-- Each accepts `entity`, `glow_mode`, and optional `tap_action` / `hold_action` / `double_tap_action`.
-- `glow_mode`: `static` | `pulse` | `none` - individual glow control for AC and thermostat tiles (independent of main tile glow configuration)
-
-Switch rows
-
-- `switch_rows:` an array of rows. Each row may be a bare array or an object `{ row: [...] }`.
-- Per-item options: `entity`, `name`, `icon`, `icon_size`, `font-weight`, `font-size`, `type` (`switch` | `smart_plug`), `glow_mode` (or legacy `glow_effect`), and HA `*_action` entries.
-
-Actions and default behavior
-
-- The card supports Home Assistant action configs (tap, hold, double_tap) for tiles and badges.
-- If tile-level actions aren't provided, the main tile uses `light_group_entity` / `tap_entity` for toggle behavior on tap and `hold` opens `more-info` for the `hold_entity` or `tap_entity`.
-
----
+- **switch_rows**: array of switch row definitions. Each row can be an array or an object `{ row: [...] }`
+- Per-item options: `entity`, `name`, `icon`, `icon_size`, `font-weight`, `font-size`, `type` (`switch` | `smart_plug`), `glow_mode`, and HA `*_action` entries
 
 ## Examples
 
-Minimal (single main)
+### Minimal (single main)
 
 ```yaml
-type: custom:bitosome-room-card
+type: custom:space-hub-card
 title: Entrance
 headers:
   - main:
@@ -160,16 +89,17 @@ headers:
           entity_id: switch.entrance_light_switch_group
       temp_sensor: sensor.aqara_thp_10_temperature
       humidity_sensor: sensor.aqara_thp_10_humidity
-      badges:
+      chips:
         - type: lock
           entity: lock.front_door
 ```
 
-Multi-header (main + AC + thermostat)
+### Multi-header (main + AC + thermostat)
 
 ```yaml
-type: custom:bitosome-room-card
+type: custom:space-hub-card
 title: Living floor
+tile_height: 100  # Larger tiles - AC/thermostat icons will be ~62px
 headers:
   - main:
       main_name: Living room
@@ -178,7 +108,7 @@ headers:
       glow_mode: pulse
       temp_sensor: sensor.kitchen_living_room_temperature_average
       humidity_sensor: sensor.kitchen_living_room_humidity_average
-      badges:
+      chips:
         - type: illuminance
           entity: sensor.aqara_light_sensor_1_illuminance
     ac:
@@ -198,7 +128,36 @@ headers:
       glow_mode: static  # AC has its own glow config independent of main
 ```
 
-Switch rows sample
+### Advanced Configuration with Custom Sizing
+
+```yaml
+type: custom:space-hub-card
+title: Master Suite
+tile_height: 120           # Larger tiles (AC/thermostat icons will be ~75px)
+chip_icon_size: 16         # Larger chip icons
+chip_font_size: 14         # Larger chip text
+main_icon_size: 56         # Larger main icons
+card_shadow_intensity: 0.2 # More prominent shadow
+headers:
+  - main:
+      main_name: Bedroom
+      main_icon: mdi:bed
+      light_group_entity: light.bedroom_group
+      glow_mode: static
+      temp_sensor: sensor.bedroom_temperature
+      humidity_sensor: sensor.bedroom_humidity
+      chips:
+        - type: lock
+          entity: lock.bedroom_door
+        - type: gate
+          entity: binary_sensor.bedroom_window
+          icon: mdi:window-closed-variant
+    thermostat:
+      entity: climate.bedroom_thermostat
+      glow_mode: pulse
+```
+
+### Switch rows sample
 
 ```yaml
 switch_rows:
@@ -215,20 +174,68 @@ switch_rows:
           action: toggle
 ```
 
----
+## Responsive Icon Sizing
 
-## Notes and behavior details
+The card automatically scales AC and thermostat icons based on your `tile_height` configuration:
 
-- Glow behavior: tiles use `glow_mode` with values `static` (soft steady glow), `pulse` (animated pulse), or `none` (disabled). `glow_mode` is respected per-tile; for header-level control you can set `glow_mode` on the `main` object and it will be applied to AC/thermostat tiles in that header as well.
-- Backwards compatibility: `glow_effect: false` maps to `glow_mode: 'none'`. If both `glow_mode` and `glow_effect` are present, `glow_mode` takes precedence.
-- Badges and chips are informational by default. To make a badge interactive, add `tap_action` / `hold_action` to the badge object. The main tile can also be given actions which apply to the tile area.
-- There is no implicit `main` tile. The card renders only what you explicitly configure.
+- **Base ratio**: 50px icons for 80px tile height (62.5%)
+- **tile_height: 60** → 37px icons
+- **tile_height: 80** → 50px icons (default)
+- **tile_height: 100** → 62px icons
+- **tile_height: 120** → 75px icons
 
----
+This ensures visual consistency across different tile sizes while maintaining proper proportions.
+
+## Migration from bitosome-room-card
+
+If migrating from the legacy bitosome-room-card:
+
+1. **Parameter changes**:
+   - `badge_size` parameter removed (no backward compatibility)
+   - `badge_icon_size` → `chip_icon_size`
+   - `badges` → `chips` in configuration
+
+2. **Terminology updates**:
+   - All references to "badges" are now "chips"
+   - CSS classes updated accordingly
+
+3. **Default changes**:
+   - `card_shadow_intensity` default: 0.5 → 0.1 (subtler shadows)
+   - Icons now scale automatically with `tile_height`
+
+## Notes and Behavior Details
+
+- **Glow behavior**: tiles use `glow_mode` with values `static` (soft steady glow), `pulse` (animated pulse), or `none` (disabled). `glow_mode` is respected per-tile for fine-grained control.
+- **Chips**: informational by default. To make a chip interactive, add `tap_action` / `hold_action` to the chip object.
+- **No implicit tiles**: the card renders only what you explicitly configure.
+- **AC/Thermostat placement**: must be declared inside a `main` block. If declared outside `main` they will be ignored (with console warning).
+- **Icon scaling**: AC and thermostat icons automatically scale proportionally with `tile_height` to maintain visual consistency.
+
+## Installation
+
+### HACS (Recommended)
+
+1. Open HACS in Home Assistant
+2. Go to "Frontend" section
+3. Click "Explore & Download Repositories"
+4. Search for "space-hub-card"
+5. Download and install
+
+### Manual Installation
+
+1. Download `space-hub-card.js` from the latest release
+2. Copy to `config/www/community/space-hub-card/`
+3. Add to your `ui-lovelace.yaml` resources:
+
+```yaml
+resources:
+  - url: /hacsfiles/space-hub-card/space-hub-card.js
+    type: module
+```
 
 ## Development
 
-- Install dependencies:
+Install dependencies:
 
 ```bash
 yarn install
@@ -236,28 +243,22 @@ yarn install
 npm install
 ```
 
-- Build:
+Build:
 
 ```bash
 npm run build
 ```
 
-- Dev (watch):
+Dev (watch):
 
 ```bash
 npm start
 ```
 
----
+## Version
 
-## Changelog (high level)
+Current version: **1.0.3**
 
-- 1.0.0 — Initial public release
-- 1.0.1 — Fixes and style tweaks
-- 1.0.2 — Added multi-header support and improved badge handling
-- 1.0.3+ — Glow unification and `glow_mode` support; AC/Thermostat glow colors; per-main glow driven by `light_group_entity`
+## License
 
----
-
-If you'd like me to add a small visual test harness (HTML page) or update example screenshots, say so and I'll add it.
-```
+MIT License

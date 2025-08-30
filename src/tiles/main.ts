@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
-import { renderIlluminanceBadge, renderExtraBadge } from '../chips';
+import { renderIlluminanceChip, renderExtraChip } from '../chips';
 import { buildGlow, STATIC_GLOW } from '../glow';
 
 export function renderMainTile(host: any, h: any): TemplateResult {
@@ -17,15 +17,15 @@ export function renderMainTile(host: any, h: any): TemplateResult {
   const defaultToggleTarget = h?.light_group_entity || h?.tap_entity || h?.entity;
 
   // Glow mode (static|pulse|none). Default to 'static' when absent.
-  const glowMode = (h?.glow_mode as any) || (h?.glow_effect === false ? 'none' : 'static');
+  const glowMode = h?.glow_mode || 'static';
   const glowActive = !!h?.light_group_entity && isOn && glowMode !== 'none';
   const pulse = STATIC_GLOW; // main defaults to amber glow
   const { style: wrapStyle, overlay: glowOverlay } = buildGlow(pulse, glowMode as any, glowActive);
 
-  const illumBadge = Array.isArray(h?.badges)
-    ? (h.badges as any[]).find((b) => String(b?.type || '').toLowerCase() === 'illuminance')
+  const illumChip = Array.isArray(h?.chips)
+    ? (h.chips as any[]).find((c) => String(c?.type || '').toLowerCase() === 'illuminance')
     : undefined;
-  const illumTpl = illumBadge ? renderIlluminanceBadge(host, illumBadge) : nothing;
+  const illumTpl = illumChip ? renderIlluminanceChip(host, illumChip) : nothing;
 
   const onAction = (ev: CustomEvent) => {
     if (typeof host?._onMainAction === 'function') host._onMainAction(ev, h, h?.tap_entity, h?.hold_entity, defaultToggleTarget);
@@ -36,7 +36,7 @@ export function renderMainTile(host: any, h: any): TemplateResult {
       <!-- glow rendered as a sibling so it can appear under/around the tile -->
       <div class="glow-under" style=${wrapStyle}>${glowOverlay}</div>
       <ha-control-button
-        class="main-tile ${glowActive ? 'on glow' : (isOn ? 'on' : '')}"
+        class="main-tile ${isOn ? 'on' : ''}"
         @action=${onAction}
         .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: hasDbl })}
         role="button" tabindex="0"
@@ -50,16 +50,16 @@ export function renderMainTile(host: any, h: any): TemplateResult {
           <span class="hval">${hval}</span>
         </div>
         ${illumTpl}
-        <div class="main-badges-br" data-role="badges">
+        <div class="main-chips-br" data-role="chips">
       ${hasBulb
-            ? html`<div class="badge" style=${`background:${bulbBg}`}>
+            ? html`<div class="chip" style=${`background:${bulbBg}`}>
                 <ha-icon .icon=${'mdi:lightbulb'} style=${`color:${isOn ? '#ffffff' : 'var(--secondary-text-color)'}`}></ha-icon>
               </div>`
             : nothing}
-          ${Array.isArray(h?.badges) && h.badges.length
-            ? html`${h.badges
-                .filter((b: any) => String(b?.type || '').toLowerCase() !== 'illuminance')
-                .map((b: any) => renderExtraBadge(host, b))}`
+          ${Array.isArray(h?.chips) && h.chips.length
+            ? html`${h.chips
+                .filter((c: any) => String(c?.type || '').toLowerCase() !== 'illuminance')
+                .map((c: any) => renderExtraChip(host, c))}`
             : nothing}
         </div>
         <div class="main-name">${name}</div>

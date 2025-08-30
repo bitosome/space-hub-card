@@ -31,7 +31,7 @@ export function acPulseColors(modeRaw: string | undefined): PulseColors {
 }
 
 // Thermostat heating pulse colors
-export const THERMO_HEAT_PULSE: PulseColors = {
+export const THERMOSTAT_HEAT_PULSE: PulseColors = {
   weak: 'rgba(255,112,67,0.12)',
   strong: 'rgba(255,112,67,0.26)',
 };

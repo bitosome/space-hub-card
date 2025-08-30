@@ -39,7 +39,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   };
 
   // Glow mode per-switch (static|pulse|none). Default to 'static'.
-  const glowMode = (sw?.glow_mode as any) || (sw?.glow_effect === false ? 'none' : 'static');
+  const glowMode = sw?.glow_mode || 'static';
   const pulse = isSmart ? SMART_PLUG_GLOW : STATIC_GLOW;
   const { style: glowStyle, overlay: glowOverlay } = buildGlow(pulse, glowMode as any, on && glowMode !== 'none');
 

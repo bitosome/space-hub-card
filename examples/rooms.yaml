@@ -1,7 +1,7 @@
-# Examples for bitosome-room-card
+# Examples for space-hub-card
 
 # Minimal single-header example
-- type: custom:bitosome-room-card
+- type: custom:space-hub-card
   title: Entrance
   tile_height: 80
   badge_size: 22
@@ -40,7 +40,7 @@
           font-weight: "600"
           font-size: "12px"
           type: switch
-          glow_effect: glow
+          glow_mode: pulse
         - entity: switch.outdoor_light_switch_button_b_state
           name: Scene
           icon: mdi:home-export-outline
@@ -51,7 +51,7 @@
           type: switch
 
 # Multi-header example with AC and thermostat
-- type: custom:bitosome-room-card
+- type: custom:space-hub-card
   title: Living room
   tile_height: 80
   badge_size: 22
@@ -66,7 +66,7 @@
         main_name: Living room
         main_icon: mdi:sofa-outline
         light_group_entity: switch.living_room_light_group
-        glow_effect: true
+        glow_mode: pulse
         temp_sensor: sensor.kitchen_living_room_temperature_average
         humidity_sensor: sensor.kitchen_living_room_humidity_average
         badges:
@@ -100,7 +100,7 @@
           type: switch
 
 # Smart-plug / storeroom example
-- type: custom:bitosome-room-card
+- type: custom:space-hub-card
   title: Storeroom
   tile_height: 80
   badge_size: 22
@@ -128,7 +128,7 @@
           name: 3D Printer
           icon: mdi:printer-3d
           type: smart_plug
-      glow_effect: glow
+          glow_mode: pulse
         - entity: switch.ikea_tretakt_smart_plug_1
           name: Battery charger
           icon: mdi:battery-high

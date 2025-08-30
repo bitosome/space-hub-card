@@ -10,10 +10,11 @@ import { ignoreSelectFiles } from './elements/ignore/select';
 import { ignoreSwitchFiles } from './elements/ignore/switch';
 
 export default {
-  input: ['src/boilerplate-card.ts'],
+  input: ['src/space-hub.ts'],
   output: {
     dir: './dist',
     format: 'es',
+    entryFileNames: 'space-hub-card.js',
   },
   plugins: [
     resolve(),

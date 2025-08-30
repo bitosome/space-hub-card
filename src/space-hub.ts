@@ -7,7 +7,7 @@ import { CARD_VERSION } from './const';
 // glow utilities used by tiles
 import { renderMainTile } from './tiles/main';
 import { renderACTile } from './tiles/ac';
-import { renderThermoTile } from './tiles/thermostat';
+import { renderThermostatTile } from './tiles/thermostat';
 import { renderSwitchRows } from './tiles/switch';
 import { baseStyles } from './styles/base.styles';
 import { mainTileStyles } from './styles/main-tile.styles';
@@ -26,7 +26,7 @@ export interface HeaderMain {
   // Sensors
   temp_sensor?: string;
   humidity_sensor?: string;
-  badges?: unknown[];
+  chips?: unknown[];
   // Actions
   tap_action?: import('custom-card-helpers').ActionConfig;
   hold_action?: import('custom-card-helpers').ActionConfig;
@@ -48,7 +48,7 @@ export interface HeaderThermostat {
   double_tap_action?: import('custom-card-helpers').ActionConfig;
 }
 
-export interface RoomCardHeader {
+export interface SpaceHubHeader {
   // New structured format
   main?: HeaderMain;
   ac?: HeaderAC;
@@ -60,18 +60,17 @@ export interface RoomCardHeader {
   maicon_size?: number;
 }
 
-export interface RoomCardConfig {
+export interface SpaceHubConfig {
   type?: string;
   title?: string;
   tile_height?: number;
-  badge_size?: number;
-  badge_icon_size?: number;
+  chip_icon_size?: number;
   main_icon_size?: number;
   chip_font_size?: number;
   card_shadow_color?: string;
   card_shadow_intensity?: number;
   unavailable_pulse_color?: string;
-  headers?: RoomCardHeader[];
+  headers?: SpaceHubHeader[];
   switch_rows?: unknown[];
   // Main tile actions (boilerplate-style)
   tap_action?: import('custom-card-helpers').ActionConfig;
@@ -97,14 +96,13 @@ function haptic(type: any): void {
 export class SpaceHubCard extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @state() private _config!: RoomCardConfig;
+  @state() private _config!: SpaceHubConfig;
 
-  static getStubConfig(): RoomCardConfig {
+  static getStubConfig(): SpaceHubConfig {
     return {
       title: 'Living room',
       tile_height: 80,
-      badge_size: 22,
-      badge_icon_size: 14,
+      chip_icon_size: 14,
       main_icon_size: 48,
       chip_font_size: 12,
       card_shadow_color: '#000000',
@@ -116,9 +114,9 @@ export class SpaceHubCard extends LitElement {
     };
   }
 
-  public setConfig(config: RoomCardConfig): void {
+  public setConfig(config: SpaceHubConfig): void {
     // Keep the provided config as-is and ensure headers is an array
-    const c = clone(config || {} as RoomCardConfig);
+    const c = clone(config || {} as SpaceHubConfig);
     if (!Array.isArray(c.headers)) c.headers = [];
     if (!Array.isArray(c.switch_rows)) c.switch_rows = [];
     this._config = c;
@@ -141,14 +139,13 @@ export class SpaceHubCard extends LitElement {
     // Don't merge the full stub (it contains a default header).
     // Apply visual defaults but keep header(s) strictly from user config.
     const defaults = SpaceHubCard.getStubConfig();
-    const userCfg = this._config || {} as RoomCardConfig;
+    const userCfg = this._config || {} as SpaceHubConfig;
 
     // Build a rendering config that uses defaults for visuals only.
-    const c: RoomCardConfig = {
+    const c: SpaceHubConfig = {
       title: userCfg.title ?? defaults.title,
       tile_height: userCfg.tile_height ?? defaults.tile_height,
-      badge_size: userCfg.badge_size ?? defaults.badge_size,
-      badge_icon_size: userCfg.badge_icon_size ?? defaults.badge_icon_size,
+      chip_icon_size: userCfg.chip_icon_size ?? defaults.chip_icon_size,
       main_icon_size: userCfg.main_icon_size ?? defaults.main_icon_size,
       chip_font_size: userCfg.chip_font_size ?? defaults.chip_font_size,
       card_shadow_color: userCfg.card_shadow_color ?? defaults.card_shadow_color,
@@ -160,14 +157,19 @@ export class SpaceHubCard extends LitElement {
       tap_action: userCfg.tap_action,
       hold_action: userCfg.hold_action,
       double_tap_action: userCfg.double_tap_action,
-    } as RoomCardConfig;
+    } as SpaceHubConfig;
 
     // Use the headers array directly
-    const headers: RoomCardHeader[] = Array.isArray(c.headers) && c.headers.length ? c.headers : [];
+    const headers: SpaceHubHeader[] = Array.isArray(c.headers) && c.headers.length ? c.headers : [];
 
     const tileH = Number(c.tile_height) || Number(defaults.tile_height) || 80;
-    const badgeSize = Number(c.badge_size) || Number(defaults.badge_size) || 22;
-    const badgeIcon = Number(c.badge_icon_size) || Number(defaults.badge_icon_size) || 14;
+    const chipIconSize = Number(c.chip_icon_size) || Number(defaults.chip_icon_size) || 14;
+    const chipFont = Number(c.chip_font_size) || Number(defaults.chip_font_size) || 12;
+    // Calculate responsive chip size: font size + padding (approx 10px padding total)
+    const chipSize = Math.max(chipFont + 10, 20); // minimum 20px for usability
+    // Calculate AC/thermostat icon size based on tile height (base ratio: 50px for 80px tile = 0.625)
+    // Examples: 80px tile → 50px icon, 100px tile → 62px icon, 60px tile → 37px icon
+    const acThermostatIcon = Math.round(tileH * 0.625);
     // Allow header-level override for main icon size (use first header if provided)
     const headerCfg: any = headers[0] || {};
     const headerMainIconSize = Number(headerCfg?.main_icon_size ?? headerCfg?.maicon_size);
@@ -175,7 +177,6 @@ export class SpaceHubCard extends LitElement {
       ? headerMainIconSize
       : (Number(c.main_icon_size) || Number(defaults.main_icon_size) || 48);
     const panelShadowColor = this._rgbaFromColor(c.card_shadow_color || defaults.card_shadow_color, c.card_shadow_intensity ?? defaults.card_shadow_intensity);
-    const chipFont = Number(c.chip_font_size) || Number(defaults.chip_font_size) || 12;
     const unavailColor = c.unavailable_pulse_color || defaults.unavailable_pulse_color || '#ff3b30';
     const hasUnavail = this._hasAnyUnavailable(c, headers);
     const unavailWeak = this._rgbaFromColor(unavailColor, 0.18);
@@ -185,7 +186,7 @@ export class SpaceHubCard extends LitElement {
       <ha-card class=${hasUnavail ? 'unavailable' : ''}
                style=${`--panel-shadow-color:${hasUnavail ? unavailWeak : panelShadowColor}; --unavail-weak:${unavailWeak}; --unavail-strong:${unavailStrong}`}
                .header=${this._config?.title || undefined}>
-        <div class="metrics" style=${`--tile-h:${tileH}px; --badge:${badgeSize}px; --badge-icon:${badgeIcon}px; --main-icon-size:${mainIcon}px; --chip-font-size:${chipFont}px;`}>
+        <div class="metrics" style=${`--tile-h:${tileH}px; --chip-size:${chipSize}px; --chip-icon-size:${chipIconSize}px; --main-icon-size:${mainIcon}px; --chip-font-size:${chipFont}px; --ac-thermostat-icon:${acThermostatIcon}px;`}>
           <div class="root">
             ${headers.map((h) => this._renderHeaderRow(h))}
             ${renderSwitchRows(this, c.switch_rows as any[])}
@@ -195,7 +196,7 @@ export class SpaceHubCard extends LitElement {
     `;
   }
 
-  private _renderHeaderRow(h: RoomCardHeader): TemplateResult {
+  private _renderHeaderRow(h: SpaceHubHeader): TemplateResult {
     const mainRaw: any = h.main || {};
     const main: any = {
       tap_entity: mainRaw.tap_entity,
@@ -206,7 +207,7 @@ export class SpaceHubCard extends LitElement {
       icon: mainRaw.main_icon || mainRaw.icon,
       temp_sensor: mainRaw.temp_sensor,
       humidity_sensor: mainRaw.humidity_sensor,
-      badges: Array.isArray(mainRaw.badges) ? mainRaw.badges : [],
+      chips: Array.isArray(mainRaw.badges) ? mainRaw.badges : [],
       tap_action: mainRaw.tap_action,
       hold_action: mainRaw.hold_action,
       double_tap_action: mainRaw.double_tap_action,
@@ -214,29 +215,29 @@ export class SpaceHubCard extends LitElement {
   const ac = h.ac || {} as any;
   const thermostat = h.thermostat || {} as any;
   const initialShowAC = !!ac?.entity;
-  const initialShowThermo = !!thermostat?.entity;
+  const initialShowThermostat = !!thermostat?.entity;
     // Determine whether a main is explicitly defined (avoid injecting defaults)
     const hasMain = !!(mainRaw && (mainRaw.main_name || mainRaw.name || mainRaw.light_group_entity || mainRaw.entity || mainRaw.main_icon || mainRaw.icon || mainRaw.temp_sensor || mainRaw.humidity_sensor || (Array.isArray(mainRaw.badges) && mainRaw.badges.length)));
 
     // AC/Thermostat must be defined only inside a `main` block. If they exist
     // outside of main, ignore them and warn the user in the console.
     const showAC = hasMain && initialShowAC;
-    const showThermo = hasMain && initialShowThermo;
+    const showThermostat = hasMain && initialShowThermostat;
 
-    if (!hasMain && (initialShowAC || initialShowThermo)) {
+    if (!hasMain && (initialShowAC || initialShowThermostat)) {
       // eslint-disable-next-line no-console
       console.warn('space-hub-card: header contains `ac`/`thermostat` outside of `main` — ignoring per configured rules.');
     }
 
     const cls = hasMain
-      ? (!showAC && !showThermo ? 'header-row only-main' : (showAC && showThermo ? 'header-row' : 'header-row main-plus-one'))
-      : (showAC && showThermo ? 'header-row main-plus-one' : 'header-row only-main');
+      ? (!showAC && !showThermostat ? 'header-row only-main' : (showAC && showThermostat ? 'header-row' : 'header-row main-plus-one'))
+      : (showAC && showThermostat ? 'header-row main-plus-one' : 'header-row only-main');
 
     const tpl = html`
       <div class=${cls}>
         ${hasMain ? renderMainTile(this, main as any) : nothing}
         ${showAC ? renderACTile(this, ac.entity as string, ac.glow_mode) : nothing}
-        ${showThermo ? renderThermoTile(this, thermostat.entity as string, thermostat.glow_mode) : nothing}
+        ${showThermostat ? renderThermostatTile(this, thermostat.entity as string, thermostat.glow_mode) : nothing}
       </div>
     `;
     return tpl;
@@ -244,11 +245,11 @@ export class SpaceHubCard extends LitElement {
 
   // main tile renderer moved to src/tiles/main.ts
 
-  // illuminance badge moved to src/chips.ts
+  // illuminance chip moved to src/chips.ts
 
-  // extra badge moved to src/chips.ts
+  // extra chip moved to src/chips.ts
 
-  // badge action handler moved into src/chips.ts
+  // chip action handler moved into src/chips.ts
 
   private _toggleByDomain(entityId?: string | null): void {
     if (!entityId || !this.hass) return;
@@ -307,7 +308,7 @@ export class SpaceHubCard extends LitElement {
     }
   }
 
-  private _onThermoAction(ev: CustomEvent, entity: string): void {
+  private _onThermostatAction(ev: CustomEvent, entity: string): void {
     const act = (ev.detail && ev.detail.action) || 'tap';
     if (act === 'hold') {
       // Haptic feedback: medium on long press
@@ -316,7 +317,7 @@ export class SpaceHubCard extends LitElement {
     } else {
       // Haptic feedback: success on tap
       haptic('success');
-      this._thermoToggle(entity);
+      this._thermostatToggle(entity);
     }
   }
 
@@ -367,7 +368,7 @@ export class SpaceHubCard extends LitElement {
     return 'var(--paper-item-icon-color)';
   }
 
-  private _acBadge(mode: string): { bg: string; icon: string } {
+  private _acChip(mode: string): { bg: string; icon: string } {
     if (!mode || mode === 'off') return { bg: 'rgba(158,158,158,0.95)', icon: 'mdi:power' };
     if (mode.includes('cool')) return { bg: '#00aaff', icon: 'mdi:snowflake' };
     if (mode.includes('heat')) return { bg: '#ff7043', icon: 'mdi:fire' };
@@ -394,7 +395,7 @@ export class SpaceHubCard extends LitElement {
     this.hass.callService('climate', on ? 'turn_off' : 'turn_on', { entity_id: entityId });
   }
 
-  private _thermoToggle(entityId?: string | null): void {
+  private _thermostatToggle(entityId?: string | null): void {
     if (!entityId || !this.hass) return;
     const st = this.hass.states[entityId];
     const mode = (st?.state || '').toLowerCase();
@@ -434,10 +435,10 @@ export class SpaceHubCard extends LitElement {
     return `rgba(0,0,0,${a})`;
   }
 
-  private _hasAnyUnavailable(c: RoomCardConfig, h: RoomCardHeader | RoomCardHeader[]): boolean {
+  private _hasAnyUnavailable(c: SpaceHubConfig, h: SpaceHubHeader | SpaceHubHeader[]): boolean {
     if (!this.hass) return false;
     const ids: Array<string | undefined> = [];
-    const headers: RoomCardHeader[] = Array.isArray(h) ? h : [h];
+    const headers: SpaceHubHeader[] = Array.isArray(h) ? h : [h];
     headers.forEach((hdr) => {
       const mainRaw: any = hdr?.main || {};
       const main: any = {
@@ -485,7 +486,7 @@ try {
     const l1 = 'background:#3f51b5;color:#fff;padding:2px 6px;border-radius:4px 0 0 4px;font-weight:700';
     const l2 = 'background:#e0e0e0;color:#111;padding:2px 6px;border-radius:0 4px 4px 0;';
     // eslint-disable-next-line no-console
-    console.info(`%c🚀 Space hub card%c v${CARD_VERSION} loaded`, l1, l2);
+    console.info(`%c🚀 Space hub card%c v${CARD_VERSION}`, l1, l2);
     w.__SPACE_HUB_CARD_LOGGED__ = true;
   }
 } catch (e) { /* no-op */ }

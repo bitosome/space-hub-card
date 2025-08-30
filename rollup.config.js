@@ -39,10 +39,11 @@ const plugins = [
 
 export default [
   {
-    input: 'src/room-card.ts',
+    input: 'src/space-hub.ts',
     output: {
       dir: 'dist',
       format: 'es',
+      entryFileNames: 'space-hub-card.js',
     },
     plugins: [...plugins],
   },

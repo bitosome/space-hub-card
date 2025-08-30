@@ -10,8 +10,8 @@ interface CardHost extends HTMLElement {
   _toggleByDomain?: (entity?: string | null) => void;
 }
 
-// Minimal badge config interface (only fields used by chips)
-interface BadgeConfig {
+// Minimal chip config interface (only fields used by chips)
+interface ChipConfig {
   entity?: string;
   tap_entity?: string;
   hold_entity?: string;
@@ -22,24 +22,24 @@ interface BadgeConfig {
   double_tap_action?: unknown;
 }
 
-// Chips and badges rendering helpers extracted from room-card
+// Chips rendering helpers extracted from space-hub-card
 
-export function renderIlluminanceBadge(host: CardHost, b: BadgeConfig): TemplateResult {
-  const entity: string | undefined = b?.entity || b?.tap_entity;
-  const icon = b?.icon || 'mdi:brightness-5';
+export function renderIlluminanceChip(host: CardHost, c: ChipConfig): TemplateResult {
+  const entity: string | undefined = c?.entity || c?.tap_entity;
+  const icon = c?.icon || 'mdi:brightness-5';
   const val = typeof host?._fmt2 === 'function' ? host._fmt2(entity, 0, ' lx') : '— lx';
   return html`
-  <div class="illum-badge">
+  <div class="illum-chip">
       <ha-icon .icon=${icon}></ha-icon>
       <span class="illum-val">${val}</span>
     </div>
   `;
 }
 
-export function renderExtraBadge(host: CardHost, b: BadgeConfig): TemplateResult | typeof nothing {
-  const entity: string | undefined = b?.entity || b?.tap_entity;
-  const type = String(b?.type || '').toLowerCase();
-  const iconFromCfg: string | undefined = b?.icon;
+export function renderExtraChip(host: CardHost, c: ChipConfig): TemplateResult | typeof nothing {
+  const entity: string | undefined = c?.entity || c?.tap_entity;
+  const type = String(c?.type || '').toLowerCase();
+  const iconFromCfg: string | undefined = c?.icon;
   const st = entity && host?.hass ? host.hass.states[entity] : undefined;
   const state = (st?.state || '').toLowerCase();
 
@@ -83,7 +83,7 @@ export function renderExtraBadge(host: CardHost, b: BadgeConfig): TemplateResult
   }
 
   return html`
-  <div class="badge"
+  <div class="chip"
          style=${`background:${bg}`}
      >
       <ha-icon .icon=${icon} style=${`color:${icoColor}`}></ha-icon>
