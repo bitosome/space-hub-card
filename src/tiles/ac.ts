@@ -16,21 +16,22 @@ export function renderACTile(host: any, entityId: string, glowMode?: GlowMode): 
     if (typeof host?._onACAction === 'function') host._onACAction(ev, entityId);
   };
   return html`
-    <ha-control-button
-      class="square ac-tile ${active ? 'on' : ''}"
-      style=${wrapStyle}
-      @action=${onAction}
-      .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
-      role="button" tabindex="0"
-    >
-      <div class="chip chip-temperature-humidity" style=${`background:${bg}`}> 
-        <ha-icon .icon=${icon} style="color:#fff"></ha-icon>
-      </div>
-      <div class="center-xy">
-        <ha-icon class="ac-fan" icon="mdi:fan" style=${fanStyle}></ha-icon>
-      </div>
-  <div class="tile-end">${glowOverlay}</div>
-    </ha-control-button>
+    <div class="tile-wrap">
+      <div class="glow-under" style=${wrapStyle}>${glowOverlay}</div>
+      <ha-control-button
+        class="square ac-tile ${active ? 'on' : ''}"
+        @action=${onAction}
+        .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
+        role="button" tabindex="0"
+      >
+        <div class="chip chip-temperature-humidity" style=${`background:${bg}`}> 
+          <ha-icon .icon=${icon} style="color:#fff"></ha-icon>
+        </div>
+        <div class="center-xy">
+          <ha-icon class="ac-fan" icon="mdi:fan" style=${fanStyle}></ha-icon>
+        </div>
+      </ha-control-button>
+    </div>
   `;
 }
 

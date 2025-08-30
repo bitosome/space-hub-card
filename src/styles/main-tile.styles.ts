@@ -5,14 +5,14 @@ export const mainTileStyles: CSSResultGroup = css`
     position: relative; 
     width: 100%; 
     height: var(--tile-h); 
-    border-radius: var(--ha-card-border-radius, 12px); 
+  border-radius: var(--tile-border-radius); 
     box-shadow: var(--tile-shadow-default); 
     background: var(--ha-card-background, var(--card-background-color)); 
     overflow: hidden; 
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease; 
   }
-  .main-tile::part(button) { width: 100%; height: 100%; display:block; padding:0; margin:0; box-sizing:border-box; border-radius: var(--ha-card-border-radius, 12px); }
-  .main-tile:hover { transform: translateY(-1px); box-shadow: var(--tile-shadow-hover); border-radius: var(--ha-card-border-radius, 12px); }
+  .main-tile::part(button) { width: 100%; height: 100%; display:block; padding:0; margin:0; box-sizing:border-box; border-radius: var(--tile-border-radius); }
+  .main-tile:hover { transform: translateY(-1px); box-shadow: var(--tile-shadow-hover); border-radius: var(--tile-border-radius); }
 
   .main-icon { 
     position: absolute; 
@@ -46,7 +46,7 @@ export const mainTileStyles: CSSResultGroup = css`
     color: var(--primary-text-color); 
   }
 
-  .main-tile.on { border-radius: var(--ha-card-border-radius, 12px); box-shadow: var(--tile-shadow-active); }
+  .main-tile.on { border-radius: var(--tile-border-radius); box-shadow: var(--tile-shadow-active); }
 
   /* Container for main tile to allow rendering glow under / around the control */
   .tile-wrap { position: relative; width: 100%; height: var(--tile-h); display:block; }
