@@ -44,8 +44,9 @@ export const switchTileStyles: CSSResultGroup = css`
   .switch-tile-btn::after,
   .switch-tile-btn::part(button)::before,
   .switch-tile-btn::part(button)::after { border-radius: inherit; }
-  .switch-tile-btn:not(.on):hover { transform: translateY(-1px); box-shadow: var(--tile-shadow-hover); border-radius: var(--tile-border-radius); }
-  .switch-tile-btn:not(.on):hover::part(button) { transform: translateY(-1px); box-shadow: var(--tile-shadow-hover); border-radius: var(--tile-border-radius); }
+  /* Preserve stronger active shadow when ON (no custom hover transform) */
+  .switch-tile-btn.on { box-shadow: var(--tile-shadow-active); }
+  .switch-tile-btn.on::part(button) { box-shadow: var(--tile-shadow-active); }
 
   .switch-tile { 
     position: relative; 
@@ -64,7 +65,7 @@ export const switchTileStyles: CSSResultGroup = css`
   mask-image: radial-gradient(circle, white 99%, transparent 100%);
   background-clip: padding-box;
   }
-  .switch-tile:not(.on):hover { transform: translateY(-1px); box-shadow: var(--tile-shadow-hover); border-radius: var(--tile-border-radius); }
+  .switch-tile.on { box-shadow: var(--tile-shadow-active); }
   .tile-inner { display:grid; gap:4px; place-items:center; justify-items:center; text-align:center; }
   .switch-tile .name { font-weight: 600; font-size: 12px; }
   .switch-icon { width: 28px; height: 28px; color: var(--secondary-text-color); line-height:0; }

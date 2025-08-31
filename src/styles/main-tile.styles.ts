@@ -12,7 +12,6 @@ export const mainTileStyles: CSSResultGroup = css`
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease; 
   }
   .main-tile::part(button) { width: 100%; height: 100%; display:block; padding:0; margin:0; box-sizing:border-box; border-radius: var(--tile-border-radius); }
-  .main-tile:hover { transform: translateY(-1px); box-shadow: var(--tile-shadow-hover); border-radius: var(--tile-border-radius); }
 
   .main-icon { 
     position: absolute; 

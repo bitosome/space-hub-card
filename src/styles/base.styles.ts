@@ -92,7 +92,6 @@ export const baseStyles: CSSResultGroup = css`
   .tile-wrap { position: relative; width: 100%; height: var(--tile-h); display:block; }
   
   .square::part(button) { width: 100%; height: 100%; padding: 0; margin: 0; box-sizing: border-box; border-radius: var(--tile-border-radius); overflow: hidden; clip-path: inset(0 round var(--tile-border-radius)); background-clip: padding-box; }
-  .square:hover { transform: translateY(-1px); box-shadow: var(--tile-shadow-hover); border-radius: var(--tile-border-radius); }
 
   /* Ensure all tile containers share the same rounding & clipping */
   .main-tile,

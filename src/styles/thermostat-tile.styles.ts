@@ -3,6 +3,8 @@ import { css, CSSResultGroup } from 'lit';
 export const thermostatTileStyles: CSSResultGroup = css`
   .thermostat-tile.on { border-radius: var(--tile-border-radius); }
   .thermostat-tile::part(button) { border-radius: var(--tile-border-radius); }
+  .thermostat-tile.on { box-shadow: var(--tile-shadow-active); }
+  .thermostat-tile.on::part(button) { box-shadow: var(--tile-shadow-active); }
   .temperature-chip-container { 
     position: absolute; 
     right: var(--tile-padding); 

@@ -43,12 +43,9 @@ export const animationStyles: CSSResultGroup = css`
    * ============================================== */
 
   .hover-lift:hover {
-    transform: translateY(-1px);
-  }
 
   .hover-scale:hover {
-    transform: scale(1.02);
-  }
+    /* Removed custom hover transforms to stick with native HA hover behavior */
 
   /* ==============================================
    * TRANSITION UTILITIES

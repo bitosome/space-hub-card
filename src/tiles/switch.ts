@@ -72,11 +72,10 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
 
   return html`
     <div class="tile-wrap ${cls}"
-         style=${glowStyle}
          @action=${onAction}
          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
          role="button" tabindex="0">
-      <div class="glow-under">${glowOverlay}</div>
+      <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
       <div class="tile-inner">
         ${hasChip
           ? html`<ha-chip style=${`--ha-chip-background-color:${chipBg};--chip-background-color:${chipBg};--ha-chip-text-color:${chipFg};color:${chipFg};font-weight:600;`}>
