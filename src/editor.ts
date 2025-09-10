@@ -118,7 +118,7 @@ export class SpaceHubCardEditor extends ScopedRegistryHost(LitElement) implement
           .value=${this._chip_icon_size}
           .configValue=${'chip_icon_size'}
           @input=${this._valueChanged}
-          helper="Size of icons in chips/badges (default: 14)"
+          helper="Size of icons in chips (default: 14)"
           min="8"
           max="32"
         ></mwc-textfield>

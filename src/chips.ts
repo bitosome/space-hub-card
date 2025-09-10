@@ -58,6 +58,16 @@ function getChipIcon(type: string, entity: string | undefined, state: string, ic
     return isLocked ? 'mdi:lock' : 'mdi:lock-open-variant';
   }
   
+  if (type === 'door') {
+    const isOpen = isEntityActive(entity, state, type);
+    return isOpen ? 'mdi:door-open' : 'mdi:door';
+  }
+  
+  if (type === 'presence') {
+    const hasPresence = state === 'on';
+    return hasPresence ? 'mdi:human-greeting' : 'mdi:human-handsdown';
+  }
+  
   if (type === 'gate' || (entity?.startsWith('cover.') ?? false) || (entity?.startsWith('binary_sensor.') ?? false)) {
     const domain = (entity || '').split('.')[0];
     const deviceClass = (entityState?.attributes?.device_class || '').toLowerCase();
@@ -84,6 +94,21 @@ function getChipStyling(type: string, entity: string | undefined, state: string,
     return isActive 
       ? { bg: '#66bb6a', iconColor: '#ffffff' }
       : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
+  }
+  
+  if (type === 'door') {
+    if (isActive) {
+      return { bg: '#e53935', iconColor: '#ffffff' }; // Open/problem state
+    } else {
+      return { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
+    }
+  }
+  
+  if (type === 'presence') {
+    const hasPresence = state === 'on';
+    return hasPresence
+      ? { bg: '#42a5f5', iconColor: '#ffffff' } // Presence detected
+      : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' }; // No presence
   }
   
   if (type === 'gate' || (entity?.startsWith('cover.') ?? false) || (entity?.startsWith('binary_sensor.') ?? false)) {
@@ -165,13 +190,3 @@ export function renderInteractiveChip(host: CardHost, c: ChipConfig): TemplateRe
   `;
 }
 
-// ==============================================
-// LEGACY COMPATIBILITY
-// ==============================================
-
-/**
- * @deprecated Use renderInteractiveChip instead
- */
-export function renderExtraChip(host: CardHost, c: ChipConfig): TemplateResult | typeof nothing {
-  return renderInteractiveChip(host, c);
-}

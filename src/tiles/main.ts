@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
-import { renderIlluminanceChip, renderExtraChip } from '../chips';
+import { renderIlluminanceChip, renderInteractiveChip } from '../chips';
 import { buildGlow, STATIC_GLOW } from '../glow';
 
 export function renderMainTile(host: any, h: any): TemplateResult {
@@ -59,7 +59,7 @@ export function renderMainTile(host: any, h: any): TemplateResult {
           ${Array.isArray(h?.chips) && h.chips.length
             ? html`${h.chips
                 .filter((c: any) => String(c?.type || '').toLowerCase() !== 'illuminance')
-                .map((c: any) => renderExtraChip(host, c))}`
+                .map((c: any) => renderInteractiveChip(host, c))}`
             : nothing}
         </div>
         <div class="main-name">${name}</div>

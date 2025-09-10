@@ -26,9 +26,13 @@
             entity_id: switch.entrance_light_switch_group
         temp_sensor: sensor.aqara_thp_10_temperature
         humidity_sensor: sensor.aqara_thp_10_humidity
-        badges:
+        chips:
           - type: lock
             entity: lock.front_door
+          - type: door
+            entity: binary_sensor.front_door_sensor
+          - type: presence
+            entity: binary_sensor.tuya_pir_24_ghz_human_presence_sensor_1_presence
     - thermostat:
         entity: climate.thermostat_4
   switch_rows:
@@ -69,7 +73,7 @@
         glow_mode: pulse
         temp_sensor: sensor.kitchen_living_room_temperature_average
         humidity_sensor: sensor.kitchen_living_room_humidity_average
-        badges:
+        chips:
           - type: illuminance
             entity: sensor.aqara_light_sensor_1_illuminance
             icon: mdi:brightness-5

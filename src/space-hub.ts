@@ -349,7 +349,7 @@ export class SpaceHubCard extends LitElement {
       icon: mainRaw.main_icon || mainRaw.icon,
       temp_sensor: mainRaw.temp_sensor,
       humidity_sensor: mainRaw.humidity_sensor,
-      chips: Array.isArray(mainRaw.badges) ? mainRaw.badges : [],
+      chips: Array.isArray(mainRaw.chips) ? mainRaw.chips : [],
       tap_action: mainRaw.tap_action,
       hold_action: mainRaw.hold_action,
       double_tap_action: mainRaw.double_tap_action,
@@ -359,7 +359,7 @@ export class SpaceHubCard extends LitElement {
   const initialShowAC = !!ac?.entity;
   const initialShowThermostat = !!thermostat?.entity;
     // Determine whether a main is explicitly defined (avoid injecting defaults)
-    const hasMain = !!(mainRaw && (mainRaw.main_name || mainRaw.name || mainRaw.light_group_entity || mainRaw.entity || mainRaw.main_icon || mainRaw.icon || mainRaw.temp_sensor || mainRaw.humidity_sensor || (Array.isArray(mainRaw.badges) && mainRaw.badges.length)));
+    const hasMain = !!(mainRaw && (mainRaw.main_name || mainRaw.name || mainRaw.light_group_entity || mainRaw.entity || mainRaw.main_icon || mainRaw.icon || mainRaw.temp_sensor || mainRaw.humidity_sensor || (Array.isArray(mainRaw.chips) && mainRaw.chips.length)));
 
     // AC/Thermostat must be defined only inside a `main` block. If they exist
     // outside of main, ignore them and warn the user in the console.

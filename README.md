@@ -186,23 +186,6 @@ The card automatically scales AC and thermostat icons based on your `tile_height
 
 This ensures visual consistency across different tile sizes while maintaining proper proportions.
 
-## Migration from bitosome-room-card
-
-If migrating from the legacy bitosome-room-card:
-
-1. **Parameter changes**:
-   - `badge_size` parameter removed (no backward compatibility)
-   - `badge_icon_size` → `chip_icon_size`
-   - `badges` → `chips` in configuration
-
-2. **Terminology updates**:
-   - All references to "badges" are now "chips"
-   - CSS classes updated accordingly
-
-3. **Default changes**:
-   - `card_shadow_intensity` default: 0.5 → 0.1 (subtler shadows)
-   - Icons now scale automatically with `tile_height`
-
 ## Notes and Behavior Details
 
 - **Glow behavior**: tiles use `glow_mode` with values `static` (soft steady glow), `pulse` (animated pulse), or `none` (disabled). `glow_mode` is respected per-tile for fine-grained control.
@@ -310,7 +293,7 @@ npm start
 
 ## Version
 
-Current version: **1.0.4**
+Current version: **1.0.5**
 
 ## License
 
