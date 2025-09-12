@@ -12,7 +12,7 @@ A modern, customizable dashboard card for Home Assistant with support for multip
 - **Temperature/humidity**: combined sensor display
 - **Touch-optimized**: works great on mobile and tablet interfaces
 
-## New in v1.0.5
+## New in v1.0.6
 
 - **Door chip type**: dedicated door sensor with door-specific icons
 - **Presence chip type**: human presence detection with greeting/handsdown icons

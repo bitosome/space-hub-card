@@ -577,10 +577,11 @@ export class SpaceHubCard extends LitElement {
     return `rgba(0,0,0,${a})`;
   }
 
-  private _hasAnyUnavailable(c: SpaceHubConfig, h: SpaceHubHeader | SpaceHubHeader[]): boolean {
-    if (!this.hass) return false;
+  private _getAllCardEntities(c: SpaceHubConfig, h: SpaceHubHeader | SpaceHubHeader[]): Array<string | undefined> {
     const ids: Array<string | undefined> = [];
     const headers: SpaceHubHeader[] = Array.isArray(h) ? h : [h];
+    
+    // Process all headers
     headers.forEach((hdr) => {
       const mainRaw: any = hdr?.main || {};
       const main: any = {
@@ -589,17 +590,47 @@ export class SpaceHubCard extends LitElement {
         light_group_entity: mainRaw.light_group_entity,
         temp_sensor: mainRaw.temp_sensor,
         humidity_sensor: mainRaw.humidity_sensor,
+        chips: Array.isArray(mainRaw.chips) ? mainRaw.chips : [],
       };
       const ac = hdr?.ac || ({} as any);
       const thermostat = hdr?.thermostat || ({} as any);
-      ids.push(main?.tap_entity, main?.hold_entity, main?.light_group_entity, main?.temp_sensor, main?.humidity_sensor, ac?.entity, thermostat?.entity);
+      
+      // Main tile entities
+      ids.push(
+        main?.tap_entity, 
+        main?.hold_entity, 
+        main?.light_group_entity, 
+        main?.temp_sensor, 
+        main?.humidity_sensor
+      );
+      
+      // AC and thermostat entities
+      ids.push(ac?.entity, thermostat?.entity);
+      
+      // Chip entities
+      main.chips.forEach((chip: any) => {
+        ids.push(chip?.entity, chip?.tap_entity, chip?.hold_entity);
+      });
     });
+    
+    // Process switch rows
     const rows = (c.switch_rows || []) as any[];
     rows.forEach((row) => {
       const items = Array.isArray(row) ? row : (Array.isArray((row as any)?.row) ? (row as any).row : []);
-      items.forEach((sw: any) => ids.push(sw?.entity, sw?.hold_entity));
+      items.forEach((sw: any) => {
+        ids.push(sw?.entity, sw?.hold_entity);
+      });
     });
+    
+    return ids;
+  }
+
+  private _hasAnyUnavailable(c: SpaceHubConfig, h: SpaceHubHeader | SpaceHubHeader[]): boolean {
+    if (!this.hass) return false;
+    
+    const ids = this._getAllCardEntities(c, h);
     const bad = new Set(['unavailable', 'unknown', 'offline']);
+    
     return ids.some((id) => {
       if (!id) return false;
       const st = this.hass?.states?.[id];

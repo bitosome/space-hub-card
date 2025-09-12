@@ -10,10 +10,10 @@ Custom Space Hub card for Home Assistant, built with Lit. This card renders one 
 - **AC and Thermostat tiles** with animated state visuals and responsive icon sizing
 - **Switch rows** with per-tile tap/hold entities, including smart plug style
 - **Optional card header** title (omit `title` to hide)
-- **Unavailable pulse**: card shadow pulses if any used entity is unavailable/unknown/offline
+- **Unavailable detection**: card shadow pulses red if any entity (including chip entities) is unavailable/unknown/offline
 - **Glow containment**: internal glows/shadows are clipped to the card bounds so they never overlay surrounding cards
 - **Multiple headers**: render one or more header rows via `headers: [...]` array
-- **Illuminance chip**: optional chip-style indicator on the main tile (type `illuminance`), aligned to the right edge and vertically centered (e.g., `109 lx`)
+- **Interactive chips**: support for `lock`, `door`, `presence`, `gate`, `sliding_gate`, and `illuminance` chip types with state-aware icons and colors
 - **Responsive sizing**: AC/thermostat icons scale proportionally with `tile_height` configuration
 - **Consistent terminology**: uses "chips" instead of "badges" for modern UI consistency
 - **Border radii follow HA theme**: card, tiles, chips use `--ha-card-border-radius`, `--ha-chip-border-radius` (with sensible fallbacks)
@@ -46,7 +46,7 @@ Use `headers: [...]` to define one or more header rows. Each header row can cont
 - **humidity_sensor**: optional humidity sensor entity for the temp/humidity chip
 - **main_icon_size**: header-level main icon size override
 - **chips**: array of chip objects with the following fields:
-  - **type**: `lock`, `gate`, `illuminance`, or custom (generic)
+  - **type**: `lock`, `door`, `presence`, `gate`, `sliding_gate`, `illuminance`, or custom (generic)
   - **entity**: entity id for the chip
   - **icon**: optional MDI icon override
   - **tap_action** / **hold_action** / **double_tap_action**: HA-native actions specific to the chip
@@ -92,6 +92,10 @@ headers:
       chips:
         - type: lock
           entity: lock.front_door
+        - type: door  
+          entity: binary_sensor.front_door_sensor
+        - type: presence
+          entity: binary_sensor.entrance_presence
 ```
 
 ### Multi-header (main + AC + thermostat)
@@ -111,6 +115,10 @@ headers:
       chips:
         - type: illuminance
           entity: sensor.aqara_light_sensor_1_illuminance
+        - type: gate
+          entity: binary_sensor.garden_gate
+        - type: sliding_gate
+          entity: binary_sensor.driveway_gate
     ac:
       entity: climate.living_room_ac
       glow_mode: pulse
@@ -293,7 +301,7 @@ npm start
 
 ## Version
 
-Current version: **1.0.5**
+Current version: **1.0.6**
 
 ## License
 

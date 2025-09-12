@@ -40,17 +40,13 @@ function isEntityActive(entity: string | undefined, state: string, type?: string
     return state === 'locked';
   }
   
-  if (entity?.startsWith('cover.') ?? false) {
-    return state !== 'closed' && state !== 'closing';
-  }
-  
   return state === 'on' || state === 'open' || state === 'opening';
 }
 
 /**
  * Gets appropriate icon for chip based on type, entity, and state
  */
-function getChipIcon(type: string, entity: string | undefined, state: string, iconFromConfig?: string, entityState?: any): string {
+function getChipIcon(type: string, entity: string | undefined, state: string, iconFromConfig?: string): string {
   if (iconFromConfig) return iconFromConfig;
   
   if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) {
@@ -68,16 +64,14 @@ function getChipIcon(type: string, entity: string | undefined, state: string, ic
     return hasPresence ? 'mdi:human-greeting' : 'mdi:human-handsdown';
   }
   
-  if (type === 'gate' || (entity?.startsWith('cover.') ?? false) || (entity?.startsWith('binary_sensor.') ?? false)) {
-    const domain = (entity || '').split('.')[0];
-    const deviceClass = (entityState?.attributes?.device_class || '').toLowerCase();
-    const isGateLike = type === 'gate' || domain === 'cover' || 
-      (domain === 'binary_sensor' && /(door|window|garage|opening|gate)/.test(deviceClass));
-    
-    if (isGateLike) {
-      const isOpen = isEntityActive(entity, state, type);
-      return isOpen ? 'mdi:gate-open' : 'mdi:gate';
-    }
+  if (type === 'sliding_gate') {
+    const isOpen = isEntityActive(entity, state, type);
+    return isOpen ? 'mdi:gate-open' : 'mdi:gate-arrow-left';
+  }
+  
+  if (type === 'gate') {
+    const isOpen = isEntityActive(entity, state, type);
+    return isOpen ? 'mdi:gate-open' : 'mdi:gate';
   }
   
   const isActive = isEntityActive(entity, state, type);
@@ -87,7 +81,7 @@ function getChipIcon(type: string, entity: string | undefined, state: string, ic
 /**
  * Gets chip styling (background and icon color) based on state
  */
-function getChipStyling(type: string, entity: string | undefined, state: string, entityState?: any): { bg: string; iconColor: string } {
+function getChipStyling(type: string, entity: string | undefined, state: string): { bg: string; iconColor: string } {
   const isActive = isEntityActive(entity, state, type);
   
   if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) {
@@ -111,19 +105,16 @@ function getChipStyling(type: string, entity: string | undefined, state: string,
       : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' }; // No presence
   }
   
-  if (type === 'gate' || (entity?.startsWith('cover.') ?? false) || (entity?.startsWith('binary_sensor.') ?? false)) {
-    const domain = (entity || '').split('.')[0];
-    const deviceClass = (entityState?.attributes?.device_class || '').toLowerCase();
-    const isGateLike = type === 'gate' || domain === 'cover' || 
-      (domain === 'binary_sensor' && /(door|window|garage|opening|gate)/.test(deviceClass));
-    
-    if (isGateLike) {
-      if (isActive) {
-        return { bg: '#e53935', iconColor: '#ffffff' }; // Open/problem state
-      } else {
-        return { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
-      }
-    }
+  if (type === 'sliding_gate') {
+    return isActive 
+      ? { bg: '#e53935', iconColor: '#ffffff' } // Open/problem state
+      : { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
+  }
+  
+  if (type === 'gate') {
+    return isActive 
+      ? { bg: '#e53935', iconColor: '#ffffff' } // Open/problem state
+      : { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
   }
   
   return isActive 
@@ -180,8 +171,8 @@ export function renderInteractiveChip(host: CardHost, c: ChipConfig): TemplateRe
   const entityState = entity && host?.hass ? host.hass.states[entity] : undefined;
   const state = (entityState?.state || '').toLowerCase();
 
-  const icon = getChipIcon(type, entity, state, iconFromConfig, entityState);
-  const { bg, iconColor } = getChipStyling(type, entity, state, entityState);
+  const icon = getChipIcon(type, entity, state, iconFromConfig);
+  const { bg, iconColor } = getChipStyling(type, entity, state);
 
   return html`
     <div class="chip" style=${`background:${bg}`}>
