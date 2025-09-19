@@ -63,7 +63,11 @@ function getChipIcon(type: string, entity: string | undefined, state: string, ic
     const hasPresence = state === 'on';
     return hasPresence ? 'mdi:human-greeting' : 'mdi:human-handsdown';
   }
-  
+
+  if (type === 'smart_plug') {
+    return 'mdi:power-plug-outline';
+  }
+
   if (type === 'sliding_gate') {
     const isOpen = isEntityActive(entity, state, type);
     return isOpen ? 'mdi:gate-open' : 'mdi:gate-arrow-left';
@@ -104,7 +108,13 @@ function getChipStyling(type: string, entity: string | undefined, state: string)
       ? { bg: '#42a5f5', iconColor: '#ffffff' } // Presence detected
       : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' }; // No presence
   }
-  
+
+  if (type === 'smart_plug') {
+    return isActive
+      ? { bg: 'var(--chip-background-color)', iconColor: '#66bb6a' }
+      : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
+  }
+
   if (type === 'sliding_gate') {
     return isActive 
       ? { bg: '#e53935', iconColor: '#ffffff' } // Open/problem state
@@ -180,4 +190,3 @@ export function renderInteractiveChip(host: CardHost, c: ChipConfig): TemplateRe
     </div>
   `;
 }
-
