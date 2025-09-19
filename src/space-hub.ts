@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, CSSResultGroup, TemplateResult, nothing } from 'lit';
+import { until } from 'lit/directives/until.js';
 import { customElement, property, state } from 'lit/decorators';
 import type { HomeAssistant } from 'custom-card-helpers';
-import { handleAction, fireEvent } from 'custom-card-helpers';
+import { handleAction, fireEvent, createThing } from 'custom-card-helpers';
+import type { LovelaceCard, LovelaceCardConfig } from 'custom-card-helpers';
+import type { PropertyValues } from 'lit';
 import { CARD_VERSION } from './const';
 // glow utilities used by tiles
 import { renderMainTile } from './tiles/main';
@@ -100,6 +103,11 @@ export class SpaceHubCard extends LitElement {
 
   @state() private _config!: SpaceHubConfig;
 
+  private _helpersPromise?: Promise<any>;
+  private _rowCardElements = new Map<string, LovelaceCard>();
+  private _rowCardConfigs = new Map<string, LovelaceCardConfig>();
+  private _rowCardPromises = new Map<string, Promise<LovelaceCard>>();
+
   static getStubConfig(): SpaceHubConfig {
     return {
       title: 'Living room',
@@ -128,6 +136,7 @@ export class SpaceHubCard extends LitElement {
     const c = clone(config || {} as SpaceHubConfig);
     if (!Array.isArray(c.headers)) c.headers = [];
     if (!Array.isArray(c.switch_rows)) c.switch_rows = [];
+    this._clearRowCardCache();
     this._config = c;
   }
 
@@ -338,6 +347,15 @@ export class SpaceHubCard extends LitElement {
     `;
   }
 
+  protected updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+    if (changedProperties.has('hass')) {
+      this._rowCardElements.forEach((card) => {
+        if (card) card.hass = this.hass;
+      });
+    }
+  }
+
   private _renderHeaderRow(h: SpaceHubHeader): TemplateResult {
     const mainRaw: any = h.main || {};
     const main: any = {
@@ -392,6 +410,102 @@ export class SpaceHubCard extends LitElement {
   // extra chip moved to src/chips.ts
 
   // chip action handler moved into src/chips.ts
+
+  // Renders an arbitrary Lovelace card beneath a switch row, reusing helpers for creation.
+  public _renderEmbeddedRowCard(cardConfig: LovelaceCardConfig, key: string): TemplateResult | typeof nothing {
+    if (!cardConfig || typeof cardConfig !== 'object') return nothing;
+
+    const cachedConfig = this._rowCardConfigs.get(key);
+    if (cachedConfig !== cardConfig) {
+      this._rowCardElements.delete(key);
+      this._rowCardPromises.delete(key);
+    }
+    this._rowCardConfigs.set(key, cardConfig);
+
+    const existing = this._rowCardElements.get(key);
+    if (existing) {
+      existing.hass = this.hass;
+      return html`<div class="embedded-card">${existing}</div>`;
+    }
+
+    const cardPromise = this._createRowCardElement(key, cardConfig).then((card) => {
+      card.hass = this.hass;
+      return html`${card}`;
+    }).catch((err) => {
+      const message = err instanceof Error ? err.message : String(err);
+      const errorCard = this._createErrorCard(message, cardConfig);
+      errorCard.hass = this.hass;
+      return html`${errorCard}`;
+    });
+
+    return html`<div class="embedded-card">${until(cardPromise, nothing)}</div>`;
+  }
+
+  // Creates or reuses a cached Lovelace card element for embedded usage.
+  private async _createRowCardElement(key: string, cardConfig: LovelaceCardConfig): Promise<LovelaceCard> {
+    const existingPromise = this._rowCardPromises.get(key);
+    if (existingPromise) return existingPromise;
+
+    const creation = (async () => {
+      const helpers = await this._getCardHelpers();
+      let card: LovelaceCard;
+      try {
+        if (helpers?.createCardElement) {
+          card = await helpers.createCardElement(cardConfig);
+        } else {
+          card = createThing(cardConfig) as LovelaceCard;
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        card = this._createErrorCard(message, cardConfig);
+      }
+
+      card.addEventListener('ll-rebuild', (ev: Event) => {
+        ev.stopPropagation();
+        this._rowCardElements.delete(key);
+        this._rowCardPromises.delete(key);
+        const cfg = this._rowCardConfigs.get(key) || cardConfig;
+        this._createRowCardElement(key, cfg).then(() => this.requestUpdate());
+      });
+
+      this._rowCardElements.set(key, card);
+      this._rowCardPromises.delete(key);
+      return card;
+    })();
+
+    this._rowCardPromises.set(key, creation);
+    return creation;
+  }
+
+  private _createErrorCard(message: string, cardConfig: LovelaceCardConfig): LovelaceCard {
+    try {
+      const errCard = document.createElement('hui-error-card') as LovelaceCard;
+      errCard.setConfig({ type: 'error', error: message, origConfig: cardConfig });
+      return errCard;
+    } catch (_e) {
+      return createThing({
+        type: 'hui-error-card',
+        error: message,
+        origConfig: cardConfig,
+      }) as LovelaceCard;
+    }
+  }
+
+  private async _getCardHelpers(): Promise<any> {
+    if (!this._helpersPromise) {
+      const loader = (window as any).loadCardHelpers;
+      this._helpersPromise = typeof loader === 'function'
+        ? loader()
+        : Promise.resolve(undefined);
+    }
+    return this._helpersPromise;
+  }
+
+  private _clearRowCardCache(): void {
+    this._rowCardElements.clear();
+    this._rowCardConfigs.clear();
+    this._rowCardPromises.clear();
+  }
 
   private _toggleByDomain(entityId?: string | null): void {
     if (!entityId || !this.hass) return;

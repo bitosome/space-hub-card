@@ -5,12 +5,30 @@ import { buildGlow, STATIC_GLOW, SMART_PLUG_GLOW } from '../glow';
 
 export function renderSwitchRows(host: any, rows?: any[]): TemplateResult | typeof nothing {
   if (!rows || !rows.length) return nothing;
-  return html`${rows.map((row) => {
-    const r: any = row as any;
-    const items = Array.isArray(row) ? row : (Array.isArray(r?.row) ? r.row : []);
-    const cols = Math.max(1, items.length || 1);
-    return html`<div class="switch-row" style=${`--cols:${cols}`}>${items.map((sw) => renderSwitchTile(host, sw))}</div>`;
-  })}`;
+  return html`${rows.map((row, rowIndex) => renderSwitchRow(host, row, rowIndex))}`;
+}
+
+function renderSwitchRow(host: any, row: any, rowIndex: number): TemplateResult {
+  const r: any = row as any;
+  const items = Array.isArray(row) ? row : (Array.isArray(r?.row) ? r.row : []);
+  let extraCards = Array.isArray(r?.cards) ? r.cards : (Array.isArray(r?.extra_cards) ? r.extra_cards : []);
+  if (!Array.isArray(extraCards) || !extraCards.length) {
+    const single = r?.card || r?.extra_card;
+    if (single && typeof single === 'object') extraCards = [single];
+  }
+  const cols = Math.max(1, items.length || 1);
+  const cardsTpl = (Array.isArray(extraCards) && extraCards.length && typeof host?._renderEmbeddedRowCard === 'function')
+    ? html`<div class="switch-row-cards">
+        ${extraCards.map((cfg: any, cardIndex: number) => host._renderEmbeddedRowCard(cfg, `switch-row-${rowIndex}-card-${cardIndex}`))}
+      </div>`
+    : nothing;
+
+  return html`
+    <div class="switch-row-wrap">
+      <div class="switch-row" style=${`--cols:${cols}`}>${items.map((sw: any) => renderSwitchTile(host, sw))}</div>
+      ${cardsTpl}
+    </div>
+  `;
 }
 
 export function renderSwitchTile(host: any, sw: any): TemplateResult {
@@ -90,4 +108,3 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
     </div>
   `;
 }
-

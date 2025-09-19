@@ -1,7 +1,11 @@
 import { css, CSSResultGroup } from 'lit';
 
 export const switchTileStyles: CSSResultGroup = css`
+  .switch-row-wrap { display:flex; flex-direction:column; gap: var(--medium-gap); width:100%; }
   .switch-row { display:grid; grid-template-columns: repeat(var(--cols,3), 1fr); gap: var(--large-gap); }
+  .switch-row-cards { display:flex; flex-direction:column; gap: var(--medium-gap); width:100%; }
+  .switch-row-cards .embedded-card { width:100%; }
+  .switch-row-cards .embedded-card > * { width:100%; }
   .switch-tile-btn { 
     height: var(--tile-h); 
     width: 100%; 
@@ -71,4 +75,3 @@ export const switchTileStyles: CSSResultGroup = css`
   .switch-icon { width: 28px; height: 28px; color: var(--secondary-text-color); line-height:0; }
   .tile-inner ha-chip { font-size: var(--chip-font-size, 12px); }
 `;
-
