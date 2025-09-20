@@ -77,6 +77,7 @@ export interface SpaceHubConfig {
   unavailable_pulse_color?: string;
   headers?: SpaceHubHeader[];
   switch_rows?: unknown[];
+  cards?: unknown[];
   // Main tile actions (boilerplate-style)
   tap_action?: import('custom-card-helpers').ActionConfig;
   hold_action?: import('custom-card-helpers').ActionConfig;
@@ -121,6 +122,7 @@ export class SpaceHubCard extends LitElement {
   // Note: stub contains visual defaults only. No default header/main to avoid
   // accidental rendering of a main tile in user configurations.
       switch_rows: [],
+      cards: [],
     };
   }
 
@@ -136,6 +138,7 @@ export class SpaceHubCard extends LitElement {
     const c = clone(config || {} as SpaceHubConfig);
     if (!Array.isArray(c.headers)) c.headers = [];
     if (!Array.isArray(c.switch_rows)) c.switch_rows = [];
+    if (!Array.isArray(c.cards)) c.cards = [];
     this._clearRowCardCache();
     this._config = c;
   }
@@ -305,6 +308,7 @@ export class SpaceHubCard extends LitElement {
       // Keep headers exactly as provided by user
       headers: Array.isArray(userCfg.headers) && userCfg.headers.length ? userCfg.headers : [],
       switch_rows: Array.isArray(userCfg.switch_rows) ? userCfg.switch_rows : (userCfg.switch_rows || []),
+      cards: Array.isArray(userCfg.cards) ? userCfg.cards : [],
       tap_action: userCfg.tap_action,
       hold_action: userCfg.hold_action,
       double_tap_action: userCfg.double_tap_action,
@@ -341,6 +345,15 @@ export class SpaceHubCard extends LitElement {
           <div class="root">
             ${headers.map((h) => this._renderHeaderRow(h))}
             ${renderSwitchRows(this, c.switch_rows as any[])}
+            ${Array.isArray(c.cards) && c.cards.length
+              ? html`
+                  <div class="extra-cards">
+                    ${c.cards.map((card: any, index: number) =>
+                      this._renderEmbeddedRowCard(card as LovelaceCardConfig, `standalone-card-${index}`)
+                    )}
+                  </div>
+                `
+              : nothing}
           </div>
         </div>
       </ha-card>
@@ -694,7 +707,37 @@ export class SpaceHubCard extends LitElement {
   private _getAllCardEntities(c: SpaceHubConfig, h: SpaceHubHeader | SpaceHubHeader[]): Array<string | undefined> {
     const ids: Array<string | undefined> = [];
     const headers: SpaceHubHeader[] = Array.isArray(h) ? h : [h];
-    
+
+    const addEntity = (value: unknown): void => {
+      if (!value) return;
+      if (typeof value === 'string') {
+        ids.push(value);
+      } else if (Array.isArray(value)) {
+        value.forEach((item) => addEntity(item));
+      }
+    };
+
+    const collectCardEntities = (card: any): void => {
+      if (!card || typeof card !== 'object') return;
+      addEntity(card.entity);
+      addEntity(card.entity_id);
+      addEntity(card.entities);
+      addEntity(card.tap_entity);
+      addEntity(card.hold_entity);
+      addEntity(card.double_tap_entity);
+
+      if (Array.isArray(card.cards)) card.cards.forEach(collectCardEntities);
+      if (Array.isArray(card.rows)) card.rows.forEach(collectCardEntities);
+      if (Array.isArray(card.columns)) card.columns.forEach(collectCardEntities);
+      if (Array.isArray(card.sections)) card.sections.forEach(collectCardEntities);
+      if (Array.isArray(card.widgets)) card.widgets.forEach(collectCardEntities);
+      if (Array.isArray(card.items)) card.items.forEach(collectCardEntities);
+      if (Array.isArray(card.elements)) card.elements.forEach(collectCardEntities);
+      if (card.card) collectCardEntities(card.card);
+      if (card.header) collectCardEntities(card.header);
+      if (card.footer) collectCardEntities(card.footer);
+    };
+
     // Process all headers
     headers.forEach((hdr) => {
       const mainRaw: any = hdr?.main || {};
@@ -735,6 +778,11 @@ export class SpaceHubCard extends LitElement {
         ids.push(sw?.entity, sw?.hold_entity);
       });
     });
+
+    // Process standalone cards configured at the root level
+    if (Array.isArray(c.cards)) {
+      c.cards.forEach((card: any) => collectCardEntities(card));
+    }
     
     return ids;
   }
@@ -748,7 +796,8 @@ export class SpaceHubCard extends LitElement {
     return ids.some((id) => {
       if (!id) return false;
       const st = this.hass?.states?.[id];
-      const s = (st?.state || '').toLowerCase();
+      if (!st) return true; // treat missing entity as unavailable
+      const s = (st.state || '').toLowerCase();
       return bad.has(s);
     });
   }

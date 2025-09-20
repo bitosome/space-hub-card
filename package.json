@@ -1,6 +1,6 @@
 {
   "name": "space-hub-card",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Lovelace space-hub-card",
   "keywords": [
     "home-assistant",
@@ -58,8 +58,8 @@
   },
   "scripts": {
     "start": "rollup -c rollup.config.dev.js --watch",
-    "build": "node ./scripts/bump-version.js && npm run lint && npm run rollup",
-    "build:no-bump": "SKIP_BUMP=1 node ./scripts/bump-version.js && npm run lint && npm run rollup",
+    "build": "npm run lint && npm run rollup",
+    "build:no-bump": "npm run lint && npm run rollup",
     "lint": "eslint src/*.ts",
     "rollup": "rollup -c"
   },

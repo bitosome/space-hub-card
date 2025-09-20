@@ -1,9 +1,9 @@
 import { css, CSSResultGroup } from 'lit';
 
 export const switchTileStyles: CSSResultGroup = css`
-  .switch-row-wrap { display:flex; flex-direction:column; gap: var(--medium-gap); width:100%; }
+  .switch-row-wrap { display:flex; flex-direction:column; gap: var(--large-gap); width:100%; }
   .switch-row { display:grid; grid-template-columns: repeat(var(--cols,3), 1fr); gap: var(--large-gap); }
-  .switch-row-cards { display:flex; flex-direction:column; gap: var(--medium-gap); width:100%; }
+  .switch-row-cards { display:flex; flex-direction:column; gap: var(--large-gap); width:100%; }
   .switch-row-cards .embedded-card { width:100%; }
   .switch-row-cards .embedded-card > * { width:100%; }
   .switch-tile-btn { 

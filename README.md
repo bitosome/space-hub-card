@@ -10,7 +10,7 @@ Custom Space Hub card for Home Assistant, built with Lit. This card renders one 
 - **AC and Thermostat tiles** with animated state visuals and responsive icon sizing
 - **Switch rows** with per-tile tap/hold entities, including smart plug style
 - **Optional card header** title (omit `title` to hide)
-- **Unavailable detection**: card shadow pulses red if any entity (including chip entities) is unavailable/unknown/offline
+- **Unavailable detection**: card shadow pulses red if any entity (including chips, switch rows, standalone cards, or missing/typoed IDs) is unavailable/unknown/offline
 - **Glow containment**: internal glows/shadows are clipped to the card bounds so they never overlay surrounding cards
 - **Multiple headers**: render one or more header rows via `headers: [...]` array
 - **Interactive chips**: support for `lock`, `door`, `presence`, `gate`, `sliding_gate`, and `illuminance` chip types with state-aware icons and colors
@@ -18,6 +18,7 @@ Custom Space Hub card for Home Assistant, built with Lit. This card renders one 
 - **Consistent terminology**: uses "chips" instead of "badges" for modern UI consistency
 - **Border radii follow HA theme**: card, tiles, chips use `--ha-card-border-radius`, `--ha-chip-border-radius` (with sensible fallbacks)
 - **Per-tile glow control** via `glow_mode` (values: `static` | `pulse` | `none`)
+- **Additional cards**: optional root-level cards render after switch rows while inheriting the card layout spacing
 
 ## Configuration Reference
 
@@ -32,6 +33,7 @@ Custom Space Hub card for Home Assistant, built with Lit. This card renders one 
 - **card_shadow_color**: base panel shadow color (default: '#000000')
 - **card_shadow_intensity**: base shadow intensity 0..1 (default: 0.1)
 - **unavailable_pulse_color**: color for the card pulse when any monitored entity is unavailable/unknown/offline (default: '#ff3b30')
+- **cards**: optional array of Lovelace card configs appended below switch rows (useful for alerts, stats, etc.)
 
 ### Headers Configuration
 
@@ -180,6 +182,27 @@ switch_rows:
         glow_mode: static
         tap_action:
           action: toggle
+cards:
+  - type: custom:mushroom-template-card
+    entity: sensor.watchman_missing_entities
+    primary: >-
+      {% set ents = state_attr('sensor.watchman_missing_entities','entities') or [] %}
+      {% set count = ents | count %}
+      {{ 'Sensor issues detected' if count > 0 else 'Sensors OK' }}
+    secondary: >-
+      {% set ents = state_attr('sensor.watchman_missing_entities','entities') or [] %}
+      {% set count = ents | count %}
+      {% if count > 0 %}
+        {{ count }} missing: {{ (ents | map(attribute='friendly_name') | list | default([]))[:3] | join(', ') }}
+        {% if count > 3 %}+{{ count-3 }} more{% endif %}
+      {% else %}
+        No missing entities
+      {% endif %}
+    tap_action:
+      action: more-info
+    hold_action:
+      action: navigate
+      navigation_path: /config/logs
 ```
 
 ## Responsive Icon Sizing
@@ -197,10 +220,11 @@ This ensures visual consistency across different tile sizes while maintaining pr
 ## Notes and Behavior Details
 
 - **Glow behavior**: tiles use `glow_mode` with values `static` (soft steady glow), `pulse` (animated pulse), or `none` (disabled). `glow_mode` is respected per-tile for fine-grained control.
-- **Chips**: informational by default. To make a chip interactive, add `tap_action` / `hold_action` to the chip object.
+- **Chips**: informational by default. To make a chip interactive, add `tap_action` / `hold_action` to the chip object. Smart plug chips use orange-on/grey-off visuals and power-plug icons.
 - **No implicit tiles**: the card renders only what you explicitly configure.
 - **AC/Thermostat placement**: must be declared inside a `main` block. If declared outside `main` they will be ignored (with console warning).
 - **Icon scaling**: AC and thermostat icons automatically scale proportionally with `tile_height` to maintain visual consistency.
+- **Standalone cards**: anything defined under `cards:` is rendered inside the card container after switch rows and participates in unavailable detection.
 
 ## Configuration Validation
 
@@ -244,16 +268,6 @@ Invalid space-hub-card configuration:
 • Switch row 1, item 2: Switch entity 'invalid_entity' must be a valid entity ID
 • Tile height must be a positive number, got: -50
 ```
-
-### Using the Visual Editor
-
-The card includes a visual editor for basic settings that provides:
-- **Real-time Validation**: Configuration errors are displayed immediately
-- **Input Validation**: Numeric fields validate ranges and types
-- **Helper Text**: Each field includes guidance on valid values
-- **Error Highlighting**: Invalid configurations are clearly marked
-
-For complex configurations (headers, switch rows), you'll need to edit the YAML directly, but the validation system will guide you to correct any issues.
 
 ## Installation
 
@@ -301,7 +315,7 @@ npm start
 
 ## Version
 
-Current version: **1.0.6**
+Current version: **1.1.0**
 
 ## License
 

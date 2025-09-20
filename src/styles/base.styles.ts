@@ -114,6 +114,18 @@ export const baseStyles: CSSResultGroup = css`
     background-clip: padding-box;
   }
 
+  .extra-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--large-gap);
+    width: 100%;
+  }
+
+  .extra-cards .embedded-card,
+  .extra-cards .embedded-card > * {
+    width: 100%;
+  }
+
   .center-xy { position: static; transform: none; display:flex; align-items:center; justify-content:center; pointer-events:none; user-select:none; line-height:0; }
 
   .ac-fan, .thermostat-icon { 
@@ -141,4 +153,3 @@ export const baseStyles: CSSResultGroup = css`
 
   .clickable { cursor: pointer; }
 `;
-

@@ -152,8 +152,9 @@ export const chipStyles: CSSResultGroup = css`
     bottom: var(--tile-padding); 
     z-index: var(--chip-z-index); 
     display:inline-flex; 
+    flex-direction: row-reverse;
     align-items:center; 
-    justify-content:flex-end; 
+    justify-content:flex-start; 
     gap: var(--chip-gap); 
     flex-wrap:wrap; 
     max-width: calc(100% - 16px); 

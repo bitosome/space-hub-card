@@ -22,9 +22,11 @@ export function renderMainTile(host: any, h: any): TemplateResult {
   const pulse = STATIC_GLOW; // main defaults to amber glow
   const { style: wrapStyle, overlay: glowOverlay } = buildGlow(pulse, glowMode as any, glowActive);
 
-  const illumChip = Array.isArray(h?.chips)
-    ? (h.chips as any[]).find((c) => String(c?.type || '').toLowerCase() === 'illuminance')
-    : undefined;
+  const allChips: any[] = Array.isArray(h?.chips) ? (h.chips as any[]) : [];
+  const illumChip = allChips.find((c) => String(c?.type || '').toLowerCase() === 'illuminance');
+  const interactiveChips = allChips
+    .filter((c) => String(c?.type || '').toLowerCase() !== 'illuminance')
+    .map((c) => renderInteractiveChip(host, c));
   const illumTpl = illumChip ? renderIlluminanceChip(host, illumChip) : nothing;
 
   const onAction = (ev: CustomEvent) => {
@@ -51,16 +53,12 @@ export function renderMainTile(host: any, h: any): TemplateResult {
         </div>
         ${illumTpl}
         <div class="main-chips-bottom-right" data-role="chips">
-      ${hasBulb
+          ${hasBulb
             ? html`<div class="chip" style=${`background:${bulbBg}`}>
                 <ha-icon .icon=${'mdi:lightbulb'} style=${`color:${isOn ? '#ffffff' : 'var(--secondary-text-color)'}`}></ha-icon>
               </div>`
             : nothing}
-          ${Array.isArray(h?.chips) && h.chips.length
-            ? html`${h.chips
-                .filter((c: any) => String(c?.type || '').toLowerCase() !== 'illuminance')
-                .map((c: any) => renderInteractiveChip(host, c))}`
-            : nothing}
+          ${interactiveChips.length ? html`${interactiveChips}` : nothing}
         </div>
         <div class="main-name">${name}</div>
   </ha-control-button>

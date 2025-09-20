@@ -65,6 +65,8 @@ function getChipIcon(type: string, entity: string | undefined, state: string, ic
   }
 
   if (type === 'smart_plug') {
+    if (state === 'on') return 'mdi:power-plug';
+    if (!state || state === 'off') return 'mdi:power-plug-off';
     return 'mdi:power-plug-outline';
   }
 
@@ -111,7 +113,7 @@ function getChipStyling(type: string, entity: string | undefined, state: string)
 
   if (type === 'smart_plug') {
     return isActive
-      ? { bg: 'var(--chip-background-color)', iconColor: '#66bb6a' }
+      ? { bg: '#ff9800', iconColor: '#ffffff' }
       : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
   }
 
