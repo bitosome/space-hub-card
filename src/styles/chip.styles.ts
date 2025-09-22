@@ -30,6 +30,16 @@ export const chipStyles: CSSResultGroup = css`
     color: var(--secondary-text-color); 
   }
 
+  .chip-unavailable {
+    background: var(--chip-unavailable-background, rgba(0,0,0,0.12)) !important;
+    opacity: 0.88;
+  }
+
+  .chip-unavailable ha-icon,
+  ha-icon.icon-unavailable {
+    color: var(--state-unavailable-color, var(--disabled-text-color, var(--secondary-text-color))) !important;
+  }
+
   /* Ensure native HA elements pick up theme border radiuses */
   ha-chip, ha-badge { 
     border-radius: var(--chip-border-radius); 
@@ -80,7 +90,7 @@ export const chipStyles: CSSResultGroup = css`
   .illuminance-chip { 
     position: absolute; 
     right: var(--tile-padding); 
-    top: 24px; 
+    top: calc(var(--tile-padding) + var(--chip-size, 28px) + var(--chip-gap, 6px)); 
     z-index: var(--chip-z-index); 
     display: inline-flex; 
     align-items: center; 

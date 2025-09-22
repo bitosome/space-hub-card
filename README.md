@@ -14,6 +14,7 @@ Custom Space Hub card for Home Assistant, built with Lit. This card renders one 
 - **Glow containment**: internal glows/shadows are clipped to the card bounds so they never overlay surrounding cards
 - **Multiple headers**: render one or more header rows via `headers: [...]` array
 - **Interactive chips**: support for `lock`, `door`, `presence`, `gate`, `sliding_gate`, and `illuminance` chip types with state-aware icons and colors
+- **Offline feedback**: chips fall back to an alert icon and muted styling when entities are unavailable (fully customizable per chip)
 - **Responsive sizing**: AC/thermostat icons scale proportionally with `tile_height` configuration
 - **Consistent terminology**: uses "chips" instead of "badges" for modern UI consistency
 - **Border radii follow HA theme**: card, tiles, chips use `--ha-card-border-radius`, `--ha-chip-border-radius` (with sensible fallbacks)
@@ -51,6 +52,10 @@ Use `headers: [...]` to define one or more header rows. Each header row can cont
   - **type**: `lock`, `door`, `presence`, `gate`, `sliding_gate`, `illuminance`, or custom (generic)
   - **entity**: entity id for the chip
   - **icon**: optional MDI icon override
+  - **icon_active** / **icon_inactive** / **icon_unavailable**: per-state icon overrides (fallbacks to `icon` when omitted)
+  - **background_active** / **background_inactive** / **background_unavailable**: per-state background overrides (fallbacks to `background` or built-in defaults)
+  - **icon_color_active** / **icon_color_inactive** / **icon_color_unavailable**: per-state icon color overrides (fallbacks to `icon_color` or built-in defaults)
+  - **background** / **icon_color**: default colors applied when a state-specific value is not provided
   - **tap_action** / **hold_action** / **double_tap_action**: HA-native actions specific to the chip
 - **tap_action** / **hold_action** / **double_tap_action**: HA-native actions for the main tile
 
@@ -119,6 +124,14 @@ headers:
           entity: sensor.aqara_light_sensor_1_illuminance
         - type: gate
           entity: binary_sensor.garden_gate
+          icon_active: mdi:garage-open-variant
+          icon_inactive: mdi:garage-variant
+          icon_unavailable: mdi:alert-circle-outline
+          background_active: '#4caf50'
+          background_inactive: 'rgba(0,0,0,0.06)'
+          background_unavailable: 'rgba(158,158,158,0.16)'
+          icon_color_active: '#ffffff'
+          icon_color_unavailable: '#ff3b30'
         - type: sliding_gate
           entity: binary_sensor.driveway_gate
     ac:

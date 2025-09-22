@@ -77,6 +77,14 @@
           - type: illuminance
             entity: sensor.aqara_light_sensor_1_illuminance
             icon: mdi:brightness-5
+          - type: gate
+            entity: binary_sensor.garden_gate
+            icon_active: mdi:garage-open-variant
+            icon_inactive: mdi:garage-variant
+            icon_unavailable: mdi:alert-circle-outline
+            background_active: '#4caf50'
+            background_unavailable: 'rgba(158,158,158,0.16)'
+            icon_color_unavailable: '#ff3b30'
       ac:
         entity: climate.living_room_ac
         glow_mode: pulse  # AC has its own glow config

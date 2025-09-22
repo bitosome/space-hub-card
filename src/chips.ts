@@ -20,6 +20,17 @@ interface ChipConfig {
   tap_entity?: string;
   hold_entity?: string;
   icon?: string;
+  icon_active?: string;
+  icon_inactive?: string;
+  icon_unavailable?: string;
+  icon_color?: string;
+  icon_color_active?: string;
+  icon_color_inactive?: string;
+  icon_color_unavailable?: string;
+  background?: string;
+  background_active?: string;
+  background_inactive?: string;
+  background_unavailable?: string;
   type?: string;
   tap_action?: unknown;
   hold_action?: unknown;
@@ -43,25 +54,60 @@ function isEntityActive(entity: string | undefined, state: string, type?: string
   return state === 'on' || state === 'open' || state === 'opening';
 }
 
+const DEFAULT_UNAVAILABLE_ICON = 'mdi:alert-circle-outline';
+
+type ChipAppearance = { bg: string; iconColor: string };
+
+function applyStylingOverrides(base: ChipAppearance, config: ChipConfig | undefined, isActive: boolean): ChipAppearance {
+  if (!config) return base;
+  return {
+    bg: (isActive ? config.background_active : config.background_inactive) ?? config.background ?? base.bg,
+    iconColor: (isActive ? config.icon_color_active : config.icon_color_inactive) ?? config.icon_color ?? base.iconColor,
+  };
+}
+
+function getUnavailableAppearance(config?: ChipConfig): ChipAppearance {
+  const fallbackBg = 'var(--chip-unavailable-background, rgba(0,0,0,0.12))';
+  const fallbackIconColor = 'var(--state-unavailable-color, var(--disabled-text-color, var(--secondary-text-color)))';
+  return {
+    bg: config?.background_unavailable ?? config?.background_inactive ?? config?.background ?? fallbackBg,
+    iconColor: config?.icon_color_unavailable ?? config?.icon_color_inactive ?? config?.icon_color ?? fallbackIconColor,
+  };
+}
+
+function isLockType(type: string, entity?: string): boolean {
+  return type === 'lock' || (entity?.startsWith('lock.') ?? false);
+}
+
 /**
  * Gets appropriate icon for chip based on type, entity, and state
  */
-function getChipIcon(type: string, entity: string | undefined, state: string, iconFromConfig?: string): string {
-  if (iconFromConfig) return iconFromConfig;
-  
-  if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) {
-    const isLocked = state === 'locked';
-    return isLocked ? 'mdi:lock' : 'mdi:lock-open-variant';
+function getChipIcon(
+  type: string,
+  entity: string | undefined,
+  state: string,
+  config: ChipConfig | undefined,
+  isActive: boolean,
+  isUnavailable: boolean
+): string {
+  if (isUnavailable) {
+    return config?.icon_unavailable ?? config?.icon_inactive ?? config?.icon ?? DEFAULT_UNAVAILABLE_ICON;
   }
-  
+
+  if (isActive && config?.icon_active) return config.icon_active;
+  if (!isActive && config?.icon_inactive) return config.icon_inactive;
+  if (config?.icon) return config.icon;
+
+  if (isLockType(type, entity)) {
+    return isActive ? 'mdi:lock' : 'mdi:lock-open-variant';
+  }
+
   if (type === 'door') {
-    const isOpen = isEntityActive(entity, state, type);
-    return isOpen ? 'mdi:door-open' : 'mdi:door';
+    return isActive ? 'mdi:door-open' : 'mdi:door';
   }
-  
+
   if (type === 'presence') {
-    const hasPresence = state === 'on';
-    return hasPresence ? 'mdi:human-greeting' : 'mdi:human-handsdown';
+    return state === 'on' ? 'mdi:human-greeting' : 'mdi:human-handsdown';
   }
 
   if (type === 'smart_plug') {
@@ -71,67 +117,78 @@ function getChipIcon(type: string, entity: string | undefined, state: string, ic
   }
 
   if (type === 'sliding_gate') {
-    const isOpen = isEntityActive(entity, state, type);
-    return isOpen ? 'mdi:gate-open' : 'mdi:gate-arrow-left';
+    return isActive ? 'mdi:gate-open' : 'mdi:gate-arrow-left';
   }
   
   if (type === 'gate') {
-    const isOpen = isEntityActive(entity, state, type);
-    return isOpen ? 'mdi:gate-open' : 'mdi:gate';
+    return isActive ? 'mdi:gate-open' : 'mdi:gate';
   }
   
-  const isActive = isEntityActive(entity, state, type);
   return isActive ? 'mdi:check-circle' : 'mdi:checkbox-blank-circle-outline';
 }
 
 /**
  * Gets chip styling (background and icon color) based on state
  */
-function getChipStyling(type: string, entity: string | undefined, state: string): { bg: string; iconColor: string } {
-  const isActive = isEntityActive(entity, state, type);
-  
-  if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) {
-    return isActive 
+function getChipStyling(
+  type: string,
+  entity: string | undefined,
+  state: string,
+  config: ChipConfig | undefined,
+  isActive: boolean,
+  isUnavailable: boolean
+): { bg: string; iconColor: string } {
+  if (isUnavailable) {
+    return getUnavailableAppearance(config);
+  }
+
+  if (isLockType(type, entity)) {
+    const base = isActive
       ? { bg: '#66bb6a', iconColor: '#ffffff' }
       : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
+    return applyStylingOverrides(base, config, isActive);
   }
   
   if (type === 'door') {
-    if (isActive) {
-      return { bg: '#e53935', iconColor: '#ffffff' }; // Open/problem state
-    } else {
-      return { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
-    }
+    const base = isActive
+      ? { bg: '#e53935', iconColor: '#ffffff' } // Open/problem state
+      : { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
+    return applyStylingOverrides(base, config, isActive);
   }
   
   if (type === 'presence') {
     const hasPresence = state === 'on';
-    return hasPresence
+    const base = hasPresence
       ? { bg: '#42a5f5', iconColor: '#ffffff' } // Presence detected
       : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' }; // No presence
+    return applyStylingOverrides(base, config, hasPresence);
   }
 
   if (type === 'smart_plug') {
-    return isActive
+    const base = isActive
       ? { bg: '#ff9800', iconColor: '#ffffff' }
       : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
+    return applyStylingOverrides(base, config, isActive);
   }
 
   if (type === 'sliding_gate') {
-    return isActive 
+    const base = isActive
       ? { bg: '#e53935', iconColor: '#ffffff' } // Open/problem state
       : { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
+    return applyStylingOverrides(base, config, isActive);
   }
   
   if (type === 'gate') {
-    return isActive 
+    const base = isActive
       ? { bg: '#e53935', iconColor: '#ffffff' } // Open/problem state
       : { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
+    return applyStylingOverrides(base, config, isActive);
   }
   
-  return isActive 
+  const base = isActive
     ? { bg: '#42a5f5', iconColor: '#ffffff' }
     : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
+  return applyStylingOverrides(base, config, isActive);
 }
 
 // ==============================================
@@ -179,16 +236,29 @@ export function renderIlluminanceChip(host: CardHost, c: ChipConfig): TemplateRe
 export function renderInteractiveChip(host: CardHost, c: ChipConfig): TemplateResult | typeof nothing {
   const entity: string | undefined = c?.entity || c?.tap_entity;
   const type = String(c?.type || '').toLowerCase();
-  const iconFromConfig: string | undefined = c?.icon;
   const entityState = entity && host?.hass ? host.hass.states[entity] : undefined;
   const state = (entityState?.state || '').toLowerCase();
+  const isUnavailable = !entityState || state === 'unavailable' || state === 'unknown' || state === '';
+  const isActive = !isUnavailable && isEntityActive(entity, state, type);
 
-  const icon = getChipIcon(type, entity, state, iconFromConfig);
-  const { bg, iconColor } = getChipStyling(type, entity, state);
+  const icon = getChipIcon(type, entity, state, c, isActive, isUnavailable);
+  const { bg, iconColor } = getChipStyling(type, entity, state, c, isActive, isUnavailable);
+
+  const chipClass = `chip${isUnavailable ? ' chip-unavailable' : ''}`;
+  const iconClass = isUnavailable ? 'icon-unavailable' : '';
+  const readableState = entityState?.state ?? 'unavailable';
+  const ariaLabel = type ? `${type} ${readableState}` : readableState;
 
   return html`
-    <div class="chip" style=${`background:${bg}`}>
-      <ha-icon .icon=${icon} style=${`color:${iconColor}`}></ha-icon>
+    <div
+      class=${chipClass}
+      style=${`background:${bg}`}
+      title=${readableState}
+      data-state=${state || 'unavailable'}
+      role="img"
+      aria-label=${ariaLabel}
+    >
+      <ha-icon .icon=${icon} class=${iconClass} style=${`color:${iconColor}`}></ha-icon>
     </div>
   `;
 }

@@ -6,6 +6,7 @@ A modern, customizable dashboard card for Home Assistant with support for multip
 
 - **Multiple header tiles**: main, AC, and thermostat tiles with independent glow effects
 - **Interactive chips**: lock, door, presence, gate, and illuminance sensors
+- **Offline feedback**: unavailable entities use alert icons and muted colors (customizable per chip)
 - **Smart switches**: organized in rows with custom icons and actions  
 - **Responsive design**: automatically scales with tile height settings
 - **Glow effects**: per-tile glow control (static, pulse, none)
