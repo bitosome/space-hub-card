@@ -405,7 +405,7 @@ var wt;null===(wt=window.HTMLSlotElement)||void 0===wt||wt.prototype.assignedEle
   .illuminance-chip { 
     position: absolute; 
     right: var(--tile-padding); 
-    top: calc(var(--tile-padding) + var(--chip-size, 28px) + var(--chip-gap, 6px)); 
+    top: calc(var(--tile-padding) + var(--chip-size, 28px) + var(--small-gap, 2px)); 
     z-index: var(--chip-z-index); 
     display: inline-flex; 
     align-items: center; 
