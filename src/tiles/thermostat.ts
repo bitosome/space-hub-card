@@ -10,17 +10,15 @@ export function renderThermostatTile(host: any, entityId: string, glowMode?: Glo
   const tStr = fmt(target, 1) + '°';
   const hvacAction = (st?.attributes?.hvac_action || '').toLowerCase();
   const state = (st?.state || '').toLowerCase();
-  const color = state === 'off' ? 'gray' : (hvacAction === 'heating' || state === 'heating') ? '#ff7043' : '#66bb6a';
   const isHeating = (hvacAction === 'heating');
-  const pillBg = isHeating
-    ? 'var(--state-climate-heat-color, #ff7043)'
-    : 'var(--chip-background-color, rgba(0,0,0,0.06))';
-  const pillFg = isHeating
-    ? 'var(--primary-background-color, #fff)'
-    : 'var(--secondary-text-color)';
+  const thermostatState = state === 'off' ? 'off' : (isHeating ? 'heating' : 'idle');
+  const chipClass = `thermostat-chip ${thermostatState}`;
+  const pillClass = `temperature-chip ${thermostatState}`;
+  const iconClass = `thermostat-icon ${thermostatState}`;
   const hasHaChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
   const finalGlowMode = glowMode ?? 'static';
-  const { style: wrapStyle, overlay: glowOverlay } = buildGlow(THERMOSTAT_HEAT_PULSE, finalGlowMode as any, isHeating);
+  const pulse = THERMOSTAT_HEAT_PULSE;
+  const { style: wrapStyle, overlay: glowOverlay } = buildGlow(pulse, finalGlowMode as any, isHeating);
   const onAction = (ev: CustomEvent) => {
     if (typeof host?._onThermostatAction === 'function') host._onThermostatAction(ev, entityId);
   };
@@ -36,14 +34,13 @@ export function renderThermostatTile(host: any, entityId: string, glowMode?: Glo
       
         <div class="temperature-chip-container">
           ${hasHaChip
-            ? html`<ha-chip style=${`--ha-chip-background-color:${pillBg};--chip-background-color:${pillBg};--ha-chip-text-color:${pillFg};color:${pillFg};font-weight:700;`}>${tStr}</ha-chip>`
-            : html`<div class="temperature-chip" style=${`background:${pillBg};color:${pillFg};`}><span class="thermostat-target">${tStr}</span></div>`}
+            ? html`<ha-chip class=${chipClass}>${tStr}</ha-chip>`
+            : html`<div class=${pillClass}><span class="thermostat-target">${tStr}</span></div>`}
         </div>
         <div class="center-xy">
-          <ha-icon class="thermostat-icon" icon="mdi:thermostat" style=${`color:${color}`}></ha-icon>
+          <ha-icon class=${iconClass} icon="mdi:thermostat"></ha-icon>
         </div>
       </ha-control-button>
     </div>
   `;
 }
-

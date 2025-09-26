@@ -627,24 +627,14 @@ export class SpaceHubCard extends LitElement {
     return Number.isFinite(n) ? n.toFixed(digits) : String(v);
   }
 
-  private _acModeColor(mode: string): string {
-    if (!mode || mode === 'off') return 'gray';
-    if (mode.includes('cool')) return '#00aaff';
-    if (mode.includes('heat')) return '#ff7043';
-    if (mode.includes('dry')) return '#ffca28';
-    if (mode.includes('fan')) return '#66bb6a';
-    if (mode.includes('auto')) return '#26c6da';
-    return 'var(--paper-item-icon-color)';
-  }
-
-  private _acChip(mode: string): { bg: string; icon: string } {
-    if (!mode || mode === 'off') return { bg: 'rgba(158,158,158,0.95)', icon: 'mdi:power' };
-    if (mode.includes('cool')) return { bg: '#00aaff', icon: 'mdi:snowflake' };
-    if (mode.includes('heat')) return { bg: '#ff7043', icon: 'mdi:fire' };
-    if (mode.includes('dry')) return { bg: '#ffca28', icon: 'mdi:water-percent' };
-    if (mode.includes('fan')) return { bg: '#66bb6a', icon: 'mdi:fan' };
-    if (mode.includes('auto')) return { bg: '#26c6da', icon: 'mdi:autorenew' };
-    return { bg: 'rgba(0,0,0,0.06)', icon: 'mdi:air-conditioner' };
+  private _acChip(mode: string): { icon: string } {
+    if (!mode || mode === 'off') return { icon: 'mdi:power' };
+    if (mode.includes('cool')) return { icon: 'mdi:snowflake' };
+    if (mode.includes('heat')) return { icon: 'mdi:fire' };
+    if (mode.includes('dry')) return { icon: 'mdi:water-percent' };
+    if (mode.includes('fan')) return { icon: 'mdi:fan' };
+    if (mode.includes('auto')) return { icon: 'mdi:autorenew' };
+    return { icon: 'mdi:air-conditioner' };
   }
 
   // (moved) AC pulse colors are defined in src/glow.ts

@@ -152,6 +152,36 @@ export const chipStyles: CSSResultGroup = css`
     font-size: var(--chip-text-font-size); 
   }
 
+  .temperature-chip.heating { 
+    background: var(--thermostat-pill-heating-bg); 
+    color: var(--thermostat-pill-heating-fg); 
+  }
+  .temperature-chip.idle,
+  .temperature-chip.off { 
+    background: var(--thermostat-pill-idle-bg); 
+    color: var(--thermostat-pill-idle-fg); 
+  }
+
+  .temperature-chip-container ha-chip.thermostat-chip { 
+    --ha-chip-background-color: var(--thermostat-pill-idle-bg); 
+    --chip-background-color: var(--thermostat-pill-idle-bg); 
+    --ha-chip-text-color: var(--thermostat-pill-idle-fg); 
+    color: var(--thermostat-pill-idle-fg); 
+    font-weight: 700; 
+  }
+  .temperature-chip-container ha-chip.thermostat-chip.heating { 
+    --ha-chip-background-color: var(--thermostat-pill-heating-bg); 
+    --chip-background-color: var(--thermostat-pill-heating-bg); 
+    --ha-chip-text-color: var(--thermostat-pill-heating-fg); 
+    color: var(--thermostat-pill-heating-fg); 
+  }
+  .temperature-chip-container ha-chip.thermostat-chip.off { 
+    --ha-chip-background-color: var(--thermostat-pill-idle-bg); 
+    --chip-background-color: var(--thermostat-pill-idle-bg); 
+    --ha-chip-text-color: var(--thermostat-pill-idle-fg); 
+    color: var(--thermostat-pill-idle-fg); 
+  }
+
   /* ==============================================
    * CHIP CONTAINERS
    * ============================================== */
@@ -177,4 +207,20 @@ export const chipStyles: CSSResultGroup = css`
   .tile-inner ha-chip { 
     font-size: var(--chip-text-font-size); 
   }
+  .tile-inner ha-chip.switch-chip { 
+    --ha-chip-background-color: var(--switch-chip-bg); 
+    --chip-background-color: var(--switch-chip-bg); 
+    --ha-chip-text-color: var(--secondary-text-color); 
+    color: var(--secondary-text-color); 
+    font-weight: 600; 
+  }
+  .tile-inner ha-chip.switch-chip.on { 
+    --ha-chip-text-color: var(--switch-on-color); 
+    color: var(--switch-on-color); 
+  }
+  .tile-inner ha-chip.switch-chip.smart.on { 
+    --ha-chip-text-color: var(--switch-smart-on-color); 
+    color: var(--switch-smart-on-color); 
+  }
+  .tile-inner ha-chip.switch-chip ha-icon { margin-right: 6px; }
 `;

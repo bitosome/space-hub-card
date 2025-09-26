@@ -13,7 +13,6 @@ export function renderMainTile(host: any, h: any): TemplateResult {
   const hasBulb = !!h?.light_group_entity;
   const ctrl = h?.light_group_entity || h?.tap_entity || h?.entity;
   const isOn = hasBulb && (typeof host?._isOn === 'function' ? host._isOn(ctrl) : false);
-  const bulbBg = isOn ? 'linear-gradient(135deg,#ffcf57,#ffb200)' : 'rgba(0,0,0,0.06)';
   const defaultToggleTarget = h?.light_group_entity || h?.tap_entity || h?.entity;
 
   // Glow mode (static|pulse|none). Default to 'static' when absent.
@@ -21,6 +20,7 @@ export function renderMainTile(host: any, h: any): TemplateResult {
   const glowActive = !!h?.light_group_entity && isOn && glowMode !== 'none';
   const pulse = STATIC_GLOW; // main defaults to amber glow
   const { style: wrapStyle, overlay: glowOverlay } = buildGlow(pulse, glowMode as any, glowActive);
+  const lightChipClass = `chip main-light-chip ${isOn ? 'on' : 'off'}`;
 
   const allChips: any[] = Array.isArray(h?.chips) ? (h.chips as any[]) : [];
   const illumChip = allChips.find((c) => String(c?.type || '').toLowerCase() === 'illuminance');
@@ -54,8 +54,8 @@ export function renderMainTile(host: any, h: any): TemplateResult {
         ${illumTpl}
         <div class="main-chips-bottom-right" data-role="chips">
           ${hasBulb
-            ? html`<div class="chip" style=${`background:${bulbBg}`}>
-                <ha-icon .icon=${'mdi:lightbulb'} style=${`color:${isOn ? '#ffffff' : 'var(--secondary-text-color)'}`}></ha-icon>
+            ? html`<div class=${lightChipClass}>
+                <ha-icon .icon=${'mdi:lightbulb'}></ha-icon>
               </div>`
             : nothing}
           ${interactiveChips.length ? html`${interactiveChips}` : nothing}

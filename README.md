@@ -328,7 +328,7 @@ npm start
 
 ## Version
 
-Current version: **1.1.0**
+Current version: **1.3.0**
 
 ## License
 

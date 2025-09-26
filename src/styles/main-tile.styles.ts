@@ -5,7 +5,7 @@ export const mainTileStyles: CSSResultGroup = css`
     position: relative; 
     width: 100%; 
     height: var(--tile-h); 
-  border-radius: var(--tile-border-radius); 
+    border-radius: var(--tile-border-radius); 
     box-shadow: var(--tile-shadow-default); 
     background: var(--ha-card-background, var(--card-background-color)); 
     overflow: hidden; 
@@ -24,19 +24,6 @@ export const mainTileStyles: CSSResultGroup = css`
     color: var(--primary-text-color); 
   }
 
-  .main-chips-bottom-right { 
-    position: absolute; 
-    right: var(--tile-padding); 
-    bottom: var(--tile-padding); 
-    z-index: var(--chip-z-index); 
-    display:inline-flex; 
-    flex-direction: row-reverse;
-    align-items:center; 
-    justify-content:flex-start; 
-    gap: var(--chip-gap); 
-    flex-wrap:wrap; 
-    max-width: calc(100% - 16px); 
-  }
   .main-name { 
     position: absolute; 
     left: var(--tile-padding-large); 
@@ -46,19 +33,18 @@ export const mainTileStyles: CSSResultGroup = css`
     color: var(--primary-text-color); 
   }
 
-  .main-tile.on { border-radius: var(--tile-border-radius); box-shadow: var(--tile-shadow-active); }
+  .main-light-chip {
+    background: var(--main-light-off-bg);
+    color: var(--main-light-icon-off-color);
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .main-light-chip.on {
+    background: var(--main-light-on-bg);
+    color: var(--main-light-icon-on-color);
+  }
+  .main-light-chip ha-icon {
+    color: inherit;
+  }
 
-  /* Container for main tile to allow rendering glow under / around the control */
-  .tile-wrap { position: relative; width: 100%; height: var(--tile-h); display:block; }
-  /* Generic tile-wrap used by main and switch tiles. Glow is rendered in the
-    .glow-under sibling and therefore always sits beneath the tile control
-    (which has higher z-index), but above the card background so it can
-    overflow visually without floating over neighboring tiles. */
-  .tile-wrap { position: relative; width: 100%; height: var(--tile-h); display:block; }
-  .tile-wrap .glow-under { position: absolute; inset: 0; pointer-events: none; z-index: var(--glow-z-index); display:block; }
-  .tile-wrap .glow-under .glow-overlay { position: absolute; inset: -6px; border-radius: inherit; pointer-events: none; mix-blend-mode: screen; opacity: 0.95; }
-  .tile-wrap > .main-tile,
-  .tile-wrap > .switch-tile,
-  .tile-wrap > .switch-tile-btn,
-  .tile-wrap > ha-control-button { position: relative; z-index: var(--tile-z-index); }
+  .main-tile.on { border-radius: var(--tile-border-radius); box-shadow: var(--tile-shadow-active); }
 `;

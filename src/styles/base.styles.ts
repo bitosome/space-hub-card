@@ -10,7 +10,37 @@ export const baseStyles: CSSResultGroup = css`
     --chip-background-color: rgba(0,0,0,0.06);
     --chip-border-radius: var(--ha-badge-border-radius, 999px);
     --chip-gap: 6px;
-    
+    --main-light-on-bg: linear-gradient(135deg,#ffcf57,#ffb200);
+    --main-light-off-bg: rgba(0,0,0,0.06);
+    --main-light-icon-on-color: #ffffff;
+    --main-light-icon-off-color: var(--secondary-text-color);
+    --switch-on-color: var(--switch-on-yellow, #ffc107);
+    --switch-smart-on-color: var(--switch-on-green, #00c853);
+    --switch-chip-bg: var(--chip-background-color, rgba(0,0,0,0.06));
+    --ac-chip-bg-off: rgba(158,158,158,0.95);
+    --ac-chip-bg-cool: #00aaff;
+    --ac-chip-bg-heat: #ff7043;
+    --ac-chip-bg-dry: #ffca28;
+    --ac-chip-bg-fan: #66bb6a;
+    --ac-chip-bg-auto: #26c6da;
+    --ac-chip-bg-default: rgba(0,0,0,0.06);
+    --ac-chip-icon-color: #ffffff;
+    --ac-chip-icon-off-color: #ffffff;
+    --ac-fan-color-off: gray;
+    --ac-fan-color-cool: #00aaff;
+    --ac-fan-color-heat: #ff7043;
+    --ac-fan-color-dry: #ffca28;
+    --ac-fan-color-fan: #66bb6a;
+    --ac-fan-color-auto: #26c6da;
+    --ac-fan-color-default: var(--paper-item-icon-color);
+    --thermostat-heating-color: #ff7043;
+    --thermostat-idle-color: #66bb6a;
+    --thermostat-off-color: gray;
+    --thermostat-pill-heating-bg: var(--state-climate-heat-color, #ff7043);
+    --thermostat-pill-heating-fg: var(--primary-background-color, #fff);
+    --thermostat-pill-idle-bg: var(--chip-background-color, rgba(0,0,0,0.06));
+    --thermostat-pill-idle-fg: var(--secondary-text-color);
+
     /* Positioning variables */
     --tile-padding: 8px;
     --tile-padding-large: 12px;

@@ -3,6 +3,8 @@ import { html, nothing, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
 import { buildGlow, STATIC_GLOW, SMART_PLUG_GLOW } from '../glow';
 
+const joinClasses = (...parts: Array<string | false | null | undefined>): string => parts.filter(Boolean).join(' ');
+
 export function renderSwitchRows(host: any, rows?: any[]): TemplateResult | typeof nothing {
   if (!rows || !rows.length) return nothing;
   return html`${rows.map((row, rowIndex) => renderSwitchRow(host, row, rowIndex))}`;
@@ -48,9 +50,11 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const cls = `switch-tile ${isSmart ? 'smart' : ''} ${on ? 'on' : ''}`;
   const hasChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
   const hasControlBtn = typeof customElements !== 'undefined' && !!customElements.get('ha-control-button');
-  const onColor = isSmart ? 'var(--switch-on-green, #00c853)' : 'var(--switch-on-yellow, #ffc107)';
-  const chipBg = 'var(--chip-background-color, rgba(0,0,0,0.06))';
-  const chipFg = on ? onColor : 'var(--secondary-text-color)';
+  const typeClass = isSmart ? 'smart' : '';
+  const stateClass = on ? 'on' : 'off';
+  const chipClass = joinClasses('switch-chip', typeClass, stateClass);
+  const iconClass = joinClasses('switch-icon', typeClass, stateClass);
+  const nameClass = joinClasses('name', 'switch-name', typeClass, stateClass);
 
   const onAction = (ev: CustomEvent) => {
     if (typeof host?._onSwitchAction === 'function') host._onSwitchAction(ev, sw);
@@ -65,22 +69,22 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
     const btnCls = `switch-tile-btn ${isSmart ? 'smart' : ''} ${on ? 'on' : ''}`;
     return html`
       <div class="tile-wrap">
-        <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
-        <ha-control-button
-          class=${btnCls}
-          @action=${onAction}
-          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
-          role="button" tabindex="0"
-        >
+      <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
+      <ha-control-button
+        class=${btnCls}
+        @action=${onAction}
+        .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
+        role="button" tabindex="0"
+      >
           <div class="tile-inner">
             ${hasChip
-              ? html`<ha-chip style=${`--ha-chip-background-color:${chipBg};--chip-background-color:${chipBg};--ha-chip-text-color:${chipFg};color:${chipFg};font-weight:600;`}>
-                  ${icon ? html`<ha-icon .icon=${icon} style=${`margin-right:6px;${iconStyle}color:${chipFg};`}></ha-icon>` : nothing}
+            ? html`<ha-chip class=${chipClass}>
+                  ${icon ? html`<ha-icon class=${iconClass} .icon=${icon} style=${iconStyle || nothing}></ha-icon>` : nothing}
                   ${name || tap}
                 </ha-chip>`
               : html`
-                  ${icon ? html`<ha-icon class="switch-icon" .icon=${icon} style=${`${iconStyle}${on ? `color:${onColor};` : ''}`}></ha-icon>` : nothing}
-                  ${name ? html`<div class="name" style=${`${nameStyle}${on ? `color:${onColor};` : ''}`}>${name}</div>` : nothing}
+                  ${icon ? html`<ha-icon class=${iconClass} .icon=${icon} style=${iconStyle || nothing}></ha-icon>` : nothing}
+                  ${name ? html`<div class=${nameClass} style=${nameStyle}>${name}</div>` : nothing}
                 `}
           </div>
         </ha-control-button>
@@ -96,13 +100,13 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
       <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
       <div class="tile-inner">
         ${hasChip
-          ? html`<ha-chip style=${`--ha-chip-background-color:${chipBg};--chip-background-color:${chipBg};--ha-chip-text-color:${chipFg};color:${chipFg};font-weight:600;`}>
-              ${icon ? html`<ha-icon .icon=${icon} style=${`margin-right:6px;${iconStyle}color:${chipFg};`}></ha-icon>` : nothing}
+          ? html`<ha-chip class=${chipClass}>
+              ${icon ? html`<ha-icon class=${iconClass} .icon=${icon} style=${iconStyle || nothing}></ha-icon>` : nothing}
               ${name || tap}
             </ha-chip>`
           : html`
-              ${icon ? html`<ha-icon class="switch-icon" .icon=${icon} style=${`${iconStyle}${on ? `color:${onColor};` : ''}`}></ha-icon>` : nothing}
-              ${name ? html`<div class="name" style=${`${nameStyle}${on ? `color:${onColor};` : ''}`}>${name}</div>` : nothing}
+              ${icon ? html`<ha-icon class=${iconClass} .icon=${icon} style=${iconStyle || nothing}></ha-icon>` : nothing}
+              ${name ? html`<div class=${nameClass} style=${nameStyle}>${name}</div>` : nothing}
             `}
       </div>
     </div>
