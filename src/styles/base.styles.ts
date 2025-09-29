@@ -67,18 +67,21 @@ export const baseStyles: CSSResultGroup = css`
       position: absolute; 
       inset: 0; 
       pointer-events: none; 
-      z-index: var(--glow-z-index); 
+      z-index: 0; 
       display:block; 
-      /* keep simple: no clipping here so glow can extend beyond the tile */
       border-radius: var(--tile-border-radius);
     }
     .tile-wrap .glow-under .glow-overlay { 
       position: absolute; 
-      inset: -6px; 
+      inset: -10px -14px -18px -14px; 
       border-radius: inherit; 
       pointer-events: none; 
       mix-blend-mode: screen; 
-      opacity: 0.95; 
+      opacity: 0.9; 
+      -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 18px, rgba(0,0,0,0.9) 44px, rgba(0,0,0,1) 100%);
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 18px, rgba(0,0,0,0.9) 44px, rgba(0,0,0,1) 100%);
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
     }
   ha-card {
     border-radius: var(--ha-card-border-radius, 16px);
@@ -119,7 +122,7 @@ export const baseStyles: CSSResultGroup = css`
   }
 
   /* Base tile-wrap container so sibling glow-under can position reliably */
-  .tile-wrap { position: relative; width: 100%; height: var(--tile-h); display:block; }
+  .tile-wrap { position: relative; width: 100%; height: var(--tile-h); display:block; isolation:isolate; }
   
   .square::part(button) { width: 100%; height: 100%; padding: 0; margin: 0; box-sizing: border-box; border-radius: var(--tile-border-radius); overflow: hidden; clip-path: inset(0 round var(--tile-border-radius)); background-clip: padding-box; }
 
@@ -135,6 +138,8 @@ export const baseStyles: CSSResultGroup = css`
     clip-path: inset(0 round var(--tile-border-radius));
     background-clip: padding-box;
     --control-button-border-radius: var(--tile-border-radius);
+    position: relative;
+    z-index: 1;
   }
   .tile-wrap > ha-control-button::part(button) {
     width: 100%; height: 100%; padding: 0; margin: 0; box-sizing: border-box;
