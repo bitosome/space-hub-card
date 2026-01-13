@@ -20,6 +20,22 @@ import { acTileStyles } from './styles/ac-tile.styles';
 import { thermostatTileStyles } from './styles/thermostat-tile.styles';
 import { switchTileStyles } from './styles/switch-tile.styles';
 
+interface TemplateListenersInfo {
+  all?: boolean;
+  domains?: string[];
+  entities?: string[];
+  time?: boolean;
+}
+
+interface SwitchTemplateEntry {
+  value: string;
+  listeners?: TemplateListenersInfo;
+  pending?: Promise<void>;
+  ready?: boolean;
+  error?: string;
+  timer?: number;
+}
+
 export interface HeaderMain {
   // Core configuration
   tap_entity?: string;
@@ -108,6 +124,7 @@ export class SpaceHubCard extends LitElement {
   private _rowCardElements = new Map<string, LovelaceCard>();
   private _rowCardConfigs = new Map<string, LovelaceCardConfig>();
   private _rowCardPromises = new Map<string, Promise<LovelaceCard>>();
+  private _switchTemplateValues = new Map<string, SwitchTemplateEntry>();
 
   static getStubConfig(): SpaceHubConfig {
     return {
@@ -141,6 +158,7 @@ export class SpaceHubCard extends LitElement {
     if (!Array.isArray(c.cards)) c.cards = [];
     this._clearRowCardCache();
     this._config = c;
+    this._syncTemplateEntries(c.switch_rows);
   }
 
   private _validateConfig(config: SpaceHubConfig): void {
@@ -366,6 +384,8 @@ export class SpaceHubCard extends LitElement {
       this._rowCardElements.forEach((card) => {
         if (card) card.hass = this.hass;
       });
+      const oldHass = changedProperties.get('hass') as HomeAssistant | undefined;
+      this._handleTemplateEntityChanges(oldHass);
     }
   }
 
@@ -611,6 +631,188 @@ export class SpaceHubCard extends LitElement {
     } else {
       this._toggleGeneric(tap);
     }
+  }
+
+  public _resolveSwitchTemplates(sw: unknown): Array<{ template: string; value: string }> {
+    const templates = this._extractTemplatesFromSwitch(sw);
+    if (!templates.length) return [];
+    return templates.map((tpl) => ({ template: tpl, value: this._getTemplateDisplayValue(tpl) }));
+  }
+
+  private _extractTemplatesFromSwitch(sw: unknown): string[] {
+    if (!sw || typeof sw !== 'object') return [];
+    const cfg = sw as Record<string, unknown>;
+    const raw = cfg['info_templates']
+      ?? cfg['info_template']
+      ?? cfg['top_right_templates']
+      ?? cfg['top_right_template'];
+    if (raw === undefined || raw === null) return [];
+    const list = Array.isArray(raw) ? raw : [raw];
+    const templates: string[] = [];
+    list.some((entry: any) => {
+      let tpl: string | undefined;
+      if (typeof entry === 'string') {
+        tpl = entry;
+      } else if (entry && typeof entry === 'object') {
+        tpl = entry.template || entry.value || entry.value_template || entry.text;
+      }
+      const normalized = typeof tpl === 'string' ? tpl.trim() : '';
+      if (normalized) templates.push(normalized);
+      return templates.length >= 2;
+    });
+    return templates.slice(0, 2);
+  }
+
+  private _syncTemplateEntries(rows?: unknown[]): void {
+    const needed = this._collectTemplatesFromRows(rows);
+    if (!needed.size && !this._switchTemplateValues.size) return;
+    // Drop any entries that are no longer referenced
+    const remove: string[] = [];
+    this._switchTemplateValues.forEach((_entry, tpl) => {
+      if (!needed.has(tpl)) remove.push(tpl);
+    });
+    remove.forEach((tpl) => {
+      const entry = this._switchTemplateValues.get(tpl);
+      if (entry) this._disposeTemplateEntry(entry);
+      this._switchTemplateValues.delete(tpl);
+    });
+    // Ensure new templates are tracked
+    needed.forEach((tpl) => this._ensureTemplateEntry(tpl));
+  }
+
+  private _collectTemplatesFromRows(rows?: unknown[]): Set<string> {
+    const templates = new Set<string>();
+    if (!Array.isArray(rows)) return templates;
+    rows.forEach((row: any) => {
+      const items = Array.isArray(row) ? row : (Array.isArray(row?.row) ? row.row : []);
+      if (!Array.isArray(items)) return;
+      items.forEach((sw: any) => {
+        this._extractTemplatesFromSwitch(sw).forEach((tpl) => templates.add(tpl));
+      });
+    });
+    return templates;
+  }
+
+  private _ensureTemplateEntry(template: string): SwitchTemplateEntry | undefined {
+    const key = (template || '').trim();
+    if (!key) return undefined;
+    let entry = this._switchTemplateValues.get(key);
+    if (!entry) {
+      entry = { value: '', ready: false };
+      this._switchTemplateValues.set(key, entry);
+      this._requestTemplateUpdate(key);
+    }
+    return entry;
+  }
+
+  private _getTemplateDisplayValue(template: string): string {
+    const entry = this._ensureTemplateEntry(template);
+    if (!entry) return '';
+    if (entry.error) return '!';
+    if (!entry.ready) return '…';
+    return entry.value ?? '';
+  }
+
+  private _requestTemplateUpdate(template: string): void {
+    const entry = this._switchTemplateValues.get(template);
+    if (!entry || entry.pending || !this.hass) return;
+    const promise = this.hass.callWS<{ result: string; listeners?: TemplateListenersInfo }>({
+      type: 'render_template',
+      template,
+    }).then((payload) => {
+      entry.ready = true;
+      entry.error = undefined;
+      entry.value = payload?.result !== undefined && payload?.result !== null
+        ? String(payload.result)
+        : '';
+      entry.listeners = payload?.listeners;
+      this._scheduleTemplateTimer(template, entry);
+      this.requestUpdate();
+    }).catch((err) => {
+      entry.ready = true;
+      entry.error = err?.message || 'error';
+      entry.listeners = undefined;
+      this._clearTemplateTimer(entry);
+      // eslint-disable-next-line no-console
+      console.warn(`[space-hub-card] Failed to render template "${template}":`, err);
+    }).finally(() => {
+      entry.pending = undefined;
+    });
+    entry.pending = promise;
+  }
+
+  private _scheduleTemplateTimer(template: string, entry: SwitchTemplateEntry): void {
+    if (!entry.listeners?.time) {
+      this._clearTemplateTimer(entry);
+      return;
+    }
+    if (entry.timer) return;
+    entry.timer = window.setTimeout(() => {
+      entry.timer = undefined;
+      this._requestTemplateUpdate(template);
+    }, 60_000);
+  }
+
+  private _clearTemplateTimer(entry: SwitchTemplateEntry): void {
+    if (entry.timer) {
+      window.clearTimeout(entry.timer);
+      entry.timer = undefined;
+    }
+  }
+
+  private _disposeTemplateEntry(entry: SwitchTemplateEntry): void {
+    this._clearTemplateTimer(entry);
+  }
+
+  private _handleTemplateEntityChanges(prevHass?: HomeAssistant): void {
+    if (!this.hass || !this._switchTemplateValues.size) return;
+    if (!prevHass) {
+      this._switchTemplateValues.forEach((_entry, template) => this._requestTemplateUpdate(template));
+      return;
+    }
+    this._switchTemplateValues.forEach((entry, template) => {
+      if (this._shouldRefreshTemplate(entry, prevHass)) {
+        this._requestTemplateUpdate(template);
+      }
+    });
+  }
+
+  private _shouldRefreshTemplate(entry: SwitchTemplateEntry, prevHass?: HomeAssistant): boolean {
+    if (!entry.listeners || entry.listeners.all) return true;
+    const { entities = [], domains = [], time } = entry.listeners;
+    if (time && !entry.timer) return true;
+    if (entities.some((entityId) => this._hasEntityChanged(entityId, prevHass, this.hass))) return true;
+    if (domains.some((domain) => this._hasDomainChanged(domain, prevHass, this.hass))) return true;
+    return false;
+  }
+
+  private _hasEntityChanged(entityId: string, prevHass?: HomeAssistant, current?: HomeAssistant): boolean {
+    if (!entityId || !current) return false;
+    const prev = prevHass?.states?.[entityId];
+    const next = current.states?.[entityId];
+    if (!prev && next) return true;
+    if (prev && !next) return true;
+    if (!prev || !next) return false;
+    if (prev.state !== next.state) return true;
+    if (prev.last_changed !== next.last_changed) return true;
+    if (prev.last_updated !== next.last_updated) return true;
+    return false;
+  }
+
+  private _hasDomainChanged(domain: string, prevHass?: HomeAssistant, current?: HomeAssistant): boolean {
+    if (!domain || !current) return false;
+    const prefix = `${domain}.`;
+    const currentStates = current.states || {};
+    for (const entityId of Object.keys(currentStates)) {
+      if (!entityId.startsWith(prefix)) continue;
+      if (this._hasEntityChanged(entityId, prevHass, current)) return true;
+    }
+    const prevStates = prevHass?.states || {};
+    for (const entityId of Object.keys(prevStates)) {
+      if (!entityId.startsWith(prefix)) continue;
+      if (!(entityId in currentStates)) return true;
+    }
+    return false;
   }
 
   private _fmt2(entityId: string | undefined, digits: number, suffix: string): string {

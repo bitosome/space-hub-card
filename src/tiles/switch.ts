@@ -5,6 +5,23 @@ import { buildGlow, STATIC_GLOW, SMART_PLUG_GLOW } from '../glow';
 
 const joinClasses = (...parts: Array<string | false | null | undefined>): string => parts.filter(Boolean).join(' ');
 
+const renderTemplateInfo = (lines: string[], cls: string): TemplateResult | typeof nothing => {
+  if (!Array.isArray(lines) || !lines.length) return nothing;
+  const normalized = lines
+    .map((line) => {
+      const text = line === undefined || line === null ? '' : String(line);
+      return { text, trimmed: text.trim() };
+    })
+    .filter((entry) => entry.trimmed.length > 0)
+    .slice(0, 2);
+  if (!normalized.length) return nothing;
+  return html`
+    <div class=${cls}>
+      ${normalized.map((entry) => html`<span>${entry.text}</span>`)}
+    </div>
+  `;
+};
+
 export function renderSwitchRows(host: any, rows?: any[]): TemplateResult | typeof nothing {
   if (!rows || !rows.length) return nothing;
   return html`${rows.map((row, rowIndex) => renderSwitchRow(host, row, rowIndex))}`;
@@ -55,6 +72,13 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const chipClass = joinClasses('switch-chip', typeClass, stateClass);
   const iconClass = joinClasses('switch-icon', typeClass, stateClass);
   const nameClass = joinClasses('name', 'switch-name', typeClass, stateClass);
+  const resolvedTemplates = typeof host?._resolveSwitchTemplates === 'function'
+    ? host._resolveSwitchTemplates(sw)
+    : [];
+  const templateLines = Array.isArray(resolvedTemplates)
+    ? resolvedTemplates.map((entry: any) => (entry && typeof entry === 'object' ? entry.value : entry)).slice(0, 2)
+    : [];
+  const infoOverlay = renderTemplateInfo(templateLines, joinClasses('switch-info', typeClass, stateClass));
 
   const onAction = (ev: CustomEvent) => {
     if (typeof host?._onSwitchAction === 'function') host._onSwitchAction(ev, sw);
@@ -70,6 +94,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
     return html`
       <div class="tile-wrap">
       <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
+      ${infoOverlay}
       <ha-control-button
         class=${btnCls}
         @action=${onAction}
@@ -98,6 +123,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
          role="button" tabindex="0">
       <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
+      ${infoOverlay}
       <div class="tile-inner">
         ${hasChip
           ? html`<ha-chip class=${chipClass}>

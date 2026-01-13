@@ -72,7 +72,8 @@ Use `headers: [...]` to define one or more header rows. Each header row can cont
 ### Switch Rows Configuration
 
 - **switch_rows**: array of switch row definitions. Each row can be an array or an object `{ row: [...] }`
-- Per-item options: `entity`, `name`, `icon`, `icon_size`, `font-weight`, `font-size`, `type` (`switch` | `smart_plug`), `glow_mode`, and HA `*_action` entries
+- Per-item options: `entity`, `name`, `icon`, `icon_size`, `font-weight`, `font-size`, `type` (`switch` | `smart_plug`), `glow_mode`, HA `*_action` entries, and `info_templates`
+- `info_templates` (alias `top_right_templates`) accepts a template string, object `{ template: "..." }`, or an array (max 2). Each template is rendered by Home Assistant and shown at the top-right corner of the switch tile (one line per template). Use it for quick stats like power draw, timers, scenes, etc.
 
 ## Examples
 
@@ -195,6 +196,9 @@ switch_rows:
         glow_mode: static
         tap_action:
           action: toggle
+        info_templates:
+          - "{{ states('sensor.kitchen_tabletop_power') }} W"
+          - "{{ state_attr('sensor.kitchen_tabletop_power', 'today') | round(1) }} kWh"
 cards:
   - type: custom:mushroom-template-card
     entity: sensor.watchman_missing_entities

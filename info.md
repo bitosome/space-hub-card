@@ -8,6 +8,7 @@ A modern, customizable dashboard card for Home Assistant with support for multip
 - **Interactive chips**: lock, door, presence, gate, and illuminance sensors
 - **Offline feedback**: unavailable entities use alert icons and muted colors (customizable per chip)
 - **Smart switches**: organized in rows with custom icons and actions  
+- **Template indicators**: optional per-switch template values rendered in the top-right corner
 - **Responsive design**: automatically scales with tile height settings
 - **Glow effects**: per-tile glow control (static, pulse, none)
 - **Temperature/humidity**: combined sensor display

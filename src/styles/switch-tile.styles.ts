@@ -79,4 +79,26 @@ export const switchTileStyles: CSSResultGroup = css`
   .switch-name.on { color: var(--switch-on-color); }
   .switch-name.smart.on { color: var(--switch-smart-on-color); }
   .tile-inner ha-chip { font-size: var(--chip-font-size, 12px); }
+  .switch-info {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--secondary-text-color);
+    pointer-events: none;
+    z-index: 2;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+  }
+  .switch-info span {
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .switch-info.on { color: var(--switch-on-color); }
+  .switch-info.smart.on { color: var(--switch-smart-on-color); }
 `;
