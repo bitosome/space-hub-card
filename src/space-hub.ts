@@ -642,10 +642,18 @@ export class SpaceHubCard extends LitElement {
   private _extractTemplatesFromSwitch(sw: unknown): string[] {
     if (!sw || typeof sw !== 'object') return [];
     const cfg = sw as Record<string, unknown>;
-    const raw = cfg['info_templates']
-      ?? cfg['info_template']
-      ?? cfg['top_right_templates']
-      ?? cfg['top_right_template'];
+    const lookup = (...keys: string[]): unknown => {
+      for (const key of keys) {
+        if (key in cfg) return cfg[key];
+      }
+      return undefined;
+    };
+    const raw = lookup(
+      'info_templates', 'infoTemplates', 'info-templates',
+      'info_template', 'infoTemplate', 'info-template',
+      'top_right_templates', 'topRightTemplates', 'top-right-templates',
+      'top_right_template', 'topRightTemplate', 'top-right-template'
+    );
     if (raw === undefined || raw === null) return [];
     const list = Array.isArray(raw) ? raw : [raw];
     const templates: string[] = [];
