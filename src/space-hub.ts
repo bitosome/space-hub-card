@@ -6,6 +6,7 @@ import type { HomeAssistant } from 'custom-card-helpers';
 import { handleAction, fireEvent, createThing } from 'custom-card-helpers';
 import type { LovelaceCard, LovelaceCardConfig } from 'custom-card-helpers';
 import type { PropertyValues } from 'lit';
+import type { UnsubscribeFunc } from 'home-assistant-js-websocket';
 import { CARD_VERSION } from './const';
 // glow utilities used by tiles
 import { renderMainTile } from './tiles/main';
@@ -20,20 +21,12 @@ import { acTileStyles } from './styles/ac-tile.styles';
 import { thermostatTileStyles } from './styles/thermostat-tile.styles';
 import { switchTileStyles } from './styles/switch-tile.styles';
 
-interface TemplateListenersInfo {
-  all?: boolean;
-  domains?: string[];
-  entities?: string[];
-  time?: boolean;
-}
-
 interface SwitchTemplateEntry {
   value: string;
-  listeners?: TemplateListenersInfo;
-  pending?: Promise<void>;
   ready?: boolean;
   error?: string;
-  timer?: number;
+  unsub?: UnsubscribeFunc;
+  pending?: boolean;
 }
 
 export interface HeaderMain {
@@ -384,9 +377,18 @@ export class SpaceHubCard extends LitElement {
       this._rowCardElements.forEach((card) => {
         if (card) card.hass = this.hass;
       });
-      const oldHass = changedProperties.get('hass') as HomeAssistant | undefined;
-      this._handleTemplateEntityChanges(oldHass);
+      this._resumeTemplateSubscriptions();
     }
+  }
+
+  public connectedCallback(): void {
+    super.connectedCallback();
+    this._resumeTemplateSubscriptions();
+  }
+
+  public disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._switchTemplateValues.forEach((entry) => this._disposeTemplateEntry(entry));
   }
 
   private _renderHeaderRow(h: SpaceHubHeader): TemplateResult {
@@ -708,8 +710,8 @@ export class SpaceHubCard extends LitElement {
     if (!entry) {
       entry = { value: '', ready: false };
       this._switchTemplateValues.set(key, entry);
-      this._requestTemplateUpdate(key);
     }
+    this._startTemplateSubscription(key, entry);
     return entry;
   }
 
@@ -721,106 +723,46 @@ export class SpaceHubCard extends LitElement {
     return entry.value ?? '';
   }
 
-  private _requestTemplateUpdate(template: string): void {
-    const entry = this._switchTemplateValues.get(template);
-    if (!entry || entry.pending || !this.hass) return;
-    const promise = this.hass.callWS<{ result: string; listeners?: TemplateListenersInfo }>({
-      type: 'render_template',
-      template,
-    }).then((payload) => {
-      entry.ready = true;
-      entry.error = undefined;
-      entry.value = payload?.result !== undefined && payload?.result !== null
-        ? String(payload.result)
-        : '';
-      entry.listeners = payload?.listeners;
-      this._scheduleTemplateTimer(template, entry);
-      this.requestUpdate();
+  private _startTemplateSubscription(template: string, entry: SwitchTemplateEntry): void {
+    if (!this.hass?.connection || entry.unsub || entry.pending) return;
+    entry.pending = true;
+    this.hass.connection.subscribeMessage<{ result?: unknown }>(
+      (payload) => {
+        entry.ready = true;
+        entry.error = undefined;
+        const nextValue = (payload && typeof payload === 'object' && 'result' in payload)
+          ? (payload as any).result
+          : payload;
+        entry.value = nextValue !== undefined && nextValue !== null ? String(nextValue) : '';
+        this.requestUpdate();
+      },
+      { type: 'render_template', template },
+      { resubscribe: true },
+    ).then((unsub) => {
+      entry.unsub = unsub;
     }).catch((err) => {
       entry.ready = true;
       entry.error = err?.message || 'error';
-      entry.listeners = undefined;
-      this._clearTemplateTimer(entry);
+      entry.unsub = undefined;
       // eslint-disable-next-line no-console
-      console.warn(`[space-hub-card] Failed to render template "${template}":`, err);
+      console.warn(`[space-hub-card] Template subscription failed for "${template}":`, err);
+      this.requestUpdate();
     }).finally(() => {
-      entry.pending = undefined;
+      entry.pending = false;
     });
-    entry.pending = promise;
-  }
-
-  private _scheduleTemplateTimer(template: string, entry: SwitchTemplateEntry): void {
-    if (!entry.listeners?.time) {
-      this._clearTemplateTimer(entry);
-      return;
-    }
-    if (entry.timer) return;
-    entry.timer = window.setTimeout(() => {
-      entry.timer = undefined;
-      this._requestTemplateUpdate(template);
-    }, 60_000);
-  }
-
-  private _clearTemplateTimer(entry: SwitchTemplateEntry): void {
-    if (entry.timer) {
-      window.clearTimeout(entry.timer);
-      entry.timer = undefined;
-    }
   }
 
   private _disposeTemplateEntry(entry: SwitchTemplateEntry): void {
-    this._clearTemplateTimer(entry);
-  }
-
-  private _handleTemplateEntityChanges(prevHass?: HomeAssistant): void {
-    if (!this.hass || !this._switchTemplateValues.size) return;
-    if (!prevHass) {
-      this._switchTemplateValues.forEach((_entry, template) => this._requestTemplateUpdate(template));
-      return;
+    if (entry.unsub) {
+      try { entry.unsub(); } catch (e) { /* no-op */ }
+      entry.unsub = undefined;
     }
-    this._switchTemplateValues.forEach((entry, template) => {
-      if (this._shouldRefreshTemplate(entry, prevHass)) {
-        this._requestTemplateUpdate(template);
-      }
-    });
+    entry.pending = false;
   }
 
-  private _shouldRefreshTemplate(entry: SwitchTemplateEntry, prevHass?: HomeAssistant): boolean {
-    if (!entry.listeners || entry.listeners.all) return true;
-    const { entities = [], domains = [], time } = entry.listeners;
-    if (time && !entry.timer) return true;
-    if (entities.some((entityId) => this._hasEntityChanged(entityId, prevHass, this.hass))) return true;
-    if (domains.some((domain) => this._hasDomainChanged(domain, prevHass, this.hass))) return true;
-    return false;
-  }
-
-  private _hasEntityChanged(entityId: string, prevHass?: HomeAssistant, current?: HomeAssistant): boolean {
-    if (!entityId || !current) return false;
-    const prev = prevHass?.states?.[entityId];
-    const next = current.states?.[entityId];
-    if (!prev && next) return true;
-    if (prev && !next) return true;
-    if (!prev || !next) return false;
-    if (prev.state !== next.state) return true;
-    if (prev.last_changed !== next.last_changed) return true;
-    if (prev.last_updated !== next.last_updated) return true;
-    return false;
-  }
-
-  private _hasDomainChanged(domain: string, prevHass?: HomeAssistant, current?: HomeAssistant): boolean {
-    if (!domain || !current) return false;
-    const prefix = `${domain}.`;
-    const currentStates = current.states || {};
-    for (const entityId of Object.keys(currentStates)) {
-      if (!entityId.startsWith(prefix)) continue;
-      if (this._hasEntityChanged(entityId, prevHass, current)) return true;
-    }
-    const prevStates = prevHass?.states || {};
-    for (const entityId of Object.keys(prevStates)) {
-      if (!entityId.startsWith(prefix)) continue;
-      if (!(entityId in currentStates)) return true;
-    }
-    return false;
+  private _resumeTemplateSubscriptions(): void {
+    if (!this.hass) return;
+    this._switchTemplateValues.forEach((entry, template) => this._startTemplateSubscription(template, entry));
   }
 
   private _fmt2(entityId: string | undefined, digits: number, suffix: string): string {
