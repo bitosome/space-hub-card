@@ -362,12 +362,12 @@ export class SpaceHubCardEditor extends LitElement {
             <ha-select
               label="Glow Mode"
               .value=${m.glow_mode || 'static'}
-              @selected=${(ev: Event) => this._valueChanged(`${basePath}.glow_mode`, (ev.target as any).value)}
+              @change=${(ev: Event) => this._valueChanged(`${basePath}.glow_mode`, (ev.target as any).value)}
               @closed=${(ev: Event) => ev.stopPropagation()}
               fixedMenuPosition
               naturalMenuWidth
             >
-              ${GLOW_MODES.map((mode) => html`<mwc-list-item .value=${mode}>${mode}</mwc-list-item>`)}
+              ${GLOW_MODES.map((mode) => html`<ha-list-item .value=${mode}>${mode}</ha-list-item>`)}
             </ha-select>
             ${this._renderChipsConfig(m.chips as any[] || [], basePath)}
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, m.tap_action)}
@@ -420,12 +420,12 @@ export class SpaceHubCardEditor extends LitElement {
           <ha-select
             label="Type"
             .value=${chip.type || 'custom'}
-            @selected=${(ev: Event) => this._valueChanged(`${path}.type`, (ev.target as any).value)}
+            @change=${(ev: Event) => this._valueChanged(`${path}.type`, (ev.target as any).value)}
             @closed=${(ev: Event) => ev.stopPropagation()}
             fixedMenuPosition
             naturalMenuWidth
           >
-            ${CHIP_TYPES.map((t) => html`<mwc-list-item .value=${t}>${t}</mwc-list-item>`)}
+            ${CHIP_TYPES.map((t) => html`<ha-list-item .value=${t}>${t}</ha-list-item>`)}
           </ha-select>
           <ha-entity-picker
             .hass=${this.hass}
@@ -507,12 +507,12 @@ export class SpaceHubCardEditor extends LitElement {
             <ha-select
               label="Glow Mode"
               .value=${ac!.glow_mode || 'static'}
-              @selected=${(ev: Event) => this._valueChanged(`${basePath}.glow_mode`, (ev.target as any).value)}
+              @change=${(ev: Event) => this._valueChanged(`${basePath}.glow_mode`, (ev.target as any).value)}
               @closed=${(ev: Event) => ev.stopPropagation()}
               fixedMenuPosition
               naturalMenuWidth
             >
-              ${GLOW_MODES.map((mode) => html`<mwc-list-item .value=${mode}>${mode}</mwc-list-item>`)}
+              ${GLOW_MODES.map((mode) => html`<ha-list-item .value=${mode}>${mode}</ha-list-item>`)}
             </ha-select>
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, ac!.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, ac!.hold_action)}
@@ -548,12 +548,12 @@ export class SpaceHubCardEditor extends LitElement {
             <ha-select
               label="Glow Mode"
               .value=${thermostat!.glow_mode || 'static'}
-              @selected=${(ev: Event) => this._valueChanged(`${basePath}.glow_mode`, (ev.target as any).value)}
+              @change=${(ev: Event) => this._valueChanged(`${basePath}.glow_mode`, (ev.target as any).value)}
               @closed=${(ev: Event) => ev.stopPropagation()}
               fixedMenuPosition
               naturalMenuWidth
             >
-              ${GLOW_MODES.map((mode) => html`<mwc-list-item .value=${mode}>${mode}</mwc-list-item>`)}
+              ${GLOW_MODES.map((mode) => html`<ha-list-item .value=${mode}>${mode}</ha-list-item>`)}
             </ha-select>
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, thermostat!.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, thermostat!.hold_action)}
@@ -671,22 +671,22 @@ export class SpaceHubCardEditor extends LitElement {
           <ha-select
             label="Type"
             .value=${sw.type || 'switch'}
-            @selected=${(ev: Event) => this._valueChanged(`${path}.type`, (ev.target as any).value)}
+            @change=${(ev: Event) => this._valueChanged(`${path}.type`, (ev.target as any).value)}
             @closed=${(ev: Event) => ev.stopPropagation()}
             fixedMenuPosition
             naturalMenuWidth
           >
-            ${SWITCH_TYPES.map((t) => html`<mwc-list-item .value=${t}>${t}</mwc-list-item>`)}
+            ${SWITCH_TYPES.map((t) => html`<ha-list-item .value=${t}>${t}</ha-list-item>`)}
           </ha-select>
           <ha-select
             label="Glow Mode"
             .value=${sw.glow_mode || 'static'}
-            @selected=${(ev: Event) => this._valueChanged(`${path}.glow_mode`, (ev.target as any).value)}
+            @change=${(ev: Event) => this._valueChanged(`${path}.glow_mode`, (ev.target as any).value)}
             @closed=${(ev: Event) => ev.stopPropagation()}
             fixedMenuPosition
             naturalMenuWidth
           >
-            ${GLOW_MODES.map((mode) => html`<mwc-list-item .value=${mode}>${mode}</mwc-list-item>`)}
+            ${GLOW_MODES.map((mode) => html`<ha-list-item .value=${mode}>${mode}</ha-list-item>`)}
           </ha-select>
         </div>
         <ha-entity-picker
@@ -861,12 +861,12 @@ export class SpaceHubCardEditor extends LitElement {
             <ha-select
               label="Action"
               .value=${action?.action || 'more-info'}
-              @selected=${(ev: Event) => this._valueChanged(`${path}.action`, (ev.target as any).value)}
+              @change=${(ev: Event) => this._valueChanged(`${path}.action`, (ev.target as any).value)}
               @closed=${(ev: Event) => ev.stopPropagation()}
               fixedMenuPosition
               naturalMenuWidth
             >
-              ${ACTION_TYPES.map((a) => html`<mwc-list-item .value=${a}>${a}</mwc-list-item>`)}
+              ${ACTION_TYPES.map((a) => html`<ha-list-item .value=${a}>${a}</ha-list-item>`)}
             </ha-select>
             ${action?.action === 'navigate' ? html`
               <ha-textfield
