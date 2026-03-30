@@ -7,7 +7,8 @@ import { handleAction, fireEvent, createThing } from 'custom-card-helpers';
 import type { LovelaceCard, LovelaceCardConfig } from 'custom-card-helpers';
 import type { PropertyValues } from 'lit';
 import type { UnsubscribeFunc } from 'home-assistant-js-websocket';
-import { CARD_VERSION } from './const';
+import { CARD_VERSION, clone } from './const';
+import './editor';
 // glow utilities used by tiles
 import { renderMainTile } from './tiles/main';
 import { renderACTile } from './tiles/ac';
@@ -93,10 +94,6 @@ export interface SpaceHubConfig {
   double_tap_action?: import('custom-card-helpers').ActionConfig;
 }
 
-function clone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
-}
-
 // Haptic feedback helper (dispatches HA's global 'haptic' event)
 function haptic(type: any): void {
   try {
@@ -118,6 +115,10 @@ export class SpaceHubCard extends LitElement {
   private _rowCardConfigs = new Map<string, LovelaceCardConfig>();
   private _rowCardPromises = new Map<string, Promise<LovelaceCard>>();
   private _switchTemplateValues = new Map<string, SwitchTemplateEntry>();
+
+  static getConfigElement(): HTMLElement {
+    return document.createElement('space-hub-card-editor');
+  }
 
   static getStubConfig(): SpaceHubConfig {
     return {
@@ -235,6 +236,10 @@ export class SpaceHubCard extends LitElement {
           } else if (typeof item.entity !== 'string' || !item.entity.includes('.')) {
             errors.push(`Switch row ${index + 1}, item ${itemIndex + 1}: Switch entity '${item.entity}' must be a valid entity ID`);
           }
+          // Validate hold_entity if provided
+          if (item?.hold_entity && (typeof item.hold_entity !== 'string' || !item.hold_entity.includes('.'))) {
+            errors.push(`Switch row ${index + 1}, item ${itemIndex + 1}: hold_entity '${item.hold_entity}' must be a valid entity ID`);
+          }
         });
       });
     }
@@ -318,7 +323,7 @@ export class SpaceHubCard extends LitElement {
       unavailable_pulse_color: userCfg.unavailable_pulse_color ?? defaults.unavailable_pulse_color,
       // Keep headers exactly as provided by user
       headers: Array.isArray(userCfg.headers) && userCfg.headers.length ? userCfg.headers : [],
-      switch_rows: Array.isArray(userCfg.switch_rows) ? userCfg.switch_rows : (userCfg.switch_rows || []),
+      switch_rows: Array.isArray(userCfg.switch_rows) ? userCfg.switch_rows : [],
       cards: Array.isArray(userCfg.cards) ? userCfg.cards : [],
       tap_action: userCfg.tap_action,
       hold_action: userCfg.hold_action,
@@ -424,9 +429,9 @@ export class SpaceHubCard extends LitElement {
       console.warn('space-hub-card: header contains `ac`/`thermostat` outside of `main` — ignoring per configured rules.');
     }
 
-    const cls = hasMain
-      ? (!showAC && !showThermostat ? 'header-row only-main' : (showAC && showThermostat ? 'header-row' : 'header-row main-plus-one'))
-      : (showAC && showThermostat ? 'header-row main-plus-one' : 'header-row only-main');
+    const cls = !showAC && !showThermostat
+      ? 'header-row only-main'
+      : (showAC && showThermostat ? 'header-row' : 'header-row main-plus-one');
 
     const tpl = html`
       <div class=${cls}>
@@ -437,14 +442,6 @@ export class SpaceHubCard extends LitElement {
     `;
     return tpl;
   }
-
-  // main tile renderer moved to src/tiles/main.ts
-
-  // illuminance chip moved to src/chips.ts
-
-  // extra chip moved to src/chips.ts
-
-  // chip action handler moved into src/chips.ts
 
   // Renders an arbitrary Lovelace card beneath a switch row, reusing helpers for creation.
   public _renderEmbeddedRowCard(cardConfig: LovelaceCardConfig, key: string): TemplateResult | typeof nothing {
@@ -560,10 +557,6 @@ export class SpaceHubCard extends LitElement {
     this._toggleGeneric(entityId);
   }
 
-  // AC tile moved to src/tiles/ac.ts
-
-  // Thermostat tile moved to src/tiles/thermostat.ts
-
   private _onMainAction(ev: CustomEvent, tileCfg?: any, tap?: string, hold?: string, lightGroup?: string): void {
     const action = (ev.detail && (ev.detail as any).action) || 'tap';
     // Tile-level actions override card-level
@@ -571,7 +564,7 @@ export class SpaceHubCard extends LitElement {
       handleAction(this, this.hass, tileCfg as any, action);
       return;
     }
-    // If configured, use boilerplate handleAction against card-level actions
+    // If configured, use handleAction against card-level actions
     if (this.hass && this._config && (this._config.tap_action || this._config.hold_action || this._config.double_tap_action)) {
       handleAction(this, this.hass, this._config as any, action);
       return;
@@ -587,36 +580,23 @@ export class SpaceHubCard extends LitElement {
   }
 
   private _onACAction(ev: CustomEvent, entity: string): void {
-    const act = (ev.detail && ev.detail.action) || 'tap';
-    if (act === 'hold') {
-      // Haptic feedback: medium on long press
-      haptic('medium');
-      this._openMoreInfo(entity);
-    } else {
-      // Haptic feedback: success on tap
-      haptic('success');
-      this._acToggle(entity);
-    }
+    this._onClimateTileAction(ev, entity, () => this._acToggle(entity));
   }
 
   private _onThermostatAction(ev: CustomEvent, entity: string): void {
+    this._onClimateTileAction(ev, entity, () => this._thermostatToggle(entity));
+  }
+
+  private _onClimateTileAction(ev: CustomEvent, entity: string, tapAction: () => void): void {
     const act = (ev.detail && ev.detail.action) || 'tap';
     if (act === 'hold') {
-      // Haptic feedback: medium on long press
       haptic('medium');
       this._openMoreInfo(entity);
     } else {
-      // Haptic feedback: success on tap
       haptic('success');
-      this._thermostatToggle(entity);
+      tapAction();
     }
   }
-
-  // Switch rows moved to src/tiles/switch.ts
-
-  // Switch tile moved to src/tiles/switch.ts
-
-  // (Removed) Embedded Lovelace cards functionality
 
   private _onSwitchAction(ev: CustomEvent, sw?: any): void {
     const act = (ev.detail && ev.detail.action) || 'tap';
@@ -631,8 +611,60 @@ export class SpaceHubCard extends LitElement {
       haptic('medium');
       this._openMoreInfo(hold || tap);
     } else {
-      this._toggleGeneric(tap);
+      // Check if confirmation is required before executing the tap action
+      const confirm = sw?.confirmation;
+      if (confirm) {
+        this._showConfirmation(sw, () => this._toggleByDomain(tap));
+      } else {
+        this._toggleByDomain(tap);
+      }
     }
+  }
+
+  private _showConfirmation(sw: any, onConfirm: () => void): void {
+    const confirm = sw?.confirmation;
+    const text = (typeof confirm === 'string' ? confirm : confirm?.text) || 'Are you sure?';
+    const entityId = sw?.entity || '';
+    const entityName = sw?.name || (this.hass?.states?.[entityId]?.attributes?.friendly_name) || entityId;
+    // Build the dialog
+    const overlay = document.createElement('div');
+    overlay.className = 'sh-confirm-overlay';
+    const dialog = document.createElement('div');
+    dialog.className = 'sh-confirm-dialog';
+    dialog.innerHTML = `
+      <div class="sh-confirm-title">${this._escapeHtml(entityName)}</div>
+      <div class="sh-confirm-text">${this._escapeHtml(text)}</div>
+      <div class="sh-confirm-actions">
+        <button class="sh-confirm-btn sh-cancel">Cancel</button>
+        <button class="sh-confirm-btn sh-ok">Confirm</button>
+      </div>
+    `;
+    overlay.appendChild(dialog);
+
+    const close = () => {
+      overlay.classList.add('sh-closing');
+      overlay.addEventListener('animationend', () => overlay.remove(), { once: true });
+      // Fallback removal
+      setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 300);
+    };
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close();
+    });
+    dialog.querySelector('.sh-cancel')!.addEventListener('click', () => close());
+    dialog.querySelector('.sh-ok')!.addEventListener('click', () => {
+      close();
+      haptic('success');
+      onConfirm();
+    });
+
+    this.shadowRoot!.appendChild(overlay);
+  }
+
+  private _escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
 
   public _resolveSwitchTemplates(sw: unknown): Array<{ template: string; value: string }> {
@@ -788,8 +820,6 @@ export class SpaceHubCard extends LitElement {
     if (mode.includes('auto')) return { icon: 'mdi:autorenew' };
     return { icon: 'mdi:air-conditioner' };
   }
-
-  // (moved) AC pulse colors are defined in src/glow.ts
 
   private _openMoreInfo(entityId?: string | null): void {
     if (!entityId) return;

@@ -1,0 +1,3459 @@
+views:
+  - type: sections
+    max_columns: 1
+    title: Summary
+    path: summary
+    icon: mdi:sigma
+    sections:
+      - type: grid
+        cards:
+          - show_current: true
+            show_forecast: true
+            type: weather-forecast
+            entity: weather.forecast_home
+            forecast_type: hourly
+            secondary_info_attribute: wind_speed
+            forecast_slots: 7
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              show_states: true
+              colorize_states: true
+              floating: false
+            graph_span: 24h
+            apex_config:
+              legend:
+                show: false
+              chart:
+                height: 150px
+            all_series_config:
+              stroke_width: 2
+            yaxis:
+              - id: temp
+                decimals: 1
+              - id: hum
+                opposite: true
+                decimals: 0
+            series:
+              - entity: sensor.outdoors_temperature_average
+                name: Temp
+                yaxis_id: temp
+                unit: °C
+                float_precision: 1
+                show:
+                  in_header: true
+                  name_in_header: true
+              - entity: sensor.outdoors_temperature_average
+                name: Min
+                yaxis_id: temp
+                unit: °C
+                float_precision: 1
+                group_by:
+                  duration: 24h
+                  func: min
+                stroke_width: 0
+                opacity: 0
+                show:
+                  in_header: true
+                  name_in_header: true
+                  legend_value: false
+              - entity: sensor.outdoors_temperature_average
+                name: Max
+                yaxis_id: temp
+                unit: °C
+                float_precision: 1
+                group_by:
+                  duration: 24h
+                  func: max
+                stroke_width: 0
+                opacity: 0
+                show:
+                  in_header: true
+                  name_in_header: true
+                  legend_value: false
+              - entity: sensor.aqara_thp_9_humidity
+                name: Hum
+                yaxis_id: hum
+                unit: '%'
+                float_precision: 0
+                type: line
+                show:
+                  in_header: true
+                  name_in_header: true
+          - type: custom:mushroom-template-card
+            primary: >-
+              Average home temperature: {{
+              states('sensor.home_temperature_average') }}°C
+            secondary: >-
+              Average home humidity: {{ states('sensor.home_humidity_average')
+              }}%
+            icon: mdi:home-thermometer-outline
+            fill_container: false
+            multiline_secondary: false
+            tap_action:
+              action: navigate
+              navigation_path: /utility-room/thermostats
+            icon_color: orange
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Outdoors
+                  main_icon: mdi:tree-outline
+                  light_group_entity: light.outdoor_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=outdoors
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.outdoor_lights
+                  temp_sensor: sensor.outdoors_temperature_average
+                  humidity_sensor: sensor.aqara_thp_9_humidity
+                  chips:
+                    - type: smart_plug
+                      entity: switch.ikea_tretakt_smart_plug_2
+                      icon_active: mdi:patio-heater
+                      icon_inactive: mdi:patio-heater
+                    - type: sliding_gate
+                      entity: binary_sensor.shelly_blu_door_window_1_open
+                    - type: gate
+                      entity: binary_sensor.shelly_blu_door_window_2_open
+                    - type: illuminance
+                      entity: sensor.outdoor_ambient_sensor_illuminance
+              - main:
+                  main_name: Entrance
+                  main_icon: mdi:door
+                  light_group_entity: light.entrance_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=entrance
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.entrance_lights
+                  temp_sensor: sensor.aqara_thp_10_temperature
+                  humidity_sensor: sensor.aqara_thp_10_humidity
+                  chips:
+                    - type: lock
+                      entity: lock.front_door
+                thermostat:
+                  entity: >-
+                    climate.thermostat_controller_wc_1_entrance_hallway_storeroom
+                  glow_mode: pulse
+              - main:
+                  main_name: Hallway
+                  main_icon: mdi:transit-connection
+                  light_group_entity: light.hallway_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=hallway
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.hallway_lights
+                  temp_sensor: sensor.aqara_thp_11_temperature
+                  humidity_sensor: sensor.aqara_thp_11_humidity
+                thermostat:
+                  entity: >-
+                    climate.thermostat_controller_wc_1_entrance_hallway_storeroom
+                  glow_mode: pulse
+              - main:
+                  main_name: Mira's room
+                  main_icon: mdi:face-woman-outline
+                  light_group_entity: light.mira_s_room_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=mira_s_room
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.mira_s_room_lights
+                  temp_sensor: sensor.aqara_thp_2_temperature
+                  humidity_sensor: sensor.aqara_thp_2_humidity
+                ac:
+                  entity: climate.mira_s_room_ac
+                  glow_mode: pulse
+                thermostat:
+                  entity: climate.thermostat_controller_mira_s_room
+                  glow_mode: pulse
+              - main:
+                  main_name: Office
+                  main_icon: mdi:chair-rolling
+                  light_group_entity: light.office_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=office
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.office_lights
+                  temp_sensor: sensor.aqara_thp_3_temperature
+                  humidity_sensor: sensor.aqara_thp_3_humidity
+                ac:
+                  entity: climate.office_ac
+                  glow_mode: pulse
+                thermostat:
+                  entity: climate.thermostat_controller_office
+                  glow_mode: pulse
+              - main:
+                  main_name: WC 1
+                  main_icon: mdi:toilet
+                  light_group_entity: light.wc_1_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=wc_1
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.wc_1_lights
+                  temp_sensor: sensor.aqara_thp_12_temperature
+                  humidity_sensor: sensor.aqara_thp_12_humidity
+                  chips:
+                    - type: presence
+                      entity: >-
+                        binary_sensor.tuya_pir_24_ghz_human_presence_sensor_2_presence
+                thermostat:
+                  entity: >-
+                    climate.thermostat_controller_wc_1_entrance_hallway_storeroom
+                  glow_mode: pulse
+              - main:
+                  main_name: Storeroom
+                  main_icon: mdi:package-variant
+                  light_group_entity: light.storeroom_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=storeroom
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.storeroom_lights
+                  temp_sensor: sensor.aqara_thp_4_temperature
+                  humidity_sensor: sensor.aqara_thp_4_humidity
+                  chips:
+                    - type: smart_plug
+                      entity: switch.ikea_inspelning_smart_plug_1
+                      icon_active: mdi:printer-3d-nozzle-outline
+                      icon_inactive: mdi:printer-3d-nozzle-off-outline
+                    - type: smart_plug
+                      entity: switch.ikea_tretakt_smart_plug_1
+                      icon_active: mdi:air-filter
+                      icon_inactive: mdi:air-filter
+                    - type: smart_plug
+                      entity: switch.ikea_inspelning_smart_plug_3
+                      icon_active: mdi:battery-high
+                      icon_inactive: mdi:battery-high
+                thermostat:
+                  entity: >-
+                    climate.thermostat_controller_wc_1_entrance_hallway_storeroom
+                  glow_mode: pulse
+              - main:
+                  main_name: Living room
+                  main_icon: mdi:sofa-outline
+                  light_group_entity: light.living_room_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=living_room
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.living_room_lights
+                  temp_sensor: sensor.kitchen_living_room_temperature_average
+                  humidity_sensor: sensor.kitchen_living_room_humidity_average
+                ac:
+                  entity: climate.living_room_ac
+                  glow_mode: pulse
+                thermostat:
+                  entity: climate.thermostat_controller_kitchen_living_room
+                  glow_mode: pulse
+              - main:
+                  main_name: Bedroom
+                  main_icon: mdi:sleep
+                  light_group_entity: light.bedroom_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=bedroom
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.bedroom_lights
+                  temp_sensor: sensor.aqara_thp_6_temperature
+                  humidity_sensor: sensor.aqara_thp_6_humidity
+                ac:
+                  entity: climate.bedroom_ac
+                  glow_mode: pulse
+                thermostat:
+                  entity: climate.thermostat_controller_bedroom
+                  glow_mode: pulse
+              - main:
+                  main_name: WC 2
+                  main_icon: mdi:toilet
+                  light_group_entity: light.wc_2_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=wc_2
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.wc_2_lights
+                  temp_sensor: sensor.aqara_thp_13_temperature
+                  humidity_sensor: sensor.aqara_thp_13_humidity
+                  chips:
+                    - type: presence
+                      entity: >-
+                        binary_sensor.tuya_pir_24_ghz_human_presence_sensor_1_presence
+                thermostat:
+                  entity: climate.thermostat_controller_wc_2_shower_room
+                  glow_mode: pulse
+              - main:
+                  main_name: Shower room
+                  main_icon: mdi:shower-head
+                  light_group_entity: light.shower_room_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=shower_room
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.shower_room_lights
+                  temp_sensor: sensor.aqara_thp_8_temperature
+                  humidity_sensor: sensor.aqara_thp_8_humidity
+                thermostat:
+                  entity: climate.thermostat_controller_wc_2_shower_room
+                  glow_mode: pulse
+              - main:
+                  main_name: Sauna
+                  main_icon: mdi:heat-wave
+                  light_group_entity: light.sauna_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=sauna
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.sauna_lights
+                  temp_sensor: sensor.aqara_thp_14_temperature
+                  humidity_sensor: sensor.aqara_thp_14_humidity
+                thermostat:
+                  entity: climate.thermostat_controller_wc_2_shower_room
+                  glow_mode: pulse
+              - main:
+                  main_name: Utility room
+                  main_icon: mdi:cog
+                  light_group_entity: light.utility_room_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=utility_room
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.utility_room_lights
+                  temp_sensor: sensor.aqara_thp_15_temperature
+                  humidity_sensor: sensor.aqara_thp_15_humidity
+                  chips:
+                    - type: smart_plug
+                      entity: switch.ikea_inspelning_smart_plug_2
+                      icon_active: mdi:battery-high
+                      icon_inactive: mdi:battery-high
+                    - type: door
+              - main:
+                  main_name: Workshop
+                  main_icon: mdi:hammer-screwdriver
+                  light_group_entity: light.workshop_lights
+                  glow_mode: static
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/rooms?anchor=workshop
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.workshop_lights
+                  temp_sensor: sensor.aqara_thp_1_temperature
+                  humidity_sensor: sensor.aqara_thp_1_humidity
+                thermostat:
+                  entity: climate.thermostat_controller_workshop
+                  glow_mode: pulse
+          - type: tile
+            entity: automation.turn_off_ac
+            features_position: bottom
+            vertical: false
+            name: Automatically turn off ACs
+            grid_options:
+              columns: full
+              rows: 1
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              show_states: true
+              colorize_states: true
+            graph_span: 48h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 200
+              grid:
+                show: true
+                borderColor: '#404040'
+              plotOptions:
+                bar:
+                  columnWidth: 90%
+                  borderRadiusApplication: end
+                  borderRadius: 3
+              tooltip:
+                fixed:
+                  enabled: true
+                  position: topLeft
+                x:
+                  format: dd. MMM, HH:mm
+                'y':
+                  formatter: |
+                    EVAL:function(value) {
+                      if (value === null || typeof value === 'undefined' || Number.isNaN(Number(value))) 
+                        return '';
+                      return Number(value).toFixed(4) + ' €/kWh';
+                    }
+              xaxis:
+                type: datetime
+                tickAmount: 48
+                min: |
+                  EVAL:function() { 
+                    var start = new Date();
+                    start.setHours(0, 0, 0, 0);
+                    return start.getTime();
+                  }
+                max: |
+                  EVAL:function() { 
+                    var end = new Date();
+                    end.setDate(end.getDate() + 2);
+                    end.setHours(0, 0, 0, 0);
+                    return end.getTime();
+                  }
+              yaxis:
+                - title:
+                    text: €/kWh
+                  labels:
+                    formatter: |
+                      EVAL:function(value) {
+                        if (value === null || typeof value === 'undefined' || Number.isNaN(Number(value))) 
+                          return '';
+                        return Number(value).toFixed(2) + '€';
+                      }
+                  min: 0
+            series:
+              - entity: sensor.real_electricity_price_current_price
+                name: Current price
+                type: line
+                stroke_width: 1
+                float_precision: 4
+                unit: €/kWh
+                show:
+                  in_header: true
+                  in_chart: false
+                  in_legend: false
+              - entity: sensor.real_electricity_price_chart_data
+                type: column
+                name: Price
+                float_precision: 4
+                unit: €/kWh
+                show:
+                  in_header: false
+                  in_chart: true
+                  in_legend: false
+                data_generator: |
+                  return entity?.attributes?.chart_data || [];
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_1_phase_a_current
+                line_color: brown
+                line_width: 8
+                font_size: 75
+                name: L1 (A)
+                icon: mdi:home-lightning-bolt
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_1_phase_b_current
+                line_color: black
+                line_width: 8
+                font_size: 75
+                name: L2 (B)
+                icon: mdi:home-lightning-bolt
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_1_phase_c_current
+                line_color: grey
+                line_width: 8
+                font_size: 75
+                name: L3 (C)
+                icon: mdi:home-lightning-bolt
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_2_phase_a_current
+                line_color: brown
+                line_width: 8
+                font_size: 75
+                name: L1 (A)
+                icon: mdi:car-electric
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_2_phase_b_current
+                line_color: black
+                line_width: 8
+                font_size: 75
+                name: L2 (B)
+                icon: mdi:car-electric
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_2_phase_c_current
+                line_color: grey
+                line_width: 8
+                font_size: 75
+                name: L3 (C)
+                icon: mdi:car-electric
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+          - type: custom:mushroom-template-card
+            entity: timer.mute_overcurrent_notifications_timer
+            primary: Overcurrent notifications
+            secondary: |
+              {% if is_state(entity, 'active') %}
+                {% set f = state_attr(entity, 'finishes_at') %}
+                Muted until {{ as_local(as_datetime(f)).strftime('%H:%M') }} (tap to unmute)
+              {% else %}
+                Active (tap to mute for 1h)
+              {% endif %}
+            icon: |
+              {% if is_state(entity, 'active') %}
+                mdi:bell-off
+              {% else %}
+                mdi:bell
+              {% endif %}
+            icon_color: |
+              {% if is_state(entity, 'active') %}
+                red
+              {% else %}
+                green
+              {% endif %}
+            tap_action:
+              action: call-service
+              service: script.toggle_overcurrent_notifications_mute
+            hold_action:
+              action: more-info
+            grid_options:
+              columns: full
+  - icon: mdi:floor-plan
+    cards: []
+    type: sections
+    subview: false
+    title: Rooms
+    max_columns: 1
+    sections:
+      - type: grid
+        cards:
+          - anchor_id: outdoors
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 12
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.outdoor_lights
+                  light_group_entity: light.outdoor_lights
+                  main_name: Outdoors
+                  main_icon: mdi:tree-outline
+                  glow_mode: none
+                  temp_sensor: sensor.outdoors_temperature_average
+                  humidity_sensor: sensor.aqara_thp_9_humidity
+                  chips:
+                    - type: smart_plug
+                      entity: switch.ikea_tretakt_smart_plug_2
+                      icon_active: mdi:patio-heater
+                      icon_inactive: mdi:patio-heater
+                    - type: sliding_gate
+                      entity: binary_sensor.shelly_blu_door_window_1_open
+                      icon_active: mdi:gate-alert
+                    - type: gate
+                      entity: binary_sensor.shelly_blu_door_window_2_open
+                      icon_active: mdi:gate-alert
+                    - type: illuminance
+                      entity: sensor.outdoor_ambient_sensor_illuminance
+            switch_rows:
+              - row:
+                  - entity: switch.outdoor_light_switch_button_a_state
+                    name: Exterior lights
+                    icon: mdi:wall-sconce-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: switch.shelly_plus_1_1
+                    name: Carport
+                    icon: mdi:parking
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: switch.terrace_light_switch_button_a_state
+                    name: Terrace
+                    icon: mdi:awning-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: switch.ikea_tretakt_smart_plug_2
+                    name: Heater
+                    icon: mdi:patio-heater
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: switch.shelly_plus_1_2
+                    name: String lights
+                    icon: mdi:string-lights
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: switch.shelly_plus_1_3
+                    name: Sliding gate
+                    icon: mdi:gate-arrow-left
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: pulse
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+          - anchor_id: entrance
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Entrance
+                  main_icon: mdi:door
+                  light_group_entity: light.entrance_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.entrance_lights
+                  temp_sensor: sensor.aqara_thp_10_temperature
+                  humidity_sensor: sensor.aqara_thp_10_humidity
+                  chips:
+                    - type: lock
+                      entity: lock.front_door
+                thermostat:
+                  entity: >-
+                    climate.thermostat_controller_wc_1_entrance_hallway_storeroom
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: switch.outdoor_light_switch_button_a_state
+                    name: Exterior lights
+                    icon: mdi:wall-sconce-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: switch.outdoor_light_switch_button_b_state
+                    name: Scene
+                    icon: mdi:home-export-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: switch.entrance_light_switch_2_button_a_state
+                    name: Ceiling light
+                    icon: mdi:wall-sconce-flat-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: input_boolean.entrance_cleaning_state
+                    name: Cleaning
+                    icon: mdi:vacuum-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: pulse
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+          - anchor_id: hallway
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Hallway
+                  main_icon: mdi:transit-connection
+                  light_group_entity: light.hallway_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.hallway_lights
+                  temp_sensor: sensor.aqara_thp_11_temperature
+                  humidity_sensor: sensor.aqara_thp_11_humidity
+                thermostat:
+                  entity: >-
+                    climate.thermostat_controller_wc_1_entrance_hallway_storeroom
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: light.hallway_light_switch_button_a_state
+                    name: Ceiling light
+                    icon: mdi:spotlight-beam
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: input_boolean.hallway_cleaning_state
+                    name: Cleaning
+                    icon: mdi:vacuum-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: pulse
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+            cards:
+              - type: tile
+                grid_options:
+                  columns: 12
+                  rows: 1
+                entity: vacuum.kurwa
+                show_entity_picture: false
+                hide_state: false
+                vertical: false
+                features_position: bottom
+          - anchor_id: mira_s_room
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Mira's room
+                  main_icon: mdi:face-woman-outline
+                  light_group_entity: light.mira_s_room_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.mira_s_room_lights
+                  temp_sensor: sensor.aqara_thp_2_temperature
+                  humidity_sensor: sensor.aqara_thp_2_humidity
+                ac:
+                  entity: climate.mira_s_room_ac
+                  glow_mode: pulse
+                thermostat:
+                  entity: climate.thermostat_controller_mira_s_room
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: switch.mira_s_room_light_switch_button_a_state
+                    name: Ceiling light
+                    icon: mdi:ceiling-light-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: light.floor_lamp
+                    name: Floor lamp
+                    icon: mdi:floor-lamp-torchiere-variant-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: input_boolean.mira_s_room_cleaning_state
+                    name: Cleaning
+                    icon: mdi:vacuum-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: pulse
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+          - anchor_id: office
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Office
+                  main_icon: mdi:chair-rolling
+                  light_group_entity: light.office_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.office_lights
+                  temp_sensor: sensor.aqara_thp_3_temperature
+                  humidity_sensor: sensor.aqara_thp_3_humidity
+                ac:
+                  entity: climate.office_ac
+                  glow_mode: pulse
+                thermostat:
+                  entity: climate.thermostat_controller_office
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: light.office_light_switch_1_channel_a_state
+                    name: Ceiling light
+                    icon: mdi:ceiling-light-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: switch.office_light_switch_2_button_a_state
+                    name: Storage
+                    icon: mdi:wall-sconce-flat-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: input_boolean.office_cleaning_state
+                    name: Cleaning
+                    icon: mdi:vacuum-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: pulse
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+            cards:
+              - type: custom:mushroom-cover-card
+                entity: cover.ikea_fyrtur_roller_blind_1
+                show_tilt_position_control: false
+                show_position_control: false
+                show_buttons_control: true
+                fill_container: false
+                layout: horizontal
+                tap_action:
+                  action: more-info
+                hold_action:
+                  action: none
+                name: Roller blind
+          - anchor_id: wc_1
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: WC 1
+                  main_icon: mdi:toilet
+                  light_group_entity: light.wc_1_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.wc_1_lights
+                  chips:
+                    - type: presence
+                      entity: >-
+                        binary_sensor.tuya_pir_24_ghz_human_presence_sensor_2_presence
+                  temp_sensor: sensor.aqara_thp_12_temperature
+                  humidity_sensor: sensor.aqara_thp_12_humidity
+                thermostat:
+                  entity: >-
+                    climate.thermostat_controller_wc_1_entrance_hallway_storeroom
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: switch.wc_1_light_switch_button_a_state
+                    name: Ceiling light
+                    icon: mdi:wall-sconce-flat-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: light.wc_1_mirror_light
+                    name: Mirror light
+                    icon: mdi:vanity-light
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+          - anchor_id: storeroom
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Storeroom
+                  main_icon: mdi:package-variant
+                  light_group_entity: light.storeroom_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/storeroom
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.storeroom_lights
+                  temp_sensor: sensor.aqara_thp_4_temperature
+                  humidity_sensor: sensor.aqara_thp_4_humidity
+                  chips:
+                    - type: smart_plug
+                      entity: switch.ikea_inspelning_smart_plug_1
+                      icon_active: mdi:printer-3d-nozzle-outline
+                      icon_inactive: mdi:printer-3d-nozzle-off-outline
+                    - type: smart_plug
+                      entity: switch.ikea_tretakt_smart_plug_1
+                      icon_active: mdi:air-filter
+                      icon_inactive: mdi:air-filter
+                    - type: smart_plug
+                      entity: switch.ikea_inspelning_smart_plug_3
+                      icon_active: mdi:battery-high
+                      icon_inactive: mdi:battery-high
+                thermostat:
+                  entity: >-
+                    climate.thermostat_controller_wc_1_entrance_hallway_storeroom
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: switch.storeroom_light_switch_button_a_state
+                    name: Ceiling light
+                    icon: mdi:wall-sconce-flat-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: switch.ikea_inspelning_smart_plug_1
+                    name: 3D Printer
+                    icon: mdi:printer-3d
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: static
+                    info_templates:
+                      - >-
+                        {{ states('sensor.ikea_inspelning_smart_plug_1_power')
+                        }} W
+                      - >-
+                        {{ states('sensor.ikea_inspelning_smart_plug_1_current')
+                        }} A
+                    tap_action:
+                      action: more-info
+                    hold_action:
+                      action: more-info
+                  - entity: switch.ikea_tretakt_smart_plug_1
+                    name: Air purifier
+                    icon: mdi:air-filter
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: switch.ikea_inspelning_smart_plug_3
+                    name: Battery charger
+                    icon: mdi:battery-high
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: static
+                    info_templates:
+                      - >-
+                        {{ states('sensor.ikea_inspelning_smart_plug_3_power')
+                        }} W
+                      - >-
+                        {{ states('sensor.ikea_inspelning_smart_plug_3_current')
+                        }} A
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+          - anchor_id: living_room
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Living room
+                  main_icon: mdi:sofa-outline
+                  light_group_entity: light.living_room_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.living_room_lights
+                  temp_sensor: sensor.kitchen_living_room_temperature_average
+                  humidity_sensor: sensor.kitchen_living_room_humidity_average
+                ac:
+                  entity: climate.living_room_ac
+                  glow_mode: pulse
+                thermostat:
+                  entity: climate.thermostat_controller_kitchen_living_room
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: switch.kitchen_tabletop_light_switch_button_a_state
+                    name: Tabletop
+                    icon: mdi:countertop-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: switch.kitchen_light_switch_button_a_state
+                    name: Sink
+                    icon: mdi:faucet-variant
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: switch.kitchen_light_switch_button_b_state
+                    name: Table
+                    icon: mdi:table-furniture
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: switch.living_room_light_switch_1_button_a_state
+                    name: Sofa light
+                    icon: mdi:wall-sconce-flat-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: switch.ikea_tradfri_control_outlet_2
+                    name: Ambient light
+                    icon: mdi:globe-light-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: switch.terrace_light_switch_button_a_state
+                    name: Terrace
+                    icon: mdi:awning-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: input_boolean.living_room_cleaning_state
+                    name: Living room
+                    icon: mdi:vacuum-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: pulse
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: input_boolean.dining_area_cleaning_state
+                    name: Dining area
+                    icon: mdi:vacuum-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: pulse
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: input_boolean.kitchen_cleaning_state
+                    name: Kitchen
+                    icon: mdi:vacuum-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: pulse
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+          - anchor_id: bedroom
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Bedroom
+                  main_icon: mdi:sleep
+                  light_group_entity: light.bedroom_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.bedroom_lights
+                  temp_sensor: sensor.aqara_thp_6_temperature
+                  humidity_sensor: sensor.aqara_thp_6_humidity
+                ac:
+                  entity: climate.bedroom_ac
+                  glow_mode: pulse
+                thermostat:
+                  entity: climate.thermostat_controller_bedroom
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: light.bedroom_ceiling_light
+                    name: Ceiling light
+                    icon: mdi:ceiling-light-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: light.bedroom_bedside_lamp_1
+                    name: Left lamp
+                    icon: mdi:lamp-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: light.bedroom_bedside_lamp_2
+                    name: Right lamp
+                    icon: mdi:lamp-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: input_boolean.bedroom_cleaning_state
+                    name: Cleaning
+                    icon: mdi:vacuum-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: smart_plug
+                    glow_mode: pulse
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+            cards:
+              - type: vertical-stack
+                cards:
+                  - type: horizontal-stack
+                    cards:
+                      - type: custom:mushroom-template-card
+                        entity: input_boolean.alarm_clock_state
+                        primary: Workday alarm
+                        secondary: >
+                          {% if is_state('input_boolean.alarm_clock_state','on')
+                          %}
+                            {% set t = states('input_datetime.alarm_clock') %}
+                            {% set next = today_at(t) %}
+                            {% if next <= now() %}
+                              {% set next = next + timedelta(days=1) %}
+                            {% endif %}
+                            {% set secs = (next - now()).total_seconds() %}
+                            {% set h = (secs // 3600) | int %}
+                            {% set m = ((secs % 3600) // 60) | int %}
+                            Alarm in {{ h }}h {{ '%02d' | format(m) }}m
+                          {% else %}
+                            Disabled
+                          {% endif %}
+                        icon: >
+                          {% if is_state('input_boolean.alarm_clock_state','on')
+                          %}
+                            mdi:alarm-check
+                          {% else %}
+                            mdi:alarm-off
+                          {% endif %}
+                        color: >
+                          {% if is_state('input_boolean.alarm_clock_state','on')
+                          %}
+                            green
+                          {% else %}
+                            blue
+                          {% endif %}
+                        badge_icon: >
+                          {% if is_state('input_boolean.alarm_clock_state','on')
+                          %}
+                            mdi:check-circle
+                          {% endif %}
+                        badge_color: >
+                          {% if is_state('input_boolean.alarm_clock_state','on')
+                          %}
+                            green
+                          {% else %}
+                            orange
+                          {% endif %}
+                        tap_action:
+                          action: toggle
+                        hold_action:
+                          action: more-info
+                        layout: vertical
+                      - type: custom:mushroom-entity-card
+                        entity: input_datetime.alarm_clock
+                        name: Workday time
+                        icon: mdi:clock-outline
+                        primary_info: name
+                        secondary_info: state
+                        tap_action:
+                          action: more-info
+                        layout: vertical
+                  - type: horizontal-stack
+                    cards:
+                      - type: custom:mushroom-template-card
+                        entity: input_boolean.alarm_clock_state_weekends
+                        primary: Weekend alarm
+                        secondary: >
+                          {% if
+                          is_state('input_boolean.alarm_clock_state_weekends','on')
+                          %}
+                            {% set t = states('input_datetime.alarm_clock_weekends') %}
+                            {% set next = today_at(t) %}
+                            {% if next <= now() %}
+                              {% set next = next + timedelta(days=1) %}
+                            {% endif %}
+                            {% set secs = (next - now()).total_seconds() %}
+                            {% set h = (secs // 3600) | int %}
+                            {% set m = ((secs % 3600) // 60) | int %}
+                            Alarm in {{ h }}h {{ '%02d' | format(m) }}m
+                          {% else %}
+                            Disabled
+                          {% endif %}
+                        icon: >
+                          {% if
+                          is_state('input_boolean.alarm_clock_state_weekends','on')
+                          %}
+                            mdi:alarm-check
+                          {% else %}
+                            mdi:alarm-off
+                          {% endif %}
+                        color: >
+                          {% if
+                          is_state('input_boolean.alarm_clock_state_weekends','on')
+                          %}
+                            green
+                          {% else %}
+                            blue
+                          {% endif %}
+                        badge_icon: >
+                          {% if
+                          is_state('input_boolean.alarm_clock_state_weekends','on')
+                          %}
+                            mdi:check-circle
+                          {% endif %}
+                        badge_color: >
+                          {% if
+                          is_state('input_boolean.alarm_clock_state_weekends','on')
+                          %}
+                            green
+                          {% else %}
+                            orange
+                          {% endif %}
+                        tap_action:
+                          action: toggle
+                        hold_action:
+                          action: more-info
+                        layout: vertical
+                      - type: custom:mushroom-entity-card
+                        entity: input_datetime.alarm_clock_weekends
+                        name: Weekend time
+                        icon: mdi:clock-outline
+                        primary_info: name
+                        secondary_info: state
+                        tap_action:
+                          action: more-info
+                        layout: vertical
+          - anchor_id: wc_2
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: WC 2
+                  main_icon: mdi:toilet
+                  light_group_entity: light.wc_2_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  chips:
+                    - type: presence
+                      entity: >-
+                        binary_sensor.tuya_pir_24_ghz_human_presence_sensor_1_presence
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.wc_2_lights
+                  temp_sensor: sensor.aqara_thp_13_temperature
+                  humidity_sensor: sensor.aqara_thp_13_humidity
+                thermostat:
+                  entity: climate.thermostat_controller_wc_2_shower_room
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: light.wc_2_ceiling_light
+                    name: Ceiling light
+                    icon: mdi:wall-sconce-flat-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: light.wc_2_mirror_light
+                    name: Mirror light
+                    icon: mdi:vanity-light
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+          - anchor_id: shower_room
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Shower room
+                  main_icon: mdi:shower-head
+                  light_group_entity: light.shower_room_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.shower_room_lights
+                  temp_sensor: sensor.aqara_thp_8_temperature
+                  humidity_sensor: sensor.aqara_thp_8_humidity
+                thermostat:
+                  entity: climate.thermostat_controller_wc_2_shower_room
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: light.shower_room_ceiling_light
+                    name: Ceiling light
+                    icon: mdi:wall-sconce-flat-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                  - entity: light.shower_room_mirror_light
+                    name: Mirror light
+                    icon: mdi:mirror-rectangle
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+          - anchor_id: sauna
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Sauna
+                  main_icon: mdi:heat-wave
+                  light_group_entity: light.sauna_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.sauna_lights
+                  temp_sensor: sensor.aqara_thp_14_temperature
+                  humidity_sensor: sensor.aqara_thp_14_humidity
+                thermostat:
+                  entity: climate.thermostat_controller_wc_2_shower_room
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: switch.shower_room_light_switch_channel_b_state
+                    name: Wall light
+                    icon: mdi:wall-sconce-flat-variant-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+          - anchor_id: utility_room
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Utility room
+                  main_icon: mdi:cog
+                  light_group_entity: light.utility_room_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/home-details
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.utility_room_lights
+                  temp_sensor: sensor.aqara_thp_15_temperature
+                  humidity_sensor: sensor.aqara_thp_15_humidity
+                  chips:
+                    - type: smart_plug
+                      entity: switch.ikea_inspelning_smart_plug_2
+                      icon_active: mdi:battery-high
+                      icon_inactive: mdi:battery-high
+                    - type: door
+            switch_rows:
+              - row:
+                  - entity: switch.utility_room_light_switch_button_a_state
+                    name: Ceiling light
+                    icon: mdi:wall-sconce-flat-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+              - row:
+                  - entity: switch.ikea_inspelning_smart_plug_2
+                    name: Battery charger
+                    icon: mdi:battery-high
+                    type: smart_plug
+                    glow_mode: static
+                    info_templates:
+                      - >-
+                        {{ states('sensor.ikea_inspelning_smart_plug_2_power')
+                        }} W
+                      - >-
+                        {{ states('sensor.ikea_inspelning_smart_plug_2_current')
+                        }} A
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+          - anchor_id: workshop
+            negative_margin: 0
+            timeout: 50
+            offset: -60
+            transition: 0
+            type: custom:anchor-card
+          - type: custom:space-hub-card
+            tile_height: 80
+            main_icon_size: 40
+            chip_icon_size: 14
+            chip_font_size: 12
+            card_shadow_color: '#000000'
+            card_shadow_intensity: 0.1
+            unavailable_pulse_color: '#ff3b30'
+            headers:
+              - main:
+                  main_name: Workshop
+                  main_icon: mdi:hammer-screwdriver
+                  light_group_entity: light.workshop_lights
+                  glow_mode: none
+                  tap_action:
+                    action: navigate
+                    navigation_path: null
+                  hold_action:
+                    action: call-service
+                    service: homeassistant.turn_off
+                    service_data:
+                      entity_id: light.workshop_lights
+                  temp_sensor: sensor.aqara_thp_1_temperature
+                  humidity_sensor: sensor.aqara_thp_1_humidity
+                thermostat:
+                  entity: climate.thermostat_controller_workshop
+                  glow_mode: pulse
+            switch_rows:
+              - row:
+                  - entity: switch.workshop_light_switch_button_a_state
+                    name: Ceiling light
+                    icon: mdi:wall-sconce-flat-outline
+                    icon_size: 28px
+                    font-weight: '600'
+                    font-size: 12px
+                    type: switch
+                    glow_mode: static
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+        column_span: 2
+    path: rooms
+  - type: sections
+    max_columns: 1
+    icon: mdi:car
+    path: cars
+    sections:
+      - type: grid
+        cards:
+          - type: picture-elements
+            image:
+              media_content_id: media-source://image_upload/cfc5e4693a59de8d2a662b2391509297
+              media_content_type: image/png
+              metadata:
+                title: XC40.png
+                thumbnail: /api/image/serve/cfc5e4693a59de8d2a662b2391509297/256x256
+                media_class: image
+                children_media_class: null
+                navigateIds:
+                  - {}
+                  - media_content_type: app
+                    media_content_id: media-source://image_upload
+            elements:
+              - type: state-icon
+                entity: sensor.volvo_xc40_battery
+                style:
+                  left: 10%
+                  top: 10%
+                  '--mdc-icon-size': 34px
+                  transform: translate(-50%, -50%) rotate(90deg)
+                  transform-origin: 50% 50%
+                tap_action:
+                  action: more-info
+              - type: state-label
+                entity: sensor.volvo_xc40_battery
+                style:
+                  left: 10%
+                  top: 20%
+                  transform: translate(-50%, -50%)
+                  font-size: 14px
+                  font-weight: 600
+                  color: var(--primary-text-color)
+                  text-shadow: 0px 0px 6px rgba(0,0,0,0.6)
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: sensor.volvo_xc40_charging_connection_status
+                    state: connected
+                elements:
+                  - type: icon
+                    entity: sensor.volvo_xc40_charging_connection_status
+                    icon: mdi:ev-plug-type2
+                    style:
+                      left: 5%
+                      top: 90%
+                      color: '#00C853'
+                    tap_action:
+                      action: more-info
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: sensor.volvo_xc40_charging_connection_status
+                    state: disconnected
+                elements:
+                  - type: icon
+                    entity: sensor.volvo_xc40_charging_connection_status
+                    icon: mdi:ev-plug-type2
+                    style:
+                      left: 5%
+                      top: 90%
+                      color: var(--disabled-text-color)
+                    tap_action:
+                      action: more-info
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: sensor.volvo_xc40_charging_connection_status
+                    state: fault
+                elements:
+                  - type: icon
+                    entity: sensor.volvo_xc40_charging_connection_status
+                    icon: mdi:ev-plug-type2
+                    style:
+                      left: 5%
+                      top: 90%
+                      color: var(--error-color)
+                    tap_action:
+                      action: more-info
+              - type: state-icon
+                style:
+                  left: 15%
+                  top: 90%
+                entity: lock.volvo_xc40_lock
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.volvo_xc40_window_front_left
+                    state: 'on'
+                elements:
+                  - type: icon
+                    entity: binary_sensor.volvo_xc40_window_front_left
+                    icon: mdi:car-door-lock-open
+                    style:
+                      left: 95%
+                      top: 10%
+                      color: '#F44336'
+                    tap_action:
+                      action: more-info
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.volvo_xc40_window_front_right
+                    state: 'on'
+                elements:
+                  - type: icon
+                    entity: binary_sensor.volvo_xc40_window_front_right
+                    icon: mdi:car-door-lock-open
+                    style:
+                      left: 95%
+                      top: 10%
+                      color: '#F44336'
+                    tap_action:
+                      action: more-info
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.volvo_xc40_window_rear_left
+                    state: 'on'
+                elements:
+                  - type: icon
+                    entity: binary_sensor.volvo_xc40_window_rear_left
+                    icon: mdi:car-door-lock-open
+                    style:
+                      left: 95%
+                      top: 10%
+                      color: '#F44336'
+                    tap_action:
+                      action: more-info
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.volvo_xc40_window_rear_right
+                    state: 'on'
+                elements:
+                  - type: icon
+                    entity: binary_sensor.volvo_xc40_window_rear_right
+                    icon: mdi:car-door-lock-open
+                    style:
+                      left: 95%
+                      top: 10%
+                      color: '#F44336'
+                    tap_action:
+                      action: more-info
+              - type: state-icon
+                style:
+                  left: 85%
+                  top: 90%
+                entity: button.volvo_xc40_start_climatisation
+                icon: mdi:fan
+              - type: state-icon
+                style:
+                  left: 95%
+                  top: 90%
+                entity: button.volvo_xc40_stop_climatisation
+                icon: mdi:fan-off
+          - type: picture-elements
+            image:
+              media_content_id: media-source://image_upload/f31713098a298d1775d4b2e181ddfccd
+              media_content_type: image/png
+              metadata:
+                title: EX30.png
+                thumbnail: /api/image/serve/f31713098a298d1775d4b2e181ddfccd/256x256
+                media_class: image
+                children_media_class: null
+                navigateIds:
+                  - {}
+                  - media_content_type: app
+                    media_content_id: media-source://image_upload
+            elements:
+              - type: state-icon
+                entity: sensor.volvo_ex30_battery
+                style:
+                  left: 10%
+                  top: 10%
+                  '--mdc-icon-size': 34px
+                  transform: translate(-50%, -50%) rotate(90deg)
+                  transform-origin: 50% 50%
+                tap_action:
+                  action: more-info
+              - type: state-label
+                entity: sensor.volvo_ex30_battery
+                style:
+                  left: 10%
+                  top: 20%
+                  transform: translate(-50%, -50%)
+                  font-size: 14px
+                  font-weight: 600
+                  color: var(--primary-text-color)
+                  text-shadow: 0px 0px 6px rgba(0,0,0,0.6)
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: sensor.volvo_ex30_charging_connection_status
+                    state: connected
+                elements:
+                  - type: icon
+                    entity: sensor.volvo_ex30_charging_connection_status
+                    icon: mdi:ev-plug-type2
+                    style:
+                      left: 5%
+                      top: 90%
+                      color: '#00C853'
+                    tap_action:
+                      action: more-info
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: sensor.volvo_ex30_charging_connection_status
+                    state: disconnected
+                elements:
+                  - type: icon
+                    entity: sensor.volvo_ex30_charging_connection_status
+                    icon: mdi:ev-plug-type2
+                    style:
+                      left: 5%
+                      top: 90%
+                      color: var(--disabled-text-color)
+                    tap_action:
+                      action: more-info
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: sensor.volvo_ex30_charging_connection_status
+                    state: fault
+                elements:
+                  - type: icon
+                    entity: sensor.volvo_ex30_charging_connection_status
+                    icon: mdi:ev-plug-type2
+                    style:
+                      left: 5%
+                      top: 90%
+                      color: var(--error-color)
+                    tap_action:
+                      action: more-info
+              - type: state-icon
+                style:
+                  left: 15%
+                  top: 90%
+                entity: lock.volvo_ex30_lock
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.volvo_ex30_window_front_left
+                    state: 'on'
+                elements:
+                  - type: icon
+                    entity: binary_sensor.volvo_ex30_window_front_left
+                    icon: mdi:car-door-lock-open
+                    style:
+                      left: 95%
+                      top: 10%
+                      color: '#F44336'
+                    tap_action:
+                      action: more-info
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.volvo_ex30_window_front_right
+                    state: 'on'
+                elements:
+                  - type: icon
+                    entity: binary_sensor.volvo_ex30_window_front_right
+                    icon: mdi:car-door-lock-open
+                    style:
+                      left: 95%
+                      top: 10%
+                      color: '#F44336'
+                    tap_action:
+                      action: more-info
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.volvo_ex30_window_rear_left
+                    state: 'on'
+                elements:
+                  - type: icon
+                    entity: binary_sensor.volvo_ex30_window_rear_left
+                    icon: mdi:car-door-lock-open
+                    style:
+                      left: 95%
+                      top: 10%
+                      color: '#F44336'
+                    tap_action:
+                      action: more-info
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.volvo_ex30_window_rear_right
+                    state: 'on'
+                elements:
+                  - type: icon
+                    entity: binary_sensor.volvo_ex30_window_rear_right
+                    icon: mdi:car-door-lock-open
+                    style:
+                      left: 95%
+                      top: 10%
+                      color: '#F44336'
+                    tap_action:
+                      action: more-info
+              - type: state-icon
+                style:
+                  left: 85%
+                  top: 90%
+                entity: button.volvo_ex30_start_climatisation
+                icon: mdi:fan
+              - type: state-icon
+                style:
+                  left: 95%
+                  top: 90%
+                entity: button.volvo_ex30_stop_climatisation
+                icon: mdi:fan-off
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              show_states: true
+              colorize_states: true
+            graph_span: 48h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 200
+                stacked: false
+                toolbar:
+                  show: false
+              legend:
+                show: false
+              grid:
+                show: true
+                borderColor: '#404040'
+              tooltip:
+                fixed:
+                  enabled: true
+                  position: topLeft
+                offsetX: -10
+                offsetY: -10
+                shared: false
+                x:
+                  format: MMM dd, HH:mm
+                'y':
+                  formatter: |
+                    EVAL:function(value) {
+                      if (value === null || typeof value === 'undefined' || Number.isNaN(Number(value))) 
+                        return '';
+                      return Number(value).toFixed(4) + ' €/kWh';
+                    }
+              xaxis:
+                type: datetime
+                tickAmount: 48
+                labels:
+                  format: HH:mm
+                  datetimeUTC: false
+                  rotate: -45
+                min: |
+                  EVAL:function() { 
+                    var start = new Date();
+                    start.setHours(0, 0, 0, 0);
+                    return start.getTime();
+                  }
+                max: |
+                  EVAL:function() { 
+                    var end = new Date();
+                    end.setDate(end.getDate() + 2);
+                    end.setHours(0, 0, 0, 0);
+                    return end.getTime();
+                  }
+              yaxis:
+                - title:
+                    text: Price (€/kWh)
+                  labels:
+                    formatter: |
+                      EVAL:function(value) {
+                        if (value === null || typeof value === 'undefined' || Number.isNaN(Number(value))) 
+                          return '';
+                        return Number(value).toFixed(4) + ' €';
+                      }
+                  min: 0
+              plotOptions:
+                bar:
+                  columnWidth: 80%
+                  endingShape: round
+                  borderRadius: 3
+                  distributed: true
+              dataLabels:
+                enabled: false
+              stroke:
+                width: 0
+              fill:
+                opacity: 1
+            series:
+              - entity: sensor.real_electricity_price_current_price
+                name: Current price
+                type: line
+                stroke_width: 2
+                float_precision: 4
+                unit: €/kWh
+                show:
+                  in_header: true
+                  in_chart: false
+                  in_legend: false
+                data_generator: >
+                  var out = []; var nowts = new Date().getTime(); var v = null;
+                  if (entity && entity.state && entity.state !== 'unknown' &&
+                  entity.state !== 'unavailable') {
+                    v = Number(entity.state);
+                  } out.push([nowts, v]); return out;
+              - entity: sensor.real_electricity_price_chart_data
+                type: column
+                name: Electricity Prices
+                float_precision: 4
+                unit: €/kWh
+                show:
+                  in_header: false
+                  in_chart: true
+                  in_legend: false
+                data_generator: |
+                  return entity?.attributes?.chart_data || [];
+          - type: vertical-stack
+            cards:
+              - type: custom:mushroom-chips-card
+                chips:
+                  - type: template
+                    entity: sensor.real_electricity_price_current_price
+                    content: >-
+                      {{ states('sensor.real_electricity_price_current_price')
+                      }} €/kWh
+                    icon: mdi:currency-eur
+                    icon_color: >-
+                      {% if
+                      states('sensor.real_electricity_price_current_price')|float(0)
+                           <= states('number.real_electricity_price_acceptable_price')|float(0) %}
+                        green
+                      {% else %}
+                        red
+                      {% endif %}
+                    tap_action:
+                      action: more-info
+              - type: custom:mushroom-template-card
+                entity: sensor.smartevse_state
+                entity_id:
+                  - sensor.smartevse_state
+                  - sensor.smartevse_evplugstate
+                  - select.smartevse_mode
+                  - sensor.smartevse_chargecurrent
+                  - input_boolean.charging_schedule_state
+                  - schedule.charge_schedule
+                  - input_boolean.force_charge_state
+                  - >-
+                    input_boolean.force_charge_with_acceptable_electricity_price_state
+                  - input_boolean.force_charge_with_timer_state
+                  - number.real_electricity_price_acceptable_price
+                  - input_datetime.force_charge_time
+                primary: |-
+                  {% if is_state('sensor.smartevse_evplugstate','Connected') %}
+                    {% set s = states('sensor.smartevse_state')|trim %}
+                    {% if s == 'Charging' %}
+                      Charging
+                    {% elif s == 'Ready to Charge' %}
+                      Ready to charge
+                    {% elif s == 'Connected to EV' %}
+                      Connected to EV
+                    {% elif s == 'Charging Stopped' %}
+                      Charging stopped
+                    {% elif s == 'Stop Charging' %}
+                      Charging stopping
+                    {% else %}
+                      Idle
+                    {% endif %}
+                  {% else %}
+                    Unplugged
+                  {% endif %}
+                secondary: >-
+                  {%- set gate =
+                  is_state('input_boolean.charging_schedule_state','on') -%} {%-
+                  if gate -%}
+                    {%- set sched_on = is_state('schedule.charge_schedule','on') -%}
+                    {%- set ne = state_attr('schedule.charge_schedule','next_event') -%}
+                    {%- if sched_on -%}
+                  Schedule: On now{%- if ne -%}, ends {{ as_timestamp(ne) |
+                  timestamp_custom('%a %H:%M', true) }}{%- endif -%}
+                    {%- else -%}
+                  Schedule: armed{%- if ne -%}, starts at {{ as_timestamp(ne) |
+                  timestamp_custom('%a %H:%M', true) }}{%- endif -%}
+                    {%- endif -%}
+                  {%- else -%} Schedule: Disabled {%- endif -%}
+
+                  {{ '\n' }}Plug: {{ states('sensor.smartevse_evplugstate') }}
+
+                  Mode: {{ states('select.smartevse_mode') }}
+
+                  Charging current: {{ states('sensor.smartevse_chargecurrent')
+                  }} A
+                icon: >-
+                  {% set s = states('sensor.smartevse_state')|trim %} {% if not
+                  is_state('sensor.smartevse_evplugstate','Connected') %}
+                    mdi:power-plug-off-outline
+                  {% elif s == 'Charging' %}
+                    mdi:ev-station
+                  {% elif s in ['Ready to Charge','Connected to EV'] %}
+                    mdi:ev-plug-type2
+                  {% else %}
+                    mdi:ev-station
+                  {% endif %}
+                multiline_secondary: true
+                tap_action:
+                  action: none
+                color: >-
+                  {% set s = states('sensor.smartevse_state')|trim %} {% if s ==
+                  'Charging' %}
+                    amber
+                  {% elif is_state('sensor.smartevse_evplugstate','Connected')
+                  %}
+                    blue
+                  {% else %}
+                    grey
+                  {% endif %}
+                features_position: bottom
+              - type: custom:mushroom-template-card
+                entity: input_boolean.force_charge_state
+                primary: Force charge
+                secondary: |-
+                  {% if is_state('input_boolean.force_charge_state','on') %}
+                    {% if not is_state('sensor.smartevse_evplugstate','Connected') %}
+                      Waiting EV Plug to be connected
+                    {% else %}
+                      Active
+                    {% endif %}
+                  {% else %}
+                    Tap to start
+                  {% endif %}
+                icon: mdi:lightning-bolt
+                icon_color: >-
+                  {% if is_state('input_boolean.force_charge_state','on') and
+                  not is_state('sensor.smartevse_evplugstate','Connected') %}
+                    orange
+                  {% elif is_state('input_boolean.force_charge_state','on') %}
+                    green
+                  {% else %}
+                    grey
+                  {% endif %}
+                tap_action:
+                  action: toggle
+                hold_action:
+                  action: more-info
+                fill_container: true
+              - type: custom:mushroom-template-card
+                entity: >-
+                  input_boolean.force_charge_with_acceptable_electricity_price_state
+                primary: >-
+                  Force charge when ≤ {{
+                  states('number.real_electricity_price_acceptable_price') }}
+                  €/kWh
+                secondary: >-
+                  {% if
+                  is_state('input_boolean.force_charge_with_acceptable_electricity_price_state','on')
+                  %}
+                    {% if not is_state('sensor.smartevse_evplugstate','Connected') %}
+                      Waiting EV Plug to be connected
+                    {% else %}
+                      {% set price = states('sensor.real_electricity_price_current_price')|float(0) %}
+                      {% set accept = states('number.real_electricity_price_acceptable_price')|float(0) %}
+                      {% if price <= accept %}
+                        Acceptable price, charging
+                      {% else %}
+                        Waiting for price
+                      {% endif %}
+                    {% endif %}
+                  {% else %}
+                    Tap to arm
+                  {% endif %}
+                icon: mdi:currency-eur
+                tap_action:
+                  action: toggle
+                hold_action:
+                  action: more-info
+                color: >-
+                  {% if
+                  is_state('input_boolean.force_charge_with_acceptable_electricity_price_state','on')
+                  and not is_state('sensor.smartevse_evplugstate','Connected')
+                  %}
+                    orange
+                  {% elif
+                  is_state('input_boolean.force_charge_with_acceptable_electricity_price_state','on')
+                  %}
+                    green
+                  {% else %}
+                    grey
+                  {% endif %}
+                features_position: bottom
+              - type: custom:mushroom-template-card
+                entity: input_boolean.force_charge_with_timer_state
+                primary: >-
+                  Force charge for {{ states('input_datetime.force_charge_time')
+                  }}
+                secondary: >-
+                  {% if
+                  is_state('input_boolean.force_charge_with_timer_state','on')
+                  %}
+                    {% if not is_state('sensor.smartevse_evplugstate','Connected') %}
+                      Waiting EV Plug to be connected
+                    {% else %}
+                      Active
+                    {% endif %}
+                  {% else %}
+                    Tap to arm
+                  {% endif %}
+                icon: mdi:timer-sand
+                tap_action:
+                  action: toggle
+                hold_action:
+                  action: more-info
+                color: >-
+                  {% if
+                  is_state('input_boolean.force_charge_with_timer_state','on')
+                  and not is_state('sensor.smartevse_evplugstate','Connected')
+                  %}
+                    orange
+                  {% elif
+                  is_state('input_boolean.force_charge_with_timer_state','on')
+                  %}
+                    green
+                  {% else %}
+                    grey
+                  {% endif %}
+                features_position: bottom
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_boolean.charging_schedule_state
+                    name: Charge with schedule
+                  - entity: number.real_electricity_price_acceptable_price
+                    name: Acceptable price
+                  - entity: input_datetime.force_charge_time
+                    name: Force timer
+                    icon: mdi:timer-sand
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_1_phase_a_current
+                line_color: brown
+                line_width: 8
+                font_size: 75
+                name: L1 (A)
+                icon: mdi:home-lightning-bolt
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_1_phase_b_current
+                line_color: black
+                line_width: 8
+                font_size: 75
+                name: L2 (B)
+                icon: mdi:home-lightning-bolt
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_1_phase_c_current
+                line_color: grey
+                line_width: 8
+                font_size: 75
+                name: L3 (C)
+                icon: mdi:home-lightning-bolt
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_2_phase_a_current
+                line_color: brown
+                line_width: 8
+                font_size: 75
+                name: L1 (A)
+                icon: mdi:car-electric
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_2_phase_b_current
+                line_color: black
+                line_width: 8
+                font_size: 75
+                name: L2 (B)
+                icon: mdi:car-electric
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_2_phase_c_current
+                line_color: grey
+                line_width: 8
+                font_size: 75
+                name: L3 (C)
+                icon: mdi:car-electric
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+          - type: custom:mushroom-template-card
+            entity: timer.mute_overcurrent_notifications_timer
+            primary: Overcurrent notifications
+            secondary: |
+              {% if is_state(entity, 'active') %}
+                {% set f = state_attr(entity, 'finishes_at') %}
+                Muted until {{ as_local(as_datetime(f)).strftime('%H:%M') }} (tap to unmute)
+              {% else %}
+                Active (tap to mute for 1h)
+              {% endif %}
+            icon: |
+              {% if is_state(entity, 'active') %}
+                mdi:bell-off
+              {% else %}
+                mdi:bell
+              {% endif %}
+            tap_action:
+              action: call-service
+              service: script.toggle_overcurrent_notifications_mute
+            hold_action:
+              action: more-info
+            grid_options:
+              columns: full
+            color: |
+              {% if is_state(entity, 'active') %}
+                red
+              {% else %}
+                green
+              {% endif %}
+            features_position: bottom
+    cards: []
+    title: Cars
+  - type: sections
+    max_columns: 1
+    icon: mdi:recycle
+    path: ''
+    sections:
+      - type: grid
+        cards:
+          - type: custom:mushroom-template-card
+            entity: input_boolean.mixed_household_waste_container_outside_state
+            primary: Mixed household waste
+            secondary: >
+              {% if
+              is_state('input_boolean.mixed_household_waste_container_outside_state',
+              'on') %}
+                Outside
+              {% else %}
+                On property
+              {% endif %}
+            icon: >
+              {% if
+              is_state('input_boolean.mixed_household_waste_container_outside_state',
+              'on') %}
+                mdi:trash-can
+              {% else %}
+                mdi:trash-can-outline
+              {% endif %}
+            color: >
+              {% if
+              is_state('input_boolean.mixed_household_waste_container_outside_state',
+              'on') %}
+                green
+              {% else %}
+                blue
+              {% endif %}
+            badge_icon: >
+              {% if
+              is_state('input_boolean.mixed_household_waste_container_outside_state',
+              'on') %}
+                mdi:check-circle
+              {% endif %}
+            badge_color: >
+              {% if
+              is_state('input_boolean.mixed_household_waste_container_outside_state',
+              'on') %}
+                green
+              {% else %}
+                orange
+              {% endif %}
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+            features_position: bottom
+            grid_options:
+              rows: 2
+            vertical: true
+          - type: custom:mushroom-template-card
+            entity: input_boolean.paper_and_cardboard_container_outside_state
+            primary: Paper and cardboard
+            secondary: >
+              {% if
+              is_state('input_boolean.paper_and_cardboard_container_outside_state',
+              'on') %}
+                Outside
+              {% else %}
+                On property
+              {% endif %}
+            icon: >
+              {% if
+              is_state('input_boolean.paper_and_cardboard_container_outside_state',
+              'on') %}
+                mdi:trash-can
+              {% else %}
+                mdi:trash-can-outline
+              {% endif %}
+            color: >
+              {% if
+              is_state('input_boolean.paper_and_cardboard_container_outside_state',
+              'on') %}
+                green
+              {% else %}
+                purple
+              {% endif %}
+            badge_icon: >
+              {% if
+              is_state('input_boolean.paper_and_cardboard_container_outside_state',
+              'on') %}
+                mdi:check-circle
+              {% endif %}
+            badge_color: >
+              {% if
+              is_state('input_boolean.paper_and_cardboard_container_outside_state',
+              'on') %}
+                green
+              {% else %}
+                orange
+              {% endif %}
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+            features_position: bottom
+            grid_options:
+              columns: 6
+              rows: 2
+            vertical: true
+          - type: custom:mushroom-template-card
+            entity: input_boolean.mixed_packaging_container_outside_state
+            primary: Mixed packaging
+            secondary: >
+              {% if
+              is_state('input_boolean.mixed_packaging_container_outside_state',
+              'on') %}
+                Outside
+              {% else %}
+                On property
+              {% endif %}
+            icon: >
+              {% if
+              is_state('input_boolean.mixed_packaging_container_outside_state',
+              'on') %}
+                mdi:trash-can
+              {% else %}
+                mdi:trash-can-outline
+              {% endif %}
+            color: >
+              {% if
+              is_state('input_boolean.mixed_packaging_container_outside_state',
+              'on') %}
+                green
+              {% else %}
+                yellow
+              {% endif %}
+            badge_icon: >
+              {% if
+              is_state('input_boolean.mixed_packaging_container_outside_state',
+              'on') %}
+                mdi:check-circle
+              {% endif %}
+            badge_color: >
+              {% if
+              is_state('input_boolean.mixed_packaging_container_outside_state',
+              'on') %}
+                green
+              {% else %}
+                orange
+              {% endif %}
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+            features_position: bottom
+            grid_options:
+              columns: 6
+              rows: 2
+            vertical: true
+          - type: custom:mushroom-template-card
+            entity: input_boolean.bio_waste_container_outside_state
+            primary: Bio waste
+            secondary: >
+              {% if is_state('input_boolean.bio_waste_container_outside_state',
+              'on') %}
+                Outside
+              {% else %}
+                On property
+              {% endif %}
+            icon: >
+              {% if is_state('input_boolean.bio_waste_container_outside_state',
+              'on') %}
+                mdi:trash-can
+              {% else %}
+                mdi:trash-can-outline
+              {% endif %}
+            color: >
+              {% if is_state('input_boolean.bio_waste_container_outside_state',
+              'on') %}
+                green
+              {% else %}
+                brown
+              {% endif %}
+            badge_icon: >
+              {% if is_state('input_boolean.bio_waste_container_outside_state',
+              'on') %}
+                mdi:check-circle
+              {% endif %}
+            badge_color: >
+              {% if is_state('input_boolean.bio_waste_container_outside_state',
+              'on') %}
+                green
+              {% else %}
+                orange
+              {% endif %}
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+            features_position: bottom
+            grid_options:
+              columns: 6
+              rows: 2
+            vertical: true
+          - initial_view: dayGridMonth
+            type: calendar
+            entities:
+              - calendar.waste_collection_calendar
+            grid_options:
+              rows: 8
+    cards: []
+  - type: sections
+    max_columns: 1
+    icon: mdi:cog
+    path: home-details
+    sections:
+      - type: grid
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - entity: sensor.vallox_co2
+                    name: CO2
+                    show_state: true
+                name: Vallox CO2
+                hours_to_show: 24
+                points_per_hour: 6
+              - type: custom:mini-graph-card
+                entities:
+                  - entity: sensor.home_humidity_average
+                    name: Average
+                    show_state: true
+                  - entity: sensor.vallox_humidity
+                    name: Vallox
+                    show_state: true
+                name: Home humidity
+                hours_to_show: 24
+                points_per_hour: 60
+              - type: custom:mushroom-fan-card
+                entity: fan.vallox
+                icon_animation: true
+                show_percentage_control: true
+                show_oscillate_control: false
+                collapsible_controls: true
+                fill_container: true
+                layout: horizontal
+              - type: entities
+                entities:
+                  - entity: input_boolean.vallox_fan_speed_scene_at_home
+                  - entity: input_boolean.ventilation_automation_state
+                    name: Automation
+                  - entity: input_number.ventilation_automation_trigger_humidity_value
+                    name: Trigger
+                  - entity: input_number.vallox_fan_speed_home_value
+                    name: Home
+                  - entity: input_number.vallox_fan_speed_boost_value
+                    name: Boost
+                  - entity: input_number.vallox_fan_speed_away_value
+                    name: Away
+          - type: vertical-stack
+            cards:
+              - type: entities
+                entities:
+                  - entity: input_boolean.nibe_autopilot_state
+                    name: Autopilot enabled
+                  - entity: automation.nibe_night_quiet_mode
+                    name: Night quiet mode
+                  - entity: switch.allow_heating_47371
+                    name: Allow space heating
+                  - entity: switch.allow_additive_heating_47370
+                    name: Allow additive heat
+                  - entity: switch.hw_production_47387
+                    name: Allow DHW production
+                  - entity: switch.periodic_hw_47050
+                    name: Periodic HW enabled
+                  - entity: switch.hot_water_high_power_mode_48743
+                    name: HW high power mode
+                  - entity: water_heater.nibe_f1255_6_r_hot_water
+                    name: Hot water controller
+                  - entity: select.hot_water_comfort_mode_47041
+                    name: Hot water comfort mode
+                  - entity: input_number.indoor_target_temperature
+                    name: Indoor target
+                  - entity: input_number.nibe_max_add_heat_kw
+                    name: Max add-heat cap
+                  - entity: input_number.nibe_heat_bias
+                    name: Heat bias trim
+                  - entity: number.heat_offset_s1_47011
+                    name: Heating curve offset
+                  - entity: number.max_int_add_power_47212
+                    name: Max add heat (kW)
+                  - entity: number.fuse_47214
+                    name: Fuse setting (A)
+                  - entity: number.min_comp_freq_47103
+                    name: Min compressor freq (Hz)
+                  - entity: number.max_comp_freq_47104
+                    name: Max compressor freq (Hz)
+                  - entity: sensor.max_compressor_frequency_heating_40322
+                    name: Max compressor freq heating
+                  - entity: number.degree_minutes_32_bit_40940
+                    name: Degree minutes
+                  - entity: number.degree_minutes_16_bit_43005
+                    name: Degree minutes (16-bit)
+                  - entity: number.dm_start_heating_47206
+                    name: DM start heating
+                  - entity: number.dm_between_add_steps_47209
+                    name: DM between add steps
+                  - entity: number.dm_start_add_with_shunt_47210
+                    name: DM start add with shunt
+                  - entity: sensor.alarm_45001
+                    name: Active alarm code
+                  - entity: sensor.inverter_alarm_code_40323
+                    name: Inverter alarm code
+                  - entity: button.nibe_f1255_6_r_alarm_reset
+                    name: Reset alarm
+                  - entity: sensor.compressor_state_ep14_43427
+                    name: Compressor
+                  - entity: sensor.compressor_frequency_request_40321
+                    name: Compressor freq request
+                  - entity: sensor.compressor_frequency_target_43182
+                    name: Compressor freq target
+                  - entity: sensor.compressor_frequency_actual_43136
+                    name: Compressor freq actual
+                  - entity: sensor.compressor_slow_down_reason_40813
+                    name: Compressor slow-down reason
+                  - entity: sensor.compressor_starts_eb100_ep14_43416
+                    name: Compressor starts
+                  - entity: sensor.compr_in_power_43141
+                    name: Compressor input power
+                  - entity: sensor.compr_in_power_mean_43375
+                    name: Compressor input power mean
+                  - entity: sensor.nibe_total_input_power_kw
+                    name: Total input power
+                  - entity: sensor.nibe_produced_space_heat_power_kw
+                    name: Produced space heat power
+                  - entity: sensor.nibe_produced_dhw_heat_power_kw
+                    name: Produced DHW heat power
+                  - entity: sensor.nibe_produced_heat_total_power_kw
+                    name: Produced heat power
+                  - entity: sensor.nibe_estimated_cop_instant
+                    name: Estimated COP (instant)
+                  - entity: sensor.int_el_add_state_43091
+                    name: Add heat state
+                  - entity: sensor.opt_boiler_has_priority_hot_water_41287
+                    name: DHW priority
+                  - entity: sensor.supply_pump_state_ep14_43431
+                    name: Supply pump state
+                  - entity: sensor.supply_pump_speed_ep14_43437
+                    name: Supply pump speed
+                  - entity: select.operational_mode_heat_medium_pump_47138
+                    name: Heat pump mode
+                  - entity: number.speed_circ_pump_heat_47414
+                    name: Heat pump speed set
+                  - entity: number.max_speed_circ_pump_heat_48458
+                    name: Heat pump max speed
+                  - entity: sensor.brine_pump_state_ep14_43433
+                    name: Brine pump state
+                  - entity: sensor.ep14_gp2_brine_pump_status_ep14_43439
+                    name: Brine pump GP2
+                  - entity: select.operational_mode_brine_medium_pump_47139
+                    name: Brine pump mode
+                  - entity: number.speed_brine_pump_47418
+                    name: Brine pump speed set
+                  - entity: number.speed_circ_pump_hw_47413
+                    name: HW pump speed set
+                  - entity: sensor.brine_pump_dt_actual_44910
+                    name: Brine ΔT actual
+                  - entity: sensor.brine_pump_dt_set_point_44911
+                    name: Brine ΔT set
+                  - entity: sensor.heat_medium_flow_dt_actual_43065
+                    name: Heat medium ΔT actual
+                  - entity: sensor.heat_medium_flow_dt_set_point_43064
+                    name: Heat medium ΔT set
+                  - entity: sensor.heat_meter_heat_cpr_and_add_total_system_42439
+                    name: Produced heat total
+                  - entity: sensor.heat_meter_hw_cpr_and_add_total_system_42437
+                    name: Produced DHW total
+                  - entity: number.periodic_hw_interval_47051
+                    name: Periodic HW interval
+                  - entity: number.stop_temperature_periodic_hw_47046
+                    name: Periodic HW stop temp
+                  - entity: sensor.tot_op_time_compr_eb100_ep14_43420
+                    name: Compressor total op time
+                  - entity: sensor.tot_hw_op_time_compr_eb100_ep14_43424
+                    name: Compressor DHW op time
+                  - entity: sensor.tot_hw_op_time_add_43239
+                    name: Add heat DHW op time
+                  - entity: sensor.tot_ext_hw_add_op_time_40755
+                    name: Ext add HW op time
+                  - entity: sensor.state_ground_water_pump_44756
+                    name: Ground water pump state
+              - type: custom:apexcharts-card
+                header:
+                  show: true
+                  title: Compressor Frequency
+                all_series_config:
+                  stroke_width: 2
+                  curve: smooth
+                series:
+                  - entity: sensor.compressor_frequency_request_40321
+                    name: Requested Hz
+                    color: '#a855f7'
+                    yaxis_id: hz
+                    stroke_dash: 5
+                  - entity: sensor.compressor_frequency_target_43182
+                    name: Target Hz
+                    color: '#22c55e'
+                    yaxis_id: hz
+                    stroke_dash: 3
+                  - entity: sensor.compressor_frequency_actual_43136
+                    name: Actual Hz
+                    color: '#2563eb'
+                    yaxis_id: hz
+                  - entity: number.max_comp_freq_47104
+                    name: Max limit Hz
+                    color: '#94a3b8'
+                    yaxis_id: hz
+                    stroke_dash: 2
+                yaxis:
+                  - id: hz
+                    decimals: 0
+                    min: 0
+                    max: 130
+                    opposite: false
+              - type: custom:apexcharts-card
+                header:
+                  show: true
+                  title: Pump Speeds
+                all_series_config:
+                  stroke_width: 2
+                  curve: smooth
+                series:
+                  - entity: sensor.supply_pump_speed_ep14_43437
+                    name: Supply pump %
+                    yaxis_id: pct
+                    color: '#0ea5e9'
+                  - entity: number.speed_circ_pump_heat_47414
+                    name: Heat pump set %
+                    yaxis_id: pct
+                    color: '#22c55e'
+                    stroke_dash: 3
+                  - entity: number.speed_circ_pump_hw_47413
+                    name: HW pump set %
+                    yaxis_id: pct
+                    color: '#f59e0b'
+                    stroke_dash: 4
+                  - entity: number.speed_brine_pump_47418
+                    name: Brine pump set %
+                    yaxis_id: pct
+                    color: '#14b8a6'
+                    stroke_dash: 5
+                yaxis:
+                  - id: pct
+                    decimals: 0
+                    min: 0
+                    max: 100
+                    opposite: false
+              - type: custom:apexcharts-card
+                header:
+                  show: true
+                  title: Heating Temperatures
+                all_series_config:
+                  stroke_width: 2
+                  curve: smooth
+                series:
+                  - entity: sensor.home_temperature_average
+                    name: Indoor avg
+                    yaxis_id: temp
+                  - entity: input_number.indoor_target_temperature
+                    name: Target
+                    yaxis_id: temp
+                    color: '#999999'
+                    stroke_width: 1
+                    stroke_dash: 4
+                  - entity: sensor.bt2_supply_temp_s1_40008
+                    name: Supply S1
+                    yaxis_id: temp
+                    color: '#f97316'
+                  - entity: sensor.eb100_ep14_bt3_return_temp_40012
+                    name: Return S1
+                    yaxis_id: temp
+                    color: '#22c55e'
+                  - entity: sensor.outdoors_temperature_average
+                    name: Outdoor avg
+                    yaxis_id: temp
+                    color: '#3b82f6'
+                  - entity: sensor.bt1_outdoor_temperature_40004
+                    name: Outdoor BT1
+                    yaxis_id: temp
+                    color: '#93c5fd'
+                    stroke_width: 1
+                    stroke_dash: 4
+                yaxis:
+                  - id: temp
+                    decimals: 1
+                    opposite: false
+              - type: custom:apexcharts-card
+                header:
+                  show: true
+                  title: Room Temperatures
+                all_series_config:
+                  stroke_width: 2
+                  curve: smooth
+                series:
+                  - entity: sensor.aqara_thp_1_temperature
+                    name: Room 1
+                    yaxis_id: temp
+                    color: '#ef4444'
+                  - entity: sensor.aqara_thp_2_temperature
+                    name: Room 2
+                    yaxis_id: temp
+                    color: '#f97316'
+                  - entity: sensor.aqara_thp_3_temperature
+                    name: Room 3
+                    yaxis_id: temp
+                    color: '#facc15'
+                  - entity: sensor.kitchen_living_room_temperature_average
+                    name: Living/kitchen
+                    yaxis_id: temp
+                    color: '#22c55e'
+                  - entity: sensor.aqara_thp_6_temperature
+                    name: Office
+                    yaxis_id: temp
+                    color: '#0ea5e9'
+                  - entity: sensor.wc_1_entrance_hallway_storeroom_temperature_average
+                    name: Hallway
+                    yaxis_id: temp
+                    color: '#6366f1'
+                  - entity: sensor.wc_2_shower_room_temperature_average
+                    name: Shower
+                    yaxis_id: temp
+                    color: '#a855f7'
+                  - entity: input_number.indoor_target_temperature
+                    name: Target
+                    yaxis_id: temp
+                    color: '#94a3b8'
+                    stroke_width: 1
+                    stroke_dash: 4
+                yaxis:
+                  - id: temp
+                    decimals: 1
+                    min: 15
+                    max: 25
+                    opposite: false
+              - type: custom:apexcharts-card
+                header:
+                  show: true
+                  title: Brine Temperatures
+                all_series_config:
+                  stroke_width: 2
+                  curve: smooth
+                series:
+                  - entity: sensor.eb100_ep14_bt10_brine_in_temp_40015
+                    name: Brine in
+                    yaxis_id: temp
+                    color: '#0ea5e9'
+                  - entity: sensor.eb100_ep14_bt11_brine_out_temp_40016
+                    name: Brine out
+                    yaxis_id: temp
+                    color: '#2563eb'
+                yaxis:
+                  - id: temp
+                    decimals: 1
+                    opposite: false
+              - type: custom:apexcharts-card
+                header:
+                  show: true
+                  title: Brine ΔT
+                all_series_config:
+                  stroke_width: 2
+                  curve: smooth
+                series:
+                  - entity: sensor.brine_pump_dt_actual_44910
+                    name: ΔT actual
+                    yaxis_id: delta
+                    color: '#f59e0b'
+                  - entity: sensor.brine_pump_dt_set_point_44911
+                    name: ΔT set
+                    yaxis_id: delta
+                    color: '#94a3b8'
+                    stroke_dash: 4
+                yaxis:
+                  - id: delta
+                    decimals: 1
+                    opposite: false
+              - type: custom:apexcharts-card
+                header:
+                  show: true
+                  title: Curve & Power
+                all_series_config:
+                  stroke_width: 2
+                series:
+                  - entity: number.heat_offset_s1_47011
+                    name: Offset
+                    type: column
+                    yaxis_id: offset
+                    color: '#6366f1'
+                  - entity: sensor.int_el_add_power_43084
+                    name: Add heat power
+                    yaxis_id: kw
+                    color: '#f97316'
+                  - entity: sensor.compr_in_power_43141
+                    name: Compressor input
+                    yaxis_id: kw
+                    color: '#0ea5e9'
+                  - entity: number.max_int_add_power_47212
+                    name: Add heat limit
+                    yaxis_id: kw
+                    color: '#94a3b8'
+                    stroke_dash: 4
+                yaxis:
+                  - id: offset
+                    min: -10
+                    max: 10
+                    decimals: 0
+                    opposite: false
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_1_phase_a_current
+                line_color: brown
+                line_width: 8
+                font_size: 75
+                name: L1 (A)
+                icon: mdi:home-lightning-bolt
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_1_phase_b_current
+                line_color: black
+                line_width: 8
+                font_size: 75
+                name: L2 (B)
+                icon: mdi:home-lightning-bolt
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_1_phase_c_current
+                line_color: grey
+                line_width: 8
+                font_size: 75
+                name: L3 (C)
+                icon: mdi:home-lightning-bolt
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_2_phase_a_current
+                line_color: brown
+                line_width: 8
+                font_size: 75
+                name: L1 (A)
+                icon: mdi:car-electric
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_2_phase_b_current
+                line_color: black
+                line_width: 8
+                font_size: 75
+                name: L2 (B)
+                icon: mdi:car-electric
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.shelly_pro_3em_2_phase_c_current
+                line_color: grey
+                line_width: 8
+                font_size: 75
+                name: L3 (C)
+                icon: mdi:car-electric
+                update_interval: 5
+                hour24: true
+                align_icon: left
+                animate: true
+          - type: custom:mushroom-template-card
+            entity: timer.mute_overcurrent_notifications_timer
+            primary: Overcurrent notifications
+            secondary: |
+              {% if is_state(entity, 'active') %}
+                {% set f = state_attr(entity, 'finishes_at') %}
+                Muted until {{ as_local(as_datetime(f)).strftime('%H:%M') }} (tap to unmute)
+              {% else %}
+                Active (tap to mute for 1h)
+              {% endif %}
+            icon: |
+              {% if is_state(entity, 'active') %}
+                mdi:bell-off
+              {% else %}
+                mdi:bell
+              {% endif %}
+            tap_action:
+              action: call-service
+              service: script.toggle_overcurrent_notifications_mute
+            hold_action:
+              action: more-info
+            grid_options:
+              columns: full
+            color: |
+              {% if is_state(entity, 'active') %}
+                red
+              {% else %}
+                green
+              {% endif %}
+            features_position: bottom
+    cards: []
+    title: Home details
+    subview: false
+  - type: sections
+    max_columns: 1
+    icon: mdi:printer-3d-nozzle
+    path: ''
+    sections:
+      - type: grid
+        cards:
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              show_states: true
+              colorize_states: true
+              floating: false
+            graph_span: 24h
+            apex_config:
+              legend:
+                show: false
+              chart:
+                height: 150px
+            all_series_config:
+              stroke_width: 2
+            yaxis:
+              - id: power
+                decimals: 0
+              - id: current
+                opposite: true
+                decimals: 2
+            series:
+              - entity: sensor.ikea_inspelning_smart_plug_1_power
+                name: Power
+                yaxis_id: power
+                unit: W
+                float_precision: 0
+                show:
+                  in_header: raw
+              - entity: sensor.ikea_inspelning_smart_plug_1_current
+                name: Current
+                yaxis_id: current
+                unit: A
+                float_precision: 2
+                show:
+                  in_header: raw
+          - type: custom:ha-bambulab-print_status-card
+            printer: b313026a576884ba0a199515fced8ddd
+            style: simple
+            custom_power: switch.ikea_inspelning_smart_plug_1
+          - type: custom:ha-bambulab-ams-card
+            entity: ''
+            header: ''
+            subtitle: ''
+            style: vector
+            ams: e6d8c853e76185ef184d298c506de8cc
+            show_type: true
+            show_info_bar: true
+          - type: custom:ha-bambulab-ams-card
+            entity: ''
+            header: ''
+            subtitle: ''
+            style: vector
+            ams: 3250ecd3b2812be060e95c6b3f8d4ff5
+            show_type: true
+            show_info_bar: true
+  - type: sections
+    max_columns: 1
+    icon: mdi:battery
+    path: batteries
+    title: Batteries
+    sections:
+      - type: grid
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: entities
+                entities:
+                  - entity: sensor.aqara_thp_1_battery
+                  - entity: sensor.aqara_thp_2_battery
+                  - entity: sensor.aqara_thp_3_battery
+                  - entity: sensor.aqara_thp_4_battery
+                  - entity: sensor.aqara_thp_5_battery
+                  - entity: sensor.aqara_thp_6_battery
+                  - entity: sensor.aqara_thp_7_battery
+                  - entity: sensor.aqara_thp_8_battery
+                  - entity: sensor.aqara_thp_9_battery
+                  - entity: sensor.aqara_thp_10_battery
+                  - entity: sensor.aqara_thp_11_battery
+                  - entity: sensor.aqara_thp_12_battery
+                  - entity: sensor.aqara_thp_13_battery
+                  - entity: sensor.aqara_thp_14_battery
+                  - entity: sensor.aqara_thp_15_battery
+                  - entity: sensor.front_door_battery
+                  - entity: sensor.ikea_fyrtur_roller_blind_1_battery
+                  - entity: sensor.moes_scene_switch_1_battery
+                  - entity: sensor.moes_scene_switch_2_battery
+                  - entity: sensor.moes_scene_switch_3_battery
+                  - entity: sensor.moes_scene_switch_4_battery
+                  - entity: sensor.tuya_pir_24_ghz_human_presence_sensor_1_battery
+                  - entity: sensor.tuya_pir_24_ghz_human_presence_sensor_2_battery
+                  - entity: sensor.ikea_styrbar_n2_remote_control_1_battery
+                  - entity: sensor.ikea_parasoll_door_window_sensor_1_battery
+                  - entity: sensor.ikea_parasoll_door_window_sensor_2_battery
+                  - entity: sensor.ikea_parasoll_door_window_sensor_3_battery
+                state_color: true
+    cards: []
+title: ''

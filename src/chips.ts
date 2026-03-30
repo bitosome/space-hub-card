@@ -149,10 +149,10 @@ function getChipStyling(
     return applyStylingOverrides(base, config, isActive);
   }
   
-  if (type === 'door') {
+  if (type === 'door' || type === 'sliding_gate' || type === 'gate') {
     const base = isActive
-      ? { bg: '#e53935', iconColor: '#ffffff' } // Open/problem state
-      : { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
+      ? { bg: '#e53935', iconColor: '#ffffff' }
+      : { bg: '#66bb6a', iconColor: '#ffffff' };
     return applyStylingOverrides(base, config, isActive);
   }
   
@@ -171,20 +171,6 @@ function getChipStyling(
     return applyStylingOverrides(base, config, isActive);
   }
 
-  if (type === 'sliding_gate') {
-    const base = isActive
-      ? { bg: '#e53935', iconColor: '#ffffff' } // Open/problem state
-      : { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
-    return applyStylingOverrides(base, config, isActive);
-  }
-  
-  if (type === 'gate') {
-    const base = isActive
-      ? { bg: '#e53935', iconColor: '#ffffff' } // Open/problem state
-      : { bg: '#66bb6a', iconColor: '#ffffff' }; // Closed/secure state
-    return applyStylingOverrides(base, config, isActive);
-  }
-  
   const base = isActive
     ? { bg: '#42a5f5', iconColor: '#ffffff' }
     : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };

@@ -181,10 +181,72 @@ export const baseStyles: CSSResultGroup = css`
   .header-row.main-plus-one { grid-template-columns: 1fr auto; }
   .header-row > * { height: var(--tile-h); }
 
-  /* Animations */
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  @keyframes glowPulse { 0% { box-shadow: 0 10px 20px var(--pulse-weak); } 50% { box-shadow: 0 28px 56px var(--pulse-strong); } 100% { box-shadow: 0 10px 20px var(--pulse-weak); } }
-  @keyframes cardPulse { 0% { box-shadow: 0 10px 30px var(--panel-shadow-color); } 50% { box-shadow: 0 10px 30px var(--panel-shadow-color), 0 0 36px var(--unavail-strong); } 100% { box-shadow: 0 10px 30px var(--panel-shadow-color); } }
-
   .clickable { cursor: pointer; }
+
+  /* ====== Confirmation dialog ====== */
+  .sh-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.5);
+    animation: shFadeIn 0.15s ease;
+  }
+  .sh-confirm-overlay.sh-closing {
+    animation: shFadeOut 0.15s ease forwards;
+  }
+  .sh-confirm-dialog {
+    background: var(--ha-card-background, var(--card-background-color, #fff));
+    color: var(--primary-text-color);
+    border-radius: 16px;
+    padding: 24px;
+    min-width: 280px;
+    max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    text-align: center;
+    animation: shSlideUp 0.15s ease;
+  }
+  .sh-closing .sh-confirm-dialog {
+    animation: shSlideDown 0.15s ease forwards;
+  }
+  .sh-confirm-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .sh-confirm-text {
+    font-size: 14px;
+    color: var(--secondary-text-color);
+    margin-bottom: 20px;
+  }
+  .sh-confirm-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .sh-confirm-btn {
+    flex: 1;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.12s ease;
+  }
+  .sh-confirm-btn:active { opacity: 0.7; }
+  .sh-confirm-btn.sh-cancel {
+    background: var(--chip-background-color, rgba(0,0,0,0.06));
+    color: var(--primary-text-color);
+  }
+  .sh-confirm-btn.sh-ok {
+    background: var(--primary-color, #3f51b5);
+    color: #fff;
+  }
+  @keyframes shFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes shFadeOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes shSlideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes shSlideDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(20px); opacity: 0; } }
 `;

@@ -4,11 +4,11 @@ import { AttributePart, directive, Directive, DirectiveParameters } from 'lit/di
 import { ActionHandlerDetail, ActionHandlerOptions } from 'custom-card-helpers/dist/types';
 import { fireEvent } from 'custom-card-helpers';
 
-const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.maxTouchPoints > 0;
+const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 interface ActionHandler extends HTMLElement {
   holdTime: number;
-  bind(element: Element, options): void;
+  bind(element: Element, options: ActionHandlerOptions): void;
 }
 interface ActionHandlerElement extends HTMLElement {
   actionHandler?: boolean;
@@ -32,6 +32,12 @@ class ActionHandler extends HTMLElement implements ActionHandler {
 
   private dblClickTimeout?: number;
 
+  // Track touch start position for movement threshold
+  private startX = 0;
+  private startY = 0;
+  // Movement beyond this threshold (px) cancels hold detection
+  private static readonly HOLD_MOVE_THRESHOLD = 10;
+
   constructor() {
     super();
     this.ripple = document.createElement('mwc-ripple');
@@ -50,7 +56,7 @@ class ActionHandler extends HTMLElement implements ActionHandler {
     this.appendChild(this.ripple);
     this.ripple.primary = true;
 
-    ['touchcancel', 'mouseout', 'mouseup', 'touchmove', 'mousewheel', 'wheel', 'scroll'].forEach((ev) => {
+    ['touchcancel', 'mouseout', 'mouseup', 'mousewheel', 'wheel', 'scroll'].forEach((ev) => {
       document.addEventListener(
         ev,
         () => {
@@ -61,24 +67,38 @@ class ActionHandler extends HTMLElement implements ActionHandler {
         { passive: true },
       );
     });
+
+    // Handle touchmove separately with a movement threshold so small finger
+    // movements don't cancel hold detection – mirrors HA default behaviour.
+    document.addEventListener(
+      'touchmove',
+      (ev: Event) => {
+        if (this.timer === undefined && !this.held) return;
+        const touch = (ev as TouchEvent).touches?.[0];
+        if (touch) {
+          const dx = Math.abs(touch.pageX - this.startX);
+          const dy = Math.abs(touch.pageY - this.startY);
+          if (dx > ActionHandler.HOLD_MOVE_THRESHOLD || dy > ActionHandler.HOLD_MOVE_THRESHOLD) {
+            clearTimeout(this.timer);
+            this.stopAnimation();
+            this.timer = undefined;
+            this.held = false;
+          }
+        }
+      },
+      { passive: true },
+    );
   }
 
-  public bind(element: ActionHandlerElement, options): void {
+  public bind(element: ActionHandlerElement, options: ActionHandlerOptions): void {
     if (element.actionHandler) {
       return;
     }
     element.actionHandler = true;
 
     element.addEventListener('contextmenu', (ev: Event) => {
-      const e = ev || window.event;
-      if (e.preventDefault) {
-        e.preventDefault();
-      }
-      if (e.stopPropagation) {
-        e.stopPropagation();
-      }
-      e.cancelBubble = true;
-      e.returnValue = false;
+      ev.preventDefault();
+      ev.stopPropagation();
       return false;
     });
 
@@ -94,6 +114,10 @@ class ActionHandler extends HTMLElement implements ActionHandler {
         y = (ev as MouseEvent).pageY;
       }
 
+      // Record start position for touchmove threshold check
+      this.startX = x;
+      this.startY = y;
+
       this.timer = window.setTimeout(() => {
         this.startAnimation(x, y);
         this.held = true;
@@ -103,13 +127,16 @@ class ActionHandler extends HTMLElement implements ActionHandler {
     const end = (ev: Event): void => {
       // Prevent mouse event if touch event
       ev.preventDefault();
-      if (['touchend', 'touchcancel'].includes(ev.type) && this.timer === undefined) {
+      // If the timer was already cleared (e.g. by touchmove) and no hold was
+      // detected, the gesture was cancelled — ignore the end event.
+      if (['touchend', 'touchcancel'].includes(ev.type) && this.timer === undefined && !this.held) {
         return;
       }
       clearTimeout(this.timer);
       this.stopAnimation();
       this.timer = undefined;
       if (this.held) {
+        this.held = false;
         fireEvent(element, 'action', { action: 'hold' });
       } else if (options.hasDoubleClick) {
         if ((ev.type === 'click' && (ev as MouseEvent).detail < 2) || !this.dblClickTimeout) {
@@ -128,7 +155,7 @@ class ActionHandler extends HTMLElement implements ActionHandler {
     };
 
     const handleEnter = (ev: KeyboardEvent): void => {
-      if (ev.keyCode !== 13) {
+      if (ev.key !== 'Enter') {
         return;
       }
       end(ev);
@@ -162,16 +189,15 @@ class ActionHandler extends HTMLElement implements ActionHandler {
   }
 }
 
-// TODO You need to replace all instances of "action-handler-boilerplate" with "action-handler-<your card name>"
-customElements.define('action-handler-boilerplate', ActionHandler);
+customElements.define('action-handler-space-hub', ActionHandler);
 
 const getActionHandler = (): ActionHandler => {
   const body = document.body;
-  if (body.querySelector('action-handler-boilerplate')) {
-    return body.querySelector('action-handler-boilerplate') as ActionHandler;
+  if (body.querySelector('action-handler-space-hub')) {
+    return body.querySelector('action-handler-space-hub') as ActionHandler;
   }
 
-  const actionhandler = document.createElement('action-handler-boilerplate');
+  const actionhandler = document.createElement('action-handler-space-hub');
   body.appendChild(actionhandler);
 
   return actionhandler as ActionHandler;
@@ -182,7 +208,7 @@ export const actionHandlerBind = (element: ActionHandlerElement, options?: Actio
   if (!actionhandler) {
     return;
   }
-  actionhandler.bind(element, options);
+  actionhandler.bind(element, options || {});
 };
 
 export const actionHandler = directive(

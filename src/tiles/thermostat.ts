@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { html, nothing, TemplateResult } from 'lit';
+import { html, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
 import { THERMOSTAT_HEAT_PULSE, buildGlow, GlowMode } from '../glow';
 

@@ -57,7 +57,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const type = String(sw?.type || 'switch').toLowerCase();
   const isSmart = type === 'smart_plug';
   const on = typeof host?._isOn === 'function' ? host._isOn(tap) : false;
-  const iconSize = sw?.icon_size || sw?.['icon-size'] || sw?.['icon_size'];
+  const iconSize = sw?.icon_size || sw?.['icon-size'];
   const nameWeight = sw?.font_weight || sw?.['font-weight'];
   const nameSize = sw?.font_size || sw?.['font-size'];
   const toPx = (v: any) => (v === undefined || v === null || v === '') ? '' : (String(v).match(/px|em|rem|%$/) ? String(v) : `${Number(v)}px`);

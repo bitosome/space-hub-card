@@ -4,11 +4,15 @@ Custom Space Hub card for Home Assistant, built with Lit. This card renders one 
 
 ## Features
 
+- **Visual Config Editor**: full UI-based configuration with visual/YAML toggle — no YAML knowledge required
 - **LitElement card** with HA action handling (tap, hold, double_tap)
 - **Multiple main tiles**: Support for multiple main tiles in a single card via multiple header rows
 - **Main tiles** with configurable icon size and live temp/humidity chip
 - **AC and Thermostat tiles** with animated state visuals and responsive icon sizing
 - **Switch rows** with per-tile tap/hold entities, including smart plug style
+- **Hold entity override**: configure which entity's more-info dialog opens on long-press (independent per switch and main tile)
+- **Confirmation dialog**: optional tap confirmation for critical switches — themed to match your HA dashboard
+- **Domain-aware toggling**: switches, lights, locks, and covers each use their correct service calls
 - **Optional card header** title (omit `title` to hide)
 - **Unavailable detection**: card shadow pulses red if any entity (including chips, switch rows, standalone cards, or missing/typoed IDs) is unavailable/unknown/offline
 - **Glow containment**: internal glows/shadows are clipped to the card bounds so they never overlay surrounding cards
@@ -44,6 +48,8 @@ Use `headers: [...]` to define one or more header rows. Each header row can cont
 - **main_name**: text shown on the main tile
 - **main_icon**: MDI/HA icon for the main tile
 - **light_group_entity**: entity used for toggling and on-state display
+- **tap_entity**: optional entity used for tap actions (fallback to `light_group_entity`)
+- **hold_entity**: optional entity whose more-info dialog opens on hold (defaults to `tap_entity`)
 - **glow_mode**: visual glow behavior - `static` (permanent soft glow), `pulse` (animated pulse), or `none` (disabled)
 - **temp_sensor**: optional temperature sensor entity for the temp/humidity chip
 - **humidity_sensor**: optional humidity sensor entity for the temp/humidity chip
@@ -72,7 +78,9 @@ Use `headers: [...]` to define one or more header rows. Each header row can cont
 ### Switch Rows Configuration
 
 - **switch_rows**: array of switch row definitions. Each row can be an array or an object `{ row: [...] }`
-- Per-item options: `entity`, `name`, `icon`, `icon_size`, `font-weight`, `font-size`, `type` (`switch` | `smart_plug`), `glow_mode`, HA `*_action` entries, and `info_templates`
+- Per-item options: `entity`, `name`, `icon`, `icon_size`, `font-weight`, `font-size`, `type` (`switch` | `smart_plug`), `glow_mode`, HA `*_action` entries, `hold_entity`, `confirmation`, and `info_templates`
+- `hold_entity`: optional entity ID — the more-info dialog for this entity opens on long-press (defaults to the switch `entity`). Useful when a switch controls a relay but you want to inspect a different entity.
+- `confirmation`: set to `true` or a custom string (e.g., `"Cut main power?"`) to require a confirmation dialog before toggling the switch on tap. The dialog is themed to match your HA dashboard.
 - `info_templates` (alias `top_right_templates`) accepts a template string, object `{ template: "..." }`, or an array (max 2). Each template is rendered by Home Assistant and shown at the top-right corner of the switch tile (one line per template). Use it for quick stats like power draw, timers, scenes, etc.
 
 ## Examples
@@ -194,6 +202,7 @@ switch_rows:
         font-size: "12px"
         type: switch
         glow_mode: static
+        hold_entity: sensor.kitchen_tabletop_power  # more-info shows this on hold
         tap_action:
           action: toggle
         info_templates:
@@ -221,6 +230,33 @@ cards:
       action: navigate
       navigation_path: /config/logs
 ```
+
+### Confirmation dialog for critical switches
+
+```yaml
+switch_rows:
+  - row:
+      - entity: switch.main_breaker
+        name: Main Power
+        icon: mdi:power
+        confirmation: "This will cut power to the entire house!"
+      - entity: switch.alarm_system
+        name: Alarm
+        icon: mdi:shield
+        confirmation: true  # uses default "Are you sure?" text
+```
+
+## Visual Config Editor
+
+The card includes a full visual configuration editor accessible from the HA dashboard UI. Click the pencil icon on any space-hub-card to open it.
+
+- **Visual / YAML toggle**: switch between a form-based editor and raw YAML at any time — changes sync both ways
+- **General**: card title
+- **Appearance**: tile height, icon sizes, chip font size, shadow color/intensity, unavailable pulse color
+- **Headers**: add/remove header rows with tabbed navigation; each header has collapsible sections for Main Tile, AC Tile, and Thermostat Tile with full entity pickers, icon pickers, glow mode, chips, and action configs
+- **Switch Rows**: add/remove rows and switches with entity pickers, icon pickers, type/glow selectors, hold entity, confirmation toggle, styling overrides, action configs, and info templates
+
+All entity fields use `ha-entity-picker` with domain filtering where appropriate (e.g., climate entities for AC/thermostat). Icon fields use `ha-icon-picker`. No YAML knowledge required.
 
 ## Responsive Icon Sizing
 
@@ -332,7 +368,7 @@ npm start
 
 ## Version
 
-Current version: **1.3.1**
+Current version: **2.0.0**
 
 ## License
 
