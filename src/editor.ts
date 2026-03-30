@@ -23,7 +23,7 @@ export class SpaceHubCardEditor extends LitElement {
   @state() private _selectedSwitchRowIndex = 0;
   @state() private _yamlMode = false;
   @state() private _yamlError = '';
-  private _loadedElements = false;
+  @state() private _elementsReady = false;
 
   public setConfig(config: SpaceHubConfig): void {
     this._config = clone(config);
@@ -36,16 +36,14 @@ export class SpaceHubCardEditor extends LitElement {
 
   // Force HA to register lazy-loaded form elements so they render in our shadow DOM.
   private async _loadHAElements(): Promise<void> {
-    if (this._loadedElements) return;
-    this._loadedElements = true;
+    if (this._elementsReady) return;
 
-    // loadCardHelpers triggers most HA element registrations
-    const helpers = await (window as any).loadCardHelpers?.();
-    if (helpers) {
-      // Creating an entities card forces HA to register ha-entity-picker,
-      // ha-icon-picker, ha-select, ha-textfield, ha-expansion-panel, etc.
-      await helpers.createCardElement?.({ type: 'entities', entities: [] });
-    }
+    try {
+      const helpers = await (window as any).loadCardHelpers?.();
+      if (helpers) {
+        await helpers.createCardElement?.({ type: 'entities', entities: [] });
+      }
+    } catch (_) { /* ignore */ }
 
     // Wait for the critical HA form elements we need
     const needed = [
@@ -58,10 +56,12 @@ export class SpaceHubCardEditor extends LitElement {
     const withTimeout = (tag: string) =>
       Promise.race([
         customElements.whenDefined(tag),
-        new Promise((resolve) => setTimeout(resolve, 3000)),
+        new Promise((resolve) => setTimeout(resolve, 5000)),
       ]);
     await Promise.all(needed.map(withTimeout)).catch(() => {});
-    this.requestUpdate();
+    // Setting @state triggers a full re-render — the first render that actually
+    // creates HA custom elements, so they'll be proper instances (not HTMLUnknownElement).
+    this._elementsReady = true;
   }
 
   private _fireConfigChanged(): void {
@@ -110,6 +110,7 @@ export class SpaceHubCardEditor extends LitElement {
 
   protected render(): TemplateResult {
     if (!this.hass || !this._config) return html``;
+    if (!this._elementsReady) return html`<div class="loading">Loading editor…</div>`;
 
     return html`
       <div class="editor-container">
@@ -908,6 +909,11 @@ export class SpaceHubCardEditor extends LitElement {
   // ── Styles ───────────────────────────────────────────────────
 
   static styles: CSSResultGroup = css`
+    .loading {
+      padding: 16px;
+      color: var(--secondary-text-color);
+      font-style: italic;
+    }
     .editor-container {
       display: flex;
       flex-direction: column;
