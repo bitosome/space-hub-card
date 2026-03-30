@@ -47,7 +47,7 @@ export class SpaceHubCardEditor extends LitElement {
       await helpers.createCardElement?.({ type: 'entities', entities: [] });
     }
 
-    // Wait for the critical elements we need to actually be defined
+    // Wait for the critical HA form elements we need
     const needed = [
       'ha-entity-picker',
       'ha-icon-picker',
@@ -114,16 +114,14 @@ export class SpaceHubCardEditor extends LitElement {
     return html`
       <div class="editor-container">
         <div class="mode-toggle">
-          <mwc-button
-            dense
-            .outlined=${!this._yamlMode}
+          <button
+            class="editor-btn${!this._yamlMode ? ' active' : ''}"
             @click=${() => { this._yamlMode = false; this._yamlError = ''; }}
-          >Visual Editor</mwc-button>
-          <mwc-button
-            dense
-            .outlined=${this._yamlMode}
+          >Visual Editor</button>
+          <button
+            class="editor-btn${this._yamlMode ? ' active' : ''}"
             @click=${() => { this._yamlMode = true; }}
-          >YAML</mwc-button>
+          >YAML</button>
         </div>
         ${this._yamlMode ? this._renderYamlEditor() : this._renderVisualEditor()}
       </div>
@@ -248,22 +246,19 @@ export class SpaceHubCardEditor extends LitElement {
       <ha-expansion-panel outlined .header=${`Headers (${headers.length})`}>
         <div class="section-content">
           ${headers.length > 1 ? html`
-            <mwc-tab-bar
-              .activeIndex=${this._selectedHeaderIndex}
-              @MDCTabBar:activated=${(ev: CustomEvent) => { this._selectedHeaderIndex = ev.detail.index; this.requestUpdate(); }}
-            >
-              ${headers.map((_, i) => html`<mwc-tab label="Header ${i + 1}"></mwc-tab>`)}
-            </mwc-tab-bar>
+            <div class="tab-bar">
+              ${headers.map((_, i) => html`<button class="tab-btn${this._selectedHeaderIndex === i ? ' active' : ''}" @click=${() => { this._selectedHeaderIndex = i; this.requestUpdate(); }}>Header ${i + 1}</button>`)}
+            </div>
           ` : nothing}
           ${headers.length ? this._renderHeader(headers[this._selectedHeaderIndex] || headers[0], this._selectedHeaderIndex) : html`<div class="empty-hint">No headers configured.</div>`}
           <div class="action-row">
-            <mwc-button outlined @click=${this._addHeader}>
+            <button class="editor-btn" @click=${this._addHeader}>
               <ha-icon icon="mdi:plus"></ha-icon> Add Header
-            </mwc-button>
+            </button>
             ${headers.length > 0 ? html`
-              <mwc-button outlined class="danger" @click=${() => this._removeHeader(this._selectedHeaderIndex)}>
+              <button class="editor-btn danger" @click=${() => this._removeHeader(this._selectedHeaderIndex)}>
                 <ha-icon icon="mdi:delete"></ha-icon> Remove Header ${this._selectedHeaderIndex + 1}
-              </mwc-button>
+              </button>
             ` : nothing}
           </div>
         </div>
@@ -305,9 +300,9 @@ export class SpaceHubCardEditor extends LitElement {
       <ha-expansion-panel outlined .header=${'Main Tile'}>
         <div class="section-content">
           ${!hasMain ? html`
-            <mwc-button outlined @click=${() => { this._valueChanged(basePath, { main_name: 'Room' }); }}>
+            <button class="editor-btn" @click=${() => { this._valueChanged(basePath, { main_name: 'Room' }); }}>
               <ha-icon icon="mdi:plus"></ha-icon> Add Main Tile
-            </mwc-button>
+            </button>
           ` : html`
             <div class="side-by-side">
               <ha-textfield
@@ -377,9 +372,9 @@ export class SpaceHubCardEditor extends LitElement {
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, m.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, m.hold_action)}
             ${this._renderActionConfig('Double Tap Action', `${basePath}.double_tap_action`, m.double_tap_action)}
-            <mwc-button outlined class="danger" @click=${() => this._valueChanged(basePath, undefined)}>
+            <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove Main Tile
-            </mwc-button>
+            </button>
           `}
         </div>
       </ha-expansion-panel>
@@ -394,13 +389,13 @@ export class SpaceHubCardEditor extends LitElement {
       <ha-expansion-panel outlined .header=${`Chips (${chips.length})`}>
         <div class="section-content">
           ${chips.map((chip, i) => this._renderSingleChip(chip, `${chipsPath}.${i}`, i, chipsPath))}
-          <mwc-button outlined @click=${() => {
+          <button class="editor-btn" @click=${() => {
             const current = (this._getNestedValue(chipsPath) || []) as any[];
             current.push({ type: 'custom', entity: '' });
             this._valueChanged(chipsPath, current);
           }}>
             <ha-icon icon="mdi:plus"></ha-icon> Add Chip
-          </mwc-button>
+          </button>
         </div>
       </ha-expansion-panel>
     `;
@@ -496,9 +491,9 @@ export class SpaceHubCardEditor extends LitElement {
       <ha-expansion-panel outlined .header=${'AC Tile'}>
         <div class="section-content">
           ${!hasAC ? html`
-            <mwc-button outlined @click=${() => { this._valueChanged(basePath, { entity: '' }); }}>
+            <button class="editor-btn" @click=${() => { this._valueChanged(basePath, { entity: '' }); }}>
               <ha-icon icon="mdi:plus"></ha-icon> Add AC Tile
-            </mwc-button>
+            </button>
           ` : html`
             <ha-entity-picker
               .hass=${this.hass}
@@ -520,9 +515,9 @@ export class SpaceHubCardEditor extends LitElement {
             </ha-select>
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, ac!.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, ac!.hold_action)}
-            <mwc-button outlined class="danger" @click=${() => this._valueChanged(basePath, undefined)}>
+            <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove AC Tile
-            </mwc-button>
+            </button>
           `}
         </div>
       </ha-expansion-panel>
@@ -537,9 +532,9 @@ export class SpaceHubCardEditor extends LitElement {
       <ha-expansion-panel outlined .header=${'Thermostat Tile'}>
         <div class="section-content">
           ${!has ? html`
-            <mwc-button outlined @click=${() => { this._valueChanged(basePath, { entity: '' }); }}>
+            <button class="editor-btn" @click=${() => { this._valueChanged(basePath, { entity: '' }); }}>
               <ha-icon icon="mdi:plus"></ha-icon> Add Thermostat Tile
-            </mwc-button>
+            </button>
           ` : html`
             <ha-entity-picker
               .hass=${this.hass}
@@ -561,9 +556,9 @@ export class SpaceHubCardEditor extends LitElement {
             </ha-select>
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, thermostat!.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, thermostat!.hold_action)}
-            <mwc-button outlined class="danger" @click=${() => this._valueChanged(basePath, undefined)}>
+            <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove Thermostat Tile
-            </mwc-button>
+            </button>
           `}
         </div>
       </ha-expansion-panel>
@@ -578,25 +573,22 @@ export class SpaceHubCardEditor extends LitElement {
       <ha-expansion-panel outlined .header=${`Switch Rows (${rows.length})`}>
         <div class="section-content">
           ${rows.length > 1 ? html`
-            <mwc-tab-bar
-              .activeIndex=${this._selectedSwitchRowIndex}
-              @MDCTabBar:activated=${(ev: CustomEvent) => { this._selectedSwitchRowIndex = ev.detail.index; this.requestUpdate(); }}
-            >
-              ${rows.map((_, i) => html`<mwc-tab label="Row ${i + 1}"></mwc-tab>`)}
-            </mwc-tab-bar>
+            <div class="tab-bar">
+              ${rows.map((_, i) => html`<button class="tab-btn${this._selectedSwitchRowIndex === i ? ' active' : ''}" @click=${() => { this._selectedSwitchRowIndex = i; this.requestUpdate(); }}>Row ${i + 1}</button>`)}
+            </div>
           ` : nothing}
           ${rows.length
             ? this._renderSwitchRow(rows[this._selectedSwitchRowIndex] || rows[0], this._selectedSwitchRowIndex)
             : html`<div class="empty-hint">No switch rows configured.</div>`
           }
           <div class="action-row">
-            <mwc-button outlined @click=${this._addSwitchRow}>
+            <button class="editor-btn" @click=${this._addSwitchRow}>
               <ha-icon icon="mdi:plus"></ha-icon> Add Switch Row
-            </mwc-button>
+            </button>
             ${rows.length > 0 ? html`
-              <mwc-button outlined class="danger" @click=${() => this._removeSwitchRow(this._selectedSwitchRowIndex)}>
+              <button class="editor-btn danger" @click=${() => this._removeSwitchRow(this._selectedSwitchRowIndex)}>
                 <ha-icon icon="mdi:delete"></ha-icon> Remove Row ${this._selectedSwitchRowIndex + 1}
-              </mwc-button>
+              </button>
             ` : nothing}
           </div>
         </div>
@@ -629,13 +621,13 @@ export class SpaceHubCardEditor extends LitElement {
     return html`
       <div class="section-content">
         ${items.map((sw, i) => this._renderSwitchItem(sw, `${itemsPath}.${i}`, i, itemsPath))}
-        <mwc-button outlined @click=${() => {
+        <button class="editor-btn" @click=${() => {
           const arr = (this._getNestedValue(itemsPath) || []) as any[];
           arr.push({ entity: '', name: '', icon: 'mdi:toggle-switch' });
           this._valueChanged(itemsPath, [...arr]);
         }}>
           <ha-icon icon="mdi:plus"></ha-icon> Add Switch
-        </mwc-button>
+        </button>
       </div>
     `;
   }
@@ -794,12 +786,12 @@ export class SpaceHubCardEditor extends LitElement {
         </div>
       `)}
       ${templates.length < 2 ? html`
-        <mwc-button outlined @click=${() => {
+        <button class="editor-btn" @click=${() => {
           const arr = [...templates, ''];
           this._valueChanged(`${path}.info_templates`, arr);
         }}>
           <ha-icon icon="mdi:plus"></ha-icon> Add Template
-        </mwc-button>
+        </button>
       ` : nothing}
     `;
   }
@@ -815,12 +807,12 @@ export class SpaceHubCardEditor extends LitElement {
             Add extra Home Assistant cards below the switch rows. Each card is a standard HA card config in YAML.
           </div>
           ${cards.map((card, i) => this._renderEmbeddedCardItem(card, i))}
-          <mwc-button outlined @click=${() => {
+          <button class="editor-btn" @click=${() => {
             const arr = [...cards, { type: 'tile', entity: '' }];
             this._valueChanged('cards', arr);
           }}>
             <ha-icon icon="mdi:plus"></ha-icon> Add Card
-          </mwc-button>
+          </button>
         </div>
       </ha-expansion-panel>
     `;
@@ -861,9 +853,9 @@ export class SpaceHubCardEditor extends LitElement {
       <ha-expansion-panel outlined .header=${label}>
         <div class="section-content">
           ${!hasAction ? html`
-            <mwc-button outlined @click=${() => this._valueChanged(path, { action: 'more-info' })}>
+            <button class="editor-btn" @click=${() => this._valueChanged(path, { action: 'more-info' })}>
               <ha-icon icon="mdi:plus"></ha-icon> Configure ${label}
-            </mwc-button>
+            </button>
           ` : html`
             <ha-select
               label="Action"
@@ -904,9 +896,9 @@ export class SpaceHubCardEditor extends LitElement {
                 }}
               ></ha-yaml-editor>
             ` : nothing}
-            <mwc-button outlined class="danger" @click=${() => this._valueChanged(path, undefined)}>
+            <button class="editor-btn danger" @click=${() => this._valueChanged(path, undefined)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove
-            </mwc-button>
+            </button>
           `}
         </div>
       </ha-expansion-panel>
@@ -926,9 +918,6 @@ export class SpaceHubCardEditor extends LitElement {
       gap: 8px;
       margin-bottom: 8px;
     }
-    .mode-toggle mwc-button[outlined] {
-      --mdc-theme-primary: var(--primary-color);
-    }
     ha-expansion-panel {
       display: block;
       margin-bottom: 4px;
@@ -947,8 +936,31 @@ export class SpaceHubCardEditor extends LitElement {
       flex: 1;
       min-width: 0;
     }
-    mwc-tab-bar {
+    .tab-bar {
+      display: flex;
+      gap: 4px;
       margin-bottom: 8px;
+      border-bottom: 1px solid var(--divider-color, #e0e0e0);
+      padding-bottom: 4px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--secondary-text-color);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover {
+      color: var(--primary-text-color);
+    }
+    .tab-btn.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+      font-weight: 500;
     }
     .action-row {
       display: flex;
@@ -956,17 +968,34 @@ export class SpaceHubCardEditor extends LitElement {
       flex-wrap: wrap;
       margin-top: 4px;
     }
-    .action-row mwc-button,
-    .section-content > mwc-button,
-    .sub-item > mwc-button,
-    .section-content mwc-button[class="danger"] {
+    .editor-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 16px;
+      border: 1px solid var(--divider-color, rgba(0,0,0,0.12));
+      border-radius: 8px;
+      background: none;
+      color: var(--primary-color);
+      font-size: 14px;
+      font-family: inherit;
       cursor: pointer;
-      --mdc-theme-primary: var(--primary-color);
-      --mdc-shape-small: 8px;
-      --mdc-button-outline-color: var(--divider-color, rgba(0,0,0,0.12));
+      transition: background 0.2s;
     }
-    mwc-button {
-      cursor: pointer;
+    .editor-btn:hover {
+      background: var(--secondary-background-color, rgba(0,0,0,0.04));
+    }
+    .editor-btn.active {
+      background: var(--primary-color);
+      color: var(--text-primary-color, #fff);
+      border-color: var(--primary-color);
+    }
+    .editor-btn.danger {
+      color: var(--error-color, #db4437);
+      border-color: var(--error-color, #db4437);
+    }
+    .editor-btn.danger:hover {
+      background: rgba(219, 68, 55, 0.08);
     }
     .sub-item {
       border: 1px solid var(--divider-color, #e0e0e0);
@@ -986,9 +1015,6 @@ export class SpaceHubCardEditor extends LitElement {
       color: var(--secondary-text-color);
       font-style: italic;
       padding: 8px 0;
-    }
-    .danger {
-      --mdc-theme-primary: var(--error-color, #db4437);
     }
     ha-textfield, ha-select, ha-entity-picker, ha-icon-picker {
       display: block;
