@@ -77,7 +77,6 @@ export interface SpaceHubHeader {
 
 export interface SpaceHubConfig {
   type?: string;
-  title?: string;
   tile_height?: number;
   chip_icon_size?: number;
   main_icon_size?: number;
@@ -122,7 +121,6 @@ export class SpaceHubCard extends LitElement {
 
   static getStubConfig(): SpaceHubConfig {
     return {
-      title: 'Living room',
       tile_height: 80,
       chip_icon_size: 14,
       main_icon_size: 48,
@@ -313,7 +311,6 @@ export class SpaceHubCard extends LitElement {
 
     // Build a rendering config that uses defaults for visuals only.
     const c: SpaceHubConfig = {
-      title: userCfg.title ?? defaults.title,
       tile_height: userCfg.tile_height ?? defaults.tile_height,
       chip_icon_size: userCfg.chip_icon_size ?? defaults.chip_icon_size,
       main_icon_size: userCfg.main_icon_size ?? defaults.main_icon_size,
@@ -355,8 +352,7 @@ export class SpaceHubCard extends LitElement {
 
     return html`
       <ha-card class=${hasUnavail ? 'unavailable' : ''}
-               style=${`--panel-shadow-color:${hasUnavail ? unavailWeak : panelShadowColor}; --unavail-weak:${unavailWeak}; --unavail-strong:${unavailStrong}`}
-               .header=${this._config?.title || undefined}>
+               style=${`--panel-shadow-color:${hasUnavail ? unavailWeak : panelShadowColor}; --unavail-weak:${unavailWeak}; --unavail-strong:${unavailStrong}`}>
         <div class="metrics" style=${`--tile-h:${tileH}px; --chip-size:${chipSize}px; --chip-icon-size:${chipIconSize}px; --main-icon-size:${mainIcon}px; --chip-font-size:${chipFont}px; --ac-thermostat-icon:${acThermostatIcon}px;`}>
           <div class="root">
             ${headers.map((h) => this._renderHeaderRow(h))}
@@ -600,23 +596,37 @@ export class SpaceHubCard extends LitElement {
 
   private _onSwitchAction(ev: CustomEvent, sw?: any): void {
     const act = (ev.detail && ev.detail.action) || 'tap';
-    if (this.hass && sw && (sw.tap_action || sw.hold_action || sw.double_tap_action)) {
-      handleAction(this, this.hass, sw as any, act);
-      return;
-    }
     const tap = sw?.entity;
     const hold = sw?.hold_entity || tap;
-    if (act === 'hold') {
-      // Haptic feedback: medium on long press
-      haptic('medium');
-      this._openMoreInfo(hold || tap);
-    } else {
-      // Check if confirmation is required before executing the tap action
+    const hasCustomActions = !!(sw?.tap_action || sw?.hold_action || sw?.double_tap_action);
+
+    // For tap actions, always check confirmation first — even when custom
+    // action configs exist, so the user's confirmation setting is honoured.
+    if (act === 'tap' || act === 'double_tap') {
       const confirm = sw?.confirmation;
-      if (confirm) {
-        this._showConfirmation(sw, () => this._toggleByDomain(tap));
+      if (act === 'tap' && confirm) {
+        const doTap = () => {
+          if (this.hass && hasCustomActions) {
+            handleAction(this, this.hass, sw as any, act);
+          } else {
+            this._toggleByDomain(tap);
+          }
+        };
+        this._showConfirmation(sw, doTap);
+        return;
+      }
+      // No confirmation — delegate or toggle
+      if (this.hass && hasCustomActions) {
+        handleAction(this, this.hass, sw as any, act);
       } else {
         this._toggleByDomain(tap);
+      }
+    } else if (act === 'hold') {
+      haptic('medium');
+      if (this.hass && hasCustomActions) {
+        handleAction(this, this.hass, sw as any, act);
+      } else {
+        this._openMoreInfo(hold || tap);
       }
     }
   }
