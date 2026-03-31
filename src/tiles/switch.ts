@@ -54,6 +54,8 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const tap = sw?.entity || '';
   const icon = sw?.icon || '';
   const name = sw?.name || '';
+  const friendlyName = host?.hass?.states?.[tap]?.attributes?.friendly_name || '';
+  const displayName = name || friendlyName || tap;
   const type = String(sw?.type || 'switch').toLowerCase();
   const isSmart = type === 'smart_plug';
   const on = typeof host?._isOn === 'function' ? host._isOn(tap) : false;
@@ -105,11 +107,11 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
             ${hasChip
             ? html`<ha-chip class=${chipClass}>
                   ${icon ? html`<ha-icon class=${iconClass} .icon=${icon} style=${iconStyle || nothing}></ha-icon>` : nothing}
-                  ${name || tap}
+                  ${displayName}
                 </ha-chip>`
               : html`
                   ${icon ? html`<ha-icon class=${iconClass} .icon=${icon} style=${iconStyle || nothing}></ha-icon>` : nothing}
-                  ${name ? html`<div class=${nameClass} style=${nameStyle}>${name}</div>` : nothing}
+                  ${displayName ? html`<div class=${nameClass} style=${nameStyle}>${displayName}</div>` : nothing}
                 `}
           </div>
         </ha-control-button>
@@ -128,11 +130,11 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
         ${hasChip
           ? html`<ha-chip class=${chipClass}>
               ${icon ? html`<ha-icon class=${iconClass} .icon=${icon} style=${iconStyle || nothing}></ha-icon>` : nothing}
-              ${name || tap}
+              ${displayName}
             </ha-chip>`
           : html`
               ${icon ? html`<ha-icon class=${iconClass} .icon=${icon} style=${iconStyle || nothing}></ha-icon>` : nothing}
-              ${name ? html`<div class=${nameClass} style=${nameStyle}>${name}</div>` : nothing}
+              ${displayName ? html`<div class=${nameClass} style=${nameStyle}>${displayName}</div>` : nothing}
             `}
       </div>
     </div>

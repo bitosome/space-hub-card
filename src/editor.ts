@@ -2,6 +2,7 @@
 import { LitElement, html, css, CSSResultGroup, TemplateResult, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import { fireEvent } from 'custom-card-helpers';
+import '@material/mwc-list/mwc-list-item.js';
 import type { HomeAssistant } from 'custom-card-helpers';
 import type { SpaceHubConfig, SpaceHubHeader, HeaderMain, HeaderAC, HeaderThermostat } from './space-hub';
 import { clone } from './const';
@@ -23,20 +24,21 @@ export class SpaceHubCardEditor extends LitElement {
   @state() private _selectedSwitchRowIndex = 0;
   @state() private _yamlMode = false;
   @state() private _yamlError = '';
-  @state() private _elementsReady = false;
+  private _haElementsRequested = false;
 
   public setConfig(config: SpaceHubConfig): void {
     this._config = clone(config);
   }
 
-  public async connectedCallback(): Promise<void> {
+  public connectedCallback(): void {
     super.connectedCallback();
-    await this._loadHAElements();
+    void this._loadHAElements();
   }
 
-  // Force HA to register lazy-loaded form elements so they render in our shadow DOM.
+  // Force HA to register lazy-loaded form elements, but don't block the editor render on it.
   private async _loadHAElements(): Promise<void> {
-    if (this._elementsReady) return;
+    if (this._haElementsRequested) return;
+    this._haElementsRequested = true;
 
     try {
       const helpers = await (window as any).loadCardHelpers?.();
@@ -56,12 +58,14 @@ export class SpaceHubCardEditor extends LitElement {
     const withTimeout = (tag: string) =>
       Promise.race([
         customElements.whenDefined(tag),
-        new Promise((resolve) => setTimeout(resolve, 5000)),
+        new Promise((resolve) => setTimeout(resolve, 1500)),
       ]);
-    await Promise.all(needed.map(withTimeout)).catch(() => {});
-    // Setting @state triggers a full re-render — the first render that actually
-    // creates HA custom elements, so they'll be proper instances (not HTMLUnknownElement).
-    this._elementsReady = true;
+    try {
+      await Promise.all(needed.map(withTimeout));
+    } catch (_err) {
+      // Best-effort preload only; the editor can still render while HA upgrades elements later.
+    }
+    this.requestUpdate();
   }
 
   private _fireConfigChanged(): void {
@@ -106,11 +110,44 @@ export class SpaceHubCardEditor extends LitElement {
     return obj;
   }
 
+  private _handleSelectChanged(path: string, ev: Event): void {
+    const target = ev.currentTarget as { value?: string } | null;
+    this._valueChanged(path, target?.value);
+  }
+
+  private _renderSelectField(label: string, path: string, value: string | undefined, options: readonly string[]): TemplateResult {
+    const selected = value || options[0] || '';
+    return html`
+      <ha-select
+        label=${label}
+        .value=${selected}
+        @selected=${(ev: Event) => this._handleSelectChanged(path, ev)}
+        @closed=${(ev: Event) => ev.stopPropagation()}
+        fixedMenuPosition
+        naturalMenuWidth
+      >
+        ${options.map((option) => html`
+          <mwc-list-item .value=${option} ?selected=${option === selected}>${option}</mwc-list-item>
+        `)}
+      </ha-select>
+    `;
+  }
+
+  private _friendlyEntityName(entityId?: string): string {
+    if (!entityId || !this.hass?.states?.[entityId]) return '';
+    return this.hass.states[entityId].attributes?.friendly_name || '';
+  }
+
+  private _entitySummary(entityId?: string): string {
+    if (!entityId) return 'No entity selected';
+    const friendly = this._friendlyEntityName(entityId);
+    return friendly && friendly !== entityId ? `${friendly} • ${entityId}` : entityId;
+  }
+
   // ── Render ───────────────────────────────────────────────────
 
   protected render(): TemplateResult {
     if (!this.hass || !this._config) return html``;
-    if (!this._elementsReady) return html`<div class="loading">Loading editor…</div>`;
 
     return html`
       <div class="editor-container">
@@ -359,16 +396,7 @@ export class SpaceHubCardEditor extends LitElement {
                 @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.humidity_sensor`, ev.detail.value)}
               ></ha-entity-picker>
             </div>
-            <ha-select
-              label="Glow Mode"
-              .value=${m.glow_mode || 'static'}
-              @change=${(ev: Event) => this._valueChanged(`${basePath}.glow_mode`, (ev.target as any).value)}
-              @closed=${(ev: Event) => ev.stopPropagation()}
-              fixedMenuPosition
-              naturalMenuWidth
-            >
-              ${GLOW_MODES.map((mode) => html`<ha-list-item .value=${mode}>${mode}</ha-list-item>`)}
-            </ha-select>
+            ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, m.glow_mode, GLOW_MODES)}
             ${this._renderChipsConfig(m.chips as any[] || [], basePath)}
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, m.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, m.hold_action)}
@@ -417,16 +445,7 @@ export class SpaceHubCardEditor extends LitElement {
           ></ha-icon-button>
         </div>
         <div class="side-by-side">
-          <ha-select
-            label="Type"
-            .value=${chip.type || 'custom'}
-            @change=${(ev: Event) => this._valueChanged(`${path}.type`, (ev.target as any).value)}
-            @closed=${(ev: Event) => ev.stopPropagation()}
-            fixedMenuPosition
-            naturalMenuWidth
-          >
-            ${CHIP_TYPES.map((t) => html`<ha-list-item .value=${t}>${t}</ha-list-item>`)}
-          </ha-select>
+          ${this._renderSelectField('Type', `${path}.type`, chip.type, CHIP_TYPES)}
           <ha-entity-picker
             .hass=${this.hass}
             label="Entity"
@@ -504,16 +523,7 @@ export class SpaceHubCardEditor extends LitElement {
               allow-custom-entity
               @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.entity`, ev.detail.value)}
             ></ha-entity-picker>
-            <ha-select
-              label="Glow Mode"
-              .value=${ac!.glow_mode || 'static'}
-              @change=${(ev: Event) => this._valueChanged(`${basePath}.glow_mode`, (ev.target as any).value)}
-              @closed=${(ev: Event) => ev.stopPropagation()}
-              fixedMenuPosition
-              naturalMenuWidth
-            >
-              ${GLOW_MODES.map((mode) => html`<ha-list-item .value=${mode}>${mode}</ha-list-item>`)}
-            </ha-select>
+            ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, ac!.glow_mode, GLOW_MODES)}
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, ac!.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, ac!.hold_action)}
             <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
@@ -545,16 +555,7 @@ export class SpaceHubCardEditor extends LitElement {
               allow-custom-entity
               @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.entity`, ev.detail.value)}
             ></ha-entity-picker>
-            <ha-select
-              label="Glow Mode"
-              .value=${thermostat!.glow_mode || 'static'}
-              @change=${(ev: Event) => this._valueChanged(`${basePath}.glow_mode`, (ev.target as any).value)}
-              @closed=${(ev: Event) => ev.stopPropagation()}
-              fixedMenuPosition
-              naturalMenuWidth
-            >
-              ${GLOW_MODES.map((mode) => html`<ha-list-item .value=${mode}>${mode}</ha-list-item>`)}
-            </ha-select>
+            ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, thermostat!.glow_mode, GLOW_MODES)}
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, thermostat!.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, thermostat!.hold_action)}
             <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
@@ -599,7 +600,7 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _addSwitchRow(): void {
     if (!this._config.switch_rows) this._config.switch_rows = [];
-    (this._config.switch_rows as any[]).push({ row: [{ entity: '', name: 'New Switch', icon: 'mdi:toggle-switch' }] });
+    (this._config.switch_rows as any[]).push({ row: [{ entity: '', name: '', icon: 'mdi:toggle-switch' }] });
     this._selectedSwitchRowIndex = (this._config.switch_rows as any[]).length - 1;
     this._fireConfigChanged();
   }
@@ -637,7 +638,10 @@ export class SpaceHubCardEditor extends LitElement {
     return html`
       <div class="sub-item">
         <div class="sub-item-header">
-          <span>${sw.name || sw.entity || `Switch ${index + 1}`}</span>
+          <div class="sub-item-heading">
+            <span class="sub-item-title">${sw.name || this._friendlyEntityName(sw.entity) || `Switch ${index + 1}`}</span>
+            <span class="sub-item-meta">${this._entitySummary(sw.entity)}</span>
+          </div>
           <ha-icon-button
             .path=${'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'}
             @click=${() => {
@@ -649,7 +653,7 @@ export class SpaceHubCardEditor extends LitElement {
         </div>
         <ha-entity-picker
           .hass=${this.hass}
-          label="Entity"
+          label="Controlled Entity"
           .value=${sw.entity || ''}
           allow-custom-entity
           @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.entity`, ev.detail.value)}
@@ -668,26 +672,8 @@ export class SpaceHubCardEditor extends LitElement {
           ></ha-icon-picker>
         </div>
         <div class="side-by-side">
-          <ha-select
-            label="Type"
-            .value=${sw.type || 'switch'}
-            @change=${(ev: Event) => this._valueChanged(`${path}.type`, (ev.target as any).value)}
-            @closed=${(ev: Event) => ev.stopPropagation()}
-            fixedMenuPosition
-            naturalMenuWidth
-          >
-            ${SWITCH_TYPES.map((t) => html`<ha-list-item .value=${t}>${t}</ha-list-item>`)}
-          </ha-select>
-          <ha-select
-            label="Glow Mode"
-            .value=${sw.glow_mode || 'static'}
-            @change=${(ev: Event) => this._valueChanged(`${path}.glow_mode`, (ev.target as any).value)}
-            @closed=${(ev: Event) => ev.stopPropagation()}
-            fixedMenuPosition
-            naturalMenuWidth
-          >
-            ${GLOW_MODES.map((mode) => html`<ha-list-item .value=${mode}>${mode}</ha-list-item>`)}
-          </ha-select>
+          ${this._renderSelectField('Type', `${path}.type`, sw.type, SWITCH_TYPES)}
+          ${this._renderSelectField('Glow Mode', `${path}.glow_mode`, sw.glow_mode, GLOW_MODES)}
         </div>
         <ha-entity-picker
           .hass=${this.hass}
@@ -858,16 +844,7 @@ export class SpaceHubCardEditor extends LitElement {
               <ha-icon icon="mdi:plus"></ha-icon> Configure ${label}
             </button>
           ` : html`
-            <ha-select
-              label="Action"
-              .value=${action?.action || 'more-info'}
-              @change=${(ev: Event) => this._valueChanged(`${path}.action`, (ev.target as any).value)}
-              @closed=${(ev: Event) => ev.stopPropagation()}
-              fixedMenuPosition
-              naturalMenuWidth
-            >
-              ${ACTION_TYPES.map((a) => html`<ha-list-item .value=${a}>${a}</ha-list-item>`)}
-            </ha-select>
+            ${this._renderSelectField('Action', `${path}.action`, action?.action, ACTION_TYPES)}
             ${action?.action === 'navigate' ? html`
               <ha-textfield
                 label="Navigation Path"
@@ -909,11 +886,6 @@ export class SpaceHubCardEditor extends LitElement {
   // ── Styles ───────────────────────────────────────────────────
 
   static styles: CSSResultGroup = css`
-    .loading {
-      padding: 16px;
-      color: var(--secondary-text-color);
-      font-style: italic;
-    }
     .editor-container {
       display: flex;
       flex-direction: column;
@@ -1014,8 +986,23 @@ export class SpaceHubCardEditor extends LitElement {
     .sub-item-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .sub-item-heading {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .sub-item-title {
       font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+    .sub-item-meta {
+      color: var(--secondary-text-color);
+      font-size: 12px;
+      overflow-wrap: anywhere;
     }
     .empty-hint {
       color: var(--secondary-text-color);
