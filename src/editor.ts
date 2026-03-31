@@ -48,6 +48,7 @@ export class SpaceHubCardEditor extends LitElement {
 
     // Wait for the critical HA form elements we need
     const needed = [
+      'ha-form',
       'ha-entity-picker',
       'ha-icon-picker',
       'ha-select',
@@ -129,6 +130,26 @@ export class SpaceHubCardEditor extends LitElement {
           <ha-list-item .value=${option} ?selected=${option === selected}>${option}</ha-list-item>
         `)}
       </ha-select>
+    `;
+  }
+
+  private _renderEntityField(
+    label: string,
+    path: string,
+    value: string | undefined,
+    selectorConfig: Record<string, any> = {},
+  ): TemplateResult {
+    return html`
+      <ha-form
+        .hass=${this.hass}
+        .data=${{ entity: value || '' }}
+        .schema=${[{ name: 'entity', selector: { entity: selectorConfig } }]}
+        .computeLabel=${(schema: { name: string }) => (schema.name === 'entity' ? label : undefined)}
+        @value-changed=${(ev: CustomEvent) => {
+          ev.stopPropagation();
+          this._valueChanged(path, ev.detail.value?.entity);
+        }}
+      ></ha-form>
     `;
   }
 
@@ -354,46 +375,14 @@ export class SpaceHubCardEditor extends LitElement {
                 @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.main_icon`, ev.detail.value)}
               ></ha-icon-picker>
             </div>
-            <ha-entity-picker
-              .hass=${this.hass}
-              label="Light Group Entity (tap toggles)"
-              .value=${m.light_group_entity || ''}
-              allow-custom-entity
-              @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.light_group_entity`, ev.detail.value)}
-            ></ha-entity-picker>
+            ${this._renderEntityField('Light Group Entity (tap toggles)', `${basePath}.light_group_entity`, m.light_group_entity)}
             <div class="side-by-side">
-              <ha-entity-picker
-                .hass=${this.hass}
-                label="Tap Entity"
-                .value=${m.tap_entity || ''}
-                allow-custom-entity
-                @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.tap_entity`, ev.detail.value)}
-              ></ha-entity-picker>
-              <ha-entity-picker
-                .hass=${this.hass}
-                label="Hold Entity (more-info)"
-                .value=${m.hold_entity || ''}
-                allow-custom-entity
-                @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.hold_entity`, ev.detail.value)}
-              ></ha-entity-picker>
+              ${this._renderEntityField('Tap Entity', `${basePath}.tap_entity`, m.tap_entity)}
+              ${this._renderEntityField('Hold Entity (more-info)', `${basePath}.hold_entity`, m.hold_entity)}
             </div>
             <div class="side-by-side">
-              <ha-entity-picker
-                .hass=${this.hass}
-                label="Temperature Sensor"
-                .value=${m.temp_sensor || ''}
-                .includeDomains=${['sensor']}
-                allow-custom-entity
-                @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.temp_sensor`, ev.detail.value)}
-              ></ha-entity-picker>
-              <ha-entity-picker
-                .hass=${this.hass}
-                label="Humidity Sensor"
-                .value=${m.humidity_sensor || ''}
-                .includeDomains=${['sensor']}
-                allow-custom-entity
-                @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.humidity_sensor`, ev.detail.value)}
-              ></ha-entity-picker>
+              ${this._renderEntityField('Temperature Sensor', `${basePath}.temp_sensor`, m.temp_sensor, { domain: 'sensor' })}
+              ${this._renderEntityField('Humidity Sensor', `${basePath}.humidity_sensor`, m.humidity_sensor, { domain: 'sensor' })}
             </div>
             ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, m.glow_mode, GLOW_MODES)}
             ${this._renderChipsConfig(m.chips as any[] || [], basePath)}
@@ -433,7 +422,10 @@ export class SpaceHubCardEditor extends LitElement {
     return html`
       <div class="sub-item">
         <div class="sub-item-header">
-          <span>Chip ${index + 1}: ${chip.type || 'custom'}</span>
+          <div class="sub-item-heading">
+            <span class="sub-item-title">Chip ${index + 1}: ${chip.type || 'custom'}</span>
+            <span class="sub-item-meta">${this._entitySummary(chip.entity)}</span>
+          </div>
           <ha-icon-button
             .path=${'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'}
             @click=${() => {
@@ -445,13 +437,7 @@ export class SpaceHubCardEditor extends LitElement {
         </div>
         <div class="side-by-side">
           ${this._renderSelectField('Type', `${path}.type`, chip.type, CHIP_TYPES)}
-          <ha-entity-picker
-            .hass=${this.hass}
-            label="Entity"
-            .value=${chip.entity || ''}
-            allow-custom-entity
-            @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.entity`, ev.detail.value)}
-          ></ha-entity-picker>
+          ${this._renderEntityField('Entity', `${path}.entity`, chip.entity)}
         </div>
         <div class="side-by-side">
           <ha-icon-picker
@@ -514,14 +500,7 @@ export class SpaceHubCardEditor extends LitElement {
               <ha-icon icon="mdi:plus"></ha-icon> Add AC Tile
             </button>
           ` : html`
-            <ha-entity-picker
-              .hass=${this.hass}
-              label="Climate Entity"
-              .value=${ac!.entity || ''}
-              .includeDomains=${['climate']}
-              allow-custom-entity
-              @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.entity`, ev.detail.value)}
-            ></ha-entity-picker>
+            ${this._renderEntityField('Climate Entity', `${basePath}.entity`, ac!.entity, { domain: 'climate' })}
             ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, ac!.glow_mode, GLOW_MODES)}
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, ac!.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, ac!.hold_action)}
@@ -546,14 +525,7 @@ export class SpaceHubCardEditor extends LitElement {
               <ha-icon icon="mdi:plus"></ha-icon> Add Thermostat Tile
             </button>
           ` : html`
-            <ha-entity-picker
-              .hass=${this.hass}
-              label="Climate Entity"
-              .value=${thermostat!.entity || ''}
-              .includeDomains=${['climate']}
-              allow-custom-entity
-              @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.entity`, ev.detail.value)}
-            ></ha-entity-picker>
+            ${this._renderEntityField('Climate Entity', `${basePath}.entity`, thermostat!.entity, { domain: 'climate' })}
             ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, thermostat!.glow_mode, GLOW_MODES)}
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, thermostat!.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, thermostat!.hold_action)}
@@ -650,13 +622,7 @@ export class SpaceHubCardEditor extends LitElement {
             }}
           ></ha-icon-button>
         </div>
-        <ha-entity-picker
-          .hass=${this.hass}
-          label="Controlled Entity"
-          .value=${sw.entity || ''}
-          allow-custom-entity
-          @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.entity`, ev.detail.value)}
-        ></ha-entity-picker>
+        ${this._renderEntityField('Controlled Entity', `${path}.entity`, sw.entity)}
         <div class="side-by-side">
           <ha-textfield
             label="Name"
@@ -674,13 +640,7 @@ export class SpaceHubCardEditor extends LitElement {
           ${this._renderSelectField('Type', `${path}.type`, sw.type, SWITCH_TYPES)}
           ${this._renderSelectField('Glow Mode', `${path}.glow_mode`, sw.glow_mode, GLOW_MODES)}
         </div>
-        <ha-entity-picker
-          .hass=${this.hass}
-          label="Hold Entity (more-info on hold)"
-          .value=${sw.hold_entity || ''}
-          allow-custom-entity
-          @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.hold_entity`, ev.detail.value)}
-        ></ha-entity-picker>
+        ${this._renderEntityField('Hold Entity (more-info on hold)', `${path}.hold_entity`, sw.hold_entity)}
 
         <ha-expansion-panel outlined .header=${'Styling'}>
           <div class="section-content">
@@ -1008,7 +968,7 @@ export class SpaceHubCardEditor extends LitElement {
       font-style: italic;
       padding: 8px 0;
     }
-    ha-textfield, ha-select, ha-entity-picker, ha-icon-picker {
+    ha-textfield, ha-select, ha-form, ha-icon-picker {
       display: block;
       width: 100%;
     }
