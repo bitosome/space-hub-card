@@ -2,7 +2,6 @@
 import { LitElement, html, css, CSSResultGroup, TemplateResult, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
 import { fireEvent } from 'custom-card-helpers';
-import '@material/mwc-list/mwc-list-item.js';
 import type { HomeAssistant } from 'custom-card-helpers';
 import type { SpaceHubConfig, SpaceHubHeader, HeaderMain, HeaderAC, HeaderThermostat } from './space-hub';
 import { clone } from './const';
@@ -127,7 +126,7 @@ export class SpaceHubCardEditor extends LitElement {
         naturalMenuWidth
       >
         ${options.map((option) => html`
-          <mwc-list-item .value=${option} ?selected=${option === selected}>${option}</mwc-list-item>
+          <ha-list-item .value=${option} ?selected=${option === selected}>${option}</ha-list-item>
         `)}
       </ha-select>
     `;
