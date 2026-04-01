@@ -1,100 +1,426 @@
-# space-hub-card
+<p align="center">
+  <img src="https://img.shields.io/badge/Home%20Assistant-Custom%20Card-41BDF5?style=for-the-badge&logo=home-assistant&logoColor=white" alt="Home Assistant Custom Card">
+  <img src="https://img.shields.io/badge/HACS-Ready-41BDF5?style=for-the-badge" alt="HACS Ready">
+  <img src="https://img.shields.io/badge/Lit-2.x-324fff?style=for-the-badge" alt="Lit 2">
+</p>
 
-Custom Space Hub card for Home Assistant, built with Lit. This card renders one or more "main" tiles (each main may include optional AC/thermostat tiles and chips) plus optional switch rows. It focuses on clear visuals, predictable configuration, and Home Assistant-native actions.
+# Space Hub Card
+
+`space-hub-card` is a Home Assistant Lovelace card for compact room dashboards. It combines a large main tile, optional AC and thermostat companion tiles, switch rows, switch-level template indicators, and embedded cards in one card container.
+
+The card is built around Home Assistant components and the native action model. It also ships with a visual editor, so most configuration can be done directly in the dashboard UI.
 
 ## Features
 
-- **Visual Config Editor**: full UI-based configuration with visual/YAML toggle — no YAML knowledge required
-- **LitElement card** with HA action handling (tap, hold, double_tap)
-- **Multiple main tiles**: Support for multiple main tiles in a single card via multiple header rows
-- **Main tiles** with configurable icon size and live temp/humidity chip
-- **AC and Thermostat tiles** with animated state visuals and responsive icon sizing
-- **Switch rows** with per-tile tap/hold entities, including smart plug style
-- **Hold entity override**: configure which entity's more-info dialog opens on long-press (independent per switch and main tile)
-- **HA-native confirmation**: optional tap confirmation for critical switches using Home Assistant's native action confirmation flow
-- **Domain-aware toggling**: switches, lights, locks, and covers each use their correct service calls
-- **Optional card header** title (omit `title` to hide)
-- **Unavailable detection**: card shadow pulses red if any entity (including chips, switch rows, standalone cards, or missing/typoed IDs) is unavailable/unknown/offline
-- **Glow containment**: internal glows/shadows are clipped to the card bounds so they never overlay surrounding cards
-- **Multiple headers**: render one or more header rows via `headers: [...]` array
-- **Interactive chips**: support for `lock`, `door`, `presence`, `gate`, `sliding_gate`, and `illuminance` chip types with state-aware icons and colors
-- **Offline feedback**: chips fall back to an alert icon and muted styling when entities are unavailable (fully customizable per chip)
-- **Responsive sizing**: AC/thermostat icons scale proportionally with `tile_height` configuration
-- **Consistent terminology**: uses "chips" instead of "badges" for modern UI consistency
-- **Border radii follow HA theme**: card, tiles, chips use `--ha-card-border-radius`, `--ha-chip-border-radius` (with sensible fallbacks)
-- **Per-tile glow control** via `glow_mode` (values: `static` | `pulse` | `none`)
-- **Additional cards**: optional root-level cards render after switch rows while inheriting the card layout spacing
+- Multiple header rows in a single card
+- Main tile with room name, icon, temperature, humidity, and status chips
+- Optional AC and thermostat tiles per header row
+- Switch rows with `switch` and `smart_plug` visual styles
+- Home Assistant native actions: `more-info`, `toggle`, `perform-action`, `navigate`, `url`, `assist`, and `none`
+- Native confirmation support for switch actions
+- Per-switch template indicators with live `render_template` subscriptions
+- Embedded cards below switch rows or at the bottom of the card
+- Unavailable pulse detection across configured entities and nested embedded-card configs
+- Visual editor with native HA entity/select selectors and YAML mode
+- Per-tile glow control: `static`, `pulse`, or `none`
 
-## Configuration Reference
+## Installation
 
-### Card-Level Options
+### HACS
 
-- **type**: use `custom:space-hub-card`
-- **title**: optional header title shown on the `ha-card`
-- **tile_height**: height in px of all tiles (default: 80). AC/thermostat icons scale proportionally (62.5% ratio)
-- **chip_icon_size**: icon size inside chips, temperature/humidity indicators, and illuminance displays in px (default: 14)
-- **main_icon_size**: default main icon size in px (default: 48)
-- **chip_font_size**: font size of chip text in px (default: 12). Chip size is responsive to this font size with additional padding
-- **card_shadow_color**: base panel shadow color (default: '#000000')
-- **card_shadow_intensity**: base shadow intensity 0..1 (default: 0.1)
-- **unavailable_pulse_color**: color for the card pulse when any monitored entity is unavailable/unknown/offline (default: '#ff3b30')
-- **cards**: optional array of Lovelace card configs appended below switch rows (useful for alerts, stats, etc.)
+1. Open HACS.
+2. Go to `Frontend`.
+3. Search for `Space Hub Card`.
+4. Download the card.
+5. Refresh the browser.
 
-### Headers Configuration
+### Manual
 
-Use `headers: [...]` to define one or more header rows. Each header row can contain a main tile, allowing you to have multiple main tiles in a single card.
+1. Copy `dist/space-hub-card.js` to `/config/www/space-hub-card.js`.
+2. Add the resource in Home Assistant:
 
-#### Main Tile Configuration
-- **main_name**: text shown on the main tile
-- **main_icon**: MDI/HA icon for the main tile
-- **light_group_entity**: entity used for toggling and on-state display
-- **tap_entity**: optional entity used for tap actions (fallback to `light_group_entity`)
-- **hold_entity**: optional entity whose more-info dialog opens on hold (defaults to `tap_entity`)
-- **glow_mode**: visual glow behavior - `static` (permanent soft glow), `pulse` (animated pulse), or `none` (disabled)
-- **temp_sensor**: optional temperature sensor entity for the temp/humidity chip
-- **humidity_sensor**: optional humidity sensor entity for the temp/humidity chip
-- **main_icon_size**: header-level main icon size override
-- **chips**: array of chip objects with the following fields:
-  - **type**: `lock`, `door`, `presence`, `gate`, `sliding_gate`, `illuminance`, or custom (generic)
-  - **entity**: entity id for the chip
-  - **icon**: optional MDI icon override
-  - **icon_active** / **icon_inactive** / **icon_unavailable**: per-state icon overrides (fallbacks to `icon` when omitted)
-  - **background_active** / **background_inactive** / **background_unavailable**: per-state background overrides (fallbacks to `background` or built-in defaults)
-  - **icon_color_active** / **icon_color_inactive** / **icon_color_unavailable**: per-state icon color overrides (fallbacks to `icon_color` or built-in defaults)
-  - **background** / **icon_color**: default colors applied when a state-specific value is not provided
-  - **tap_action** / **hold_action** / **double_tap_action**: HA-native actions specific to the chip
-- **tap_action** / **hold_action** / **double_tap_action**: HA-native actions for the main tile
+```yaml
+url: /local/space-hub-card.js
+type: module
+```
 
-#### AC Tile Configuration
-- **entity**: climate entity for the AC tile
-- **glow_mode**: visual glow behavior - `static`, `pulse`, or `none`
-- **tap_action** / **hold_action** / **double_tap_action**: optional HA-native actions
+3. Refresh the browser.
 
-#### Thermostat Tile Configuration  
-- **entity**: climate entity for the thermostat tile
-- **glow_mode**: visual glow behavior - `static`, `pulse`, or `none`
-- **tap_action** / **hold_action** / **double_tap_action**: optional HA-native actions
-
-### Switch Rows Configuration
-
-- **switch_rows**: array of switch row definitions. Each row can be an array or an object `{ row: [...] }`
-- Per-item options: `entity`, `name`, `icon`, `icon_size`, `font-weight`, `font-size`, `type` (`switch` | `smart_plug`), `glow_mode`, HA `*_action` entries, `hold_entity`, `confirmation`, and `info_templates`
-- `hold_entity`: optional entity ID — the more-info dialog for this entity opens on long-press (defaults to the switch `entity`). Useful when a switch controls a relay but you want to inspect a different entity.
-- `confirmation`: set to `true` or a custom string (e.g., `"Cut main power?"`) to require Home Assistant's native confirmation dialog before toggling the switch on tap.
-- `info_templates` (alias `top_right_templates`) accepts a template string, object `{ template: "..." }`, or an array (max 2). Each template is rendered by Home Assistant and shown at the top-right corner of the switch tile (one line per template). Use it for quick stats like power draw, timers, scenes, etc.
-
-## Examples
-
-### Minimal (single main)
+## Quick Start
 
 ```yaml
 type: custom:space-hub-card
-title: Entrance
+tile_height: 88
+headers:
+  - main:
+      main_name: Living Room
+      main_icon: mdi:sofa-outline
+      light_group_entity: light.living_room
+      temp_sensor: sensor.living_room_temperature
+      humidity_sensor: sensor.living_room_humidity
+      chips:
+        - type: presence
+          entity: binary_sensor.living_room_presence
+        - type: door
+          entity: binary_sensor.front_door
+    ac:
+      entity: climate.living_room_ac
+    thermostat:
+      entity: climate.living_room_thermostat
+switch_rows:
+  - row:
+      - entity: switch.floor_lamp
+        name: Floor Lamp
+        icon: mdi:floor-lamp
+      - entity: switch.media_corner
+        name: Media
+        icon: mdi:television-speaker
+        info_templates:
+          - "{{ states('sensor.media_corner_power') }} W"
+cards:
+  - type: tile
+    entity: alarm_control_panel.home
+```
+
+## Visual Editor
+
+The built-in editor supports:
+
+- Visual mode and YAML mode
+- Native HA entity selectors for main, chip, AC, thermostat, and switch entities
+- Native HA selector-based dropdowns for types, glow modes, and actions
+- Action editing for `more-info`, `toggle`, `perform-action`, `navigate`, `url`, `assist`, and `none`
+- Switch confirmation configuration
+- Embedded-card YAML editing
+
+The editor tolerates incomplete in-progress items while you are building a layout, so placeholder rows and tiles no longer break the preview.
+
+## Layout Model
+
+The card layout is structured like this:
+
+```yaml
+type: custom:space-hub-card
+tile_height: 80
+chip_icon_size: 14
+main_icon_size: 48
+chip_font_size: 12
+card_shadow_color: "#000000"
+card_shadow_intensity: 0.5
+unavailable_pulse_color: "#ff3b30"
+tap_action: ...                # optional YAML-only fallback for main tiles
+hold_action: ...
+double_tap_action: ...
+headers:
+  - main: ...
+    ac: ...
+    thermostat: ...
+switch_rows:
+  - row:
+      - ...
+      - ...
+    cards:
+      - ...
+cards:
+  - ...
+```
+
+## Configuration
+
+### Card Options
+
+| Option | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `type` | string | required | Must be `custom:space-hub-card` |
+| `tile_height` | number | `80` | Shared tile height |
+| `chip_icon_size` | number | `14` | Chip icon size |
+| `main_icon_size` | number | `48` | Main tile icon size |
+| `chip_font_size` | number | `12` | Chip text size |
+| `card_shadow_color` | string | `#000000` | Base card shadow color |
+| `card_shadow_intensity` | number | `0.5` | Base shadow opacity, `0..1` |
+| `unavailable_pulse_color` | string | `#ff3b30` | Pulse color when an entity is unavailable |
+| `headers` | array | `[]` | Header rows |
+| `switch_rows` | array | `[]` | Switch rows |
+| `cards` | array | `[]` | Extra cards rendered after all switch rows |
+| `tap_action` | object | optional | YAML-only fallback action for main tiles |
+| `hold_action` | object | optional | YAML-only fallback action for main tiles |
+| `double_tap_action` | object | optional | YAML-only fallback action for main tiles |
+
+### Header Rows
+
+Each item in `headers` may contain:
+
+- `main`
+- `ac`
+- `thermostat`
+
+AC and thermostat tiles are only rendered when they are paired with a `main` block in the same header row.
+
+### `headers[].main`
+
+| Option | Type | Notes |
+| --- | --- | --- |
+| `main_name` | string | Visible room name |
+| `main_icon` | string | Main tile icon |
+| `light_group_entity` | string | Used for the light status chip and default tap toggle |
+| `tap_entity` | string | Default tap target when no custom action is configured |
+| `hold_entity` | string | Default hold `more-info` target |
+| `temp_sensor` | string | Temperature source |
+| `humidity_sensor` | string | Humidity source |
+| `glow_mode` | string | `static`, `pulse`, or `none` |
+| `chips` | array | Status chips |
+| `tap_action` | object | Overrides default tap behavior |
+| `hold_action` | object | Overrides default hold behavior |
+| `double_tap_action` | object | Enables and handles double tap |
+
+Default main-tile behavior:
+
+- Tap: toggles `light_group_entity` or `tap_entity`
+- Hold: opens `more-info` for `hold_entity` or `tap_entity`
+- Double tap: only active when `double_tap_action` is defined on the tile or at card root
+
+### Main Chips
+
+Supported chip `type` values:
+
+- `lock`
+- `door`
+- `presence`
+- `illuminance`
+- `gate`
+- `sliding_gate`
+- `smart_plug`
+- `custom`
+
+Supported chip fields:
+
+| Option | Type | Notes |
+| --- | --- | --- |
+| `type` | string | Chip variant |
+| `entity` | string | Entity to read |
+| `icon` | string | Base icon override |
+| `icon_active` | string | Active-state icon |
+| `icon_inactive` | string | Inactive-state icon |
+| `icon_unavailable` | string | Unavailable-state icon |
+| `background` | string | Base background override |
+| `background_active` | string | Active-state background |
+| `background_inactive` | string | Inactive-state background |
+| `background_unavailable` | string | Unavailable-state background |
+| `icon_color` | string | Base icon color override |
+| `icon_color_active` | string | Active-state icon color |
+| `icon_color_inactive` | string | Inactive-state icon color |
+| `icon_color_unavailable` | string | Unavailable-state icon color |
+
+Notes:
+
+- Chips are currently visual status indicators. They do not dispatch actions.
+- The `illuminance` chip renders as a text/value chip.
+- Other chip types render compact state indicators in the main tile corner.
+
+### `headers[].ac`
+
+| Option | Type | Notes |
+| --- | --- | --- |
+| `entity` | string | Climate entity |
+| `glow_mode` | string | `static`, `pulse`, or `none` |
+| `tap_action` | object | Optional action override |
+| `hold_action` | object | Optional action override |
+
+Default AC behavior:
+
+- Tap: `perform-action` calling `climate.turn_on` or `climate.turn_off`
+- Hold: `more-info`
+
+### `headers[].thermostat`
+
+| Option | Type | Notes |
+| --- | --- | --- |
+| `entity` | string | Climate entity |
+| `glow_mode` | string | `static`, `pulse`, or `none` |
+| `tap_action` | object | Optional action override |
+| `hold_action` | object | Optional action override |
+
+Default thermostat behavior:
+
+- Tap: `perform-action` calling `climate.set_hvac_mode`
+- Hold: `more-info`
+
+### Switch Rows
+
+Each entry in `switch_rows` can be either:
+
+- A raw array of switch items
+- An object with `row: [...]`
+
+If you use the object form, you can also attach extra cards to that row.
+
+### Switch Items
+
+| Option | Type | Notes |
+| --- | --- | --- |
+| `entity` | string | Controlled entity |
+| `name` | string | Visible label, otherwise friendly name is used |
+| `icon` | string | Tile icon |
+| `type` | string | `switch` or `smart_plug` |
+| `glow_mode` | string | `static`, `pulse`, or `none` |
+| `hold_entity` | string | `more-info` target for hold |
+| `icon_size` | string/number | Custom icon size |
+| `font_size` / `font-size` | string/number | Custom label size |
+| `font_weight` / `font-weight` | string/number | Custom label weight |
+| `confirmation` | boolean/string/object | Uses HA native confirmation on tap |
+| `tap_action` | object | Optional action override |
+| `hold_action` | object | Optional action override |
+| `double_tap_action` | object | Optional action override |
+| `info_templates` | string/object/array | Up to 2 live template values |
+
+Default switch behavior:
+
+- Tap: `toggle`
+- Hold: `more-info` for `hold_entity` or `entity`
+- Double tap: only active when `double_tap_action` is configured
+
+### Switch Row Embedded Cards
+
+For a switch row object, these keys are supported:
+
+- `cards`
+- `extra_cards`
+- `card`
+- `extra_card`
+
+These cards render directly below that specific switch row.
+
+### Root Embedded Cards
+
+Use the top-level `cards:` array to render extra Lovelace cards after all switch rows.
+
+Embedded cards participate in unavailable-entity scanning, including nested object-form configs such as:
+
+- `entities:`
+- nested `cards:`
+- `target.entity_id`
+
+## Actions
+
+Supported action types:
+
+- `more-info`
+- `toggle`
+- `perform-action`
+- `navigate`
+- `url`
+- `assist`
+- `none`
+
+The editor writes the current Home Assistant action model. Legacy YAML using `call-service` is still accepted and normalized to `perform-action`.
+
+Typical action fields:
+
+| Action | Fields |
+| --- | --- |
+| `more-info` | `entity` |
+| `toggle` | `confirmation` |
+| `perform-action` | `perform_action`, `target`, `data`, `confirmation` |
+| `navigate` | `navigation_path`, `navigation_replace`, `confirmation` |
+| `url` | `url_path`, `confirmation` |
+| `assist` | `pipeline_id`, `start_listening`, `confirmation` |
+
+## Templates and Availability
+
+### Info Templates
+
+`info_templates` and these aliases are supported on switch items:
+
+- `info_template`
+- `top_right_templates`
+- `top_right_template`
+
+Each template is subscribed through Home Assistant's `render_template` API and rendered on the tile as up to two compact lines.
+
+### Unavailable Pulse
+
+The card pulses with `unavailable_pulse_color` when any tracked entity is:
+
+- missing
+- `unknown`
+- `unavailable`
+- `offline`
+
+This includes entities found in:
+
+- main tiles
+- AC and thermostat tiles
+- chips
+- switch rows
+- row-level embedded cards
+- root-level embedded cards
+
+## Examples
+
+### Main + AC + Thermostat
+
+```yaml
+type: custom:space-hub-card
+tile_height: 96
+chip_icon_size: 16
+headers:
+  - main:
+      main_name: Living Room
+      main_icon: mdi:sofa-outline
+      light_group_entity: light.living_room
+      glow_mode: pulse
+      temp_sensor: sensor.living_room_temperature
+      humidity_sensor: sensor.living_room_humidity
+      chips:
+        - type: presence
+          entity: binary_sensor.living_room_presence
+        - type: gate
+          entity: binary_sensor.garden_gate
+          icon_active: mdi:gate-open
+          icon_inactive: mdi:gate
+    ac:
+      entity: climate.living_room_ac
+      glow_mode: pulse
+    thermostat:
+      entity: climate.living_room_thermostat
+      glow_mode: static
+```
+
+### Switch Row with Templates and Confirmation
+
+```yaml
+type: custom:space-hub-card
+headers:
+  - main:
+      main_name: Utility
+      main_icon: mdi:tools
+switch_rows:
+  - row:
+      - entity: switch.main_breaker
+        name: Main Power
+        icon: mdi:power
+        confirmation: "Cut power to the whole circuit?"
+        hold_entity: sensor.main_breaker_power
+        info_templates:
+          - "{{ states('sensor.main_breaker_power') }} W"
+          - "{{ states('sensor.main_breaker_energy_today') }} kWh"
+      - entity: switch.3d_printer
+        name: Printer
+        type: smart_plug
+        icon: mdi:printer-3d
+    cards:
+      - type: tile
+        entity: sensor.main_breaker_power
+```
+
+### Custom Action Example
+
+```yaml
+type: custom:space-hub-card
 headers:
   - main:
       main_name: Entrance
       main_icon: mdi:door
-      light_group_entity: switch.entrance_light_switch_group
       tap_action:
         action: navigate
         navigation_path: /lovelace/entrance
@@ -102,274 +428,44 @@ headers:
         action: perform-action
         perform_action: homeassistant.turn_off
         target:
-          entity_id: switch.entrance_light_switch_group
-      temp_sensor: sensor.aqara_thp_10_temperature
-      humidity_sensor: sensor.aqara_thp_10_humidity
-      chips:
-        - type: lock
-          entity: lock.front_door
-        - type: door  
-          entity: binary_sensor.front_door_sensor
-        - type: presence
-          entity: binary_sensor.entrance_presence
-```
-
-### Multi-header (main + AC + thermostat)
-
-```yaml
-type: custom:space-hub-card
-title: Living floor
-tile_height: 100  # Larger tiles - AC/thermostat icons will be ~62px
-headers:
-  - main:
-      main_name: Living room
-      main_icon: mdi:sofa-outline
-      light_group_entity: switch.living_room_light_group
-      glow_mode: pulse
-      temp_sensor: sensor.kitchen_living_room_temperature_average
-      humidity_sensor: sensor.kitchen_living_room_humidity_average
-      chips:
-        - type: illuminance
-          entity: sensor.aqara_light_sensor_1_illuminance
-        - type: gate
-          entity: binary_sensor.garden_gate
-          icon_active: mdi:garage-open-variant
-          icon_inactive: mdi:garage-variant
-          icon_unavailable: mdi:alert-circle-outline
-          background_active: '#4caf50'
-          background_inactive: 'rgba(0,0,0,0.06)'
-          background_unavailable: 'rgba(158,158,158,0.16)'
-          icon_color_active: '#ffffff'
-          icon_color_unavailable: '#ff3b30'
-        - type: sliding_gate
-          entity: binary_sensor.driveway_gate
-    ac:
-      entity: climate.living_room_ac
-      glow_mode: pulse
-    thermostat:
-      entity: climate.thermostat_5_7_group
-      glow_mode: static
-
-  - main:
-      main_name: Kitchen
-      main_icon: mdi:chef-hat
-      light_group_entity: light.kitchen
-      glow_mode: none
-    ac:
-      entity: climate.kitchen_ac
-      glow_mode: static  # AC has its own glow config independent of main
-```
-
-### Advanced Configuration with Custom Sizing
-
-```yaml
-type: custom:space-hub-card
-title: Master Suite
-tile_height: 120           # Larger tiles (AC/thermostat icons will be ~75px)
-chip_icon_size: 16         # Larger chip icons
-chip_font_size: 14         # Larger chip text
-main_icon_size: 56         # Larger main icons
-card_shadow_intensity: 0.2 # More prominent shadow
-headers:
-  - main:
-      main_name: Bedroom
-      main_icon: mdi:bed
-      light_group_entity: light.bedroom_group
-      glow_mode: static
-      temp_sensor: sensor.bedroom_temperature
-      humidity_sensor: sensor.bedroom_humidity
-      chips:
-        - type: lock
-          entity: lock.bedroom_door
-        - type: gate
-          entity: binary_sensor.bedroom_window
-          icon: mdi:window-closed-variant
-    thermostat:
-      entity: climate.bedroom_thermostat
-      glow_mode: pulse
-```
-
-### Switch rows sample
-
-```yaml
+          entity_id: light.entrance_group
 switch_rows:
   - row:
-      - entity: switch.kitchen_tabletop_light_switch_button_a_state
-        name: Tabletop
-        icon: mdi:countertop-outline
-        icon_size: "28px"
-        font-weight: "600"
-        font-size: "12px"
-        type: switch
-        glow_mode: static
-        hold_entity: sensor.kitchen_tabletop_power  # more-info shows this on hold
+      - entity: switch.doorbell_chime
+        name: Chime
         tap_action:
-          action: toggle
-        info_templates:
-          - "{{ states('sensor.kitchen_tabletop_power') }} W"
-          - "{{ state_attr('sensor.kitchen_tabletop_power', 'today') | round(1) }} kWh"
-cards:
-  - type: custom:mushroom-template-card
-    entity: sensor.watchman_missing_entities
-    primary: >-
-      {% set ents = state_attr('sensor.watchman_missing_entities','entities') or [] %}
-      {% set count = ents | count %}
-      {{ 'Sensor issues detected' if count > 0 else 'Sensors OK' }}
-    secondary: >-
-      {% set ents = state_attr('sensor.watchman_missing_entities','entities') or [] %}
-      {% set count = ents | count %}
-      {% if count > 0 %}
-        {{ count }} missing: {{ (ents | map(attribute='friendly_name') | list | default([]))[:3] | join(', ') }}
-        {% if count > 3 %}+{{ count-3 }} more{% endif %}
-      {% else %}
-        No missing entities
-      {% endif %}
-    tap_action:
-      action: more-info
-    hold_action:
-      action: navigate
-      navigation_path: /config/logs
+          action: assist
+          start_listening: true
 ```
 
-### Confirmation dialog for critical switches
+## Notes
 
-```yaml
-switch_rows:
-  - row:
-      - entity: switch.main_breaker
-        name: Main Power
-        icon: mdi:power
-        confirmation: "This will cut power to the entire house!"
-      - entity: switch.alarm_system
-        name: Alarm
-        icon: mdi:shield
-        confirmation: true  # uses default "Are you sure?" text
-```
+- `title` is not rendered by the card. Use `main.main_name` for visible room labels.
+- Header-level `main_icon_size` is not documented because the supported configurable main icon size is the card-level `main_icon_size`.
+- Chips are status-only right now.
+- AC and thermostat tiles are companion tiles for a header row and only show when that row also has `main`.
+- The card returns `getCardSize() = 6`.
 
-## Visual Config Editor
+## Validation
 
-The card includes a full visual configuration editor accessible from the HA dashboard UI. Click the pencil icon on any space-hub-card to open it.
+The card validates malformed final configs such as:
 
-- **Visual / YAML toggle**: switch between a form-based editor and raw YAML at any time — changes sync both ways
-- **General**: card title
-- **Appearance**: tile height, icon sizes, chip font size, shadow color/intensity, unavailable pulse color
-- **Headers**: add/remove header rows with tabbed navigation; each header has collapsible sections for Main Tile, AC Tile, and Thermostat Tile with full entity selectors, icon pickers, glow mode, chips, and action configs
-- **Switch Rows**: add/remove rows and switches with entity selectors, icon pickers, type/glow selectors, hold entity, confirmation toggle, styling overrides, action configs, and info templates
+- invalid entity IDs
+- invalid numeric values
+- invalid shadow intensity values
+- invalid color strings
 
-All entity fields use Home Assistant's native selector flow through `ha-form` entity selectors with domain filtering where appropriate (for example climate entities for AC and thermostat tiles). Icon fields use `ha-icon-picker`. The action editor supports `more-info`, `toggle`, `perform-action`, `navigate`, `url`, `assist`, and `none`.
-
-## Responsive Icon Sizing
-
-The card automatically scales AC and thermostat icons based on your `tile_height` configuration:
-
-- **Base ratio**: 50px icons for 80px tile height (62.5%)
-- **tile_height: 60** → 37px icons
-- **tile_height: 80** → 50px icons (default)
-- **tile_height: 100** → 62px icons
-- **tile_height: 120** → 75px icons
-
-This ensures visual consistency across different tile sizes while maintaining proper proportions.
-
-## Notes and Behavior Details
-
-- **Glow behavior**: tiles use `glow_mode` with values `static` (soft steady glow), `pulse` (animated pulse), or `none` (disabled). `glow_mode` is respected per-tile for fine-grained control.
-- **Chips**: informational by default. To make a chip interactive, add `tap_action` / `hold_action` to the chip object. Smart plug chips use orange-on/grey-off visuals and power-plug icons.
-- **No implicit tiles**: the card renders only what you explicitly configure.
-- **AC/Thermostat placement**: must be declared inside a `main` block. If declared outside `main` they will be ignored (with console warning).
-- **Icon scaling**: AC and thermostat icons automatically scale proportionally with `tile_height` to maintain visual consistency.
-- **Standalone cards**: anything defined under `cards:` is rendered inside the card container after switch rows and participates in unavailable detection.
-
-## Configuration Validation
-
-The space-hub-card includes comprehensive configuration validation to help users identify and fix configuration issues. When a configuration error is detected, Home Assistant will display detailed error messages explaining what needs to be corrected.
-
-### Validation Rules
-
-The card validates the following configuration aspects:
-
-#### Headers Configuration
-- **AC Tiles**: Must have a valid `entity` field (e.g., `climate.living_room`)
-- **Thermostat Tiles**: Must have a valid `entity` field (e.g., `climate.bedroom`)
-- **Main Tiles**: Must have at least one meaningful configuration:
-  - `main_name` or `main_icon`
-  - `tap_entity`, `light_group_entity`, `temp_sensor`, or `humidity_sensor`
-  - Non-empty `chips` array
-- **AC/Thermostat Placement**: AC and thermostat tiles must be defined within a `main` configuration block
-
-#### Switch Rows Configuration
-- **Switch Items**: Each switch must have a valid `entity` field
-- **Entity Format**: All entity IDs must follow the `domain.entity_name` format
-- **Non-empty Rows**: Switch rows cannot be empty
-
-#### Numeric Values
-- **Positive Numbers**: `tile_height`, `chip_icon_size`, `main_icon_size`, `chip_font_size` must be positive
-- **Shadow Intensity**: `card_shadow_intensity` must be between 0 and 1
-- **Type Validation**: Numeric fields must contain valid numbers
-
-#### Color Values
-- **Color Format**: `card_shadow_color` and `unavailable_pulse_color` must be valid CSS colors
-- **Supported Formats**: Hex colors (#000000), named colors (red, blue), CSS functions (rgb(), hsl())
-
-### Example Validation Errors
-
-When configuration issues are detected, you'll see helpful error messages:
-
-```
-Invalid space-hub-card configuration:
-• Header 1: AC tile requires an 'entity' field
-• Header 1: Main tile must have at least one of: main_name, main_icon, tap_entity, light_group_entity, temp_sensor, humidity_sensor, or chips
-• Switch row 1, item 2: Switch entity 'invalid_entity' must be a valid entity ID
-• Tile height must be a positive number, got: -50
-```
-
-## Installation
-
-### HACS (Recommended)
-
-1. Open HACS in Home Assistant
-2. Go to "Frontend" section
-3. Click "Explore & Download Repositories"
-4. Search for "space-hub-card"
-5. Download and install
-
-### Manual Installation
-
-1. Download `space-hub-card.js` from the latest release
-2. Copy to `config/www/community/space-hub-card/`
-3. Add to your `ui-lovelace.yaml` resources:
-
-```yaml
-resources:
-  - url: /hacsfiles/space-hub-card/space-hub-card.js
-    type: module
-```
+The visual editor is intentionally more permissive while you are editing, so incomplete placeholder entries do not break the live preview.
 
 ## Development
 
-Install dependencies:
-
 ```bash
-yarn install
-# or
 npm install
-```
-
-Build:
-
-```bash
 npm run build
 ```
 
-Dev (watch):
+For local watch mode:
 
 ```bash
-npm start
+npm run start
 ```
-
-## Version
-
-Current version: **2.0.0**
-
-## License
-
-MIT License
