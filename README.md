@@ -11,7 +11,7 @@ Custom Space Hub card for Home Assistant, built with Lit. This card renders one 
 - **AC and Thermostat tiles** with animated state visuals and responsive icon sizing
 - **Switch rows** with per-tile tap/hold entities, including smart plug style
 - **Hold entity override**: configure which entity's more-info dialog opens on long-press (independent per switch and main tile)
-- **Confirmation dialog**: optional tap confirmation for critical switches — themed to match your HA dashboard
+- **HA-native confirmation**: optional tap confirmation for critical switches using Home Assistant's native action confirmation flow
 - **Domain-aware toggling**: switches, lights, locks, and covers each use their correct service calls
 - **Optional card header** title (omit `title` to hide)
 - **Unavailable detection**: card shadow pulses red if any entity (including chips, switch rows, standalone cards, or missing/typoed IDs) is unavailable/unknown/offline
@@ -80,7 +80,7 @@ Use `headers: [...]` to define one or more header rows. Each header row can cont
 - **switch_rows**: array of switch row definitions. Each row can be an array or an object `{ row: [...] }`
 - Per-item options: `entity`, `name`, `icon`, `icon_size`, `font-weight`, `font-size`, `type` (`switch` | `smart_plug`), `glow_mode`, HA `*_action` entries, `hold_entity`, `confirmation`, and `info_templates`
 - `hold_entity`: optional entity ID — the more-info dialog for this entity opens on long-press (defaults to the switch `entity`). Useful when a switch controls a relay but you want to inspect a different entity.
-- `confirmation`: set to `true` or a custom string (e.g., `"Cut main power?"`) to require a confirmation dialog before toggling the switch on tap. The dialog is themed to match your HA dashboard.
+- `confirmation`: set to `true` or a custom string (e.g., `"Cut main power?"`) to require Home Assistant's native confirmation dialog before toggling the switch on tap.
 - `info_templates` (alias `top_right_templates`) accepts a template string, object `{ template: "..." }`, or an array (max 2). Each template is rendered by Home Assistant and shown at the top-right corner of the switch tile (one line per template). Use it for quick stats like power draw, timers, scenes, etc.
 
 ## Examples
@@ -99,9 +99,9 @@ headers:
         action: navigate
         navigation_path: /lovelace/entrance
       hold_action:
-        action: call-service
-        service: homeassistant.turn_off
-        service_data:
+        action: perform-action
+        perform_action: homeassistant.turn_off
+        target:
           entity_id: switch.entrance_light_switch_group
       temp_sensor: sensor.aqara_thp_10_temperature
       humidity_sensor: sensor.aqara_thp_10_humidity
@@ -253,10 +253,10 @@ The card includes a full visual configuration editor accessible from the HA dash
 - **Visual / YAML toggle**: switch between a form-based editor and raw YAML at any time — changes sync both ways
 - **General**: card title
 - **Appearance**: tile height, icon sizes, chip font size, shadow color/intensity, unavailable pulse color
-- **Headers**: add/remove header rows with tabbed navigation; each header has collapsible sections for Main Tile, AC Tile, and Thermostat Tile with full entity pickers, icon pickers, glow mode, chips, and action configs
-- **Switch Rows**: add/remove rows and switches with entity pickers, icon pickers, type/glow selectors, hold entity, confirmation toggle, styling overrides, action configs, and info templates
+- **Headers**: add/remove header rows with tabbed navigation; each header has collapsible sections for Main Tile, AC Tile, and Thermostat Tile with full entity selectors, icon pickers, glow mode, chips, and action configs
+- **Switch Rows**: add/remove rows and switches with entity selectors, icon pickers, type/glow selectors, hold entity, confirmation toggle, styling overrides, action configs, and info templates
 
-All entity fields use `ha-entity-picker` with domain filtering where appropriate (e.g., climate entities for AC/thermostat). Icon fields use `ha-icon-picker`. No YAML knowledge required.
+All entity fields use Home Assistant's native selector flow through `ha-form` entity selectors with domain filtering where appropriate (for example climate entities for AC and thermostat tiles). Icon fields use `ha-icon-picker`. The action editor supports `more-info`, `toggle`, `perform-action`, `navigate`, `url`, `assist`, and `none`.
 
 ## Responsive Icon Sizing
 

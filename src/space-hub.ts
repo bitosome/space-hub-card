@@ -3,11 +3,13 @@ import { LitElement, html, CSSResultGroup, TemplateResult, nothing } from 'lit';
 import { until } from 'lit/directives/until.js';
 import { customElement, property, state } from 'lit/decorators';
 import type { HomeAssistant } from 'custom-card-helpers';
-import { handleAction, fireEvent, createThing } from 'custom-card-helpers';
+import { createThing } from 'custom-card-helpers';
 import type { LovelaceCard, LovelaceCardConfig } from 'custom-card-helpers';
 import type { PropertyValues } from 'lit';
 import type { UnsubscribeFunc } from 'home-assistant-js-websocket';
 import { CARD_VERSION, clone } from './const';
+import type { SpaceHubActionConfig } from './action-config';
+import { hasActionOverride, normalizeActionConfig, normalizeConfirmation } from './action-config';
 import './editor';
 // glow utilities used by tiles
 import { renderMainTile } from './tiles/main';
@@ -43,24 +45,24 @@ export interface HeaderMain {
   humidity_sensor?: string;
   chips?: unknown[];
   // Actions
-  tap_action?: import('custom-card-helpers').ActionConfig;
-  hold_action?: import('custom-card-helpers').ActionConfig;
-  double_tap_action?: import('custom-card-helpers').ActionConfig;
+  tap_action?: SpaceHubActionConfig;
+  hold_action?: SpaceHubActionConfig;
+  double_tap_action?: SpaceHubActionConfig;
 }
 
 export interface HeaderAC {
   entity?: string;
   glow_mode?: string;
-  tap_action?: import('custom-card-helpers').ActionConfig;
-  hold_action?: import('custom-card-helpers').ActionConfig;
-  double_tap_action?: import('custom-card-helpers').ActionConfig;
+  tap_action?: SpaceHubActionConfig;
+  hold_action?: SpaceHubActionConfig;
+  double_tap_action?: SpaceHubActionConfig;
 }
 export interface HeaderThermostat {
   entity?: string;
   glow_mode?: string;
-  tap_action?: import('custom-card-helpers').ActionConfig;
-  hold_action?: import('custom-card-helpers').ActionConfig;
-  double_tap_action?: import('custom-card-helpers').ActionConfig;
+  tap_action?: SpaceHubActionConfig;
+  hold_action?: SpaceHubActionConfig;
+  double_tap_action?: SpaceHubActionConfig;
 }
 
 export interface SpaceHubHeader {
@@ -88,19 +90,16 @@ export interface SpaceHubConfig {
   switch_rows?: unknown[];
   cards?: unknown[];
   // Main tile actions (boilerplate-style)
-  tap_action?: import('custom-card-helpers').ActionConfig;
-  hold_action?: import('custom-card-helpers').ActionConfig;
-  double_tap_action?: import('custom-card-helpers').ActionConfig;
+  tap_action?: SpaceHubActionConfig;
+  hold_action?: SpaceHubActionConfig;
+  double_tap_action?: SpaceHubActionConfig;
 }
 
-// Haptic feedback helper (dispatches HA's global 'haptic' event)
-function haptic(type: any): void {
-  try {
-    // `type` can be a string like 'success' | 'warning' | 'failure' | 'light' | 'medium' | 'heavy'
-    fireEvent(window as any, 'haptic', type);
-  } catch (_e) {
-    // no-op
-  }
+interface SpaceHubActionEnvelope {
+  entity?: string;
+  tap_action?: SpaceHubActionConfig;
+  hold_action?: SpaceHubActionConfig;
+  double_tap_action?: SpaceHubActionConfig;
 }
 
 @customElement('space-hub-card')
@@ -139,10 +138,11 @@ export class SpaceHubCard extends LitElement {
     if (!config) {
       throw new Error('Configuration is required');
     }
-    
-    // Validate configuration
-    this._validateConfig(config);
-    
+
+    // Live editor previews regularly send partial rows/tiles before an entity is chosen.
+    // Validate only fatal schema issues here and tolerate incomplete edit-time entries.
+    this._validateConfig(config, { allowIncomplete: true });
+
     // Keep the provided config as-is and ensure headers is an array
     const c = clone(config || {} as SpaceHubConfig);
     if (!Array.isArray(c.headers)) c.headers = [];
@@ -153,7 +153,12 @@ export class SpaceHubCard extends LitElement {
     this._syncTemplateEntries(c.switch_rows);
   }
 
-  private _validateConfig(config: SpaceHubConfig): void {
+  private _isValidEntityId(value: unknown): value is string {
+    return typeof value === 'string' && value.includes('.') && !value.includes(' ');
+  }
+
+  private _validateConfig(config: SpaceHubConfig, options: { allowIncomplete?: boolean } = {}): void {
+    const allowIncomplete = !!options.allowIncomplete;
     const errors: string[] = [];
 
     // Validate headers if provided
@@ -167,8 +172,10 @@ export class SpaceHubCard extends LitElement {
         // Validate AC configuration
         if (header.ac) {
           if (!header.ac.entity) {
-            errors.push(`Header ${index + 1}: AC tile requires an 'entity' field`);
-          } else if (typeof header.ac.entity !== 'string' || !header.ac.entity.includes('.')) {
+            if (!allowIncomplete) {
+              errors.push(`Header ${index + 1}: AC tile requires an 'entity' field`);
+            }
+          } else if (!this._isValidEntityId(header.ac.entity)) {
             errors.push(`Header ${index + 1}: AC entity '${header.ac.entity}' must be a valid entity ID (e.g., 'climate.living_room')`);
           }
         }
@@ -176,8 +183,10 @@ export class SpaceHubCard extends LitElement {
         // Validate Thermostat configuration
         if (header.thermostat) {
           if (!header.thermostat.entity) {
-            errors.push(`Header ${index + 1}: Thermostat tile requires an 'entity' field`);
-          } else if (typeof header.thermostat.entity !== 'string' || !header.thermostat.entity.includes('.')) {
+            if (!allowIncomplete) {
+              errors.push(`Header ${index + 1}: Thermostat tile requires an 'entity' field`);
+            }
+          } else if (!this._isValidEntityId(header.thermostat.entity)) {
             errors.push(`Header ${index + 1}: Thermostat entity '${header.thermostat.entity}' must be a valid entity ID (e.g., 'climate.bedroom')`);
           }
         }
@@ -185,30 +194,30 @@ export class SpaceHubCard extends LitElement {
         // Validate Main configuration
         if (header.main) {
           const main = header.main;
-          
+
           // Check if main tile has at least one meaningful configuration
           const hasContent = !!(
-            main.main_name || main.main_icon || main.tap_entity || 
+            main.main_name || main.main_icon || main.tap_entity ||
             main.light_group_entity || main.temp_sensor || main.humidity_sensor ||
             (Array.isArray(main.chips) && main.chips.length > 0)
           );
-          
-          if (!hasContent) {
+
+          if (!hasContent && !allowIncomplete) {
             errors.push(`Header ${index + 1}: Main tile must have at least one of: main_name, main_icon, tap_entity, light_group_entity, temp_sensor, humidity_sensor, or chips`);
           }
 
           // Validate entity IDs if provided
-          const entityFields = ['tap_entity', 'hold_entity', 'light_group_entity', 'temp_sensor', 'humidity_sensor'];
-          entityFields.forEach(field => {
+          const entityFields = ['tap_entity', 'hold_entity', 'light_group_entity', 'temp_sensor', 'humidity_sensor'] as const;
+          entityFields.forEach((field) => {
             const value = main[field as keyof typeof main];
-            if (value && (typeof value !== 'string' || !value.includes('.'))) {
+            if (value && !this._isValidEntityId(value)) {
               errors.push(`Header ${index + 1}: Main tile ${field} '${value}' must be a valid entity ID`);
             }
           });
         }
 
-        // If header has AC or Thermostat but no main, warn about required main configuration
-        if ((header.ac || header.thermostat) && !header.main) {
+        // The visual editor allows users to add AC/Thermostat before the main tile exists.
+        if ((header.ac || header.thermostat) && !header.main && !allowIncomplete) {
           errors.push(`Header ${index + 1}: AC and Thermostat tiles require a 'main' configuration block`);
         }
       });
@@ -223,19 +232,21 @@ export class SpaceHubCard extends LitElement {
         }
 
         const items = Array.isArray(row) ? row : (Array.isArray(row.row) ? row.row : []);
-        if (!Array.isArray(items) || items.length === 0) {
+        if ((!Array.isArray(items) || items.length === 0) && !allowIncomplete) {
           errors.push(`Switch row ${index + 1}: Switch row must contain at least one switch item`);
           return;
         }
 
         items.forEach((item: any, itemIndex) => {
           if (!item || !item.entity) {
-            errors.push(`Switch row ${index + 1}, item ${itemIndex + 1}: Switch item requires an 'entity' field`);
-          } else if (typeof item.entity !== 'string' || !item.entity.includes('.')) {
+            if (!allowIncomplete) {
+              errors.push(`Switch row ${index + 1}, item ${itemIndex + 1}: Switch item requires an 'entity' field`);
+            }
+          } else if (!this._isValidEntityId(item.entity)) {
             errors.push(`Switch row ${index + 1}, item ${itemIndex + 1}: Switch entity '${item.entity}' must be a valid entity ID`);
           }
           // Validate hold_entity if provided
-          if (item?.hold_entity && (typeof item.hold_entity !== 'string' || !item.hold_entity.includes('.'))) {
+          if (item?.hold_entity && !this._isValidEntityId(item.hold_entity)) {
             errors.push(`Switch row ${index + 1}, item ${itemIndex + 1}: hold_entity '${item.hold_entity}' must be a valid entity ID`);
           }
         });
@@ -246,7 +257,7 @@ export class SpaceHubCard extends LitElement {
     const numericFields = {
       tile_height: 'Tile height',
       chip_icon_size: 'Chip icon size',
-      main_icon_size: 'Main icon size', 
+      main_icon_size: 'Main icon size',
       chip_font_size: 'Chip font size',
       card_shadow_intensity: 'Card shadow intensity'
     };
@@ -271,7 +282,7 @@ export class SpaceHubCard extends LitElement {
 
     // Validate colors if provided
     const colorFields = ['card_shadow_color', 'unavailable_pulse_color'];
-    colorFields.forEach(field => {
+    colorFields.forEach((field) => {
       const value = config[field as keyof SpaceHubConfig];
       if (value && typeof value === 'string') {
         // Basic color validation - check for hex colors, named colors, or CSS color functions
@@ -284,7 +295,7 @@ export class SpaceHubCard extends LitElement {
 
     // If there are validation errors, throw them
     if (errors.length > 0) {
-      throw new Error(`Invalid space-hub-card configuration:\n${errors.map(e => `• ${e}`).join('\n')}`);
+      throw new Error(`Invalid space-hub-card configuration:\n${errors.map((e) => `• ${e}`).join('\n')}`);
     }
   }
 
@@ -432,8 +443,8 @@ export class SpaceHubCard extends LitElement {
     const tpl = html`
       <div class=${cls}>
         ${hasMain ? renderMainTile(this, main as any) : nothing}
-        ${showAC ? renderACTile(this, ac.entity as string, ac.glow_mode) : nothing}
-        ${showThermostat ? renderThermostatTile(this, thermostat.entity as string, thermostat.glow_mode) : nothing}
+        ${showAC ? renderACTile(this, ac as any) : nothing}
+        ${showThermostat ? renderThermostatTile(this, thermostat as any) : nothing}
       </div>
     `;
     return tpl;
@@ -535,146 +546,119 @@ export class SpaceHubCard extends LitElement {
     this._rowCardPromises.clear();
   }
 
-  private _toggleByDomain(entityId?: string | null): void {
-    if (!entityId || !this.hass) return;
-    const st = this.hass.states[entityId];
-    const domain = entityId.split('.')[0];
-    const s = (st?.state || '').toLowerCase();
-    if (domain === 'lock') {
-      const next = s === 'locked' ? 'unlock' : 'lock';
-      this.hass.callService('lock', next, { entity_id: entityId });
-      return;
+  private _dispatchNativeAction(action: string, config: SpaceHubActionEnvelope): void {
+    const event = new Event('hass-action', {
+      bubbles: true,
+      composed: true,
+    }) as Event & { detail?: { action: string; config: SpaceHubActionEnvelope } };
+    event.detail = { action, config };
+    this.dispatchEvent(event);
+  }
+
+  private _withActionOverrides(base: SpaceHubActionEnvelope, overrides?: Record<string, unknown>): SpaceHubActionEnvelope {
+    const merged: SpaceHubActionEnvelope = { ...base };
+
+    if (typeof overrides?.entity === 'string' && overrides.entity) {
+      merged.entity = overrides.entity;
     }
-    if (domain === 'cover') {
-      const next = (s === 'open' || s === 'opening') ? 'close_cover' : 'open_cover';
-      this.hass.callService('cover', next, { entity_id: entityId });
-      return;
-    }
-    this._toggleGeneric(entityId);
+
+    const tapAction = normalizeActionConfig(overrides?.tap_action);
+    if (tapAction) merged.tap_action = tapAction;
+
+    const holdAction = normalizeActionConfig(overrides?.hold_action);
+    if (holdAction) merged.hold_action = holdAction;
+
+    const doubleTapAction = normalizeActionConfig(overrides?.double_tap_action);
+    if (doubleTapAction) merged.double_tap_action = doubleTapAction;
+
+    return merged;
+  }
+
+  private _dispatchActionEnvelope(action: string, config: SpaceHubActionEnvelope): void {
+    const selected = action === 'double_tap'
+      ? config.double_tap_action
+      : (action === 'hold' ? config.hold_action : config.tap_action);
+    if (!selected) return;
+    this._dispatchNativeAction(action, config);
   }
 
   private _onMainAction(ev: CustomEvent, tileCfg?: any, tap?: string, hold?: string, lightGroup?: string): void {
+    ev.stopPropagation();
+
     const action = (ev.detail && (ev.detail as any).action) || 'tap';
-    // Tile-level actions override card-level
-    if (this.hass && tileCfg && (tileCfg.tap_action || tileCfg.hold_action || tileCfg.double_tap_action)) {
-      handleAction(this, this.hass, tileCfg as any, action);
-      return;
-    }
-    // If configured, use handleAction against card-level actions
-    if (this.hass && this._config && (this._config.tap_action || this._config.hold_action || this._config.double_tap_action)) {
-      handleAction(this, this.hass, this._config as any, action);
-      return;
-    }
-    // Switch-like behavior for main tile
-    if (action === 'hold') {
-      // Haptic feedback: medium on long press
-      haptic('medium');
-      this._openMoreInfo(hold || tap);
-    } else {
-      this._toggleGeneric(lightGroup || tap);
-    }
+    const defaultToggleTarget = lightGroup || tap;
+    const defaultMoreInfoTarget = hold || tap || lightGroup;
+    const baseConfig: SpaceHubActionEnvelope = {
+      entity: defaultToggleTarget,
+      tap_action: defaultToggleTarget ? { action: 'toggle' } : undefined,
+      hold_action: defaultMoreInfoTarget ? { action: 'more-info', entity: defaultMoreInfoTarget } : undefined,
+    };
+    const overrides = hasActionOverride(tileCfg)
+      ? tileCfg as Record<string, unknown>
+      : (hasActionOverride(this._config) ? this._config as unknown as Record<string, unknown> : undefined);
+    this._dispatchActionEnvelope(action, this._withActionOverrides(baseConfig, overrides));
   }
 
-  private _onACAction(ev: CustomEvent, entity: string): void {
-    this._onClimateTileAction(ev, entity, () => this._acToggle(entity));
+  private _onACAction(ev: CustomEvent, ac?: any): void {
+    ev.stopPropagation();
+
+    const action = (ev.detail && (ev.detail as any).action) || 'tap';
+    const entity = ac?.entity;
+    if (!entity) return;
+
+    const mode = (this.hass?.states?.[entity]?.state || '').toLowerCase();
+    const active = !!mode && mode !== 'off';
+    const baseConfig: SpaceHubActionEnvelope = {
+      entity,
+      tap_action: {
+        action: 'perform-action',
+        perform_action: active ? 'climate.turn_off' : 'climate.turn_on',
+        target: { entity_id: entity },
+      },
+      hold_action: { action: 'more-info', entity },
+    };
+    this._dispatchActionEnvelope(action, this._withActionOverrides(baseConfig, ac as Record<string, unknown>));
   }
 
-  private _onThermostatAction(ev: CustomEvent, entity: string): void {
-    this._onClimateTileAction(ev, entity, () => this._thermostatToggle(entity));
-  }
+  private _onThermostatAction(ev: CustomEvent, thermostat?: any): void {
+    ev.stopPropagation();
 
-  private _onClimateTileAction(ev: CustomEvent, entity: string, tapAction: () => void): void {
-    const act = (ev.detail && ev.detail.action) || 'tap';
-    if (act === 'hold') {
-      haptic('medium');
-      this._openMoreInfo(entity);
-    } else {
-      haptic('success');
-      tapAction();
-    }
+    const action = (ev.detail && (ev.detail as any).action) || 'tap';
+    const entity = thermostat?.entity;
+    if (!entity) return;
+
+    const mode = (this.hass?.states?.[entity]?.state || '').toLowerCase();
+    const nextMode = mode === 'off' ? 'heat' : 'off';
+    const baseConfig: SpaceHubActionEnvelope = {
+      entity,
+      tap_action: {
+        action: 'perform-action',
+        perform_action: 'climate.set_hvac_mode',
+        target: { entity_id: entity },
+        data: { hvac_mode: nextMode },
+      },
+      hold_action: { action: 'more-info', entity },
+    };
+    this._dispatchActionEnvelope(action, this._withActionOverrides(baseConfig, thermostat as Record<string, unknown>));
   }
 
   private _onSwitchAction(ev: CustomEvent, sw?: any): void {
-    const act = (ev.detail && ev.detail.action) || 'tap';
-    const tap = sw?.entity;
-    const hold = sw?.hold_entity || tap;
-    const hasCustomActions = !!(sw?.tap_action || sw?.hold_action || sw?.double_tap_action);
+    ev.stopPropagation();
 
-    // For tap actions, always check confirmation first — even when custom
-    // action configs exist, so the user's confirmation setting is honoured.
-    if (act === 'tap' || act === 'double_tap') {
-      const confirm = sw?.confirmation;
-      if (act === 'tap' && confirm) {
-        const doTap = () => {
-          if (this.hass && hasCustomActions) {
-            handleAction(this, this.hass, sw as any, act);
-          } else {
-            this._toggleByDomain(tap);
-          }
-        };
-        this._showConfirmation(sw, doTap);
-        return;
-      }
-      // No confirmation — delegate or toggle
-      if (this.hass && hasCustomActions) {
-        handleAction(this, this.hass, sw as any, act);
-      } else {
-        this._toggleByDomain(tap);
-      }
-    } else if (act === 'hold') {
-      haptic('medium');
-      if (this.hass && hasCustomActions) {
-        handleAction(this, this.hass, sw as any, act);
-      } else {
-        this._openMoreInfo(hold || tap);
-      }
-    }
-  }
-
-  private _showConfirmation(sw: any, onConfirm: () => void): void {
-    const confirm = sw?.confirmation;
-    const text = (typeof confirm === 'string' ? confirm : confirm?.text) || 'Are you sure?';
-    const entityId = sw?.entity || '';
-    const entityName = sw?.name || (this.hass?.states?.[entityId]?.attributes?.friendly_name) || entityId;
-    // Build the dialog
-    const overlay = document.createElement('div');
-    overlay.className = 'sh-confirm-overlay';
-    const dialog = document.createElement('div');
-    dialog.className = 'sh-confirm-dialog';
-    dialog.innerHTML = `
-      <div class="sh-confirm-title">${this._escapeHtml(entityName)}</div>
-      <div class="sh-confirm-text">${this._escapeHtml(text)}</div>
-      <div class="sh-confirm-actions">
-        <button class="sh-confirm-btn sh-cancel">Cancel</button>
-        <button class="sh-confirm-btn sh-ok">Confirm</button>
-      </div>
-    `;
-    overlay.appendChild(dialog);
-
-    const close = () => {
-      overlay.classList.add('sh-closing');
-      overlay.addEventListener('animationend', () => overlay.remove(), { once: true });
-      // Fallback removal
-      setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 300);
+    const action = (ev.detail && (ev.detail as any).action) || 'tap';
+    const entity = sw?.entity;
+    const holdEntity = sw?.hold_entity || entity;
+    const confirmation = normalizeConfirmation(sw?.confirmation);
+    const baseTapAction: SpaceHubActionConfig | undefined = entity
+      ? { action: 'toggle', confirmation }
+      : undefined;
+    const baseConfig: SpaceHubActionEnvelope = {
+      entity,
+      tap_action: baseTapAction,
+      hold_action: holdEntity ? { action: 'more-info', entity: holdEntity } : undefined,
+      double_tap_action: entity ? { action: 'toggle' } : undefined,
     };
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) close();
-    });
-    dialog.querySelector('.sh-cancel')!.addEventListener('click', () => close());
-    dialog.querySelector('.sh-ok')!.addEventListener('click', () => {
-      close();
-      haptic('success');
-      onConfirm();
-    });
-
-    this.shadowRoot!.appendChild(overlay);
-  }
-
-  private _escapeHtml(str: string): string {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    this._dispatchActionEnvelope(action, this._withActionOverrides(baseConfig, sw as Record<string, unknown>));
   }
 
   public _resolveSwitchTemplates(sw: unknown): Array<{ template: string; value: string }> {
@@ -886,87 +870,87 @@ export class SpaceHubCard extends LitElement {
     return `rgba(0,0,0,${a})`;
   }
 
-  private _getAllCardEntities(c: SpaceHubConfig, h: SpaceHubHeader | SpaceHubHeader[]): Array<string | undefined> {
-    const ids: Array<string | undefined> = [];
+  private _getAllCardEntities(c: SpaceHubConfig, h: SpaceHubHeader | SpaceHubHeader[]): string[] {
+    const ids = new Set<string>();
     const headers: SpaceHubHeader[] = Array.isArray(h) ? h : [h];
+    const visited = new WeakSet<Record<string, unknown> | unknown[]>();
+    const entityKeys = new Set([
+      'entity',
+      'entity_id',
+      'tap_entity',
+      'hold_entity',
+      'double_tap_entity',
+      'light_group_entity',
+      'temp_sensor',
+      'humidity_sensor',
+      'camera_image',
+    ]);
 
     const addEntity = (value: unknown): void => {
-      if (!value) return;
       if (typeof value === 'string') {
-        ids.push(value);
-      } else if (Array.isArray(value)) {
-        value.forEach((item) => addEntity(item));
+        if (this._isValidEntityId(value)) ids.add(value);
       }
     };
 
-    const collectCardEntities = (card: any): void => {
-      if (!card || typeof card !== 'object') return;
-      addEntity(card.entity);
-      addEntity(card.entity_id);
-      addEntity(card.entities);
-      addEntity(card.tap_entity);
-      addEntity(card.hold_entity);
-      addEntity(card.double_tap_entity);
-
-      if (Array.isArray(card.cards)) card.cards.forEach(collectCardEntities);
-      if (Array.isArray(card.rows)) card.rows.forEach(collectCardEntities);
-      if (Array.isArray(card.columns)) card.columns.forEach(collectCardEntities);
-      if (Array.isArray(card.sections)) card.sections.forEach(collectCardEntities);
-      if (Array.isArray(card.widgets)) card.widgets.forEach(collectCardEntities);
-      if (Array.isArray(card.items)) card.items.forEach(collectCardEntities);
-      if (Array.isArray(card.elements)) card.elements.forEach(collectCardEntities);
-      if (card.card) collectCardEntities(card.card);
-      if (card.header) collectCardEntities(card.header);
-      if (card.footer) collectCardEntities(card.footer);
+    const collectEntityValue = (value: unknown): void => {
+      if (typeof value === 'string') {
+        addEntity(value);
+        return;
+      }
+      if (Array.isArray(value)) {
+        value.forEach((item) => {
+          if (typeof item === 'string') {
+            addEntity(item);
+          } else {
+            walk(item);
+          }
+        });
+        return;
+      }
+      walk(value);
     };
 
-    // Process all headers
-    headers.forEach((hdr) => {
-      const mainRaw: any = hdr?.main || {};
-      const main: any = {
-        tap_entity: mainRaw.tap_entity,
-        hold_entity: mainRaw.hold_entity || mainRaw.tap_entity,
-        light_group_entity: mainRaw.light_group_entity,
-        temp_sensor: mainRaw.temp_sensor,
-        humidity_sensor: mainRaw.humidity_sensor,
-        chips: Array.isArray(mainRaw.chips) ? mainRaw.chips : [],
-      };
-      const ac = hdr?.ac || ({} as any);
-      const thermostat = hdr?.thermostat || ({} as any);
-      
-      // Main tile entities
-      ids.push(
-        main?.tap_entity, 
-        main?.hold_entity, 
-        main?.light_group_entity, 
-        main?.temp_sensor, 
-        main?.humidity_sensor
-      );
-      
-      // AC and thermostat entities
-      ids.push(ac?.entity, thermostat?.entity);
-      
-      // Chip entities
-      main.chips.forEach((chip: any) => {
-        ids.push(chip?.entity, chip?.tap_entity, chip?.hold_entity);
-      });
-    });
-    
-    // Process switch rows
-    const rows = (c.switch_rows || []) as any[];
-    rows.forEach((row) => {
-      const items = Array.isArray(row) ? row : (Array.isArray((row as any)?.row) ? (row as any).row : []);
-      items.forEach((sw: any) => {
-        ids.push(sw?.entity, sw?.hold_entity);
-      });
-    });
+    const collectTarget = (value: unknown): void => {
+      if (!value || typeof value !== 'object') return;
+      const target = value as Record<string, unknown>;
+      collectEntityValue(target.entity_id);
+    };
 
-    // Process standalone cards configured at the root level
-    if (Array.isArray(c.cards)) {
-      c.cards.forEach((card: any) => collectCardEntities(card));
-    }
-    
-    return ids;
+    const walk = (value: unknown): void => {
+      if (!value || typeof value !== 'object') return;
+      const visitable = value as Record<string, unknown> | unknown[];
+      if (visited.has(visitable)) return;
+      visited.add(visitable);
+
+      if (Array.isArray(value)) {
+        value.forEach((item) => walk(item));
+        return;
+      }
+
+      Object.entries(value as Record<string, unknown>).forEach(([key, entry]) => {
+        if (entityKeys.has(key)) {
+          collectEntityValue(entry);
+          return;
+        }
+        if (key === 'target') {
+          collectTarget(entry);
+          return;
+        }
+        if (Array.isArray(entry)) {
+          entry.forEach((item) => walk(item));
+          return;
+        }
+        if (entry && typeof entry === 'object') {
+          walk(entry);
+        }
+      });
+    };
+
+    walk(headers);
+    walk(c.switch_rows);
+    walk(c.cards);
+
+    return [...ids];
   }
 
   private _hasAnyUnavailable(c: SpaceHubConfig, h: SpaceHubHeader | SpaceHubHeader[]): boolean {

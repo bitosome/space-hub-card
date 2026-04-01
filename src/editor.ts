@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators';
 import { fireEvent } from 'custom-card-helpers';
 import type { HomeAssistant } from 'custom-card-helpers';
 import type { SpaceHubConfig, SpaceHubHeader, HeaderMain, HeaderAC, HeaderThermostat } from './space-hub';
+import { normalizeActionConfig, normalizeConfirmation } from './action-config';
 import { clone } from './const';
 
 // Chip types supported by the card
@@ -13,7 +14,7 @@ const SWITCH_TYPES = ['switch', 'smart_plug'] as const;
 // Glow modes
 const GLOW_MODES = ['static', 'pulse', 'none'] as const;
 // Action types supported by HA
-const ACTION_TYPES = ['more-info', 'toggle', 'call-service', 'perform-action', 'navigate', 'url', 'none'] as const;
+const ACTION_TYPES = ['more-info', 'toggle', 'perform-action', 'navigate', 'url', 'assist', 'none'] as const;
 
 @customElement('space-hub-card-editor')
 export class SpaceHubCardEditor extends LitElement {
@@ -49,11 +50,13 @@ export class SpaceHubCardEditor extends LitElement {
     // Wait for the critical HA form elements we need
     const needed = [
       'ha-form',
-      'ha-entity-picker',
+      'ha-formfield',
       'ha-icon-picker',
       'ha-select',
+      'ha-switch',
       'ha-textfield',
       'ha-expansion-panel',
+      'ha-yaml-editor',
     ];
     const withTimeout = (tag: string) =>
       Promise.race([
@@ -112,7 +115,77 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _handleSelectChanged(path: string, ev: Event): void {
     const target = ev.currentTarget as { value?: string } | null;
-    this._valueChanged(path, target?.value);
+    const nextValue = target?.value;
+    const parts = path.split('.');
+    const lastKey = parts[parts.length - 1];
+    const parentKey = parts[parts.length - 2];
+    if (lastKey === 'action' && ['tap_action', 'hold_action', 'double_tap_action'].includes(parentKey)) {
+      this._handleActionTypeChanged(parts.slice(0, -1).join('.'), nextValue);
+      return;
+    }
+    this._valueChanged(path, nextValue);
+  }
+
+  private _handleActionTypeChanged(path: string, nextType?: string): void {
+    if (!nextType) {
+      this._valueChanged(path, undefined);
+      return;
+    }
+
+    const current = normalizeActionConfig(this._getNestedValue(path));
+    const next: Record<string, any> = current ? { ...current } : {};
+    next.action = nextType;
+
+    if (nextType !== 'more-info') delete next.entity;
+    if (nextType !== 'navigate') {
+      delete next.navigation_path;
+      delete next.navigation_replace;
+    }
+    if (nextType !== 'url') delete next.url_path;
+    if (nextType !== 'perform-action') {
+      delete next.perform_action;
+      delete next.data;
+      delete next.target;
+      delete next.service;
+      delete next.service_data;
+    }
+    if (nextType !== 'assist') {
+      delete next.pipeline_id;
+      delete next.start_listening;
+    }
+
+    if (nextType === 'perform-action' && !next.perform_action) next.perform_action = '';
+    if (nextType === 'navigate' && !next.navigation_path) next.navigation_path = '';
+    if (nextType === 'url' && !next.url_path) next.url_path = '';
+    if (nextType === 'assist' && next.start_listening === undefined) next.start_listening = false;
+
+    this._valueChanged(path, next);
+  }
+
+  private _setActionConfirmation(path: string, enabled: boolean): void {
+    const current = normalizeActionConfig(this._getNestedValue(path));
+    if (!current) return;
+    const next: Record<string, any> = { ...current };
+    if (enabled) {
+      next.confirmation = next.confirmation ?? true;
+    } else {
+      delete next.confirmation;
+    }
+    this._valueChanged(path, next);
+  }
+
+  private _setActionConfirmationText(path: string, text: string): void {
+    const current = normalizeActionConfig(this._getNestedValue(path));
+    if (!current) return;
+    const next: Record<string, any> = { ...current };
+    const trimmed = text.trim();
+    next.confirmation = trimmed
+      ? {
+          ...(typeof next.confirmation === 'object' && next.confirmation ? next.confirmation : {}),
+          text,
+        }
+      : true;
+    this._valueChanged(path, next);
   }
 
   private _renderSelectField(label: string, path: string, value: string | undefined, options: readonly string[]): TemplateResult {
@@ -492,6 +565,7 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _renderACConfig(ac: HeaderAC | undefined, basePath: string): TemplateResult {
     const hasAC = !!ac;
+    const config = ac || {};
     return html`
       <ha-expansion-panel outlined .header=${'AC Tile'}>
         <div class="section-content">
@@ -500,10 +574,10 @@ export class SpaceHubCardEditor extends LitElement {
               <ha-icon icon="mdi:plus"></ha-icon> Add AC Tile
             </button>
           ` : html`
-            ${this._renderEntityField('Climate Entity', `${basePath}.entity`, ac!.entity, { domain: 'climate' })}
-            ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, ac!.glow_mode, GLOW_MODES)}
-            ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, ac!.tap_action)}
-            ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, ac!.hold_action)}
+            ${this._renderEntityField('Climate Entity', `${basePath}.entity`, config.entity, { domain: 'climate' })}
+            ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, config.glow_mode, GLOW_MODES)}
+            ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, config.tap_action)}
+            ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, config.hold_action)}
             <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove AC Tile
             </button>
@@ -517,6 +591,7 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _renderThermostatConfig(thermostat: HeaderThermostat | undefined, basePath: string): TemplateResult {
     const has = !!thermostat;
+    const config = thermostat || {};
     return html`
       <ha-expansion-panel outlined .header=${'Thermostat Tile'}>
         <div class="section-content">
@@ -525,10 +600,10 @@ export class SpaceHubCardEditor extends LitElement {
               <ha-icon icon="mdi:plus"></ha-icon> Add Thermostat Tile
             </button>
           ` : html`
-            ${this._renderEntityField('Climate Entity', `${basePath}.entity`, thermostat!.entity, { domain: 'climate' })}
-            ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, thermostat!.glow_mode, GLOW_MODES)}
-            ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, thermostat!.tap_action)}
-            ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, thermostat!.hold_action)}
+            ${this._renderEntityField('Climate Entity', `${basePath}.entity`, config.entity, { domain: 'climate' })}
+            ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, config.glow_mode, GLOW_MODES)}
+            ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, config.tap_action)}
+            ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, config.hold_action)}
             <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove Thermostat Tile
             </button>
@@ -794,7 +869,11 @@ export class SpaceHubCardEditor extends LitElement {
   // ── Action Config ────────────────────────────────────────────
 
   private _renderActionConfig(label: string, path: string, action: any): TemplateResult {
-    const hasAction = !!action;
+    const normalized = normalizeActionConfig(action);
+    const hasAction = !!normalized;
+    const confirmation = normalizeConfirmation(normalized?.confirmation);
+    const confirmationEnabled = confirmation !== undefined;
+    const confirmationText = confirmation && typeof confirmation === 'object' ? confirmation.text || '' : '';
     return html`
       <ha-expansion-panel outlined .header=${label}>
         <div class="section-content">
@@ -803,35 +882,78 @@ export class SpaceHubCardEditor extends LitElement {
               <ha-icon icon="mdi:plus"></ha-icon> Configure ${label}
             </button>
           ` : html`
-            ${this._renderSelectField('Action', `${path}.action`, action?.action, ACTION_TYPES)}
-            ${action?.action === 'navigate' ? html`
+            ${this._renderSelectField('Action', `${path}.action`, normalized?.action, ACTION_TYPES)}
+            ${normalized?.action === 'more-info' ? html`
+              ${this._renderEntityField('More Info Entity', `${path}.entity`, normalized.entity)}
+            ` : nothing}
+            ${normalized?.action === 'navigate' ? html`
               <ha-textfield
                 label="Navigation Path"
-                .value=${action.navigation_path || ''}
+                .value=${normalized.navigation_path || ''}
                 @input=${(ev: Event) => this._valueChanged(`${path}.navigation_path`, (ev.target as HTMLInputElement).value)}
               ></ha-textfield>
+              <ha-formfield label="Replace current path">
+                <ha-switch
+                  .checked=${!!normalized.navigation_replace}
+                  @change=${(ev: Event) => this._valueChanged(`${path}.navigation_replace`, (ev.target as HTMLInputElement).checked || undefined)}
+                ></ha-switch>
+              </ha-formfield>
             ` : nothing}
-            ${action?.action === 'url' ? html`
+            ${normalized?.action === 'url' ? html`
               <ha-textfield
                 label="URL"
-                .value=${action.url_path || ''}
+                .value=${normalized.url_path || ''}
                 @input=${(ev: Event) => this._valueChanged(`${path}.url_path`, (ev.target as HTMLInputElement).value)}
               ></ha-textfield>
             ` : nothing}
-            ${action?.action === 'call-service' || action?.action === 'perform-action' ? html`
+            ${normalized?.action === 'perform-action' ? html`
               <ha-textfield
-                label="Service"
-                .value=${action.service || ''}
-                @input=${(ev: Event) => this._valueChanged(`${path}.service`, (ev.target as HTMLInputElement).value)}
+                label="Action"
+                .value=${normalized.perform_action || ''}
+                @input=${(ev: Event) => this._valueChanged(`${path}.perform_action`, (ev.target as HTMLInputElement).value)}
               ></ha-textfield>
               <ha-yaml-editor
-                label="Service Data"
-                .defaultValue=${action.service_data || {}}
+                label="Target"
+                .defaultValue=${normalized.target || {}}
                 @value-changed=${(ev: CustomEvent) => {
                   ev.stopPropagation();
-                  this._valueChanged(`${path}.service_data`, ev.detail.value);
+                  this._valueChanged(`${path}.target`, ev.detail.value);
                 }}
               ></ha-yaml-editor>
+              <ha-yaml-editor
+                label="Data"
+                .defaultValue=${normalized.data || {}}
+                @value-changed=${(ev: CustomEvent) => {
+                  ev.stopPropagation();
+                  this._valueChanged(`${path}.data`, ev.detail.value);
+                }}
+              ></ha-yaml-editor>
+            ` : nothing}
+            ${normalized?.action === 'assist' ? html`
+              <ha-textfield
+                label="Pipeline ID"
+                .value=${normalized.pipeline_id || ''}
+                @input=${(ev: Event) => this._valueChanged(`${path}.pipeline_id`, (ev.target as HTMLInputElement).value)}
+              ></ha-textfield>
+              <ha-formfield label="Start listening immediately">
+                <ha-switch
+                  .checked=${!!normalized.start_listening}
+                  @change=${(ev: Event) => this._valueChanged(`${path}.start_listening`, (ev.target as HTMLInputElement).checked || undefined)}
+                ></ha-switch>
+              </ha-formfield>
+            ` : nothing}
+            <ha-formfield label="Require confirmation">
+              <ha-switch
+                .checked=${confirmationEnabled}
+                @change=${(ev: Event) => this._setActionConfirmation(path, (ev.target as HTMLInputElement).checked)}
+              ></ha-switch>
+            </ha-formfield>
+            ${confirmationEnabled ? html`
+              <ha-textfield
+                label="Confirmation Text"
+                .value=${confirmationText}
+                @input=${(ev: Event) => this._setActionConfirmationText(path, (ev.target as HTMLInputElement).value)}
+              ></ha-textfield>
             ` : nothing}
             <button class="editor-btn danger" @click=${() => this._valueChanged(path, undefined)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove

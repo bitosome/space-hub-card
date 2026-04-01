@@ -15,7 +15,9 @@ function normalizeAcMode(modeRaw: string): AcModeClass {
   return 'default';
 }
 
-export function renderACTile(host: any, entityId: string, glowMode?: GlowMode): TemplateResult {
+export function renderACTile(host: any, config: { entity?: string; glow_mode?: GlowMode }): TemplateResult {
+  const entityId = config?.entity || '';
+  const glowMode = config?.glow_mode;
   const mode = (host?.hass?.states?.[entityId]?.state || '').toLowerCase();
   const active = !!mode && mode !== 'off';
   const chipDef = typeof host?._acChip === 'function'
@@ -29,14 +31,14 @@ export function renderACTile(host: any, entityId: string, glowMode?: GlowMode): 
   const finalGlowMode = glowMode ?? 'static';
   const { style: wrapStyle, overlay: glowOverlay } = buildGlow(pulse, finalGlowMode as any, active);
   const onAction = (ev: CustomEvent) => {
-    if (typeof host?._onACAction === 'function') host._onACAction(ev, entityId);
+    if (typeof host?._onACAction === 'function') host._onACAction(ev, config);
   };
   return html`
     <div class="tile-wrap">
       <div class="glow-under" style=${wrapStyle}>${glowOverlay}</div>
       <ha-control-button
         class="square ac-tile ${active ? 'on' : ''}"
-        @action=${onAction}
+        @hass-action=${onAction}
         .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
         role="button" tabindex="0"
       >

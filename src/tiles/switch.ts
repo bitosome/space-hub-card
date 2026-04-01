@@ -99,7 +99,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
       ${infoOverlay}
       <ha-control-button
         class=${btnCls}
-        @action=${onAction}
+        @hass-action=${onAction}
         .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
         role="button" tabindex="0"
       >
@@ -121,7 +121,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
 
   return html`
     <div class="tile-wrap ${cls}"
-         @action=${onAction}
+         @hass-action=${onAction}
          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
          role="button" tabindex="0">
       <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>

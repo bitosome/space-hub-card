@@ -3,7 +3,9 @@ import { html, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
 import { THERMOSTAT_HEAT_PULSE, buildGlow, GlowMode } from '../glow';
 
-export function renderThermostatTile(host: any, entityId: string, glowMode?: GlowMode): TemplateResult {
+export function renderThermostatTile(host: any, config: { entity?: string; glow_mode?: GlowMode }): TemplateResult {
+  const entityId = config?.entity || '';
+  const glowMode = config?.glow_mode;
   const st = host?.hass?.states?.[entityId];
   const fmt = typeof host?._fmtNumber === 'function' ? host._fmtNumber.bind(host) : (v: any) => (v === undefined || v === null ? '—' : String(v));
   const target = st?.attributes?.temperature ?? st?.attributes?.target_temp ?? st?.attributes?.target_temperature;
@@ -20,14 +22,14 @@ export function renderThermostatTile(host: any, entityId: string, glowMode?: Glo
   const pulse = THERMOSTAT_HEAT_PULSE;
   const { style: wrapStyle, overlay: glowOverlay } = buildGlow(pulse, finalGlowMode as any, isHeating);
   const onAction = (ev: CustomEvent) => {
-    if (typeof host?._onThermostatAction === 'function') host._onThermostatAction(ev, entityId);
+    if (typeof host?._onThermostatAction === 'function') host._onThermostatAction(ev, config);
   };
   return html`
     <div class="tile-wrap">
       <div class="glow-under" style=${wrapStyle}>${glowOverlay}</div>
       <ha-control-button
         class="square thermostat-tile ${isHeating ? 'on' : ''}"
-        @action=${onAction}
+        @hass-action=${onAction}
         .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: false })}
         role="button" tabindex="0"
       >

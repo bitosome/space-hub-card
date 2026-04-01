@@ -39,7 +39,7 @@ export function renderMainTile(host: any, h: any): TemplateResult {
       <div class="glow-under" style=${wrapStyle}>${glowOverlay}</div>
       <ha-control-button
         class="main-tile ${isOn ? 'on' : ''}"
-        @action=${onAction}
+        @hass-action=${onAction}
         .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: hasDbl })}
         role="button" tabindex="0"
       >
