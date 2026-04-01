@@ -52,7 +52,6 @@ export class SpaceHubCardEditor extends LitElement {
       'ha-form',
       'ha-formfield',
       'ha-icon-picker',
-      'ha-select',
       'ha-switch',
       'ha-textfield',
       'ha-expansion-panel',
@@ -113,9 +112,7 @@ export class SpaceHubCardEditor extends LitElement {
     return obj;
   }
 
-  private _handleSelectChanged(path: string, ev: Event): void {
-    const target = ev.currentTarget as { value?: string } | null;
-    const nextValue = target?.value;
+  private _handleSelectChanged(path: string, nextValue?: string): void {
     const parts = path.split('.');
     const lastKey = parts[parts.length - 1];
     const parentKey = parts[parts.length - 2];
@@ -189,20 +186,30 @@ export class SpaceHubCardEditor extends LitElement {
   }
 
   private _renderSelectField(label: string, path: string, value: string | undefined, options: readonly string[]): TemplateResult {
-    const selected = value || options[0] || '';
+    const fallback = value || options[0] || '';
+    const selectOptions = (fallback && !options.includes(fallback))
+      ? [fallback, ...options]
+      : [...options];
+    const selected = selectOptions.includes(value || '') ? (value || '') : fallback;
     return html`
-      <ha-select
-        label=${label}
-        .value=${selected}
-        @selected=${(ev: Event) => this._handleSelectChanged(path, ev)}
-        @closed=${(ev: Event) => ev.stopPropagation()}
-        fixedMenuPosition
-        naturalMenuWidth
-      >
-        ${options.map((option) => html`
-          <ha-list-item .value=${option} ?selected=${option === selected}>${option}</ha-list-item>
-        `)}
-      </ha-select>
+      <ha-form
+        .hass=${this.hass}
+        .data=${{ selection: selected }}
+        .schema=${[{
+          name: 'selection',
+          selector: {
+            select: {
+              mode: 'dropdown',
+              options: selectOptions.map((option) => ({ value: option, label: option })),
+            },
+          },
+        }]}
+        .computeLabel=${(schema: { name: string }) => (schema.name === 'selection' ? label : undefined)}
+        @value-changed=${(ev: CustomEvent) => {
+          ev.stopPropagation();
+          this._handleSelectChanged(path, ev.detail.value?.selection);
+        }}
+      ></ha-form>
     `;
   }
 
@@ -1090,7 +1097,7 @@ export class SpaceHubCardEditor extends LitElement {
       font-style: italic;
       padding: 8px 0;
     }
-    ha-textfield, ha-select, ha-form, ha-icon-picker {
+    ha-textfield, ha-form, ha-icon-picker {
       display: block;
       width: 100%;
     }
