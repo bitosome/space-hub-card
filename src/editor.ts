@@ -820,6 +820,48 @@ export class SpaceHubCardEditor extends LitElement {
         </div>
         ${this._renderEntityField('Hold Entity (more-info on hold)', `${path}.hold_entity`, sw.hold_entity)}
 
+        <div class="confirmation-settings">
+          <ha-formfield label="Require confirmation on tap">
+            <ha-switch
+              .checked=${confirmationEnabled}
+              @change=${(ev: Event) => {
+                const checked = (ev.target as any).checked;
+                this._setSwitchConfirmation(confirmationPath, checked);
+              }}
+            ></ha-switch>
+          </ha-formfield>
+          ${confirmationEnabled ? html`
+            <div class="confirmation-fields">
+              <ha-textfield
+                label="Confirmation Title"
+                .value=${confirmationTitle}
+                placeholder="Please confirm"
+                @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'title', (ev.target as HTMLInputElement).value)}
+              ></ha-textfield>
+              <ha-textfield
+                label="Confirmation Message"
+                .value=${confirmationMessage}
+                placeholder="Are you sure?"
+                @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'text', (ev.target as HTMLInputElement).value)}
+              ></ha-textfield>
+              <div class="side-by-side">
+                <ha-textfield
+                  label="Confirm Button Text"
+                  .value=${confirmationConfirmText}
+                  placeholder="OK"
+                  @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'confirm_text', (ev.target as HTMLInputElement).value)}
+                ></ha-textfield>
+                <ha-textfield
+                  label="Dismiss Button Text"
+                  .value=${confirmationDismissText}
+                  placeholder="Cancel"
+                  @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'dismiss_text', (ev.target as HTMLInputElement).value)}
+                ></ha-textfield>
+              </div>
+            </div>
+          ` : nothing}
+        </div>
+
         <ha-expansion-panel outlined .header=${'Styling'}>
           <div class="section-content">
             <div class="side-by-side">
@@ -853,48 +895,6 @@ export class SpaceHubCardEditor extends LitElement {
               .value=${sw.font_weight || sw['font-weight'] || ''}
               @input=${(ev: Event) => this._valueChanged(`${path}.font_weight`, (ev.target as HTMLInputElement).value)}
             ></ha-textfield>
-          </div>
-        </ha-expansion-panel>
-
-        <ha-expansion-panel outlined .header=${'Confirmation'} .expanded=${confirmationEnabled}>
-          <div class="section-content">
-            <ha-formfield label="Require confirmation on tap">
-              <ha-switch
-                .checked=${confirmationEnabled}
-                @change=${(ev: Event) => {
-                  const checked = (ev.target as any).checked;
-                  this._setSwitchConfirmation(confirmationPath, checked);
-                }}
-              ></ha-switch>
-            </ha-formfield>
-            ${confirmationEnabled ? html`
-              <ha-textfield
-                label="Confirmation Title"
-                .value=${confirmationTitle}
-                placeholder="Please confirm"
-                @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'title', (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
-              <ha-textfield
-                label="Confirmation Message"
-                .value=${confirmationMessage}
-                placeholder="Are you sure?"
-                @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'text', (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
-              <div class="side-by-side">
-                <ha-textfield
-                  label="Confirm Button Text"
-                  .value=${confirmationConfirmText}
-                  placeholder="OK"
-                  @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'confirm_text', (ev.target as HTMLInputElement).value)}
-                ></ha-textfield>
-                <ha-textfield
-                  label="Dismiss Button Text"
-                  .value=${confirmationDismissText}
-                  placeholder="Cancel"
-                  @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'dismiss_text', (ev.target as HTMLInputElement).value)}
-                ></ha-textfield>
-              </div>
-            ` : nothing}
           </div>
         </ha-expansion-panel>
 
@@ -1241,6 +1241,19 @@ export class SpaceHubCardEditor extends LitElement {
     }
     .editor-btn[disabled]:hover {
       background: none;
+    }
+    .confirmation-settings {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 8px 0;
+      border-top: 1px solid var(--divider-color, rgba(0,0,0,0.12));
+      border-bottom: 1px solid var(--divider-color, rgba(0,0,0,0.12));
+    }
+    .confirmation-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .sub-item {
       border: 1px solid var(--divider-color, #e0e0e0);
