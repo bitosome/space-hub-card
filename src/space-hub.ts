@@ -593,7 +593,13 @@ export class SpaceHubCard extends LitElement {
   ): SpaceHubActionConfig | undefined {
     if (!entityId) return undefined;
     if (this._isLockSwitch(type, entityId)) {
-      return { action: 'toggle', confirmation };
+      const state = (this.hass?.states?.[entityId]?.state || '').toLowerCase();
+      return {
+        action: 'perform-action',
+        perform_action: state === 'unlocked' ? 'lock.lock' : 'lock.unlock',
+        target: { entity_id: entityId },
+        confirmation,
+      };
     }
 
     return { action: 'toggle', confirmation };

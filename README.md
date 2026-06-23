@@ -282,7 +282,7 @@ Default switch behavior:
 - Hold: `more-info` for `hold_entity` or `entity`
 - Double tap: only active when `double_tap_action` is configured
 
-For `type: lock` or `lock.*` entities, tap uses Home Assistant's native toggle behavior, unlocking when locked and locking when unlocked. The tile glows red while the lock state is `unlocked`; `locked` uses the normal inactive switch appearance. If `icon_active` and `icon_inactive` are not configured, both states use `icon`.
+For `type: lock` or `lock.*` entities, tap calls `lock.unlock` when locked and `lock.lock` when unlocked. The tile glows red while the lock state is `unlocked`; `locked` uses the normal inactive switch appearance. If `icon_active` and `icon_inactive` are not configured, both states use `icon`.
 
 ### Switch Row Embedded Cards
 
