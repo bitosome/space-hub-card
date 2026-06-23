@@ -600,6 +600,126 @@ export class SpaceHubCard extends LitElement {
       : (action === 'hold' ? config.hold_action : config.tap_action);
   }
 
+  private _withoutSelectedActionConfirmation(action: string, config: SpaceHubActionEnvelope): SpaceHubActionEnvelope {
+    const selected = this._selectedAction(action, config);
+    if (!selected || normalizeConfirmation(selected.confirmation) === undefined) return config;
+
+    const next: SpaceHubActionEnvelope = { ...config };
+    const nextAction: SpaceHubActionConfig = { ...selected };
+    delete nextAction.confirmation;
+
+    if (action === 'double_tap') {
+      next.double_tap_action = nextAction;
+    } else if (action === 'hold') {
+      next.hold_action = nextAction;
+    } else {
+      next.tap_action = nextAction;
+    }
+
+    return next;
+  }
+
+  private _isConfirmationExempt(confirmation: ReturnType<typeof normalizeConfirmation>): boolean {
+    if (!confirmation || typeof confirmation !== 'object' || !Array.isArray(confirmation.exemptions)) return false;
+    const userId = this.hass?.user?.id;
+    return !!userId && confirmation.exemptions.some((entry) => entry.user === userId);
+  }
+
+  private _confirmSwitchAction(
+    confirmation: ReturnType<typeof normalizeConfirmation>,
+    selected: SpaceHubActionConfig
+  ): Promise<boolean> {
+    if (confirmation === undefined || this._isConfirmationExempt(confirmation)) return Promise.resolve(true);
+
+    const details = confirmation && typeof confirmation === 'object' ? confirmation : {};
+    const title = typeof details.title === 'string' && details.title.trim()
+      ? details.title.trim()
+      : 'Please confirm';
+    const message = typeof details.text === 'string' && details.text.trim()
+      ? details.text.trim()
+      : `Are you sure you want to ${selected.action}?`;
+    const confirmText = typeof details.confirm_text === 'string' && details.confirm_text.trim()
+      ? details.confirm_text.trim()
+      : 'OK';
+    const dismissText = typeof details.dismiss_text === 'string' && details.dismiss_text.trim()
+      ? details.dismiss_text.trim()
+      : 'Cancel';
+
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      const dialog = document.createElement('div');
+      const heading = document.createElement('div');
+      const body = document.createElement('div');
+      const actions = document.createElement('div');
+      const cancel = document.createElement('button');
+      const confirm = document.createElement('button');
+
+      overlay.style.cssText = [
+        'position:fixed',
+        'inset:0',
+        'z-index:2147483647',
+        'display:flex',
+        'align-items:center',
+        'justify-content:center',
+        'padding:24px',
+        'background:rgba(0,0,0,0.32)',
+        'box-sizing:border-box',
+      ].join(';');
+      dialog.style.cssText = [
+        'width:min(420px,100%)',
+        'box-sizing:border-box',
+        'border-radius:12px',
+        'padding:20px',
+        'background:var(--ha-dialog-surface-background, var(--card-background-color, #fff))',
+        'color:var(--primary-text-color, #212121)',
+        'box-shadow:0 18px 48px rgba(0,0,0,0.32)',
+        'font-family:var(--paper-font-body1_-_font-family, Roboto, sans-serif)',
+      ].join(';');
+      heading.style.cssText = 'font-size:20px;font-weight:500;line-height:1.3;margin-bottom:12px;';
+      body.style.cssText = 'font-size:14px;line-height:1.45;color:var(--primary-text-color, #212121);white-space:pre-wrap;';
+      actions.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;margin-top:24px;';
+      const buttonStyle = [
+        'border:0',
+        'border-radius:8px',
+        'padding:10px 14px',
+        'font:inherit',
+        'font-weight:500',
+        'cursor:pointer',
+        'background:transparent',
+        'color:var(--primary-color, #03a9f4)',
+      ].join(';');
+      cancel.style.cssText = buttonStyle;
+      confirm.style.cssText = `${buttonStyle};background:var(--primary-color, #03a9f4);color:var(--text-primary-color, #fff);`;
+
+      heading.textContent = title;
+      body.textContent = message;
+      cancel.textContent = dismissText;
+      confirm.textContent = confirmText;
+
+      const close = (result: boolean) => {
+        document.removeEventListener('keydown', onKeydown);
+        overlay.remove();
+        resolve(result);
+      };
+      const onKeydown = (ev: KeyboardEvent) => {
+        if (ev.key === 'Escape') close(false);
+      };
+
+      overlay.addEventListener('click', (ev) => {
+        if (ev.target === overlay) close(false);
+      });
+      cancel.addEventListener('click', () => close(false));
+      confirm.addEventListener('click', () => close(true));
+      document.addEventListener('keydown', onKeydown);
+
+      actions.append(cancel, confirm);
+      dialog.append(heading, body, actions);
+      overlay.append(dialog);
+      document.body.append(overlay);
+      confirm.focus();
+    });
+  }
+
   private _isLockSwitch(type?: unknown, entityId?: string | null): boolean {
     return String(type || '').toLowerCase() === 'lock' || !!entityId?.startsWith('lock.');
   }
@@ -795,7 +915,7 @@ export class SpaceHubCard extends LitElement {
     this._dispatchActionEnvelope(action, this._withActionOverrides(baseConfig, thermostat as Record<string, unknown>));
   }
 
-  private _onSwitchAction(ev: CustomEvent, sw?: any): void {
+  private async _onSwitchAction(ev: CustomEvent, sw?: any): Promise<void> {
     ev.stopPropagation();
 
     const action = (ev.detail && (ev.detail as any).action) || 'tap';
@@ -810,7 +930,17 @@ export class SpaceHubCard extends LitElement {
       double_tap_action: entity ? { action: 'toggle' } : undefined,
     };
     const mergedConfig = this._withActionOverrides(baseConfig, sw as Record<string, unknown>);
-    const finalConfig = this._applySwitchTapConfirmation(mergedConfig, confirmation);
+    let finalConfig = this._applySwitchTapConfirmation(mergedConfig, confirmation);
+    const selected = this._selectedAction(action, finalConfig);
+    if (!selected) return;
+
+    const actionConfirmation = normalizeConfirmation(selected.confirmation);
+    if (actionConfirmation !== undefined) {
+      const confirmed = await this._confirmSwitchAction(actionConfirmation, selected);
+      if (!confirmed) return;
+      finalConfig = this._withoutSelectedActionConfirmation(action, finalConfig);
+    }
+
     this._trackPendingSwitch(entity, action, finalConfig);
     this._dispatchActionEnvelope(action, finalConfig);
   }

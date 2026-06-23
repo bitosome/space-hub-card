@@ -284,7 +284,7 @@ Default switch behavior:
 
 For `type: lock` or `lock.*` entities, tap calls `lock.unlock` when locked and `lock.lock` when unlocked. The tile glows red while the lock state is `unlocked`; `locked` uses the normal inactive switch appearance. If `icon_active` and `icon_inactive` are not configured, both states use `icon`.
 
-After a switch tap, the tile shows a small pending spinner only if the controlled entity has not reported a state change shortly after the action. The spinner clears when the entity state changes, and also has a timeout so it cannot spin indefinitely if the related service is offline.
+After a switch tap, the tile shows a small pending spinner only if the controlled entity has not reported a state change shortly after the action. The spinner starts only after any configured confirmation is accepted, clears when the entity state changes, and also has a timeout so it cannot spin indefinitely if the related service is offline.
 
 ### Switch Row Embedded Cards
 
