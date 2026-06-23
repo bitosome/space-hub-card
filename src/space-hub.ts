@@ -582,6 +582,40 @@ export class SpaceHubCard extends LitElement {
     this._dispatchNativeAction(action, config);
   }
 
+  private _isLockSwitch(type?: unknown, entityId?: string | null): boolean {
+    return String(type || '').toLowerCase() === 'lock' || !!entityId?.startsWith('lock.');
+  }
+
+  private _buildDefaultSwitchTapAction(
+    entityId: string | undefined,
+    type: unknown,
+    confirmation: ReturnType<typeof normalizeConfirmation>
+  ): SpaceHubActionConfig | undefined {
+    if (!entityId) return undefined;
+    if (this._isLockSwitch(type, entityId)) {
+      return { action: 'toggle', confirmation };
+    }
+
+    return { action: 'toggle', confirmation };
+  }
+
+  private _applySwitchTapConfirmation(
+    config: SpaceHubActionEnvelope,
+    confirmation: ReturnType<typeof normalizeConfirmation>
+  ): SpaceHubActionEnvelope {
+    if (confirmation === undefined || !config.tap_action) return config;
+    const tapConfirmation = normalizeConfirmation(config.tap_action.confirmation);
+    if (tapConfirmation !== undefined) return config;
+
+    return {
+      ...config,
+      tap_action: {
+        ...config.tap_action,
+        confirmation,
+      },
+    };
+  }
+
   private _onMainAction(ev: CustomEvent, tileCfg?: any, tap?: string, hold?: string, lightGroup?: string): void {
     ev.stopPropagation();
 
@@ -646,19 +680,18 @@ export class SpaceHubCard extends LitElement {
     ev.stopPropagation();
 
     const action = (ev.detail && (ev.detail as any).action) || 'tap';
-    const entity = sw?.entity;
-    const holdEntity = sw?.hold_entity || entity;
+    const entity = typeof sw?.entity === 'string' ? sw.entity : undefined;
+    const holdEntity = typeof sw?.hold_entity === 'string' ? sw.hold_entity : entity;
     const confirmation = normalizeConfirmation(sw?.confirmation);
-    const baseTapAction: SpaceHubActionConfig | undefined = entity
-      ? { action: 'toggle', confirmation }
-      : undefined;
+    const baseTapAction = this._buildDefaultSwitchTapAction(entity, sw?.type, confirmation);
     const baseConfig: SpaceHubActionEnvelope = {
       entity,
       tap_action: baseTapAction,
       hold_action: holdEntity ? { action: 'more-info', entity: holdEntity } : undefined,
       double_tap_action: entity ? { action: 'toggle' } : undefined,
     };
-    this._dispatchActionEnvelope(action, this._withActionOverrides(baseConfig, sw as Record<string, unknown>));
+    const mergedConfig = this._withActionOverrides(baseConfig, sw as Record<string, unknown>);
+    this._dispatchActionEnvelope(action, this._applySwitchTapConfirmation(mergedConfig, confirmation));
   }
 
   public _resolveSwitchTemplates(sw: unknown): Array<{ template: string; value: string }> {
@@ -849,6 +882,15 @@ export class SpaceHubCard extends LitElement {
   private _isOn(entityId?: string | null): boolean {
     if (!entityId || !this.hass) return false;
     const st = this.hass.states[entityId];
+    return (st?.state || '').toLowerCase() === 'on';
+  }
+
+  public _isSwitchActive(entityId?: string | null, type?: string): boolean {
+    if (!entityId || !this.hass) return false;
+    const st = this.hass.states[entityId];
+    if (this._isLockSwitch(type, entityId)) {
+      return (st?.state || '').toLowerCase() === 'unlocked';
+    }
     return (st?.state || '').toLowerCase() === 'on';
   }
 

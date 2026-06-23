@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
-import { buildGlow, STATIC_GLOW, SMART_PLUG_GLOW } from '../glow';
+import { buildGlow, LOCK_GLOW, STATIC_GLOW, SMART_PLUG_GLOW } from '../glow';
 
 const joinClasses = (...parts: Array<string | false | null | undefined>): string => parts.filter(Boolean).join(' ');
 
@@ -51,25 +51,35 @@ function renderSwitchRow(host: any, row: any, rowIndex: number): TemplateResult 
 }
 
 export function renderSwitchTile(host: any, sw: any): TemplateResult {
-  const tap = sw?.entity || '';
+  const tap = typeof sw?.entity === 'string' ? sw.entity : '';
   const icon = sw?.icon || '';
   const name = sw?.name || '';
   const friendlyName = host?.hass?.states?.[tap]?.attributes?.friendly_name || '';
   const displayName = name || friendlyName || tap;
   const type = String(sw?.type || 'switch').toLowerCase();
   const isSmart = type === 'smart_plug';
-  const on = typeof host?._isOn === 'function' ? host._isOn(tap) : false;
+  const isLock = type === 'lock' || tap.startsWith('lock.');
+  const on = typeof host?._isSwitchActive === 'function'
+    ? host._isSwitchActive(tap, type)
+    : (isLock
+      ? (host?.hass?.states?.[tap]?.state || '').toLowerCase() === 'unlocked'
+      : (typeof host?._isOn === 'function' ? host._isOn(tap) : false));
   const iconSize = sw?.icon_size || sw?.['icon-size'];
   const nameWeight = sw?.font_weight || sw?.['font-weight'];
   const nameSize = sw?.font_size || sw?.['font-size'];
-  const toPx = (v: any) => (v === undefined || v === null || v === '') ? '' : (String(v).match(/px|em|rem|%$/) ? String(v) : `${Number(v)}px`);
+  const toPx = (v: any) => {
+    if (v === undefined || v === null || v === '') return '';
+    const value = String(v).trim();
+    if (!value) return '';
+    return /^-?\d+(\.\d+)?$/.test(value) ? `${value}px` : value;
+  };
   const iconDim = toPx(iconSize);
   const iconStyle = iconDim ? `width:${iconDim};height:${iconDim};--mdc-icon-size:${iconDim};` : '';
   const nameStyle = `${nameWeight ? `font-weight:${nameWeight};` : ''}${nameSize ? `font-size:${toPx(nameSize)};` : ''}`;
-  const cls = `switch-tile ${isSmart ? 'smart' : ''} ${on ? 'on' : ''}`;
+  const cls = `switch-tile ${isSmart ? 'smart' : isLock ? 'lock' : ''} ${on ? 'on' : ''}`;
   const hasChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
   const hasControlBtn = typeof customElements !== 'undefined' && !!customElements.get('ha-control-button');
-  const typeClass = isSmart ? 'smart' : '';
+  const typeClass = isSmart ? 'smart' : (isLock ? 'lock' : '');
   const stateClass = on ? 'on' : 'off';
   const chipClass = joinClasses('switch-chip', typeClass, stateClass);
   const iconClass = joinClasses('switch-icon', typeClass, stateClass);
@@ -88,11 +98,11 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
 
   // Glow mode per-switch (static|pulse|none). Default to 'static'.
   const glowMode = sw?.glow_mode || 'static';
-  const pulse = isSmart ? SMART_PLUG_GLOW : STATIC_GLOW;
+  const pulse = isLock ? LOCK_GLOW : (isSmart ? SMART_PLUG_GLOW : STATIC_GLOW);
   const { style: glowStyle, overlay: glowOverlay } = buildGlow(pulse, glowMode as any, on && glowMode !== 'none');
 
   if (hasControlBtn) {
-    const btnCls = `switch-tile-btn ${isSmart ? 'smart' : ''} ${on ? 'on' : ''}`;
+    const btnCls = `switch-tile-btn ${isSmart ? 'smart' : isLock ? 'lock' : ''} ${on ? 'on' : ''}`;
     return html`
       <div class="tile-wrap">
       <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>

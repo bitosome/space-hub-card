@@ -16,6 +16,7 @@ export const baseStyles: CSSResultGroup = css`
     --main-light-icon-off-color: var(--secondary-text-color);
     --switch-on-color: var(--switch-on-yellow, #ffc107);
     --switch-smart-on-color: var(--switch-on-green, #00c853);
+    --switch-lock-unlocked-color: var(--switch-unlocked-red, #e53935);
     --switch-chip-bg: var(--chip-background-color, rgba(0,0,0,0.06));
     --ac-chip-bg-off: rgba(158,158,158,0.95);
     --ac-chip-bg-cool: #00aaff;

@@ -15,7 +15,7 @@ The card is built around Home Assistant components and the native action model. 
 - Multiple header rows in a single card
 - Main tile with room name, icon, temperature, humidity, and status chips
 - Optional AC and thermostat tiles per header row
-- Switch rows with `switch` and `smart_plug` visual styles
+- Switch rows with `switch`, `smart_plug`, and `lock` visual styles
 - Home Assistant native actions: `more-info`, `toggle`, `perform-action`, `navigate`, `url`, `assist`, and `none`
 - Native confirmation support for switch actions
 - Per-switch template indicators with live `render_template` subscriptions
@@ -91,6 +91,7 @@ The built-in editor supports:
 - Native HA selector-based dropdowns for types, glow modes, and actions
 - Action editing for `more-info`, `toggle`, `perform-action`, `navigate`, `url`, `assist`, and `none`
 - Switch confirmation configuration
+- Reordering for switch rows, switches, and embedded cards
 - Embedded-card YAML editing
 
 The editor tolerates incomplete in-progress items while you are building a layout, so placeholder rows and tiles no longer break the preview.
@@ -261,7 +262,7 @@ If you use the object form, you can also attach extra cards to that row.
 | `entity` | string | Controlled entity |
 | `name` | string | Visible label, otherwise friendly name is used |
 | `icon` | string | Tile icon |
-| `type` | string | `switch` or `smart_plug` |
+| `type` | string | `switch`, `smart_plug`, or `lock` |
 | `glow_mode` | string | `static`, `pulse`, or `none` |
 | `hold_entity` | string | `more-info` target for hold |
 | `icon_size` | string/number | Custom icon size |
@@ -278,6 +279,8 @@ Default switch behavior:
 - Tap: `toggle`
 - Hold: `more-info` for `hold_entity` or `entity`
 - Double tap: only active when `double_tap_action` is configured
+
+For `type: lock` or `lock.*` entities, tap uses Home Assistant's native toggle behavior, unlocking when locked and locking when unlocked. The tile glows red while the lock state is `unlocked`; `locked` uses the normal inactive switch appearance.
 
 ### Switch Row Embedded Cards
 
@@ -324,6 +327,8 @@ Typical action fields:
 | `navigate` | `navigation_path`, `navigation_replace`, `confirmation` |
 | `url` | `url_path`, `confirmation` |
 | `assist` | `pipeline_id`, `start_listening`, `confirmation` |
+
+Confirmation can be `true`, a message string, or an object with `title` and `text`.
 
 ## Templates and Availability
 
@@ -399,7 +404,9 @@ switch_rows:
       - entity: switch.main_breaker
         name: Main Power
         icon: mdi:power
-        confirmation: "Cut power to the whole circuit?"
+        confirmation:
+          title: Confirm power change
+          text: Cut power to the whole circuit?
         hold_entity: sensor.main_breaker_power
         info_templates:
           - "{{ states('sensor.main_breaker_power') }} W"
@@ -408,6 +415,10 @@ switch_rows:
         name: Printer
         type: smart_plug
         icon: mdi:printer-3d
+      - entity: lock.front_door
+        name: Front Door
+        type: lock
+        icon: mdi:lock
     cards:
       - type: tile
         entity: sensor.main_breaker_power

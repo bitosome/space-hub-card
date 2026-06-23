@@ -75,9 +75,11 @@ export const switchTileStyles: CSSResultGroup = css`
   .switch-icon { width: 28px; height: 28px; color: var(--secondary-text-color); line-height:0; transition: color 0.12s ease; }
   .switch-icon.on { color: var(--switch-on-color); }
   .switch-icon.smart.on { color: var(--switch-smart-on-color); }
+  .switch-icon.lock.on { color: var(--switch-lock-unlocked-color); }
   .switch-name { color: var(--secondary-text-color); transition: color 0.12s ease; }
   .switch-name.on { color: var(--switch-on-color); }
   .switch-name.smart.on { color: var(--switch-smart-on-color); }
+  .switch-name.lock.on { color: var(--switch-lock-unlocked-color); }
   .tile-inner ha-chip { font-size: var(--chip-font-size, 12px); }
   .switch-info {
     position: absolute;
@@ -101,4 +103,5 @@ export const switchTileStyles: CSSResultGroup = css`
   }
   .switch-info.on { color: var(--switch-on-color); }
   .switch-info.smart.on { color: var(--switch-smart-on-color); }
+  .switch-info.lock.on { color: var(--switch-lock-unlocked-color); }
 `;

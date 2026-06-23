@@ -222,5 +222,9 @@ export const chipStyles: CSSResultGroup = css`
     --ha-chip-text-color: var(--switch-smart-on-color); 
     color: var(--switch-smart-on-color); 
   }
+  .tile-inner ha-chip.switch-chip.lock.on {
+    --ha-chip-text-color: var(--switch-lock-unlocked-color);
+    color: var(--switch-lock-unlocked-color);
+  }
   .tile-inner ha-chip.switch-chip ha-icon { margin-right: 6px; }
 `;

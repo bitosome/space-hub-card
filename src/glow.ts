@@ -18,6 +18,12 @@ export const SMART_PLUG_GLOW: PulseColors = {
   strong: 'rgba(0,200,83,0.30)',
 };
 
+// Lock glow (red while unlocked)
+export const LOCK_GLOW: PulseColors = {
+  weak: 'rgba(229,57,53,0.16)',
+  strong: 'rgba(229,57,53,0.30)',
+};
+
 // Map AC hvac mode to pulse colors
 export function acPulseColors(modeRaw: string | undefined): PulseColors {
   const mode = (modeRaw || '').toLowerCase();
@@ -50,4 +56,3 @@ export function buildGlow(pulse: PulseColors | undefined, mode: GlowMode = 'stat
   const overlay = html`<div class="glow-overlay" aria-hidden="true"></div>`;
   return { style, overlay };
 }
-
