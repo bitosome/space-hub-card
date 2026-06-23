@@ -19,6 +19,85 @@ const ARROW_UP_ICON_PATH = 'M4,12L5.41,13.41L11,7.83V20H13V7.83L18.59,13.42L20,1
 const ARROW_DOWN_ICON_PATH = 'M4,12L5.41,10.59L11,16.17V4H13V16.17L18.59,10.58L20,12L12,20L4,12Z';
 const DELETE_ICON_PATH = 'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z';
 
+@customElement('space-hub-textfield')
+export class SpaceHubTextfield extends LitElement {
+  @property() public label = '';
+  @property() public value = '';
+  @property() public placeholder = '';
+  @property() public type = 'text';
+  @property() public step?: string;
+  @property() public min?: string;
+  @property() public max?: string;
+
+  private _onInput(ev: Event): void {
+    ev.stopPropagation();
+    this.value = (ev.currentTarget as HTMLInputElement).value;
+    this.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+  }
+
+  protected render(): TemplateResult {
+    return html`
+      <label>
+        <span>${this.label}</span>
+        <input
+          type=${this.type || 'text'}
+          .value=${this.value || ''}
+          placeholder=${this.placeholder || ''}
+          step=${this.step || nothing}
+          min=${this.min || nothing}
+          max=${this.max || nothing}
+          @input=${this._onInput}
+        />
+      </label>
+    `;
+  }
+
+  static get styles(): CSSResultGroup {
+    return css`
+      :host {
+        display: block;
+        width: 100%;
+      }
+      label {
+        position: relative;
+        display: block;
+        width: 100%;
+      }
+      span {
+        position: absolute;
+        top: 7px;
+        left: 12px;
+        z-index: 1;
+        color: var(--secondary-text-color);
+        font-size: 11px;
+        line-height: 1;
+        pointer-events: none;
+      }
+      input {
+        width: 100%;
+        height: 56px;
+        box-sizing: border-box;
+        border: 0;
+        border-bottom: 1px solid var(--input-idle-line-color, var(--secondary-text-color));
+        border-radius: 4px 4px 0 0;
+        outline: none;
+        background: var(--input-fill-color, var(--secondary-background-color, rgba(0,0,0,0.06)));
+        color: var(--primary-text-color);
+        font: inherit;
+        font-size: 14px;
+        padding: 22px 12px 7px;
+      }
+      input:focus {
+        border-bottom-color: var(--primary-color);
+      }
+      input::placeholder {
+        color: var(--secondary-text-color);
+        opacity: 0.72;
+      }
+    `;
+  }
+}
+
 @customElement('space-hub-card-editor')
 export class SpaceHubCardEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -56,7 +135,7 @@ export class SpaceHubCardEditor extends LitElement {
       'ha-formfield',
       'ha-icon-picker',
       'ha-switch',
-      'ha-textfield',
+      'space-hub-textfield',
       'ha-expansion-panel',
       'ha-yaml-editor',
     ];
@@ -399,7 +478,7 @@ export class SpaceHubCardEditor extends LitElement {
       <ha-expansion-panel outlined .header=${'Appearance'}>
         <div class="section-content">
           <div class="side-by-side">
-            <ha-textfield
+            <space-hub-textfield
               label="Tile Height (px)"
               type="number"
               .value=${String(this._config.tile_height ?? '')}
@@ -407,8 +486,8 @@ export class SpaceHubCardEditor extends LitElement {
                 const v = Number((ev.target as HTMLInputElement).value);
                 this._valueChanged('tile_height', Number.isFinite(v) && v > 0 ? v : undefined);
               }}
-            ></ha-textfield>
-            <ha-textfield
+            ></space-hub-textfield>
+            <space-hub-textfield
               label="Main Icon Size (px)"
               type="number"
               .value=${String(this._config.main_icon_size ?? '')}
@@ -416,10 +495,10 @@ export class SpaceHubCardEditor extends LitElement {
                 const v = Number((ev.target as HTMLInputElement).value);
                 this._valueChanged('main_icon_size', Number.isFinite(v) && v > 0 ? v : undefined);
               }}
-            ></ha-textfield>
+            ></space-hub-textfield>
           </div>
           <div class="side-by-side">
-            <ha-textfield
+            <space-hub-textfield
               label="Chip Icon Size (px)"
               type="number"
               .value=${String(this._config.chip_icon_size ?? '')}
@@ -427,8 +506,8 @@ export class SpaceHubCardEditor extends LitElement {
                 const v = Number((ev.target as HTMLInputElement).value);
                 this._valueChanged('chip_icon_size', Number.isFinite(v) && v > 0 ? v : undefined);
               }}
-            ></ha-textfield>
-            <ha-textfield
+            ></space-hub-textfield>
+            <space-hub-textfield
               label="Chip Font Size (px)"
               type="number"
               .value=${String(this._config.chip_font_size ?? '')}
@@ -436,15 +515,15 @@ export class SpaceHubCardEditor extends LitElement {
                 const v = Number((ev.target as HTMLInputElement).value);
                 this._valueChanged('chip_font_size', Number.isFinite(v) && v > 0 ? v : undefined);
               }}
-            ></ha-textfield>
+            ></space-hub-textfield>
           </div>
           <div class="side-by-side">
-            <ha-textfield
+            <space-hub-textfield
               label="Shadow Color"
               .value=${this._config.card_shadow_color || ''}
               @input=${(ev: Event) => this._valueChanged('card_shadow_color', (ev.target as HTMLInputElement).value)}
-            ></ha-textfield>
-            <ha-textfield
+            ></space-hub-textfield>
+            <space-hub-textfield
               label="Shadow Intensity (0-1)"
               type="number"
               step="0.05"
@@ -455,13 +534,13 @@ export class SpaceHubCardEditor extends LitElement {
                 const v = Number((ev.target as HTMLInputElement).value);
                 this._valueChanged('card_shadow_intensity', Number.isFinite(v) ? v : undefined);
               }}
-            ></ha-textfield>
+            ></space-hub-textfield>
           </div>
-          <ha-textfield
+          <space-hub-textfield
             label="Unavailable Pulse Color"
             .value=${this._config.unavailable_pulse_color || ''}
             @input=${(ev: Event) => this._valueChanged('unavailable_pulse_color', (ev.target as HTMLInputElement).value)}
-          ></ha-textfield>
+          ></space-hub-textfield>
         </div>
       </ha-expansion-panel>
     `;
@@ -534,11 +613,11 @@ export class SpaceHubCardEditor extends LitElement {
             </button>
           ` : html`
             <div class="side-by-side">
-              <ha-textfield
+              <space-hub-textfield
                 label="Name"
                 .value=${m.main_name || ''}
                 @input=${(ev: Event) => this._valueChanged(`${basePath}.main_name`, (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
+              ></space-hub-textfield>
               <ha-icon-picker
                 .hass=${this.hass}
                 label="Icon"
@@ -639,22 +718,22 @@ export class SpaceHubCardEditor extends LitElement {
           ></ha-icon-picker>
         </div>
         <div class="side-by-side">
-          <ha-textfield
+          <space-hub-textfield
             label="Background (Active)"
             .value=${chip.background_active || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.background_active`, (ev.target as HTMLInputElement).value)}
-          ></ha-textfield>
-          <ha-textfield
+          ></space-hub-textfield>
+          <space-hub-textfield
             label="Background (Unavailable)"
             .value=${chip.background_unavailable || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.background_unavailable`, (ev.target as HTMLInputElement).value)}
-          ></ha-textfield>
+          ></space-hub-textfield>
         </div>
-        <ha-textfield
+        <space-hub-textfield
           label="Icon Color (Unavailable)"
           .value=${chip.icon_color_unavailable || ''}
           @input=${(ev: Event) => this._valueChanged(`${path}.icon_color_unavailable`, (ev.target as HTMLInputElement).value)}
-        ></ha-textfield>
+        ></space-hub-textfield>
       </div>
     `;
   }
@@ -834,11 +913,11 @@ export class SpaceHubCardEditor extends LitElement {
         </div>
         ${this._renderEntityField('Controlled Entity', `${path}.entity`, sw.entity)}
         <div class="side-by-side">
-          <ha-textfield
+          <space-hub-textfield
             label="Name"
             .value=${sw.name || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.name`, (ev.target as HTMLInputElement).value)}
-          ></ha-textfield>
+          ></space-hub-textfield>
           <ha-icon-picker
             .hass=${this.hass}
             label="Inactive State Icon"
@@ -853,27 +932,27 @@ export class SpaceHubCardEditor extends LitElement {
             .value=${sw.icon_active || ''}
             @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon_active`, ev.detail.value)}
           ></ha-icon-picker>
-          <ha-textfield
+          <space-hub-textfield
             label="Icon Size"
             .value=${sw.icon_size || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.icon_size`, (ev.target as HTMLInputElement).value)}
-          ></ha-textfield>
+          ></space-hub-textfield>
         </div>
         <div class="side-by-side">
           ${this._renderSelectField('Type', `${path}.type`, sw.type, SWITCH_TYPES)}
           ${this._renderSelectField('Glow Mode', `${path}.glow_mode`, sw.glow_mode, GLOW_MODES)}
         </div>
         <div class="side-by-side">
-          <ha-textfield
+          <space-hub-textfield
             label="Font Size"
             .value=${sw.font_size || sw['font-size'] || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.font_size`, (ev.target as HTMLInputElement).value)}
-          ></ha-textfield>
-          <ha-textfield
+          ></space-hub-textfield>
+          <space-hub-textfield
             label="Font Weight"
             .value=${sw.font_weight || sw['font-weight'] || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.font_weight`, (ev.target as HTMLInputElement).value)}
-          ></ha-textfield>
+          ></space-hub-textfield>
         </div>
         ${this._renderEntityField('Hold Entity (more-info on hold)', `${path}.hold_entity`, sw.hold_entity)}
 
@@ -887,31 +966,31 @@ export class SpaceHubCardEditor extends LitElement {
             ></ha-switch>
           </ha-formfield>
           <div class="confirmation-fields">
-            <ha-textfield
+            <space-hub-textfield
               label="Confirmation Title"
               .value=${confirmationTitle}
               placeholder="Please confirm"
               @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'title', (ev.target as HTMLInputElement).value)}
-            ></ha-textfield>
-            <ha-textfield
+            ></space-hub-textfield>
+            <space-hub-textfield
               label="Confirmation Message"
               .value=${confirmationMessage}
               placeholder="Are you sure?"
               @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'text', (ev.target as HTMLInputElement).value)}
-            ></ha-textfield>
+            ></space-hub-textfield>
             <div class="side-by-side">
-              <ha-textfield
+              <space-hub-textfield
                 label="Confirm Button Text"
                 .value=${confirmationConfirmText}
                 placeholder="OK"
                 @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'confirm_text', (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
-              <ha-textfield
+              ></space-hub-textfield>
+              <space-hub-textfield
                 label="Dismiss Button Text"
                 .value=${confirmationDismissText}
                 placeholder="Cancel"
                 @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'dismiss_text', (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
+              ></space-hub-textfield>
             </div>
           </div>
         </div>
@@ -943,7 +1022,7 @@ export class SpaceHubCardEditor extends LitElement {
     return html`
       ${templates.map((tpl, i) => html`
         <div class="side-by-side">
-          <ha-textfield
+          <space-hub-textfield
             label="Template ${i + 1}"
             .value=${tpl || ''}
             @input=${(ev: Event) => {
@@ -951,7 +1030,7 @@ export class SpaceHubCardEditor extends LitElement {
               arr[i] = (ev.target as HTMLInputElement).value;
               this._valueChanged(`${path}.info_templates`, arr);
             }}
-          ></ha-textfield>
+          ></space-hub-textfield>
           <ha-icon-button
             .path=${'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'}
             @click=${() => {
@@ -1063,11 +1142,11 @@ export class SpaceHubCardEditor extends LitElement {
               ${this._renderEntityField('More Info Entity', `${path}.entity`, normalized.entity)}
             ` : nothing}
             ${normalized?.action === 'navigate' ? html`
-              <ha-textfield
+              <space-hub-textfield
                 label="Navigation Path"
                 .value=${normalized.navigation_path || ''}
                 @input=${(ev: Event) => this._valueChanged(`${path}.navigation_path`, (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
+              ></space-hub-textfield>
               <ha-formfield label="Replace current path">
                 <ha-switch
                   .checked=${!!normalized.navigation_replace}
@@ -1076,18 +1155,18 @@ export class SpaceHubCardEditor extends LitElement {
               </ha-formfield>
             ` : nothing}
             ${normalized?.action === 'url' ? html`
-              <ha-textfield
+              <space-hub-textfield
                 label="URL"
                 .value=${normalized.url_path || ''}
                 @input=${(ev: Event) => this._valueChanged(`${path}.url_path`, (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
+              ></space-hub-textfield>
             ` : nothing}
             ${normalized?.action === 'perform-action' ? html`
-              <ha-textfield
+              <space-hub-textfield
                 label="Action"
                 .value=${normalized.perform_action || ''}
                 @input=${(ev: Event) => this._valueChanged(`${path}.perform_action`, (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
+              ></space-hub-textfield>
               <ha-yaml-editor
                 label="Target"
                 .defaultValue=${normalized.target || {}}
@@ -1106,11 +1185,11 @@ export class SpaceHubCardEditor extends LitElement {
               ></ha-yaml-editor>
             ` : nothing}
             ${normalized?.action === 'assist' ? html`
-              <ha-textfield
+              <space-hub-textfield
                 label="Pipeline ID"
                 .value=${normalized.pipeline_id || ''}
                 @input=${(ev: Event) => this._valueChanged(`${path}.pipeline_id`, (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
+              ></space-hub-textfield>
               <ha-formfield label="Start listening immediately">
                 <ha-switch
                   .checked=${!!normalized.start_listening}
@@ -1125,31 +1204,31 @@ export class SpaceHubCardEditor extends LitElement {
               ></ha-switch>
             </ha-formfield>
             ${confirmationEnabled ? html`
-              <ha-textfield
+              <space-hub-textfield
                 label="Confirmation Title"
                 .value=${confirmationTitle}
                 placeholder="Please confirm"
                 @input=${(ev: Event) => this._setActionConfirmationField(path, 'title', (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
-              <ha-textfield
+              ></space-hub-textfield>
+              <space-hub-textfield
                 label="Confirmation Message"
                 .value=${confirmationMessage}
                 placeholder="Are you sure?"
                 @input=${(ev: Event) => this._setActionConfirmationField(path, 'text', (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
+              ></space-hub-textfield>
               <div class="side-by-side">
-                <ha-textfield
+                <space-hub-textfield
                   label="Confirm Button Text"
                   .value=${confirmationConfirmText}
                   placeholder="OK"
                   @input=${(ev: Event) => this._setActionConfirmationField(path, 'confirm_text', (ev.target as HTMLInputElement).value)}
-                ></ha-textfield>
-                <ha-textfield
+                ></space-hub-textfield>
+                <space-hub-textfield
                   label="Dismiss Button Text"
                   .value=${confirmationDismissText}
                   placeholder="Cancel"
                   @input=${(ev: Event) => this._setActionConfirmationField(path, 'dismiss_text', (ev.target as HTMLInputElement).value)}
-                ></ha-textfield>
+                ></space-hub-textfield>
               </div>
             ` : nothing}
             <button class="editor-btn danger" @click=${() => this._valueChanged(path, undefined)}>
@@ -1317,7 +1396,7 @@ export class SpaceHubCardEditor extends LitElement {
       font-style: italic;
       padding: 8px 0;
     }
-    ha-textfield, ha-form, ha-icon-picker {
+    space-hub-textfield, ha-form, ha-icon-picker {
       display: block;
       width: 100%;
     }
