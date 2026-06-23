@@ -72,7 +72,19 @@ export const switchTileStyles: CSSResultGroup = css`
   .switch-tile.on { box-shadow: var(--tile-shadow-active); }
   .tile-inner { display:grid; gap:4px; place-items:center; justify-items:center; text-align:center; }
   .switch-tile .name { font-weight: 600; font-size: 12px; }
-  .switch-icon { width: 28px; height: 28px; color: var(--secondary-text-color); line-height:0; transition: color 0.12s ease; }
+  .switch-icon {
+    width: var(--switch-icon-size, 28px);
+    height: var(--switch-icon-size, 28px);
+    min-width: var(--switch-icon-size, 28px);
+    min-height: var(--switch-icon-size, 28px);
+    --mdc-icon-size: var(--switch-icon-size, 28px);
+    color: var(--secondary-text-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+    transition: color 0.12s ease;
+  }
   .switch-icon.on { color: var(--switch-on-color); }
   .switch-icon.smart.on { color: var(--switch-smart-on-color); }
   .switch-icon.lock.on { color: var(--switch-lock-unlocked-color); }

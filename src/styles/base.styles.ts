@@ -18,6 +18,7 @@ export const baseStyles: CSSResultGroup = css`
     --switch-smart-on-color: var(--switch-on-green, #00c853);
     --switch-lock-unlocked-color: var(--switch-unlocked-red, #e53935);
     --switch-chip-bg: var(--chip-background-color, rgba(0,0,0,0.06));
+    --switch-icon-size: 28px;
     --ac-chip-bg-off: rgba(158,158,158,0.95);
     --ac-chip-bg-cool: #00aaff;
     --ac-chip-bg-heat: #ff7043;

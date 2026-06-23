@@ -262,6 +262,8 @@ If you use the object form, you can also attach extra cards to that row.
 | `entity` | string | Controlled entity |
 | `name` | string | Visible label, otherwise friendly name is used |
 | `icon` | string | Tile icon |
+| `icon_active` | string | Active-state icon (`on` for switches, `unlocked` for locks) |
+| `icon_inactive` | string | Inactive-state icon (`off` for switches, `locked` for locks) |
 | `type` | string | `switch`, `smart_plug`, or `lock` |
 | `glow_mode` | string | `static`, `pulse`, or `none` |
 | `hold_entity` | string | `more-info` target for hold |
@@ -280,7 +282,7 @@ Default switch behavior:
 - Hold: `more-info` for `hold_entity` or `entity`
 - Double tap: only active when `double_tap_action` is configured
 
-For `type: lock` or `lock.*` entities, tap uses Home Assistant's native toggle behavior, unlocking when locked and locking when unlocked. The tile glows red while the lock state is `unlocked`; `locked` uses the normal inactive switch appearance.
+For `type: lock` or `lock.*` entities, tap uses Home Assistant's native toggle behavior, unlocking when locked and locking when unlocked. The tile glows red while the lock state is `unlocked`; `locked` uses the normal inactive switch appearance. If `icon_active` and `icon_inactive` are not configured, both states use `icon`.
 
 ### Switch Row Embedded Cards
 
@@ -328,7 +330,7 @@ Typical action fields:
 | `url` | `url_path`, `confirmation` |
 | `assist` | `pipeline_id`, `start_listening`, `confirmation` |
 
-Confirmation can be `true`, a message string, or an object with `title` and `text`.
+Confirmation can be `true`, a message string, or an object with `title`, `text`, `confirm_text`, and `dismiss_text`.
 
 ## Templates and Availability
 
@@ -407,6 +409,8 @@ switch_rows:
         confirmation:
           title: Confirm power change
           text: Cut power to the whole circuit?
+          confirm_text: Toggle
+          dismiss_text: Cancel
         hold_entity: sensor.main_breaker_power
         info_templates:
           - "{{ states('sensor.main_breaker_power') }} W"
@@ -419,6 +423,8 @@ switch_rows:
         name: Front Door
         type: lock
         icon: mdi:lock
+        icon_active: mdi:lock-open-variant
+        icon_inactive: mdi:lock
     cards:
       - type: tile
         entity: sensor.main_breaker_power

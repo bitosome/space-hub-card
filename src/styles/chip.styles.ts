@@ -211,8 +211,11 @@ export const chipStyles: CSSResultGroup = css`
     --ha-chip-background-color: var(--switch-chip-bg); 
     --chip-background-color: var(--switch-chip-bg); 
     --ha-chip-text-color: var(--secondary-text-color); 
+    --mdc-icon-size: var(--switch-icon-size, 28px);
+    font-size: var(--chip-text-font-size);
     color: var(--secondary-text-color); 
     font-weight: 600; 
+    line-height: 1;
   }
   .tile-inner ha-chip.switch-chip.on { 
     --ha-chip-text-color: var(--switch-on-color); 
@@ -226,5 +229,15 @@ export const chipStyles: CSSResultGroup = css`
     --ha-chip-text-color: var(--switch-lock-unlocked-color);
     color: var(--switch-lock-unlocked-color);
   }
-  .tile-inner ha-chip.switch-chip ha-icon { margin-right: 6px; }
+  .tile-inner ha-chip.switch-chip ha-icon {
+    width: var(--switch-icon-size, 28px);
+    height: var(--switch-icon-size, 28px);
+    min-width: var(--switch-icon-size, 28px);
+    min-height: var(--switch-icon-size, 28px);
+    --mdc-icon-size: var(--switch-icon-size, 28px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+  }
 `;

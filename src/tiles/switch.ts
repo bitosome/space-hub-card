@@ -52,7 +52,7 @@ function renderSwitchRow(host: any, row: any, rowIndex: number): TemplateResult 
 
 export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const tap = typeof sw?.entity === 'string' ? sw.entity : '';
-  const icon = sw?.icon || '';
+  const baseIcon = sw?.icon || '';
   const name = sw?.name || '';
   const friendlyName = host?.hass?.states?.[tap]?.attributes?.friendly_name || '';
   const displayName = name || friendlyName || tap;
@@ -67,6 +67,9 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const iconSize = sw?.icon_size || sw?.['icon-size'];
   const nameWeight = sw?.font_weight || sw?.['font-weight'];
   const nameSize = sw?.font_size || sw?.['font-size'];
+  const activeIcon = sw?.icon_active || sw?.icon_on || sw?.['icon-active'] || sw?.['icon-on'];
+  const inactiveIcon = sw?.icon_inactive || sw?.icon_off || sw?.['icon-inactive'] || sw?.['icon-off'];
+  const icon = on ? (activeIcon || baseIcon) : (inactiveIcon || baseIcon);
   const toPx = (v: any) => {
     if (v === undefined || v === null || v === '') return '';
     const value = String(v).trim();
@@ -74,8 +77,10 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
     return /^-?\d+(\.\d+)?$/.test(value) ? `${value}px` : value;
   };
   const iconDim = toPx(iconSize);
-  const iconStyle = iconDim ? `width:${iconDim};height:${iconDim};--mdc-icon-size:${iconDim};` : '';
-  const nameStyle = `${nameWeight ? `font-weight:${nameWeight};` : ''}${nameSize ? `font-size:${toPx(nameSize)};` : ''}`;
+  const nameDim = toPx(nameSize);
+  const iconStyle = iconDim ? `--switch-icon-size:${iconDim};width:${iconDim};height:${iconDim};--mdc-icon-size:${iconDim};` : '';
+  const nameStyle = `${nameWeight ? `font-weight:${nameWeight};` : ''}${nameDim ? `font-size:${nameDim};` : ''}`;
+  const chipStyle = `${iconDim ? `--switch-icon-size:${iconDim};` : ''}${nameWeight ? `font-weight:${nameWeight};` : ''}${nameDim ? `--chip-text-font-size:${nameDim};font-size:${nameDim};` : ''}`;
   const cls = `switch-tile ${isSmart ? 'smart' : isLock ? 'lock' : ''} ${on ? 'on' : ''}`;
   const hasChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
   const hasControlBtn = typeof customElements !== 'undefined' && !!customElements.get('ha-control-button');
@@ -115,7 +120,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
       >
           <div class="tile-inner">
             ${hasChip
-            ? html`<ha-chip class=${chipClass}>
+            ? html`<ha-chip class=${chipClass} style=${chipStyle || nothing}>
                   ${icon ? html`<ha-icon class=${iconClass} .icon=${icon} style=${iconStyle || nothing}></ha-icon>` : nothing}
                   ${displayName}
                 </ha-chip>`
@@ -138,7 +143,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
       ${infoOverlay}
       <div class="tile-inner">
         ${hasChip
-          ? html`<ha-chip class=${chipClass}>
+          ? html`<ha-chip class=${chipClass} style=${chipStyle || nothing}>
               ${icon ? html`<ha-icon class=${iconClass} .icon=${icon} style=${iconStyle || nothing}></ha-icon>` : nothing}
               ${displayName}
             </ha-chip>`

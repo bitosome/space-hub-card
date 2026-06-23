@@ -200,7 +200,7 @@ export class SpaceHubCardEditor extends LitElement {
     this._valueChanged(path, next);
   }
 
-  private _setActionConfirmationField(path: string, field: 'title' | 'text', value: string): void {
+  private _setActionConfirmationField(path: string, field: 'title' | 'text' | 'confirm_text' | 'dismiss_text', value: string): void {
     const current = normalizeActionConfig(this._getNestedValue(path));
     if (!current) return;
     const next: Record<string, any> = { ...current };
@@ -229,7 +229,7 @@ export class SpaceHubCardEditor extends LitElement {
     this._valueChanged(path, current ?? { text: 'Are you sure?' });
   }
 
-  private _setSwitchConfirmationField(path: string, field: 'title' | 'text', value: string): void {
+  private _setSwitchConfirmationField(path: string, field: 'title' | 'text' | 'confirm_text' | 'dismiss_text', value: string): void {
     const current = normalizeConfirmation(this._getNestedValue(path));
     const next: Record<string, any> = current && typeof current === 'object'
       ? { ...current }
@@ -765,6 +765,8 @@ export class SpaceHubCardEditor extends LitElement {
     const confirmationEnabled = confirmation !== undefined;
     const confirmationTitle = confirmation && typeof confirmation === 'object' ? confirmation.title || '' : '';
     const confirmationMessage = confirmation && typeof confirmation === 'object' ? confirmation.text || '' : '';
+    const confirmationConfirmText = confirmation && typeof confirmation === 'object' ? confirmation.confirm_text || '' : '';
+    const confirmationDismissText = confirmation && typeof confirmation === 'object' ? confirmation.dismiss_text || '' : '';
     const confirmationPath = `${path}.confirmation`;
 
     return html`
@@ -832,6 +834,20 @@ export class SpaceHubCardEditor extends LitElement {
                 @input=${(ev: Event) => this._valueChanged(`${path}.font_size`, (ev.target as HTMLInputElement).value)}
               ></ha-textfield>
             </div>
+            <div class="side-by-side">
+              <ha-icon-picker
+                .hass=${this.hass}
+                label="Active State Icon"
+                .value=${sw.icon_active || ''}
+                @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon_active`, ev.detail.value)}
+              ></ha-icon-picker>
+              <ha-icon-picker
+                .hass=${this.hass}
+                label="Inactive State Icon"
+                .value=${sw.icon_inactive || ''}
+                @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon_inactive`, ev.detail.value)}
+              ></ha-icon-picker>
+            </div>
             <ha-textfield
               label="Font Weight"
               .value=${sw.font_weight || sw['font-weight'] || ''}
@@ -840,7 +856,7 @@ export class SpaceHubCardEditor extends LitElement {
           </div>
         </ha-expansion-panel>
 
-        <ha-expansion-panel outlined .header=${'Confirmation'}>
+        <ha-expansion-panel outlined .header=${'Confirmation'} .expanded=${confirmationEnabled}>
           <div class="section-content">
             <ha-formfield label="Require confirmation on tap">
               <ha-switch
@@ -864,6 +880,20 @@ export class SpaceHubCardEditor extends LitElement {
                 placeholder="Are you sure?"
                 @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'text', (ev.target as HTMLInputElement).value)}
               ></ha-textfield>
+              <div class="side-by-side">
+                <ha-textfield
+                  label="Confirm Button Text"
+                  .value=${confirmationConfirmText}
+                  placeholder="OK"
+                  @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'confirm_text', (ev.target as HTMLInputElement).value)}
+                ></ha-textfield>
+                <ha-textfield
+                  label="Dismiss Button Text"
+                  .value=${confirmationDismissText}
+                  placeholder="Cancel"
+                  @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'dismiss_text', (ev.target as HTMLInputElement).value)}
+                ></ha-textfield>
+              </div>
             ` : nothing}
           </div>
         </ha-expansion-panel>
@@ -1000,6 +1030,8 @@ export class SpaceHubCardEditor extends LitElement {
     const confirmationEnabled = confirmation !== undefined;
     const confirmationTitle = confirmation && typeof confirmation === 'object' ? confirmation.title || '' : '';
     const confirmationMessage = confirmation && typeof confirmation === 'object' ? confirmation.text || '' : '';
+    const confirmationConfirmText = confirmation && typeof confirmation === 'object' ? confirmation.confirm_text || '' : '';
+    const confirmationDismissText = confirmation && typeof confirmation === 'object' ? confirmation.dismiss_text || '' : '';
     return html`
       <ha-expansion-panel outlined .header=${label}>
         <div class="section-content">
@@ -1087,6 +1119,20 @@ export class SpaceHubCardEditor extends LitElement {
                 placeholder="Are you sure?"
                 @input=${(ev: Event) => this._setActionConfirmationField(path, 'text', (ev.target as HTMLInputElement).value)}
               ></ha-textfield>
+              <div class="side-by-side">
+                <ha-textfield
+                  label="Confirm Button Text"
+                  .value=${confirmationConfirmText}
+                  placeholder="OK"
+                  @input=${(ev: Event) => this._setActionConfirmationField(path, 'confirm_text', (ev.target as HTMLInputElement).value)}
+                ></ha-textfield>
+                <ha-textfield
+                  label="Dismiss Button Text"
+                  .value=${confirmationDismissText}
+                  placeholder="Cancel"
+                  @input=${(ev: Event) => this._setActionConfirmationField(path, 'dismiss_text', (ev.target as HTMLInputElement).value)}
+                ></ha-textfield>
+              </div>
             ` : nothing}
             <button class="editor-btn danger" @click=${() => this._valueChanged(path, undefined)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove
