@@ -69,7 +69,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const nameSize = sw?.font_size || sw?.['font-size'];
   const activeIcon = sw?.icon_active || sw?.icon_on || sw?.['icon-active'] || sw?.['icon-on'];
   const inactiveIcon = sw?.icon_inactive || sw?.icon_off || sw?.['icon-inactive'] || sw?.['icon-off'];
-  const icon = on ? (activeIcon || baseIcon) : (inactiveIcon || baseIcon);
+  const icon = on ? (activeIcon || baseIcon || inactiveIcon) : (inactiveIcon || baseIcon);
   const toPx = (v: any) => {
     if (v === undefined || v === null || v === '') return '';
     const value = String(v).trim();

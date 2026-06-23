@@ -244,6 +244,26 @@ export class SpaceHubCardEditor extends LitElement {
     this._valueChanged(path, Object.keys(next).length ? next : true);
   }
 
+  private _setSwitchInactiveIcon(path: string, value?: string): void {
+    const current = this._getNestedValue(path);
+    const next: Record<string, any> = current && typeof current === 'object'
+      ? { ...current }
+      : {};
+    const icon = typeof value === 'string' ? value.trim() : '';
+
+    if (icon) {
+      next.icon = icon;
+    } else {
+      delete next.icon;
+    }
+    delete next.icon_inactive;
+    delete next.icon_off;
+    delete next['icon-inactive'];
+    delete next['icon-off'];
+
+    this._valueChanged(path, next);
+  }
+
   private _renderSelectField(label: string, path: string, value: string | undefined, options: readonly string[]): TemplateResult {
     const fallback = value || options[0] || '';
     const selectOptions = (fallback && !options.includes(fallback))
@@ -809,14 +829,39 @@ export class SpaceHubCardEditor extends LitElement {
           ></ha-textfield>
           <ha-icon-picker
             .hass=${this.hass}
-            label="Icon"
-            .value=${sw.icon || ''}
-            @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon`, ev.detail.value)}
+            label="Inactive State Icon"
+            .value=${sw.icon_inactive || sw.icon_off || sw['icon-inactive'] || sw['icon-off'] || sw.icon || ''}
+            @value-changed=${(ev: CustomEvent) => this._setSwitchInactiveIcon(path, ev.detail.value)}
           ></ha-icon-picker>
+        </div>
+        <div class="side-by-side">
+          <ha-icon-picker
+            .hass=${this.hass}
+            label="Active State Icon"
+            .value=${sw.icon_active || ''}
+            @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon_active`, ev.detail.value)}
+          ></ha-icon-picker>
+          <ha-textfield
+            label="Icon Size"
+            .value=${sw.icon_size || ''}
+            @input=${(ev: Event) => this._valueChanged(`${path}.icon_size`, (ev.target as HTMLInputElement).value)}
+          ></ha-textfield>
         </div>
         <div class="side-by-side">
           ${this._renderSelectField('Type', `${path}.type`, sw.type, SWITCH_TYPES)}
           ${this._renderSelectField('Glow Mode', `${path}.glow_mode`, sw.glow_mode, GLOW_MODES)}
+        </div>
+        <div class="side-by-side">
+          <ha-textfield
+            label="Font Size"
+            .value=${sw.font_size || sw['font-size'] || ''}
+            @input=${(ev: Event) => this._valueChanged(`${path}.font_size`, (ev.target as HTMLInputElement).value)}
+          ></ha-textfield>
+          <ha-textfield
+            label="Font Weight"
+            .value=${sw.font_weight || sw['font-weight'] || ''}
+            @input=${(ev: Event) => this._valueChanged(`${path}.font_weight`, (ev.target as HTMLInputElement).value)}
+          ></ha-textfield>
         </div>
         ${this._renderEntityField('Hold Entity (more-info on hold)', `${path}.hold_entity`, sw.hold_entity)}
 
@@ -861,42 +906,6 @@ export class SpaceHubCardEditor extends LitElement {
             </div>
           ` : nothing}
         </div>
-
-        <ha-expansion-panel outlined .header=${'Styling'}>
-          <div class="section-content">
-            <div class="side-by-side">
-              <ha-textfield
-                label="Icon Size"
-                .value=${sw.icon_size || ''}
-                @input=${(ev: Event) => this._valueChanged(`${path}.icon_size`, (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
-              <ha-textfield
-                label="Font Size"
-                .value=${sw.font_size || sw['font-size'] || ''}
-                @input=${(ev: Event) => this._valueChanged(`${path}.font_size`, (ev.target as HTMLInputElement).value)}
-              ></ha-textfield>
-            </div>
-            <div class="side-by-side">
-              <ha-icon-picker
-                .hass=${this.hass}
-                label="Active State Icon"
-                .value=${sw.icon_active || ''}
-                @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon_active`, ev.detail.value)}
-              ></ha-icon-picker>
-              <ha-icon-picker
-                .hass=${this.hass}
-                label="Inactive State Icon"
-                .value=${sw.icon_inactive || ''}
-                @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon_inactive`, ev.detail.value)}
-              ></ha-icon-picker>
-            </div>
-            <ha-textfield
-              label="Font Weight"
-              .value=${sw.font_weight || sw['font-weight'] || ''}
-              @input=${(ev: Event) => this._valueChanged(`${path}.font_weight`, (ev.target as HTMLInputElement).value)}
-            ></ha-textfield>
-          </div>
-        </ha-expansion-panel>
 
         <ha-expansion-panel outlined .header=${'Actions'}>
           <div class="section-content">

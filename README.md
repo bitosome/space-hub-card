@@ -261,9 +261,9 @@ If you use the object form, you can also attach extra cards to that row.
 | --- | --- | --- |
 | `entity` | string | Controlled entity |
 | `name` | string | Visible label, otherwise friendly name is used |
-| `icon` | string | Tile icon |
+| `icon` | string | Default/inactive tile icon |
 | `icon_active` | string | Active-state icon (`on` for switches, `unlocked` for locks) |
-| `icon_inactive` | string | Inactive-state icon (`off` for switches, `locked` for locks) |
+| `icon_inactive` | string | YAML alias for inactive-state icon; the visual editor writes this as `icon` |
 | `type` | string | `switch`, `smart_plug`, or `lock` |
 | `glow_mode` | string | `static`, `pulse`, or `none` |
 | `hold_entity` | string | `more-info` target for hold |
@@ -424,7 +424,6 @@ switch_rows:
         type: lock
         icon: mdi:lock
         icon_active: mdi:lock-open-variant
-        icon_inactive: mdi:lock
     cards:
       - type: tile
         entity: sensor.main_breaker_power
