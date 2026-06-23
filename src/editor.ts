@@ -115,6 +115,10 @@ export class SpaceHubCardEditor extends LitElement {
     return obj;
   }
 
+  private _checkedFromEvent(ev: Event): boolean {
+    return !!(ev.currentTarget as { checked?: boolean } | null)?.checked;
+  }
+
   private _moveArrayItem(path: string, index: number, delta: -1 | 1): boolean {
     const current = this._getNestedValue(path);
     if (!Array.isArray(current)) return false;
@@ -193,7 +197,10 @@ export class SpaceHubCardEditor extends LitElement {
     if (!current) return;
     const next: Record<string, any> = { ...current };
     if (enabled) {
-      next.confirmation = next.confirmation ?? true;
+      const confirmation = normalizeConfirmation(next.confirmation);
+      next.confirmation = confirmation && typeof confirmation === 'object'
+        ? confirmation
+        : { title: 'Please confirm', text: 'Are you sure?' };
     } else {
       delete next.confirmation;
     }
@@ -226,7 +233,12 @@ export class SpaceHubCardEditor extends LitElement {
     }
 
     const current = normalizeConfirmation(this._getNestedValue(path));
-    this._valueChanged(path, current ?? { text: 'Are you sure?' });
+    this._valueChanged(
+      path,
+      current && typeof current === 'object'
+        ? current
+        : { title: 'Please confirm', text: 'Are you sure?' }
+    );
   }
 
   private _setSwitchConfirmationField(path: string, field: 'title' | 'text' | 'confirm_text' | 'dismiss_text', value: string): void {
@@ -870,8 +882,7 @@ export class SpaceHubCardEditor extends LitElement {
             <ha-switch
               .checked=${confirmationEnabled}
               @change=${(ev: Event) => {
-                const checked = (ev.target as any).checked;
-                this._setSwitchConfirmation(confirmationPath, checked);
+                this._setSwitchConfirmation(confirmationPath, this._checkedFromEvent(ev));
               }}
             ></ha-switch>
           </ha-formfield>
@@ -1062,7 +1073,7 @@ export class SpaceHubCardEditor extends LitElement {
               <ha-formfield label="Replace current path">
                 <ha-switch
                   .checked=${!!normalized.navigation_replace}
-                  @change=${(ev: Event) => this._valueChanged(`${path}.navigation_replace`, (ev.target as HTMLInputElement).checked || undefined)}
+                  @change=${(ev: Event) => this._valueChanged(`${path}.navigation_replace`, this._checkedFromEvent(ev) || undefined)}
                 ></ha-switch>
               </ha-formfield>
             ` : nothing}
@@ -1105,14 +1116,14 @@ export class SpaceHubCardEditor extends LitElement {
               <ha-formfield label="Start listening immediately">
                 <ha-switch
                   .checked=${!!normalized.start_listening}
-                  @change=${(ev: Event) => this._valueChanged(`${path}.start_listening`, (ev.target as HTMLInputElement).checked || undefined)}
+                  @change=${(ev: Event) => this._valueChanged(`${path}.start_listening`, this._checkedFromEvent(ev) || undefined)}
                 ></ha-switch>
               </ha-formfield>
             ` : nothing}
             <ha-formfield label="Require confirmation">
               <ha-switch
                 .checked=${confirmationEnabled}
-                @change=${(ev: Event) => this._setActionConfirmation(path, (ev.target as HTMLInputElement).checked)}
+                @change=${(ev: Event) => this._setActionConfirmation(path, this._checkedFromEvent(ev))}
               ></ha-switch>
             </ha-formfield>
             ${confirmationEnabled ? html`
