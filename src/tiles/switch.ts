@@ -81,7 +81,6 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const iconStyle = iconDim ? `--switch-icon-size:${iconDim};width:${iconDim};height:${iconDim};--mdc-icon-size:${iconDim};` : '';
   const nameStyle = `${nameWeight ? `font-weight:${nameWeight};` : ''}${nameDim ? `font-size:${nameDim};` : ''}`;
   const chipStyle = `${iconDim ? `--switch-icon-size:${iconDim};` : ''}${nameWeight ? `font-weight:${nameWeight};` : ''}${nameDim ? `--chip-text-font-size:${nameDim};font-size:${nameDim};` : ''}`;
-  const cls = `switch-tile ${isSmart ? 'smart' : isLock ? 'lock' : ''} ${on ? 'on' : ''}`;
   const hasChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
   const hasControlBtn = typeof customElements !== 'undefined' && !!customElements.get('ha-control-button');
   const typeClass = isSmart ? 'smart' : (isLock ? 'lock' : '');
@@ -96,6 +95,11 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
     ? resolvedTemplates.map((entry: any) => (entry && typeof entry === 'object' ? entry.value : entry)).slice(0, 2)
     : [];
   const infoOverlay = renderTemplateInfo(templateLines, joinClasses('switch-info', typeClass, stateClass));
+  const pending = typeof host?._isSwitchPending === 'function' ? host._isSwitchPending(tap) : false;
+  const pendingSpinner = pending
+    ? html`<span class=${joinClasses('switch-pending-spinner', typeClass, stateClass)} aria-hidden="true"></span>`
+    : nothing;
+  const tileClass = joinClasses('switch-tile', typeClass, stateClass, pending && 'pending');
 
   const onAction = (ev: CustomEvent) => {
     if (typeof host?._onSwitchAction === 'function') host._onSwitchAction(ev, sw);
@@ -107,17 +111,18 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const { style: glowStyle, overlay: glowOverlay } = buildGlow(pulse, glowMode as any, on && glowMode !== 'none');
 
   if (hasControlBtn) {
-    const btnCls = `switch-tile-btn ${isSmart ? 'smart' : isLock ? 'lock' : ''} ${on ? 'on' : ''}`;
+    const btnCls = joinClasses('switch-tile-btn', typeClass, on ? 'on' : 'off', pending && 'pending');
     return html`
       <div class="tile-wrap">
-      <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
-      ${infoOverlay}
-      <ha-control-button
-        class=${btnCls}
-        @hass-action=${onAction}
-        .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
-        role="button" tabindex="0"
-      >
+        <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
+        ${infoOverlay}
+        ${pendingSpinner}
+        <ha-control-button
+          class=${btnCls}
+          @hass-action=${onAction}
+          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
+          role="button" tabindex="0" aria-busy=${pending ? 'true' : 'false'}
+        >
           <div class="tile-inner">
             ${hasChip
             ? html`<ha-chip class=${chipClass} style=${chipStyle || nothing}>
@@ -135,12 +140,13 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   }
 
   return html`
-    <div class="tile-wrap ${cls}"
+    <div class="tile-wrap ${tileClass}"
          @hass-action=${onAction}
          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
-         role="button" tabindex="0">
+         role="button" tabindex="0" aria-busy=${pending ? 'true' : 'false'}>
       <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
       ${infoOverlay}
+      ${pendingSpinner}
       <div class="tile-inner">
         ${hasChip
           ? html`<ha-chip class=${chipClass} style=${chipStyle || nothing}>

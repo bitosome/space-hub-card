@@ -32,6 +32,12 @@ interface SwitchTemplateEntry {
   pending?: boolean;
 }
 
+interface SwitchPendingEntry {
+  initialState: string;
+  showTimer?: number;
+  timeoutTimer?: number;
+}
+
 export interface HeaderMain {
   // Core configuration
   tap_entity?: string;
@@ -107,12 +113,16 @@ export class SpaceHubCard extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @state() private _config!: SpaceHubConfig;
+  @state() private _visiblePendingSwitches = new Set<string>();
 
   private _helpersPromise?: Promise<any>;
   private _rowCardElements = new Map<string, LovelaceCard>();
   private _rowCardConfigs = new Map<string, LovelaceCardConfig>();
   private _rowCardPromises = new Map<string, Promise<LovelaceCard>>();
   private _switchTemplateValues = new Map<string, SwitchTemplateEntry>();
+  private _pendingSwitches = new Map<string, SwitchPendingEntry>();
+  private readonly _switchPendingDelayMs = 300;
+  private readonly _switchPendingTimeoutMs = 10000;
 
   static getConfigElement(): HTMLElement {
     return document.createElement('space-hub-card-editor');
@@ -390,6 +400,7 @@ export class SpaceHubCard extends LitElement {
         if (card) card.hass = this.hass;
       });
       this._resumeTemplateSubscriptions();
+      this._syncPendingSwitches();
     }
   }
 
@@ -401,6 +412,7 @@ export class SpaceHubCard extends LitElement {
   public disconnectedCallback(): void {
     super.disconnectedCallback();
     this._switchTemplateValues.forEach((entry) => this._disposeTemplateEntry(entry));
+    this._clearAllPendingSwitches();
   }
 
   private _renderHeaderRow(h: SpaceHubHeader): TemplateResult {
@@ -582,6 +594,12 @@ export class SpaceHubCard extends LitElement {
     this._dispatchNativeAction(action, config);
   }
 
+  private _selectedAction(action: string, config: SpaceHubActionEnvelope): SpaceHubActionConfig | undefined {
+    return action === 'double_tap'
+      ? config.double_tap_action
+      : (action === 'hold' ? config.hold_action : config.tap_action);
+  }
+
   private _isLockSwitch(type?: unknown, entityId?: string | null): boolean {
     return String(type || '').toLowerCase() === 'lock' || !!entityId?.startsWith('lock.');
   }
@@ -620,6 +638,101 @@ export class SpaceHubCard extends LitElement {
         confirmation,
       },
     };
+  }
+
+  private _entityState(entityId: string): string {
+    const state = this.hass?.states?.[entityId]?.state;
+    return state === undefined || state === null ? '' : String(state);
+  }
+
+  private _targetContainsEntity(target: unknown, entityId: string): boolean {
+    if (!target || typeof target !== 'object') return false;
+    const raw = (target as { entity_id?: unknown }).entity_id;
+    if (Array.isArray(raw)) return raw.includes(entityId);
+    return raw === entityId;
+  }
+
+  private _actionCanChangeSwitchEntity(
+    action: string,
+    entityId: string | undefined,
+    config: SpaceHubActionEnvelope
+  ): boolean {
+    if (!entityId || action === 'hold') return false;
+    const selected = this._selectedAction(action, config);
+    if (!selected) return false;
+
+    if (selected.action === 'toggle') {
+      return config.entity === entityId;
+    }
+
+    if (selected.action === 'perform-action') {
+      return this._targetContainsEntity(selected.target, entityId)
+        || this._targetContainsEntity(selected.data, entityId);
+    }
+
+    return false;
+  }
+
+  private _setPendingSwitchVisible(entityId: string, visible: boolean): void {
+    const currentlyVisible = this._visiblePendingSwitches.has(entityId);
+    if (currentlyVisible === visible) return;
+
+    const next = new Set(this._visiblePendingSwitches);
+    if (visible) {
+      next.add(entityId);
+    } else {
+      next.delete(entityId);
+    }
+    this._visiblePendingSwitches = next;
+  }
+
+  private _clearPendingSwitch(entityId: string): void {
+    const entry = this._pendingSwitches.get(entityId);
+    if (!entry) {
+      this._setPendingSwitchVisible(entityId, false);
+      return;
+    }
+
+    if (entry.showTimer !== undefined) window.clearTimeout(entry.showTimer);
+    if (entry.timeoutTimer !== undefined) window.clearTimeout(entry.timeoutTimer);
+    this._pendingSwitches.delete(entityId);
+    this._setPendingSwitchVisible(entityId, false);
+  }
+
+  private _clearAllPendingSwitches(): void {
+    [...this._pendingSwitches.keys()].forEach((entityId) => this._clearPendingSwitch(entityId));
+  }
+
+  private _trackPendingSwitch(entityId: string | undefined, action: string, config: SpaceHubActionEnvelope): void {
+    if (!entityId || !this.hass || !this._actionCanChangeSwitchEntity(action, entityId, config)) return;
+
+    this._clearPendingSwitch(entityId);
+
+    const initialState = this._entityState(entityId);
+    const entry: SwitchPendingEntry = { initialState };
+
+    entry.showTimer = window.setTimeout(() => {
+      const current = this._entityState(entityId);
+      if (current !== initialState) {
+        this._clearPendingSwitch(entityId);
+        return;
+      }
+      this._setPendingSwitchVisible(entityId, true);
+    }, this._switchPendingDelayMs);
+
+    entry.timeoutTimer = window.setTimeout(() => {
+      this._clearPendingSwitch(entityId);
+    }, this._switchPendingTimeoutMs);
+
+    this._pendingSwitches.set(entityId, entry);
+  }
+
+  private _syncPendingSwitches(): void {
+    this._pendingSwitches.forEach((entry, entityId) => {
+      if (this._entityState(entityId) !== entry.initialState) {
+        this._clearPendingSwitch(entityId);
+      }
+    });
   }
 
   private _onMainAction(ev: CustomEvent, tileCfg?: any, tap?: string, hold?: string, lightGroup?: string): void {
@@ -697,7 +810,9 @@ export class SpaceHubCard extends LitElement {
       double_tap_action: entity ? { action: 'toggle' } : undefined,
     };
     const mergedConfig = this._withActionOverrides(baseConfig, sw as Record<string, unknown>);
-    this._dispatchActionEnvelope(action, this._applySwitchTapConfirmation(mergedConfig, confirmation));
+    const finalConfig = this._applySwitchTapConfirmation(mergedConfig, confirmation);
+    this._trackPendingSwitch(entity, action, finalConfig);
+    this._dispatchActionEnvelope(action, finalConfig);
   }
 
   public _resolveSwitchTemplates(sw: unknown): Array<{ template: string; value: string }> {
@@ -898,6 +1013,10 @@ export class SpaceHubCard extends LitElement {
       return (st?.state || '').toLowerCase() === 'unlocked';
     }
     return (st?.state || '').toLowerCase() === 'on';
+  }
+
+  public _isSwitchPending(entityId?: string | null): boolean {
+    return !!entityId && this._visiblePendingSwitches.has(entityId);
   }
 
   private _rgbaFromColor(color: string | undefined, alpha = 0.5): string {

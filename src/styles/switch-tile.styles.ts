@@ -70,6 +70,10 @@ export const switchTileStyles: CSSResultGroup = css`
   background-clip: padding-box;
   }
   .switch-tile.on { box-shadow: var(--tile-shadow-active); }
+  .switch-tile.pending,
+  .switch-tile-btn.pending {
+    filter: saturate(0.94);
+  }
   .tile-inner { display:grid; gap:4px; place-items:center; justify-items:center; text-align:center; }
   .switch-tile .name { font-weight: 600; font-size: 12px; }
   .switch-icon {
@@ -116,4 +120,26 @@ export const switchTileStyles: CSSResultGroup = css`
   .switch-info.on { color: var(--switch-on-color); }
   .switch-info.smart.on { color: var(--switch-smart-on-color); }
   .switch-info.lock.on { color: var(--switch-lock-unlocked-color); }
+  .switch-pending-spinner {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(128, 128, 128, 0.32);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    box-sizing: border-box;
+    color: var(--secondary-text-color);
+    opacity: 0.82;
+    pointer-events: none;
+    z-index: 5;
+    animation: switchPendingSpin 0.8s linear infinite;
+  }
+  .switch-pending-spinner.on { color: var(--switch-on-color); }
+  .switch-pending-spinner.smart.on { color: var(--switch-smart-on-color); }
+  .switch-pending-spinner.lock.on { color: var(--switch-lock-unlocked-color); }
+  @keyframes switchPendingSpin {
+    to { transform: rotate(360deg); }
+  }
 `;
