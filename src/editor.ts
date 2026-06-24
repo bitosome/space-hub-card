@@ -28,9 +28,11 @@ export class SpaceHubTextfield extends LitElement {
   @property() public step?: string;
   @property() public min?: string;
   @property() public max?: string;
+  @property({ type: Boolean, reflect: true }) public disabled = false;
 
   private _onInput(ev: Event): void {
     ev.stopPropagation();
+    if (this.disabled) return;
     this.value = (ev.currentTarget as HTMLInputElement).value;
     this.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
   }
@@ -41,11 +43,13 @@ export class SpaceHubTextfield extends LitElement {
         <span>${this.label}</span>
         <input
           type=${this.type || 'text'}
+          aria-label=${this.label}
           .value=${this.value || ''}
           placeholder=${this.placeholder || ''}
           step=${this.step || nothing}
           min=${this.min || nothing}
           max=${this.max || nothing}
+          ?disabled=${this.disabled}
           @input=${this._onInput}
         />
       </label>
@@ -57,6 +61,9 @@ export class SpaceHubTextfield extends LitElement {
       :host {
         display: block;
         width: 100%;
+      }
+      :host([disabled]) {
+        opacity: 0.64;
       }
       label {
         position: relative;
@@ -89,6 +96,11 @@ export class SpaceHubTextfield extends LitElement {
       }
       input:focus {
         border-bottom-color: var(--primary-color);
+      }
+      input:disabled {
+        cursor: not-allowed;
+        border-bottom-color: var(--disabled-text-color, var(--secondary-text-color));
+        color: var(--disabled-text-color, var(--secondary-text-color));
       }
       input::placeholder {
         color: var(--secondary-text-color);
@@ -198,6 +210,11 @@ export class SpaceHubCardEditor extends LitElement {
     return !!(ev.currentTarget as { checked?: boolean } | null)?.checked;
   }
 
+  private _clampIndex(index: number, count: number): number {
+    if (count <= 0) return 0;
+    return Math.min(Math.max(index, 0), count - 1);
+  }
+
   private _moveArrayItem(path: string, index: number, delta: -1 | 1): boolean {
     const current = this._getNestedValue(path);
     if (!Array.isArray(current)) return false;
@@ -222,6 +239,19 @@ export class SpaceHubCardEditor extends LitElement {
     next.splice(nextIndex, 0, row);
     this._selectedSwitchRowIndex = nextIndex;
     this._valueChanged('switch_rows', next);
+  }
+
+  private _moveHeader(index: number, delta: -1 | 1): void {
+    const headers = this._config.headers;
+    if (!Array.isArray(headers)) return;
+    const nextIndex = index + delta;
+    if (nextIndex < 0 || nextIndex >= headers.length) return;
+
+    const next = [...headers];
+    const [header] = next.splice(index, 1);
+    next.splice(nextIndex, 0, header);
+    this._selectedHeaderIndex = nextIndex;
+    this._valueChanged('headers', next);
   }
 
   private _handleSelectChanged(path: string, nextValue?: string): void {
@@ -550,22 +580,37 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _renderHeadersSection(): TemplateResult {
     const headers = this._config.headers || [];
+    const selectedIndex = this._clampIndex(this._selectedHeaderIndex, headers.length);
     return html`
       <ha-expansion-panel outlined .header=${`Headers (${headers.length})`}>
         <div class="section-content">
           ${headers.length > 1 ? html`
             <div class="tab-bar">
-              ${headers.map((_, i) => html`<button class="tab-btn${this._selectedHeaderIndex === i ? ' active' : ''}" @click=${() => { this._selectedHeaderIndex = i; this.requestUpdate(); }}>Header ${i + 1}</button>`)}
+              ${headers.map((_, i) => html`<button class="tab-btn${selectedIndex === i ? ' active' : ''}" @click=${() => { this._selectedHeaderIndex = i; this.requestUpdate(); }}>Header ${i + 1}</button>`)}
             </div>
           ` : nothing}
-          ${headers.length ? this._renderHeader(headers[this._selectedHeaderIndex] || headers[0], this._selectedHeaderIndex) : html`<div class="empty-hint">No headers configured.</div>`}
+          ${headers.length ? this._renderHeader(headers[selectedIndex], selectedIndex) : html`<div class="empty-hint">No headers configured.</div>`}
           <div class="action-row">
             <button class="editor-btn" @click=${this._addHeader}>
               <ha-icon icon="mdi:plus"></ha-icon> Add Header
             </button>
             ${headers.length > 0 ? html`
-              <button class="editor-btn danger" @click=${() => this._removeHeader(this._selectedHeaderIndex)}>
-                <ha-icon icon="mdi:delete"></ha-icon> Remove Header ${this._selectedHeaderIndex + 1}
+              <button
+                class="editor-btn"
+                .disabled=${selectedIndex <= 0}
+                @click=${() => this._moveHeader(selectedIndex, -1)}
+              >
+                <ha-icon icon="mdi:arrow-up"></ha-icon> Move Header Up
+              </button>
+              <button
+                class="editor-btn"
+                .disabled=${selectedIndex >= headers.length - 1}
+                @click=${() => this._moveHeader(selectedIndex, 1)}
+              >
+                <ha-icon icon="mdi:arrow-down"></ha-icon> Move Header Down
+              </button>
+              <button class="editor-btn danger" @click=${() => this._removeHeader(selectedIndex)}>
+                <ha-icon icon="mdi:delete"></ha-icon> Remove Header ${selectedIndex + 1}
               </button>
             ` : nothing}
           </div>
@@ -794,16 +839,17 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _renderSwitchRowsSection(): TemplateResult {
     const rows = (this._config.switch_rows || []) as any[];
+    const selectedIndex = this._clampIndex(this._selectedSwitchRowIndex, rows.length);
     return html`
       <ha-expansion-panel outlined .header=${`Switch Rows (${rows.length})`}>
         <div class="section-content">
           ${rows.length > 1 ? html`
             <div class="tab-bar">
-              ${rows.map((_, i) => html`<button class="tab-btn${this._selectedSwitchRowIndex === i ? ' active' : ''}" @click=${() => { this._selectedSwitchRowIndex = i; this.requestUpdate(); }}>Row ${i + 1}</button>`)}
+              ${rows.map((_, i) => html`<button class="tab-btn${selectedIndex === i ? ' active' : ''}" @click=${() => { this._selectedSwitchRowIndex = i; this.requestUpdate(); }}>Row ${i + 1}</button>`)}
             </div>
           ` : nothing}
           ${rows.length
-            ? this._renderSwitchRow(rows[this._selectedSwitchRowIndex] || rows[0], this._selectedSwitchRowIndex)
+            ? this._renderSwitchRow(rows[selectedIndex], selectedIndex)
             : html`<div class="empty-hint">No switch rows configured.</div>`
           }
           <div class="action-row">
@@ -813,20 +859,20 @@ export class SpaceHubCardEditor extends LitElement {
             ${rows.length > 0 ? html`
               <button
                 class="editor-btn"
-                .disabled=${this._selectedSwitchRowIndex <= 0}
-                @click=${() => this._moveSwitchRow(this._selectedSwitchRowIndex, -1)}
+                .disabled=${selectedIndex <= 0}
+                @click=${() => this._moveSwitchRow(selectedIndex, -1)}
               >
                 <ha-icon icon="mdi:arrow-up"></ha-icon> Move Row Up
               </button>
               <button
                 class="editor-btn"
-                .disabled=${this._selectedSwitchRowIndex >= rows.length - 1}
-                @click=${() => this._moveSwitchRow(this._selectedSwitchRowIndex, 1)}
+                .disabled=${selectedIndex >= rows.length - 1}
+                @click=${() => this._moveSwitchRow(selectedIndex, 1)}
               >
                 <ha-icon icon="mdi:arrow-down"></ha-icon> Move Row Down
               </button>
-              <button class="editor-btn danger" @click=${() => this._removeSwitchRow(this._selectedSwitchRowIndex)}>
-                <ha-icon icon="mdi:delete"></ha-icon> Remove Row ${this._selectedSwitchRowIndex + 1}
+              <button class="editor-btn danger" @click=${() => this._removeSwitchRow(selectedIndex)}>
+                <ha-icon icon="mdi:delete"></ha-icon> Remove Row ${selectedIndex + 1}
               </button>
             ` : nothing}
           </div>
@@ -970,12 +1016,14 @@ export class SpaceHubCardEditor extends LitElement {
               label="Confirmation Title"
               .value=${confirmationTitle}
               placeholder="Please confirm"
+              .disabled=${!confirmationEnabled}
               @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'title', (ev.target as HTMLInputElement).value)}
             ></space-hub-textfield>
             <space-hub-textfield
               label="Confirmation Message"
               .value=${confirmationMessage}
               placeholder="Are you sure?"
+              .disabled=${!confirmationEnabled}
               @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'text', (ev.target as HTMLInputElement).value)}
             ></space-hub-textfield>
             <div class="side-by-side">
@@ -983,12 +1031,14 @@ export class SpaceHubCardEditor extends LitElement {
                 label="Confirm Button Text"
                 .value=${confirmationConfirmText}
                 placeholder="OK"
+                .disabled=${!confirmationEnabled}
                 @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'confirm_text', (ev.target as HTMLInputElement).value)}
               ></space-hub-textfield>
               <space-hub-textfield
                 label="Dismiss Button Text"
                 .value=${confirmationDismissText}
                 placeholder="Cancel"
+                .disabled=${!confirmationEnabled}
                 @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'dismiss_text', (ev.target as HTMLInputElement).value)}
               ></space-hub-textfield>
             </div>
@@ -1251,6 +1301,7 @@ export class SpaceHubCardEditor extends LitElement {
     .mode-toggle {
       display: flex;
       gap: 8px;
+      flex-wrap: wrap;
       margin-bottom: 8px;
     }
     ha-expansion-panel {
@@ -1266,14 +1317,20 @@ export class SpaceHubCardEditor extends LitElement {
     .side-by-side {
       display: flex;
       gap: 8px;
+      flex-wrap: wrap;
+      align-items: flex-start;
     }
     .side-by-side > * {
-      flex: 1;
+      flex: 1 1 220px;
       min-width: 0;
+    }
+    .side-by-side > ha-icon-button {
+      flex: 0 0 40px;
     }
     .tab-bar {
       display: flex;
       gap: 4px;
+      flex-wrap: wrap;
       margin-bottom: 8px;
       border-bottom: 1px solid var(--divider-color, #e0e0e0);
       padding-bottom: 4px;
