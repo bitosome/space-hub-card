@@ -280,7 +280,7 @@ function buildMetrics(host: any, config: WeatherTileConfig): MetricConfig[] {
     metric('thermometer-warmer', '24h Max', formatTemperature(host, config.temp_max_24h_sensor), config.temp_max_24h_sensor),
     metric(raining ? 'rain' : 'raindrop', 'Rain', rainValue, rainEntity, raining),
     metric('uv-index', 'UV', formatEntity(host, config.uv_sensor, 0), config.uv_sensor),
-    metric('sun-hot', 'Solar', formatEntity(host, config.solar_lux_sensor, 1, true), config.solar_lux_sensor),
+    metric('sun-hot', 'Solar', formatEntity(host, config.solar_lux_sensor, 0), config.solar_lux_sensor),
     metric('barometer', 'Pressure', formatEntity(host, config.pressure_sensor, 0), config.pressure_sensor),
   ].filter((item): item is MetricConfig => !!item);
 }
