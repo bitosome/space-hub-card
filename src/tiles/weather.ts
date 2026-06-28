@@ -874,18 +874,18 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
       >
         <div class="weather-content">
           <div class="weather-top">
-            <div
-              class="weather-heading weather-clickable"
-              role="button"
-              tabindex="0"
-              aria-label=${`Open ${name} weather details`}
-              @pointerdown=${stopTileAction}
-              @pointerup=${stopTileAction}
-              @click=${(ev: Event) => openMoreInfo(host, ev, config.entity)}
-              @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.entity)}
-            >
+            <div class="weather-heading">
               <div class="weather-headline-row">
-                <div class="weather-name">${weatherHeadline}</div>
+                <div
+                  class="weather-name weather-clickable"
+                  role="button"
+                  tabindex="0"
+                  aria-label=${`Open ${name} weather details`}
+                  @pointerdown=${stopTileAction}
+                  @pointerup=${stopTileAction}
+                  @click=${(ev: Event) => openMoreInfo(host, ev, config.entity)}
+                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.entity)}
+                >${weatherHeadline}</div>
                 ${forecastItems.length ? forecastSourceBadge : nothing}
               </div>
               <div class="weather-primary">

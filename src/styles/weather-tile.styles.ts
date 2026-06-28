@@ -73,8 +73,6 @@ export const weatherTileStyles: CSSResultGroup = css`
     place-items: center;
     width: var(--weather-icon-bg-size);
     height: var(--weather-icon-bg-size);
-    border-radius: 50%;
-    background: rgba(3, 169, 244, 0.14);
     color: var(--state-weather-sunny-color, #f6a000);
     margin-top: -2px;
   }
