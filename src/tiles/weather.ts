@@ -574,11 +574,18 @@ function forecastSummary(items: ForecastItem[], timeFormat?: unknown): string {
   const rainProbability = Number(wettest.precipitation_probability) || 0;
   const rainAmount = Number(wettest.precipitation) || 0;
   if (rainProbability >= 25 || rainAmount > 0) {
+    const isImminent = wettest === next;
     const time = forecastTime(wettest, timeFormat);
-    const probability = rainProbability > 0 ? `${Math.round(rainProbability)}%` : `${rainAmount.toFixed(1)} mm`;
-    return time ? `Rain ${probability} at ${time}` : `Rain ${probability}`;
+    let intensity: string;
+    if (rainProbability >= 80 || rainAmount >= 2) intensity = 'Rain likely';
+    else if (rainProbability >= 50 || rainAmount >= 0.5) intensity = 'Showers possible';
+    else intensity = 'Slight chance of rain';
+    const when = isImminent ? 'shortly' : time ? `around ${time}` : '';
+    const detail = rainProbability > 0 ? `${Math.round(rainProbability)}% chance` : `${rainAmount.toFixed(1)} mm`;
+    const phrase = when ? `${intensity} ${when}` : intensity;
+    return `${phrase} (${detail})`;
   }
-  return `${conditionLabel(String(next.condition || ''))} ${forecastTemp(next)}`;
+  return `${conditionLabel(String(next.condition || ''))}, ${forecastTemp(next)}`;
 }
 
 function stopTileAction(ev: Event): void {
@@ -829,8 +836,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     ? Math.min(Math.floor(forecastSlotsRaw), 72)
     : 8;
   const forecastFields = normalizeForecastFields(config.forecast_fields);
-  const conditionsSlots = Math.min(forecastSlots, 24);
-  const visibleForecast = forecastItems.slice(0, conditionsSlots);
+  const visibleForecast = forecastItems.slice(0, forecastSlots);
   const forecastText = forecastSummary(forecastItems, config.time_format);
   const displayConditionState = String(forecastItems[0]?.condition || conditionState || '').toLowerCase();
   const iconCondition = displayConditionState || conditionState;

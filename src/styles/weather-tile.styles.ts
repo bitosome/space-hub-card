@@ -220,11 +220,11 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-conditions-temp {
-    height: calc(var(--weather-graph-height) + 54px);
+    min-height: calc(var(--weather-graph-height) + 54px);
   }
 
   .weather-conditions-rain {
-    height: calc(var(--weather-graph-height) + 42px);
+    min-height: calc(var(--weather-graph-height) + 50px);
   }
 
   .weather-conditions-head {

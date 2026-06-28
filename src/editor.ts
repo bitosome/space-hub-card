@@ -737,7 +737,7 @@ export class SpaceHubCardEditor extends LitElement {
                 label="Forecast Slots"
                 type="number"
                 min="1"
-                max="24"
+                max="48"
                 .value=${String(config.forecast_slots ?? '')}
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
