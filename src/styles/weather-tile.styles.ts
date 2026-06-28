@@ -2,7 +2,11 @@ import { css, CSSResultGroup } from 'lit';
 
 export const weatherTileStyles: CSSResultGroup = css`
   .weather-tile-wrap {
-    --weather-tile-h: calc(var(--tile-h) * 8.75);
+    --weather-tile-h: calc(var(--tile-h) * 10.5);
+    --weather-temp-size: 31px;
+    --weather-icon-size: 42px;
+    --weather-icon-bg-size: 58px;
+    --weather-graph-height: 118px;
   }
 
   .weather-tile {
@@ -58,7 +62,7 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-top {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
     align-items: start;
     min-width: 0;
@@ -67,8 +71,8 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-icon-wrap {
     display: grid;
     place-items: center;
-    width: 58px;
-    height: 58px;
+    width: var(--weather-icon-bg-size);
+    height: var(--weather-icon-bg-size);
     border-radius: 50%;
     background: rgba(3, 169, 244, 0.14);
     color: var(--state-weather-sunny-color, #f6a000);
@@ -76,67 +80,27 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-icon {
-    width: 42px;
-    height: 42px;
-    --mdc-icon-size: 42px;
+    width: var(--weather-icon-size);
+    height: var(--weather-icon-size);
+    --mdc-icon-size: var(--weather-icon-size);
     color: inherit;
     transform-origin: 50% 50%;
   }
 
-  .weather-icon.animated.weather-condition-sunny,
-  .weather-forecast-icon.animated.weather-condition-sunny {
-    animation: weatherSunSpin 12s linear infinite;
-  }
-
-  .weather-icon.animated.weather-condition-clear-night,
-  .weather-forecast-icon.animated.weather-condition-clear-night {
-    animation: weatherNightPulse 3.6s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-cloudy,
-  .weather-icon.animated.weather-condition-partlycloudy,
-  .weather-forecast-icon.animated.weather-condition-cloudy,
-  .weather-forecast-icon.animated.weather-condition-partlycloudy {
-    animation: weatherCloudDrift 4.8s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-rainy,
-  .weather-icon.animated.weather-condition-pouring,
-  .weather-icon.animated.weather-condition-lightning-rainy,
-  .weather-forecast-icon.animated.weather-condition-rainy,
-  .weather-forecast-icon.animated.weather-condition-pouring,
-  .weather-forecast-icon.animated.weather-condition-lightning-rainy {
-    animation: weatherRainPulse 1.9s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-lightning,
-  .weather-forecast-icon.animated.weather-condition-lightning {
-    animation: weatherStormFlash 2.4s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-snowy,
-  .weather-icon.animated.weather-condition-snowy-rainy,
-  .weather-forecast-icon.animated.weather-condition-snowy,
-  .weather-forecast-icon.animated.weather-condition-snowy-rainy {
-    animation: weatherSnowFloat 3.4s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-windy,
-  .weather-icon.animated.weather-condition-windy-variant,
-  .weather-forecast-icon.animated.weather-condition-windy,
-  .weather-forecast-icon.animated.weather-condition-windy-variant {
-    animation: weatherWindFloat 1.8s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-fog,
-  .weather-forecast-icon.animated.weather-condition-fog {
-    animation: weatherFogFade 4s ease-in-out infinite;
+  .weather-icon,
+  .weather-conditions-icon,
+  .weather-daily-icon,
+  .weather-metric-icon {
+    display: block;
+    object-fit: contain;
+    user-select: none;
+    pointer-events: none;
   }
 
   .weather-heading {
     min-width: 0;
     display: grid;
-    gap: 4px;
+    gap: 3px;
     padding: 3px 4px;
     margin: -3px -4px;
   }
@@ -186,14 +150,15 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-primary {
     display: inline-flex;
     align-items: baseline;
-    gap: 6px;
+    justify-content: start;
+    gap: 7px;
     white-space: nowrap;
     color: var(--primary-text-color);
-    padding-top: 2px;
+    padding-top: 1px;
   }
 
   .weather-temp {
-    font-size: 25px;
+    font-size: var(--weather-temp-size);
     line-height: 1;
     font-weight: 700;
     padding: 2px 3px;
@@ -201,7 +166,7 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-humidity {
-    font-size: 13px;
+    font-size: calc(var(--weather-temp-size) * 0.43);
     line-height: 1;
     font-weight: 700;
     color: var(--secondary-text-color);
@@ -209,31 +174,18 @@ export const weatherTileStyles: CSSResultGroup = css`
     margin: -2px -3px;
   }
 
-  .weather-secondary {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 3px 7px;
-    min-width: 0;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    color: var(--secondary-text-color);
-    font-size: 10px;
-    line-height: 1.08;
-    font-weight: 600;
-    white-space: normal;
-    padding: 0;
-  }
-
-  .weather-secondary span {
-    flex: 0 1 auto;
+  .weather-feels {
+    width: fit-content;
     max-width: 100%;
-    display: inline-flex;
-    align-items: center;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 0 3px;
-    margin: 0;
+    white-space: nowrap;
+    color: var(--secondary-text-color);
+    font-size: 11px;
+    line-height: 1.1;
+    font-weight: 650;
+    padding: 1px 3px;
+    margin: -1px -3px 0;
   }
 
   .weather-grid {
@@ -268,11 +220,11 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-conditions-temp {
-    height: 158px;
+    height: calc(var(--weather-graph-height) + 54px);
   }
 
   .weather-conditions-rain {
-    height: 118px;
+    height: calc(var(--weather-graph-height) + 42px);
   }
 
   .weather-conditions-head {
@@ -354,8 +306,17 @@ export const weatherTileStyles: CSSResultGroup = css`
     transform-origin: 50% 50%;
   }
 
+  .weather-conditions-chart-frame {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    height: var(--weather-graph-height);
+    overflow: visible;
+  }
+
   .weather-conditions-chart {
     width: 100%;
+    height: 100%;
     min-width: 0;
     display: block;
     cursor: crosshair;
@@ -364,11 +325,11 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-conditions-temp .weather-conditions-chart {
-    height: 104px;
+    height: 100%;
   }
 
   .weather-conditions-rain .weather-conditions-chart {
-    height: 76px;
+    height: 100%;
   }
 
   .weather-conditions-grid-line,
@@ -415,18 +376,26 @@ export const weatherTileStyles: CSSResultGroup = css`
     vector-effect: non-scaling-stroke;
   }
 
-  .weather-conditions-dot {
-    fill: var(--primary-text-color);
-    stroke: rgba(0, 0, 0, 0.48);
-    stroke-width: 2;
-    vector-effect: non-scaling-stroke;
+  .weather-conditions-selected-dot {
+    position: absolute;
+    z-index: 3;
+    width: 15px;
+    height: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.54);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.28);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
 
-  .weather-conditions-dot-ring {
-    fill: transparent;
-    stroke: rgba(255, 255, 255, 0.5);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
+  .weather-conditions-selected-dot::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: var(--primary-text-color);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
   }
 
   .weather-conditions-axis,
@@ -485,9 +454,9 @@ export const weatherTileStyles: CSSResultGroup = css`
     min-width: 0;
     min-height: 30px;
     display: grid;
-    grid-template-columns: minmax(54px, 0.7fr) 38px 40px minmax(92px, 1fr) 40px;
+    grid-template-columns: minmax(54px, 0.7fr) 52px 40px minmax(84px, 1fr) 40px;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
@@ -516,7 +485,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--secondary-text-color);
-    font-size: 8px;
+    font-size: 7.6px;
     line-height: 1;
     font-weight: 750;
   }
@@ -587,7 +556,8 @@ export const weatherTileStyles: CSSResultGroup = css`
     color: var(--primary-text-color);
   }
 
-  .weather-metric ha-icon {
+  .weather-metric ha-icon,
+  .weather-metric .weather-metric-icon {
     grid-row: 1 / span 2;
     width: 16px;
     height: 16px;
@@ -637,43 +607,4 @@ export const weatherTileStyles: CSSResultGroup = css`
     margin: -2px;
   }
 
-  @keyframes weatherSunSpin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  @keyframes weatherNightPulse {
-    0%, 100% { transform: scale(1); opacity: 0.88; }
-    50% { transform: scale(1.08); opacity: 1; }
-  }
-
-  @keyframes weatherCloudDrift {
-    0%, 100% { transform: translateX(-1px); }
-    50% { transform: translateX(2px); }
-  }
-
-  @keyframes weatherRainPulse {
-    0%, 100% { transform: translateY(-1px); opacity: 0.88; }
-    50% { transform: translateY(2px); opacity: 1; }
-  }
-
-  @keyframes weatherStormFlash {
-    0%, 72%, 100% { opacity: 0.88; transform: scale(1); }
-    76%, 84% { opacity: 1; transform: scale(1.12); }
-  }
-
-  @keyframes weatherSnowFloat {
-    0%, 100% { transform: translateY(-1px) rotate(-3deg); }
-    50% { transform: translateY(2px) rotate(3deg); }
-  }
-
-  @keyframes weatherWindFloat {
-    0%, 100% { transform: translateX(-2px); }
-    50% { transform: translateX(3px); }
-  }
-
-  @keyframes weatherFogFade {
-    0%, 100% { opacity: 0.65; transform: translateX(-1px); }
-    50% { opacity: 1; transform: translateX(2px); }
-  }
 `;

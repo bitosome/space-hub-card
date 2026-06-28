@@ -12,75 +12,75 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
-function e(e,t,i,n){var o,a=arguments.length,r=a<3?t:null===n?n=Object.getOwnPropertyDescriptor(t,i):n;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)r=Reflect.decorate(e,t,i,n);else for(var s=e.length-1;s>=0;s--)(o=e[s])&&(r=(a<3?o(r):a>3?o(t,i,r):o(t,i))||r);return a>3&&r&&Object.defineProperty(t,i,r),r
+function i(i,e,t,a){var n,o=arguments.length,c=o<3?e:null===a?a=Object.getOwnPropertyDescriptor(e,t):a;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)c=Reflect.decorate(i,e,t,a);else for(var r=i.length-1;r>=0;r--)(n=i[r])&&(c=(o<3?n(c):o>3?n(e,t,c):n(e,t))||c);return o>3&&c&&Object.defineProperty(e,t,c),c
 /**
  * @license
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */}const t=window,i=t.ShadowRoot&&(void 0===t.ShadyCSS||t.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,n=Symbol(),o=new WeakMap;class a{constructor(e,t,i){if(this._$cssResult$=!0,i!==n)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=e,this.t=t}get styleSheet(){let e=this.o;const t=this.t;if(i&&void 0===e){const i=void 0!==t&&1===t.length;i&&(e=o.get(t)),void 0===e&&((this.o=e=new CSSStyleSheet).replaceSync(this.cssText),i&&o.set(t,e))}return e}toString(){return this.cssText}}const r=(e,...t)=>{const i=1===e.length?e[0]:t.reduce(((t,i,n)=>t+(e=>{if(!0===e._$cssResult$)return e.cssText;if("number"==typeof e)return e;throw Error("Value passed to 'css' function must be a 'css' function result: "+e+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(i)+e[n+1]),e[0]);return new a(i,e,n)},s=i?e=>e:e=>e instanceof CSSStyleSheet?(e=>{let t="";for(const i of e.cssRules)t+=i.cssText;return(e=>new a("string"==typeof e?e:e+"",void 0,n))(t)})(e):e
+ */}const e=window,t=e.ShadowRoot&&(void 0===e.ShadyCSS||e.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,a=Symbol(),n=new WeakMap;class o{constructor(i,e,t){if(this._$cssResult$=!0,t!==a)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=i,this.t=e}get styleSheet(){let i=this.o;const e=this.t;if(t&&void 0===i){const t=void 0!==e&&1===e.length;t&&(i=n.get(e)),void 0===i&&((this.o=i=new CSSStyleSheet).replaceSync(this.cssText),t&&n.set(e,i))}return i}toString(){return this.cssText}}const c=(i,...e)=>{const t=1===i.length?i[0]:e.reduce(((e,t,a)=>e+(i=>{if(!0===i._$cssResult$)return i.cssText;if("number"==typeof i)return i;throw Error("Value passed to 'css' function must be a 'css' function result: "+i+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(t)+i[a+1]),i[0]);return new o(t,i,a)},r=t?i=>i:i=>i instanceof CSSStyleSheet?(i=>{let e="";for(const t of i.cssRules)e+=t.cssText;return(i=>new o("string"==typeof i?i:i+"",void 0,a))(e)})(i):i
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */;var l;const c=window,d=c.trustedTypes,h=d?d.emptyScript:"",p=c.reactiveElementPolyfillSupport,u={toAttribute(e,t){switch(t){case Boolean:e=e?h:null;break;case Object:case Array:e=null==e?e:JSON.stringify(e)}return e},fromAttribute(e,t){let i=e;switch(t){case Boolean:i=null!==e;break;case Number:i=null===e?null:Number(e);break;case Object:case Array:try{i=JSON.parse(e)}catch(e){i=null}}return i}},m=(e,t)=>t!==e&&(t==t||e==e),v={attribute:!0,type:String,converter:u,reflect:!1,hasChanged:m},_="finalized";class g extends HTMLElement{constructor(){super(),this._$Ei=new Map,this.isUpdatePending=!1,this.hasUpdated=!1,this._$El=null,this._$Eu()}static addInitializer(e){var t;this.finalize(),(null!==(t=this.h)&&void 0!==t?t:this.h=[]).push(e)}static get observedAttributes(){this.finalize();const e=[];return this.elementProperties.forEach(((t,i)=>{const n=this._$Ep(i,t);void 0!==n&&(this._$Ev.set(n,i),e.push(n))})),e}static createProperty(e,t=v){if(t.state&&(t.attribute=!1),this.finalize(),this.elementProperties.set(e,t),!t.noAccessor&&!this.prototype.hasOwnProperty(e)){const i="symbol"==typeof e?Symbol():"__"+e,n=this.getPropertyDescriptor(e,i,t);void 0!==n&&Object.defineProperty(this.prototype,e,n)}}static getPropertyDescriptor(e,t,i){return{get(){return this[t]},set(n){const o=this[e];this[t]=n,this.requestUpdate(e,o,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(e){return this.elementProperties.get(e)||v}static finalize(){if(this.hasOwnProperty(_))return!1;this[_]=!0;const e=Object.getPrototypeOf(this);if(e.finalize(),void 0!==e.h&&(this.h=[...e.h]),this.elementProperties=new Map(e.elementProperties),this._$Ev=new Map,this.hasOwnProperty("properties")){const e=this.properties,t=[...Object.getOwnPropertyNames(e),...Object.getOwnPropertySymbols(e)];for(const i of t)this.createProperty(i,e[i])}return this.elementStyles=this.finalizeStyles(this.styles),!0}static finalizeStyles(e){const t=[];if(Array.isArray(e)){const i=new Set(e.flat(1/0).reverse());for(const e of i)t.unshift(s(e))}else void 0!==e&&t.push(s(e));return t}static _$Ep(e,t){const i=t.attribute;return!1===i?void 0:"string"==typeof i?i:"string"==typeof e?e.toLowerCase():void 0}_$Eu(){var e;this._$E_=new Promise((e=>this.enableUpdating=e)),this._$AL=new Map,this._$Eg(),this.requestUpdate(),null===(e=this.constructor.h)||void 0===e||e.forEach((e=>e(this)))}addController(e){var t,i;(null!==(t=this._$ES)&&void 0!==t?t:this._$ES=[]).push(e),void 0!==this.renderRoot&&this.isConnected&&(null===(i=e.hostConnected)||void 0===i||i.call(e))}removeController(e){var t;null===(t=this._$ES)||void 0===t||t.splice(this._$ES.indexOf(e)>>>0,1)}_$Eg(){this.constructor.elementProperties.forEach(((e,t)=>{this.hasOwnProperty(t)&&(this._$Ei.set(t,this[t]),delete this[t])}))}createRenderRoot(){var e;const n=null!==(e=this.shadowRoot)&&void 0!==e?e:this.attachShadow(this.constructor.shadowRootOptions);return((e,n)=>{i?e.adoptedStyleSheets=n.map((e=>e instanceof CSSStyleSheet?e:e.styleSheet)):n.forEach((i=>{const n=document.createElement("style"),o=t.litNonce;void 0!==o&&n.setAttribute("nonce",o),n.textContent=i.cssText,e.appendChild(n)}))})(n,this.constructor.elementStyles),n}connectedCallback(){var e;void 0===this.renderRoot&&(this.renderRoot=this.createRenderRoot()),this.enableUpdating(!0),null===(e=this._$ES)||void 0===e||e.forEach((e=>{var t;return null===(t=e.hostConnected)||void 0===t?void 0:t.call(e)}))}enableUpdating(e){}disconnectedCallback(){var e;null===(e=this._$ES)||void 0===e||e.forEach((e=>{var t;return null===(t=e.hostDisconnected)||void 0===t?void 0:t.call(e)}))}attributeChangedCallback(e,t,i){this._$AK(e,i)}_$EO(e,t,i=v){var n;const o=this.constructor._$Ep(e,i);if(void 0!==o&&!0===i.reflect){const a=(void 0!==(null===(n=i.converter)||void 0===n?void 0:n.toAttribute)?i.converter:u).toAttribute(t,i.type);this._$El=e,null==a?this.removeAttribute(o):this.setAttribute(o,a),this._$El=null}}_$AK(e,t){var i;const n=this.constructor,o=n._$Ev.get(e);if(void 0!==o&&this._$El!==o){const e=n.getPropertyOptions(o),a="function"==typeof e.converter?{fromAttribute:e.converter}:void 0!==(null===(i=e.converter)||void 0===i?void 0:i.fromAttribute)?e.converter:u;this._$El=o,this[o]=a.fromAttribute(t,e.type),this._$El=null}}requestUpdate(e,t,i){let n=!0;void 0!==e&&(((i=i||this.constructor.getPropertyOptions(e)).hasChanged||m)(this[e],t)?(this._$AL.has(e)||this._$AL.set(e,t),!0===i.reflect&&this._$El!==e&&(void 0===this._$EC&&(this._$EC=new Map),this._$EC.set(e,i))):n=!1),!this.isUpdatePending&&n&&(this._$E_=this._$Ej())}async _$Ej(){this.isUpdatePending=!0;try{await this._$E_}catch(e){Promise.reject(e)}const e=this.scheduleUpdate();return null!=e&&await e,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){var e;if(!this.isUpdatePending)return;this.hasUpdated,this._$Ei&&(this._$Ei.forEach(((e,t)=>this[t]=e)),this._$Ei=void 0);let t=!1;const i=this._$AL;try{t=this.shouldUpdate(i),t?(this.willUpdate(i),null===(e=this._$ES)||void 0===e||e.forEach((e=>{var t;return null===(t=e.hostUpdate)||void 0===t?void 0:t.call(e)})),this.update(i)):this._$Ek()}catch(e){throw t=!1,this._$Ek(),e}t&&this._$AE(i)}willUpdate(e){}_$AE(e){var t;null===(t=this._$ES)||void 0===t||t.forEach((e=>{var t;return null===(t=e.hostUpdated)||void 0===t?void 0:t.call(e)})),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(e)),this.updated(e)}_$Ek(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$E_}shouldUpdate(e){return!0}update(e){void 0!==this._$EC&&(this._$EC.forEach(((e,t)=>this._$EO(t,this[t],e))),this._$EC=void 0),this._$Ek()}updated(e){}firstUpdated(e){}}
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-var f;g[_]=!0,g.elementProperties=new Map,g.elementStyles=[],g.shadowRootOptions={mode:"open"},null==p||p({ReactiveElement:g}),(null!==(l=c.reactiveElementVersions)&&void 0!==l?l:c.reactiveElementVersions=[]).push("1.6.3");const b=window,w=b.trustedTypes,y=w?w.createPolicy("lit-html",{createHTML:e=>e}):void 0,$=`lit$${(Math.random()+"").slice(9)}$`,x="?"+$,A=`<${x}>`,C=document,k=()=>C.createComment(""),S=e=>null===e||"object"!=typeof e&&"function"!=typeof e,E=Array.isArray,T="[ \t\n\f\r]",F=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,z=/-->/g,N=/>/g,M=RegExp(`>|${T}(?:([^\\s"'>=/]+)(${T}*=${T}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`,"g"),P=/'/g,H=/"/g,I=/^(?:script|style|textarea|title)$/i,R=e=>(t,...i)=>({_$litType$:e,strings:t,values:i}),L=R(1),O=R(2),j=Symbol.for("lit-noChange"),W=Symbol.for("lit-nothing"),V=new WeakMap,D=C.createTreeWalker(C,129,null,!1);function U(e,t){if(!Array.isArray(e)||!e.hasOwnProperty("raw"))throw Error("invalid template strings array");return void 0!==y?y.createHTML(t):t}class G{constructor({strings:e,_$litType$:t},i){let n;this.parts=[];let o=0,a=0;const r=e.length-1,s=this.parts,[l,c]=((e,t)=>{const i=e.length-1,n=[];let o,a=2===t?"<svg>":"",r=F;for(let t=0;t<i;t++){const i=e[t];let s,l,c=-1,d=0;for(;d<i.length&&(r.lastIndex=d,l=r.exec(i),null!==l);)d=r.lastIndex,r===F?"!--"===l[1]?r=z:void 0!==l[1]?r=N:void 0!==l[2]?(I.test(l[2])&&(o=RegExp("</"+l[2],"g")),r=M):void 0!==l[3]&&(r=M):r===M?">"===l[0]?(r=null!=o?o:F,c=-1):void 0===l[1]?c=-2:(c=r.lastIndex-l[2].length,s=l[1],r=void 0===l[3]?M:'"'===l[3]?H:P):r===H||r===P?r=M:r===z||r===N?r=F:(r=M,o=void 0);const h=r===M&&e[t+1].startsWith("/>")?" ":"";a+=r===F?i+A:c>=0?(n.push(s),i.slice(0,c)+"$lit$"+i.slice(c)+$+h):i+$+(-2===c?(n.push(void 0),t):h)}return[U(e,a+(e[i]||"<?>")+(2===t?"</svg>":"")),n]})(e,t);if(this.el=G.createElement(l,i),D.currentNode=this.el.content,2===t){const e=this.el.content,t=e.firstChild;t.remove(),e.append(...t.childNodes)}for(;null!==(n=D.nextNode())&&s.length<r;){if(1===n.nodeType){if(n.hasAttributes()){const e=[];for(const t of n.getAttributeNames())if(t.endsWith("$lit$")||t.startsWith($)){const i=c[a++];if(e.push(t),void 0!==i){const e=n.getAttribute(i.toLowerCase()+"$lit$").split($),t=/([.?@])?(.*)/.exec(i);s.push({type:1,index:o,name:t[2],strings:e,ctor:"."===t[1]?Z:"?"===t[1]?J:"@"===t[1]?Q:K})}else s.push({type:6,index:o})}for(const t of e)n.removeAttribute(t)}if(I.test(n.tagName)){const e=n.textContent.split($),t=e.length-1;if(t>0){n.textContent=w?w.emptyScript:"";for(let i=0;i<t;i++)n.append(e[i],k()),D.nextNode(),s.push({type:2,index:++o});n.append(e[t],k())}}}else if(8===n.nodeType)if(n.data===x)s.push({type:2,index:o});else{let e=-1;for(;-1!==(e=n.data.indexOf($,e+1));)s.push({type:7,index:o}),e+=$.length-1}o++}}static createElement(e,t){const i=C.createElement("template");return i.innerHTML=e,i}}function q(e,t,i=e,n){var o,a,r,s;if(t===j)return t;let l=void 0!==n?null===(o=i._$Co)||void 0===o?void 0:o[n]:i._$Cl;const c=S(t)?void 0:t._$litDirective$;return(null==l?void 0:l.constructor)!==c&&(null===(a=null==l?void 0:l._$AO)||void 0===a||a.call(l,!1),void 0===c?l=void 0:(l=new c(e),l._$AT(e,i,n)),void 0!==n?(null!==(r=(s=i)._$Co)&&void 0!==r?r:s._$Co=[])[n]=l:i._$Cl=l),void 0!==l&&(t=q(e,l._$AS(e,t.values),l,n)),t}class B{constructor(e,t){this._$AV=[],this._$AN=void 0,this._$AD=e,this._$AM=t}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(e){var t;const{el:{content:i},parts:n}=this._$AD,o=(null!==(t=null==e?void 0:e.creationScope)&&void 0!==t?t:C).importNode(i,!0);D.currentNode=o;let a=D.nextNode(),r=0,s=0,l=n[0];for(;void 0!==l;){if(r===l.index){let t;2===l.type?t=new Y(a,a.nextSibling,this,e):1===l.type?t=new l.ctor(a,l.name,l.strings,this,e):6===l.type&&(t=new ee(a,this,e)),this._$AV.push(t),l=n[++s]}r!==(null==l?void 0:l.index)&&(a=D.nextNode(),r++)}return D.currentNode=C,o}v(e){let t=0;for(const i of this._$AV)void 0!==i&&(void 0!==i.strings?(i._$AI(e,i,t),t+=i.strings.length-2):i._$AI(e[t])),t++}}class Y{constructor(e,t,i,n){var o;this.type=2,this._$AH=W,this._$AN=void 0,this._$AA=e,this._$AB=t,this._$AM=i,this.options=n,this._$Cp=null===(o=null==n?void 0:n.isConnected)||void 0===o||o}get _$AU(){var e,t;return null!==(t=null===(e=this._$AM)||void 0===e?void 0:e._$AU)&&void 0!==t?t:this._$Cp}get parentNode(){let e=this._$AA.parentNode;const t=this._$AM;return void 0!==t&&11===(null==e?void 0:e.nodeType)&&(e=t.parentNode),e}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(e,t=this){e=q(this,e,t),S(e)?e===W||null==e||""===e?(this._$AH!==W&&this._$AR(),this._$AH=W):e!==this._$AH&&e!==j&&this._(e):void 0!==e._$litType$?this.g(e):void 0!==e.nodeType?this.$(e):(e=>E(e)||"function"==typeof(null==e?void 0:e[Symbol.iterator]))(e)?this.T(e):this._(e)}k(e){return this._$AA.parentNode.insertBefore(e,this._$AB)}$(e){this._$AH!==e&&(this._$AR(),this._$AH=this.k(e))}_(e){this._$AH!==W&&S(this._$AH)?this._$AA.nextSibling.data=e:this.$(C.createTextNode(e)),this._$AH=e}g(e){var t;const{values:i,_$litType$:n}=e,o="number"==typeof n?this._$AC(e):(void 0===n.el&&(n.el=G.createElement(U(n.h,n.h[0]),this.options)),n);if((null===(t=this._$AH)||void 0===t?void 0:t._$AD)===o)this._$AH.v(i);else{const e=new B(o,this),t=e.u(this.options);e.v(i),this.$(t),this._$AH=e}}_$AC(e){let t=V.get(e.strings);return void 0===t&&V.set(e.strings,t=new G(e)),t}T(e){E(this._$AH)||(this._$AH=[],this._$AR());const t=this._$AH;let i,n=0;for(const o of e)n===t.length?t.push(i=new Y(this.k(k()),this.k(k()),this,this.options)):i=t[n],i._$AI(o),n++;n<t.length&&(this._$AR(i&&i._$AB.nextSibling,n),t.length=n)}_$AR(e=this._$AA.nextSibling,t){var i;for(null===(i=this._$AP)||void 0===i||i.call(this,!1,!0,t);e&&e!==this._$AB;){const t=e.nextSibling;e.remove(),e=t}}setConnected(e){var t;void 0===this._$AM&&(this._$Cp=e,null===(t=this._$AP)||void 0===t||t.call(this,e))}}class K{constructor(e,t,i,n,o){this.type=1,this._$AH=W,this._$AN=void 0,this.element=e,this.name=t,this._$AM=n,this.options=o,i.length>2||""!==i[0]||""!==i[1]?(this._$AH=Array(i.length-1).fill(new String),this.strings=i):this._$AH=W}get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}_$AI(e,t=this,i,n){const o=this.strings;let a=!1;if(void 0===o)e=q(this,e,t,0),a=!S(e)||e!==this._$AH&&e!==j,a&&(this._$AH=e);else{const n=e;let r,s;for(e=o[0],r=0;r<o.length-1;r++)s=q(this,n[i+r],t,r),s===j&&(s=this._$AH[r]),a||(a=!S(s)||s!==this._$AH[r]),s===W?e=W:e!==W&&(e+=(null!=s?s:"")+o[r+1]),this._$AH[r]=s}a&&!n&&this.j(e)}j(e){e===W?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,null!=e?e:"")}}class Z extends K{constructor(){super(...arguments),this.type=3}j(e){this.element[this.name]=e===W?void 0:e}}const X=w?w.emptyScript:"";class J extends K{constructor(){super(...arguments),this.type=4}j(e){e&&e!==W?this.element.setAttribute(this.name,X):this.element.removeAttribute(this.name)}}class Q extends K{constructor(e,t,i,n,o){super(e,t,i,n,o),this.type=5}_$AI(e,t=this){var i;if((e=null!==(i=q(this,e,t,0))&&void 0!==i?i:W)===j)return;const n=this._$AH,o=e===W&&n!==W||e.capture!==n.capture||e.once!==n.once||e.passive!==n.passive,a=e!==W&&(n===W||o);o&&this.element.removeEventListener(this.name,this,n),a&&this.element.addEventListener(this.name,this,e),this._$AH=e}handleEvent(e){var t,i;"function"==typeof this._$AH?this._$AH.call(null!==(i=null===(t=this.options)||void 0===t?void 0:t.host)&&void 0!==i?i:this.element,e):this._$AH.handleEvent(e)}}class ee{constructor(e,t,i){this.element=e,this.type=6,this._$AN=void 0,this._$AM=t,this.options=i}get _$AU(){return this._$AM._$AU}_$AI(e){q(this,e)}}const te=b.litHtmlPolyfillSupport;null==te||te(G,Y),(null!==(f=b.litHtmlVersions)&&void 0!==f?f:b.litHtmlVersions=[]).push("2.8.0");
+ */;var s;const l=window,M=l.trustedTypes,g=M?M.emptyScript:"",I=l.reactiveElementPolyfillSupport,N={toAttribute(i,e){switch(e){case Boolean:i=i?g:null;break;case Object:case Array:i=null==i?i:JSON.stringify(i)}return i},fromAttribute(i,e){let t=i;switch(e){case Boolean:t=null!==i;break;case Number:t=null===i?null:Number(i);break;case Object:case Array:try{t=JSON.parse(i)}catch(i){t=null}}return t}},d=(i,e)=>e!==i&&(e==e||i==i),u={attribute:!0,type:String,converter:N,reflect:!1,hasChanged:d},D="finalized";class h extends HTMLElement{constructor(){super(),this._$Ei=new Map,this.isUpdatePending=!1,this.hasUpdated=!1,this._$El=null,this._$Eu()}static addInitializer(i){var e;this.finalize(),(null!==(e=this.h)&&void 0!==e?e:this.h=[]).push(i)}static get observedAttributes(){this.finalize();const i=[];return this.elementProperties.forEach(((e,t)=>{const a=this._$Ep(t,e);void 0!==a&&(this._$Ev.set(a,t),i.push(a))})),i}static createProperty(i,e=u){if(e.state&&(e.attribute=!1),this.finalize(),this.elementProperties.set(i,e),!e.noAccessor&&!this.prototype.hasOwnProperty(i)){const t="symbol"==typeof i?Symbol():"__"+i,a=this.getPropertyDescriptor(i,t,e);void 0!==a&&Object.defineProperty(this.prototype,i,a)}}static getPropertyDescriptor(i,e,t){return{get(){return this[e]},set(a){const n=this[i];this[e]=a,this.requestUpdate(i,n,t)},configurable:!0,enumerable:!0}}static getPropertyOptions(i){return this.elementProperties.get(i)||u}static finalize(){if(this.hasOwnProperty(D))return!1;this[D]=!0;const i=Object.getPrototypeOf(this);if(i.finalize(),void 0!==i.h&&(this.h=[...i.h]),this.elementProperties=new Map(i.elementProperties),this._$Ev=new Map,this.hasOwnProperty("properties")){const i=this.properties,e=[...Object.getOwnPropertyNames(i),...Object.getOwnPropertySymbols(i)];for(const t of e)this.createProperty(t,i[t])}return this.elementStyles=this.finalizeStyles(this.styles),!0}static finalizeStyles(i){const e=[];if(Array.isArray(i)){const t=new Set(i.flat(1/0).reverse());for(const i of t)e.unshift(r(i))}else void 0!==i&&e.push(r(i));return e}static _$Ep(i,e){const t=e.attribute;return!1===t?void 0:"string"==typeof t?t:"string"==typeof i?i.toLowerCase():void 0}_$Eu(){var i;this._$E_=new Promise((i=>this.enableUpdating=i)),this._$AL=new Map,this._$Eg(),this.requestUpdate(),null===(i=this.constructor.h)||void 0===i||i.forEach((i=>i(this)))}addController(i){var e,t;(null!==(e=this._$ES)&&void 0!==e?e:this._$ES=[]).push(i),void 0!==this.renderRoot&&this.isConnected&&(null===(t=i.hostConnected)||void 0===t||t.call(i))}removeController(i){var e;null===(e=this._$ES)||void 0===e||e.splice(this._$ES.indexOf(i)>>>0,1)}_$Eg(){this.constructor.elementProperties.forEach(((i,e)=>{this.hasOwnProperty(e)&&(this._$Ei.set(e,this[e]),delete this[e])}))}createRenderRoot(){var i;const a=null!==(i=this.shadowRoot)&&void 0!==i?i:this.attachShadow(this.constructor.shadowRootOptions);return((i,a)=>{t?i.adoptedStyleSheets=a.map((i=>i instanceof CSSStyleSheet?i:i.styleSheet)):a.forEach((t=>{const a=document.createElement("style"),n=e.litNonce;void 0!==n&&a.setAttribute("nonce",n),a.textContent=t.cssText,i.appendChild(a)}))})(a,this.constructor.elementStyles),a}connectedCallback(){var i;void 0===this.renderRoot&&(this.renderRoot=this.createRenderRoot()),this.enableUpdating(!0),null===(i=this._$ES)||void 0===i||i.forEach((i=>{var e;return null===(e=i.hostConnected)||void 0===e?void 0:e.call(i)}))}enableUpdating(i){}disconnectedCallback(){var i;null===(i=this._$ES)||void 0===i||i.forEach((i=>{var e;return null===(e=i.hostDisconnected)||void 0===e?void 0:e.call(i)}))}attributeChangedCallback(i,e,t){this._$AK(i,t)}_$EO(i,e,t=u){var a;const n=this.constructor._$Ep(i,t);if(void 0!==n&&!0===t.reflect){const o=(void 0!==(null===(a=t.converter)||void 0===a?void 0:a.toAttribute)?t.converter:N).toAttribute(e,t.type);this._$El=i,null==o?this.removeAttribute(n):this.setAttribute(n,o),this._$El=null}}_$AK(i,e){var t;const a=this.constructor,n=a._$Ev.get(i);if(void 0!==n&&this._$El!==n){const i=a.getPropertyOptions(n),o="function"==typeof i.converter?{fromAttribute:i.converter}:void 0!==(null===(t=i.converter)||void 0===t?void 0:t.fromAttribute)?i.converter:N;this._$El=n,this[n]=o.fromAttribute(e,i.type),this._$El=null}}requestUpdate(i,e,t){let a=!0;void 0!==i&&(((t=t||this.constructor.getPropertyOptions(i)).hasChanged||d)(this[i],e)?(this._$AL.has(i)||this._$AL.set(i,e),!0===t.reflect&&this._$El!==i&&(void 0===this._$EC&&(this._$EC=new Map),this._$EC.set(i,t))):a=!1),!this.isUpdatePending&&a&&(this._$E_=this._$Ej())}async _$Ej(){this.isUpdatePending=!0;try{await this._$E_}catch(i){Promise.reject(i)}const i=this.scheduleUpdate();return null!=i&&await i,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){var i;if(!this.isUpdatePending)return;this.hasUpdated,this._$Ei&&(this._$Ei.forEach(((i,e)=>this[e]=i)),this._$Ei=void 0);let e=!1;const t=this._$AL;try{e=this.shouldUpdate(t),e?(this.willUpdate(t),null===(i=this._$ES)||void 0===i||i.forEach((i=>{var e;return null===(e=i.hostUpdate)||void 0===e?void 0:e.call(i)})),this.update(t)):this._$Ek()}catch(i){throw e=!1,this._$Ek(),i}e&&this._$AE(t)}willUpdate(i){}_$AE(i){var e;null===(e=this._$ES)||void 0===e||e.forEach((i=>{var e;return null===(e=i.hostUpdated)||void 0===e?void 0:e.call(i)})),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(i)),this.updated(i)}_$Ek(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$E_}shouldUpdate(i){return!0}update(i){void 0!==this._$EC&&(this._$EC.forEach(((i,e)=>this._$EO(e,this[e],i))),this._$EC=void 0),this._$Ek()}updated(i){}firstUpdated(i){}}
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-var ie,ne;class oe extends g{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){var e,t;const i=super.createRenderRoot();return null!==(e=(t=this.renderOptions).renderBefore)&&void 0!==e||(t.renderBefore=i.firstChild),i}update(e){const t=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(e),this._$Do=((e,t,i)=>{var n,o;const a=null!==(n=null==i?void 0:i.renderBefore)&&void 0!==n?n:t;let r=a._$litPart$;if(void 0===r){const e=null!==(o=null==i?void 0:i.renderBefore)&&void 0!==o?o:null;a._$litPart$=r=new Y(t.insertBefore(k(),e),e,void 0,null!=i?i:{})}return r._$AI(e),r})(t,this.renderRoot,this.renderOptions)}connectedCallback(){var e;super.connectedCallback(),null===(e=this._$Do)||void 0===e||e.setConnected(!0)}disconnectedCallback(){var e;super.disconnectedCallback(),null===(e=this._$Do)||void 0===e||e.setConnected(!1)}render(){return j}}oe.finalized=!0,oe._$litElement$=!0,null===(ie=globalThis.litElementHydrateSupport)||void 0===ie||ie.call(globalThis,{LitElement:oe});const ae=globalThis.litElementPolyfillSupport;null==ae||ae({LitElement:oe}),(null!==(ne=globalThis.litElementVersions)&&void 0!==ne?ne:globalThis.litElementVersions=[]).push("3.3.3");
+var j;h[D]=!0,h.elementProperties=new Map,h.elementStyles=[],h.shadowRootOptions={mode:"open"},null==I||I({ReactiveElement:h}),(null!==(s=l.reactiveElementVersions)&&void 0!==s?s:l.reactiveElementVersions=[]).push("1.6.3");const z=window,y=z.trustedTypes,p=y?y.createPolicy("lit-html",{createHTML:i=>i}):void 0,A=`lit$${(Math.random()+"").slice(9)}$`,m="?"+A,w=`<${m}>`,T=document,b=()=>T.createComment(""),O=i=>null===i||"object"!=typeof i&&"function"!=typeof i,x=Array.isArray,v="[ \t\n\f\r]",S=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,L=/-->/g,k=/>/g,C=RegExp(`>|${v}(?:([^\\s"'>=/]+)(${v}*=${v}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`,"g"),Y=/'/g,f=/"/g,_=/^(?:script|style|textarea|title)$/i,Q=i=>(e,...t)=>({_$litType$:i,strings:e,values:t}),E=Q(1),U=Q(2),Z=Symbol.for("lit-noChange"),G=Symbol.for("lit-nothing"),W=new WeakMap,P=T.createTreeWalker(T,129,null,!1);function $(i,e){if(!Array.isArray(i)||!i.hasOwnProperty("raw"))throw Error("invalid template strings array");return void 0!==p?p.createHTML(e):e}class R{constructor({strings:i,_$litType$:e},t){let a;this.parts=[];let n=0,o=0;const c=i.length-1,r=this.parts,[s,l]=((i,e)=>{const t=i.length-1,a=[];let n,o=2===e?"<svg>":"",c=S;for(let e=0;e<t;e++){const t=i[e];let r,s,l=-1,M=0;for(;M<t.length&&(c.lastIndex=M,s=c.exec(t),null!==s);)M=c.lastIndex,c===S?"!--"===s[1]?c=L:void 0!==s[1]?c=k:void 0!==s[2]?(_.test(s[2])&&(n=RegExp("</"+s[2],"g")),c=C):void 0!==s[3]&&(c=C):c===C?">"===s[0]?(c=null!=n?n:S,l=-1):void 0===s[1]?l=-2:(l=c.lastIndex-s[2].length,r=s[1],c=void 0===s[3]?C:'"'===s[3]?f:Y):c===f||c===Y?c=C:c===L||c===k?c=S:(c=C,n=void 0);const g=c===C&&i[e+1].startsWith("/>")?" ":"";o+=c===S?t+w:l>=0?(a.push(r),t.slice(0,l)+"$lit$"+t.slice(l)+A+g):t+A+(-2===l?(a.push(void 0),e):g)}return[$(i,o+(i[t]||"<?>")+(2===e?"</svg>":"")),a]})(i,e);if(this.el=R.createElement(s,t),P.currentNode=this.el.content,2===e){const i=this.el.content,e=i.firstChild;e.remove(),i.append(...e.childNodes)}for(;null!==(a=P.nextNode())&&r.length<c;){if(1===a.nodeType){if(a.hasAttributes()){const i=[];for(const e of a.getAttributeNames())if(e.endsWith("$lit$")||e.startsWith(A)){const t=l[o++];if(i.push(e),void 0!==t){const i=a.getAttribute(t.toLowerCase()+"$lit$").split(A),e=/([.?@])?(.*)/.exec(t);r.push({type:1,index:n,name:e[2],strings:i,ctor:"."===e[1]?J:"?"===e[1]?K:"@"===e[1]?q:H})}else r.push({type:6,index:n})}for(const e of i)a.removeAttribute(e)}if(_.test(a.tagName)){const i=a.textContent.split(A),e=i.length-1;if(e>0){a.textContent=y?y.emptyScript:"";for(let t=0;t<e;t++)a.append(i[t],b()),P.nextNode(),r.push({type:2,index:++n});a.append(i[e],b())}}}else if(8===a.nodeType)if(a.data===m)r.push({type:2,index:n});else{let i=-1;for(;-1!==(i=a.data.indexOf(A,i+1));)r.push({type:7,index:n}),i+=A.length-1}n++}}static createElement(i,e){const t=T.createElement("template");return t.innerHTML=i,t}}function V(i,e,t=i,a){var n,o,c,r;if(e===Z)return e;let s=void 0!==a?null===(n=t._$Co)||void 0===n?void 0:n[a]:t._$Cl;const l=O(e)?void 0:e._$litDirective$;return(null==s?void 0:s.constructor)!==l&&(null===(o=null==s?void 0:s._$AO)||void 0===o||o.call(s,!1),void 0===l?s=void 0:(s=new l(i),s._$AT(i,t,a)),void 0!==a?(null!==(c=(r=t)._$Co)&&void 0!==c?c:r._$Co=[])[a]=s:t._$Cl=s),void 0!==s&&(e=V(i,s._$AS(i,e.values),s,a)),e}class F{constructor(i,e){this._$AV=[],this._$AN=void 0,this._$AD=i,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(i){var e;const{el:{content:t},parts:a}=this._$AD,n=(null!==(e=null==i?void 0:i.creationScope)&&void 0!==e?e:T).importNode(t,!0);P.currentNode=n;let o=P.nextNode(),c=0,r=0,s=a[0];for(;void 0!==s;){if(c===s.index){let e;2===s.type?e=new B(o,o.nextSibling,this,i):1===s.type?e=new s.ctor(o,s.name,s.strings,this,i):6===s.type&&(e=new ii(o,this,i)),this._$AV.push(e),s=a[++r]}c!==(null==s?void 0:s.index)&&(o=P.nextNode(),c++)}return P.currentNode=T,n}v(i){let e=0;for(const t of this._$AV)void 0!==t&&(void 0!==t.strings?(t._$AI(i,t,e),e+=t.strings.length-2):t._$AI(i[e])),e++}}class B{constructor(i,e,t,a){var n;this.type=2,this._$AH=G,this._$AN=void 0,this._$AA=i,this._$AB=e,this._$AM=t,this.options=a,this._$Cp=null===(n=null==a?void 0:a.isConnected)||void 0===n||n}get _$AU(){var i,e;return null!==(e=null===(i=this._$AM)||void 0===i?void 0:i._$AU)&&void 0!==e?e:this._$Cp}get parentNode(){let i=this._$AA.parentNode;const e=this._$AM;return void 0!==e&&11===(null==i?void 0:i.nodeType)&&(i=e.parentNode),i}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(i,e=this){i=V(this,i,e),O(i)?i===G||null==i||""===i?(this._$AH!==G&&this._$AR(),this._$AH=G):i!==this._$AH&&i!==Z&&this._(i):void 0!==i._$litType$?this.g(i):void 0!==i.nodeType?this.$(i):(i=>x(i)||"function"==typeof(null==i?void 0:i[Symbol.iterator]))(i)?this.T(i):this._(i)}k(i){return this._$AA.parentNode.insertBefore(i,this._$AB)}$(i){this._$AH!==i&&(this._$AR(),this._$AH=this.k(i))}_(i){this._$AH!==G&&O(this._$AH)?this._$AA.nextSibling.data=i:this.$(T.createTextNode(i)),this._$AH=i}g(i){var e;const{values:t,_$litType$:a}=i,n="number"==typeof a?this._$AC(i):(void 0===a.el&&(a.el=R.createElement($(a.h,a.h[0]),this.options)),a);if((null===(e=this._$AH)||void 0===e?void 0:e._$AD)===n)this._$AH.v(t);else{const i=new F(n,this),e=i.u(this.options);i.v(t),this.$(e),this._$AH=i}}_$AC(i){let e=W.get(i.strings);return void 0===e&&W.set(i.strings,e=new R(i)),e}T(i){x(this._$AH)||(this._$AH=[],this._$AR());const e=this._$AH;let t,a=0;for(const n of i)a===e.length?e.push(t=new B(this.k(b()),this.k(b()),this,this.options)):t=e[a],t._$AI(n),a++;a<e.length&&(this._$AR(t&&t._$AB.nextSibling,a),e.length=a)}_$AR(i=this._$AA.nextSibling,e){var t;for(null===(t=this._$AP)||void 0===t||t.call(this,!1,!0,e);i&&i!==this._$AB;){const e=i.nextSibling;i.remove(),i=e}}setConnected(i){var e;void 0===this._$AM&&(this._$Cp=i,null===(e=this._$AP)||void 0===e||e.call(this,i))}}class H{constructor(i,e,t,a,n){this.type=1,this._$AH=G,this._$AN=void 0,this.element=i,this.name=e,this._$AM=a,this.options=n,t.length>2||""!==t[0]||""!==t[1]?(this._$AH=Array(t.length-1).fill(new String),this.strings=t):this._$AH=G}get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}_$AI(i,e=this,t,a){const n=this.strings;let o=!1;if(void 0===n)i=V(this,i,e,0),o=!O(i)||i!==this._$AH&&i!==Z,o&&(this._$AH=i);else{const a=i;let c,r;for(i=n[0],c=0;c<n.length-1;c++)r=V(this,a[t+c],e,c),r===Z&&(r=this._$AH[c]),o||(o=!O(r)||r!==this._$AH[c]),r===G?i=G:i!==G&&(i+=(null!=r?r:"")+n[c+1]),this._$AH[c]=r}o&&!a&&this.j(i)}j(i){i===G?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,null!=i?i:"")}}class J extends H{constructor(){super(...arguments),this.type=3}j(i){this.element[this.name]=i===G?void 0:i}}const X=y?y.emptyScript:"";class K extends H{constructor(){super(...arguments),this.type=4}j(i){i&&i!==G?this.element.setAttribute(this.name,X):this.element.removeAttribute(this.name)}}class q extends H{constructor(i,e,t,a,n){super(i,e,t,a,n),this.type=5}_$AI(i,e=this){var t;if((i=null!==(t=V(this,i,e,0))&&void 0!==t?t:G)===Z)return;const a=this._$AH,n=i===G&&a!==G||i.capture!==a.capture||i.once!==a.once||i.passive!==a.passive,o=i!==G&&(a===G||n);n&&this.element.removeEventListener(this.name,this,a),o&&this.element.addEventListener(this.name,this,i),this._$AH=i}handleEvent(i){var e,t;"function"==typeof this._$AH?this._$AH.call(null!==(t=null===(e=this.options)||void 0===e?void 0:e.host)&&void 0!==t?t:this.element,i):this._$AH.handleEvent(i)}}class ii{constructor(i,e,t){this.element=i,this.type=6,this._$AN=void 0,this._$AM=e,this.options=t}get _$AU(){return this._$AM._$AU}_$AI(i){V(this,i)}}const ei=z.litHtmlPolyfillSupport;null==ei||ei(R,B),(null!==(j=z.litHtmlVersions)&&void 0!==j?j:z.litHtmlVersions=[]).push("2.8.0");
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+var ti,ai;class ni extends h{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){var i,e;const t=super.createRenderRoot();return null!==(i=(e=this.renderOptions).renderBefore)&&void 0!==i||(e.renderBefore=t.firstChild),t}update(i){const e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(i),this._$Do=((i,e,t)=>{var a,n;const o=null!==(a=null==t?void 0:t.renderBefore)&&void 0!==a?a:e;let c=o._$litPart$;if(void 0===c){const i=null!==(n=null==t?void 0:t.renderBefore)&&void 0!==n?n:null;o._$litPart$=c=new B(e.insertBefore(b(),i),i,void 0,null!=t?t:{})}return c._$AI(i),c})(e,this.renderRoot,this.renderOptions)}connectedCallback(){var i;super.connectedCallback(),null===(i=this._$Do)||void 0===i||i.setConnected(!0)}disconnectedCallback(){var i;super.disconnectedCallback(),null===(i=this._$Do)||void 0===i||i.setConnected(!1)}render(){return Z}}ni.finalized=!0,ni._$litElement$=!0,null===(ti=globalThis.litElementHydrateSupport)||void 0===ti||ti.call(globalThis,{LitElement:ni});const oi=globalThis.litElementPolyfillSupport;null==oi||oi({LitElement:ni}),(null!==(ai=globalThis.litElementVersions)&&void 0!==ai?ai:globalThis.litElementVersions=[]).push("3.3.3");
 /**
  * @license
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
+const ci=2,ri=i=>(...e)=>({_$litDirective$:i,values:e});
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */class le{constructor(e){}get _$AU(){return this._$AM._$AU}_$AT(e,t,i){this._$Ct=e,this._$AM=t,this._$Ci=i}_$AS(e,t){return this.update(e,t)}update(e,t){return this.render(...t)}}
+ */class si{constructor(i){}get _$AU(){return this._$AM._$AU}_$AT(i,e,t){this._$Ct=i,this._$AM=e,this._$Ci=t}_$AS(i,e){return this.update(i,e)}update(i,e){return this.render(...e)}}
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const ce=(e,t)=>{var i,n;const o=e._$AN;if(void 0===o)return!1;for(const e of o)null===(n=(i=e)._$AO)||void 0===n||n.call(i,t,!1),ce(e,t);return!0},de=e=>{let t,i;do{if(void 0===(t=e._$AM))break;i=t._$AN,i.delete(e),e=t}while(0===(null==i?void 0:i.size))},he=e=>{for(let t;t=e._$AM;e=t){let i=t._$AN;if(void 0===i)t._$AN=i=new Set;else if(i.has(e))break;i.add(e),me(t)}};function pe(e){void 0!==this._$AN?(de(this),this._$AM=e,he(this)):this._$AM=e}function ue(e,t=!1,i=0){const n=this._$AH,o=this._$AN;if(void 0!==o&&0!==o.size)if(t)if(Array.isArray(n))for(let e=i;e<n.length;e++)ce(n[e],!1),de(n[e]);else null!=n&&(ce(n,!1),de(n));else ce(this,e)}const me=e=>{var t,i,n,o;e.type==re&&(null!==(t=(n=e)._$AP)&&void 0!==t||(n._$AP=ue),null!==(i=(o=e)._$AQ)&&void 0!==i||(o._$AQ=pe))};class ve extends le{constructor(){super(...arguments),this._$AN=void 0}_$AT(e,t,i){super._$AT(e,t,i),he(this),this.isConnected=e._$AU}_$AO(e,t=!0){var i,n;e!==this.isConnected&&(this.isConnected=e,e?null===(i=this.reconnected)||void 0===i||i.call(this):null===(n=this.disconnected)||void 0===n||n.call(this)),t&&(ce(this,e),de(this))}setValue(e){if((e=>void 0===e.strings)(this._$Ct))this._$Ct._$AI(e,this);else{const t=[...this._$Ct._$AH];t[this._$Ci]=e,this._$Ct._$AI(t,this,0)}}disconnected(){}reconnected(){}}
+ */const li=(i,e)=>{var t,a;const n=i._$AN;if(void 0===n)return!1;for(const i of n)null===(a=(t=i)._$AO)||void 0===a||a.call(t,e,!1),li(i,e);return!0},Mi=i=>{let e,t;do{if(void 0===(e=i._$AM))break;t=e._$AN,t.delete(i),i=e}while(0===(null==t?void 0:t.size))},gi=i=>{for(let e;e=i._$AM;i=e){let t=e._$AN;if(void 0===t)e._$AN=t=new Set;else if(t.has(i))break;t.add(i),di(e)}};function Ii(i){void 0!==this._$AN?(Mi(this),this._$AM=i,gi(this)):this._$AM=i}function Ni(i,e=!1,t=0){const a=this._$AH,n=this._$AN;if(void 0!==n&&0!==n.size)if(e)if(Array.isArray(a))for(let i=t;i<a.length;i++)li(a[i],!1),Mi(a[i]);else null!=a&&(li(a,!1),Mi(a));else li(this,i)}const di=i=>{var e,t,a,n;i.type==ci&&(null!==(e=(a=i)._$AP)&&void 0!==e||(a._$AP=Ni),null!==(t=(n=i)._$AQ)&&void 0!==t||(n._$AQ=Ii))};class ui extends si{constructor(){super(...arguments),this._$AN=void 0}_$AT(i,e,t){super._$AT(i,e,t),gi(this),this.isConnected=i._$AU}_$AO(i,e=!0){var t,a;i!==this.isConnected&&(this.isConnected=i,i?null===(t=this.reconnected)||void 0===t||t.call(this):null===(a=this.disconnected)||void 0===a||a.call(this)),e&&(li(this,i),Mi(this))}setValue(i){if((i=>void 0===i.strings)(this._$Ct))this._$Ct._$AI(i,this);else{const e=[...this._$Ct._$AH];e[this._$Ci]=i,this._$Ct._$AI(e,this,0)}}disconnected(){}reconnected(){}}
 /**
  * @license
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */class _e{constructor(e){this.G=e}disconnect(){this.G=void 0}reconnect(e){this.G=e}deref(){return this.G}}class ge{constructor(){this.Y=void 0,this.Z=void 0}get(){return this.Y}pause(){var e;null!==(e=this.Y)&&void 0!==e||(this.Y=new Promise((e=>this.Z=e)))}resume(){var e;null===(e=this.Z)||void 0===e||e.call(this),this.Y=this.Z=void 0}}
+ */class Di{constructor(i){this.G=i}disconnect(){this.G=void 0}reconnect(i){this.G=i}deref(){return this.G}}class hi{constructor(){this.Y=void 0,this.Z=void 0}get(){return this.Y}pause(){var i;null!==(i=this.Y)&&void 0!==i||(this.Y=new Promise((i=>this.Z=i)))}resume(){var i;null===(i=this.Z)||void 0===i||i.call(this),this.Y=this.Z=void 0}}
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const fe=e=>!(e=>null===e||"object"!=typeof e&&"function"!=typeof e)(e)&&"function"==typeof e.then,be=1073741823;const we=se(class extends ve{constructor(){super(...arguments),this._$C_t=be,this._$Cwt=[],this._$Cq=new _e(this),this._$CK=new ge}render(...e){var t;return null!==(t=e.find((e=>!fe(e))))&&void 0!==t?t:j}update(e,t){const i=this._$Cwt;let n=i.length;this._$Cwt=t;const o=this._$Cq,a=this._$CK;this.isConnected||this.disconnected();for(let e=0;e<t.length&&!(e>this._$C_t);e++){const r=t[e];if(!fe(r))return this._$C_t=e,r;e<n&&r===i[e]||(this._$C_t=be,n=0,Promise.resolve(r).then((async e=>{for(;a.get();)await a.get();const t=o.deref();if(void 0!==t){const i=t._$Cwt.indexOf(r);i>-1&&i<t._$C_t&&(t._$C_t=i,t.setValue(e))}})))}return j}disconnected(){this._$Cq.disconnect(),this._$CK.pause()}reconnected(){this._$Cq.reconnect(this),this._$CK.resume()}}),ye=e=>t=>"function"==typeof t?((e,t)=>(customElements.define(e,t),t))(e,t):((e,t)=>{const{kind:i,elements:n}=t;return{kind:i,elements:n,finisher(t){customElements.define(e,t)}}})(e,t)
+ */const ji=i=>!(i=>null===i||"object"!=typeof i&&"function"!=typeof i)(i)&&"function"==typeof i.then,zi=1073741823;const yi=ri(class extends ui{constructor(){super(...arguments),this._$C_t=zi,this._$Cwt=[],this._$Cq=new Di(this),this._$CK=new hi}render(...i){var e;return null!==(e=i.find((i=>!ji(i))))&&void 0!==e?e:Z}update(i,e){const t=this._$Cwt;let a=t.length;this._$Cwt=e;const n=this._$Cq,o=this._$CK;this.isConnected||this.disconnected();for(let i=0;i<e.length&&!(i>this._$C_t);i++){const c=e[i];if(!ji(c))return this._$C_t=i,c;i<a&&c===t[i]||(this._$C_t=zi,a=0,Promise.resolve(c).then((async i=>{for(;o.get();)await o.get();const e=n.deref();if(void 0!==e){const t=e._$Cwt.indexOf(c);t>-1&&t<e._$C_t&&(e._$C_t=t,e.setValue(i))}})))}return Z}disconnected(){this._$Cq.disconnect(),this._$CK.pause()}reconnected(){this._$Cq.reconnect(this),this._$CK.resume()}}),pi=i=>e=>"function"==typeof e?((i,e)=>(customElements.define(i,e),e))(i,e):((i,e)=>{const{kind:t,elements:a}=e;return{kind:t,elements:a,finisher(e){customElements.define(i,e)}}})(i,e)
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */,$e=(e,t)=>"method"===t.kind&&t.descriptor&&!("value"in t.descriptor)?{...t,finisher(i){i.createProperty(t.key,e)}}:{kind:"field",key:Symbol(),placement:"own",descriptor:{},originalKey:t.key,initializer(){"function"==typeof t.initializer&&(this[t.key]=t.initializer.call(this))},finisher(i){i.createProperty(t.key,e)}};
+ */,Ai=(i,e)=>"method"===e.kind&&e.descriptor&&!("value"in e.descriptor)?{...e,finisher(t){t.createProperty(e.key,i)}}:{kind:"field",key:Symbol(),placement:"own",descriptor:{},originalKey:e.key,initializer(){"function"==typeof e.initializer&&(this[e.key]=e.initializer.call(this))},finisher(t){t.createProperty(e.key,i)}};
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */function xe(e){return(t,i)=>void 0!==i?((e,t,i)=>{t.constructor.createProperty(i,e)})(e,t,i):$e(e,t)
+ */function mi(i){return(e,t)=>void 0!==t?((i,e,t)=>{e.constructor.createProperty(t,i)})(i,e,t):Ai(i,e)
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */}function Ae(e){return xe({...e,state:!0})}
+ */}function wi(i){return mi({...i,state:!0})}
 /**
  * @license
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */var Ce;null===(Ce=window.HTMLSlotElement)||void 0===Ce||Ce.prototype.assignedElements;var ke="[^\\s]+";function Se(e,t){for(var i=[],n=0,o=e.length;n<o;n++)i.push(e[n].substr(0,t));return i}var Ee=function(e){return function(t,i){var n=i[e].map((function(e){return e.toLowerCase()})),o=n.indexOf(t.toLowerCase());return o>-1?o:null}};function Te(e){for(var t=[],i=1;i<arguments.length;i++)t[i-1]=arguments[i];for(var n=0,o=t;n<o.length;n++){var a=o[n];for(var r in a)e[r]=a[r]}return e}var Fe=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],ze=["January","February","March","April","May","June","July","August","September","October","November","December"],Ne=Se(ze,3),Me={dayNamesShort:Se(Fe,3),dayNames:Fe,monthNamesShort:Ne,monthNames:ze,amPm:["am","pm"],DoFn:function(e){return e+["th","st","nd","rd"][e%10>3?0:(e-e%10!=10?1:0)*e%10]}},Pe=(Te({},Me),function(e){return+e-1}),He=[null,"[1-9]\\d?"],Ie=[null,ke],Re=["isPm",ke,function(e,t){var i=e.toLowerCase();return i===t.amPm[0]?0:i===t.amPm[1]?1:null}],Le=["timezoneOffset","[^\\s]*?[\\+\\-]\\d\\d:?\\d\\d|[^\\s]*?Z?",function(e){var t=(e+"").match(/([+-]|\d\d)/gi);if(t){var i=60*+t[1]+parseInt(t[2],10);return"+"===t[0]?i:-i}return 0}];Ee("monthNamesShort"),Ee("monthNames");var Oe,je;!function(){try{(new Date).toLocaleDateString("i")}catch(e){return"RangeError"===e.name}}(),function(){try{(new Date).toLocaleString("i")}catch(e){return"RangeError"===e.name}}(),function(){try{(new Date).toLocaleTimeString("i")}catch(e){return"RangeError"===e.name}}(),function(e){e.language="language",e.system="system",e.comma_decimal="comma_decimal",e.decimal_comma="decimal_comma",e.space_comma="space_comma",e.none="none"}(Oe||(Oe={})),function(e){e.language="language",e.system="system",e.am_pm="12",e.twenty_four="24"}(je||(je={}));var We=function(e,t,i,n){n=n||{},i=null==i?{}:i;var o=new Event(t,{bubbles:void 0===n.bubbles||n.bubbles,cancelable:Boolean(n.cancelable),composed:void 0===n.composed||n.composed});return o.detail=i,e.dispatchEvent(o),o},Ve=new Set(["call-service","divider","section","weblink","cast","select"]),De={alert:"toggle",automation:"toggle",climate:"climate",cover:"cover",fan:"toggle",group:"group",input_boolean:"toggle",input_number:"input-number",input_select:"input-select",input_text:"input-text",light:"toggle",lock:"lock",media_player:"media-player",remote:"toggle",scene:"scene",script:"script",sensor:"sensor",timer:"timer",switch:"toggle",vacuum:"toggle",water_heater:"climate",input_datetime:"input-datetime"},Ue=function(e,t){void 0===t&&(t=!1);var i=function(e,t){return n("hui-error-card",{type:"error",error:e,config:t})},n=function(e,t){var n=window.document.createElement(e);try{n.setConfig(t)}catch(n){return console.error(e,n),i(n.message,t)}return n};if(!e||"object"!=typeof e||!t&&!e.type)return i("No type defined",e);var o=e.type;if(o&&o.startsWith("custom:"))o=o.substr("custom:".length);else if(t)if(Ve.has(o))o="hui-"+o+"-row";else{if(!e.entity)return i("Invalid config given.",e);var a=e.entity.split(".",1)[0];o="hui-"+(De[a]||"text")+"-entity-row"}else o="hui-"+o+"-card";if(customElements.get(o))return n(o,e);var r=i("Custom element doesn't exist: "+e.type+".",e);r.style.display="None";var s=setTimeout((function(){r.style.display=""}),2e3);return customElements.whenDefined(e.type).then((function(){clearTimeout(s),We(r,"ll-rebuild",{},r)})),r};function Ge(e){return JSON.parse(JSON.stringify(e))}const qe=new Set(["more-info","toggle","perform-action","navigate","url","assist","none","fire-dom-event","call-service"]),Be=e=>!!e&&"object"==typeof e&&!Array.isArray(e),Ye=e=>!!((null==e?void 0:e.tap_action)||(null==e?void 0:e.hold_action)||(null==e?void 0:e.double_tap_action)),Ke=e=>{if(null==e||!1===e)return;if(!0===e)return!0;if("string"==typeof e){const t=e.trim();return!t||{text:t}}if(!Be(e))return;const t={};if("string"==typeof e.text&&e.text.trim()&&(t.text=e.text),"string"==typeof e.title&&e.title.trim()&&(t.title=e.title),"string"==typeof e.confirm_text&&e.confirm_text.trim()&&(t.confirm_text=e.confirm_text),"string"==typeof e.dismiss_text&&e.dismiss_text.trim()&&(t.dismiss_text=e.dismiss_text),Array.isArray(e.exemptions)){const i=e.exemptions.filter((e=>!!e&&"object"==typeof e&&"string"==typeof e.user)).map((e=>({user:e.user})));i.length&&(t.exemptions=i)}return!Object.keys(t).length||t},Ze=e=>{if(Be(e)&&"string"==typeof e.action&&qe.has(e.action)){if("call-service"===e.action||"perform-action"===e.action){return Object.assign(Object.assign({},e),{action:"perform-action",perform_action:"string"==typeof e.perform_action?e.perform_action:"string"==typeof e.service?e.service:void 0,data:Be(e.data)?e.data:Be(e.service_data)?e.service_data:void 0,target:Be(e.target)?e.target:void 0,confirmation:Ke(e.confirmation)})}return Object.assign(Object.assign({},e),{confirmation:Ke(e.confirmation)})}},Xe=["lock","door","presence","illuminance","gate","sliding_gate","smart_plug","custom"],Je=["switch","smart_plug","lock"],Qe=["static","pulse","none"],et=["hourly","daily","twice_daily"],tt=["24h","12h"],it=["more-info","toggle","perform-action","navigate","url","assist","none"],nt="M4,12L5.41,13.41L11,7.83V20H13V7.83L18.59,13.42L20,12L12,4L4,12Z",ot="M4,12L5.41,10.59L11,16.17V4H13V16.17L18.59,10.58L20,12L12,20L4,12Z",at="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z";let rt=class extends oe{constructor(){super(...arguments),this.label="",this.value="",this.placeholder="",this.type="text",this.disabled=!1}_onInput(e){e.stopPropagation(),this.disabled||(this.value=e.currentTarget.value,this.dispatchEvent(new Event("input",{bubbles:!0,composed:!0})))}render(){return L`
+ */var Ti;null===(Ti=window.HTMLSlotElement)||void 0===Ti||Ti.prototype.assignedElements;var bi="[^\\s]+";function Oi(i,e){for(var t=[],a=0,n=i.length;a<n;a++)t.push(i[a].substr(0,e));return t}var xi=function(i){return function(e,t){var a=t[i].map((function(i){return i.toLowerCase()})),n=a.indexOf(e.toLowerCase());return n>-1?n:null}};function vi(i){for(var e=[],t=1;t<arguments.length;t++)e[t-1]=arguments[t];for(var a=0,n=e;a<n.length;a++){var o=n[a];for(var c in o)i[c]=o[c]}return i}var Si=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],Li=["January","February","March","April","May","June","July","August","September","October","November","December"],ki=Oi(Li,3),Ci={dayNamesShort:Oi(Si,3),dayNames:Si,monthNamesShort:ki,monthNames:Li,amPm:["am","pm"],DoFn:function(i){return i+["th","st","nd","rd"][i%10>3?0:(i-i%10!=10?1:0)*i%10]}},Yi=(vi({},Ci),function(i){return+i-1}),fi=[null,"[1-9]\\d?"],_i=[null,bi],Qi=["isPm",bi,function(i,e){var t=i.toLowerCase();return t===e.amPm[0]?0:t===e.amPm[1]?1:null}],Ei=["timezoneOffset","[^\\s]*?[\\+\\-]\\d\\d:?\\d\\d|[^\\s]*?Z?",function(i){var e=(i+"").match(/([+-]|\d\d)/gi);if(e){var t=60*+e[1]+parseInt(e[2],10);return"+"===e[0]?t:-t}return 0}];xi("monthNamesShort"),xi("monthNames");var Ui,Zi;!function(){try{(new Date).toLocaleDateString("i")}catch(i){return"RangeError"===i.name}}(),function(){try{(new Date).toLocaleString("i")}catch(i){return"RangeError"===i.name}}(),function(){try{(new Date).toLocaleTimeString("i")}catch(i){return"RangeError"===i.name}}(),function(i){i.language="language",i.system="system",i.comma_decimal="comma_decimal",i.decimal_comma="decimal_comma",i.space_comma="space_comma",i.none="none"}(Ui||(Ui={})),function(i){i.language="language",i.system="system",i.am_pm="12",i.twenty_four="24"}(Zi||(Zi={}));var Gi=function(i,e,t,a){a=a||{},t=null==t?{}:t;var n=new Event(e,{bubbles:void 0===a.bubbles||a.bubbles,cancelable:Boolean(a.cancelable),composed:void 0===a.composed||a.composed});return n.detail=t,i.dispatchEvent(n),n},Wi=new Set(["call-service","divider","section","weblink","cast","select"]),Pi={alert:"toggle",automation:"toggle",climate:"climate",cover:"cover",fan:"toggle",group:"group",input_boolean:"toggle",input_number:"input-number",input_select:"input-select",input_text:"input-text",light:"toggle",lock:"lock",media_player:"media-player",remote:"toggle",scene:"scene",script:"script",sensor:"sensor",timer:"timer",switch:"toggle",vacuum:"toggle",water_heater:"climate",input_datetime:"input-datetime"},$i=function(i,e){void 0===e&&(e=!1);var t=function(i,e){return a("hui-error-card",{type:"error",error:i,config:e})},a=function(i,e){var a=window.document.createElement(i);try{a.setConfig(e)}catch(a){return console.error(i,a),t(a.message,e)}return a};if(!i||"object"!=typeof i||!e&&!i.type)return t("No type defined",i);var n=i.type;if(n&&n.startsWith("custom:"))n=n.substr("custom:".length);else if(e)if(Wi.has(n))n="hui-"+n+"-row";else{if(!i.entity)return t("Invalid config given.",i);var o=i.entity.split(".",1)[0];n="hui-"+(Pi[o]||"text")+"-entity-row"}else n="hui-"+n+"-card";if(customElements.get(n))return a(n,i);var c=t("Custom element doesn't exist: "+i.type+".",i);c.style.display="None";var r=setTimeout((function(){c.style.display=""}),2e3);return customElements.whenDefined(i.type).then((function(){clearTimeout(r),Gi(c,"ll-rebuild",{},c)})),c};function Ri(i){return JSON.parse(JSON.stringify(i))}const Vi=new Set(["more-info","toggle","perform-action","navigate","url","assist","none","fire-dom-event","call-service"]),Fi=i=>!!i&&"object"==typeof i&&!Array.isArray(i),Bi=i=>!!((null==i?void 0:i.tap_action)||(null==i?void 0:i.hold_action)||(null==i?void 0:i.double_tap_action)),Hi=i=>{if(null==i||!1===i)return;if(!0===i)return!0;if("string"==typeof i){const e=i.trim();return!e||{text:e}}if(!Fi(i))return;const e={};if("string"==typeof i.text&&i.text.trim()&&(e.text=i.text),"string"==typeof i.title&&i.title.trim()&&(e.title=i.title),"string"==typeof i.confirm_text&&i.confirm_text.trim()&&(e.confirm_text=i.confirm_text),"string"==typeof i.dismiss_text&&i.dismiss_text.trim()&&(e.dismiss_text=i.dismiss_text),Array.isArray(i.exemptions)){const t=i.exemptions.filter((i=>!!i&&"object"==typeof i&&"string"==typeof i.user)).map((i=>({user:i.user})));t.length&&(e.exemptions=t)}return!Object.keys(e).length||e},Ji=i=>{if(Fi(i)&&"string"==typeof i.action&&Vi.has(i.action)){if("call-service"===i.action||"perform-action"===i.action){return Object.assign(Object.assign({},i),{action:"perform-action",perform_action:"string"==typeof i.perform_action?i.perform_action:"string"==typeof i.service?i.service:void 0,data:Fi(i.data)?i.data:Fi(i.service_data)?i.service_data:void 0,target:Fi(i.target)?i.target:void 0,confirmation:Hi(i.confirmation)})}return Object.assign(Object.assign({},i),{confirmation:Hi(i.confirmation)})}},Xi=["lock","door","presence","illuminance","gate","sliding_gate","smart_plug","custom"],Ki=["switch","smart_plug","lock"],qi=["static","pulse","none"],ie=["hourly","daily","twice_daily"],ee=["24h","12h"],te=["more-info","toggle","perform-action","navigate","url","assist","none"],ae="M4,12L5.41,13.41L11,7.83V20H13V7.83L18.59,13.42L20,12L12,4L4,12Z",ne="M4,12L5.41,10.59L11,16.17V4H13V16.17L18.59,10.58L20,12L12,20L4,12Z",oe="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z";let ce=class extends ni{constructor(){super(...arguments),this.label="",this.value="",this.placeholder="",this.type="text",this.disabled=!1}_onInput(i){i.stopPropagation(),this.disabled||(this.value=i.currentTarget.value,this.dispatchEvent(new Event("input",{bubbles:!0,composed:!0})))}render(){return E`
       <label>
         <span>${this.label}</span>
         <input
@@ -88,14 +88,14 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
           aria-label=${this.label}
           .value=${this.value||""}
           placeholder=${this.placeholder||""}
-          step=${this.step||W}
-          min=${this.min||W}
-          max=${this.max||W}
+          step=${this.step||G}
+          min=${this.min||G}
+          max=${this.max||G}
           ?disabled=${this.disabled}
           @input=${this._onInput}
         />
       </label>
-    `}static get styles(){return r`
+    `}static get styles(){return c`
       :host {
         display: block;
         width: 100%;
@@ -144,23 +144,23 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
         color: var(--secondary-text-color);
         opacity: 0.72;
       }
-    `}};e([xe()],rt.prototype,"label",void 0),e([xe()],rt.prototype,"value",void 0),e([xe()],rt.prototype,"placeholder",void 0),e([xe()],rt.prototype,"type",void 0),e([xe()],rt.prototype,"step",void 0),e([xe()],rt.prototype,"min",void 0),e([xe()],rt.prototype,"max",void 0),e([xe({type:Boolean,reflect:!0})],rt.prototype,"disabled",void 0),rt=e([ye("space-hub-textfield")],rt);let st=class extends oe{constructor(){super(...arguments),this._selectedHeaderIndex=0,this._selectedSwitchRowIndex=0,this._yamlMode=!1,this._yamlError="",this._haElementsRequested=!1}setConfig(e){this._config=Ge(e)}connectedCallback(){super.connectedCallback(),this._loadHAElements()}async _loadHAElements(){var e,t,i;if(this._haElementsRequested)return;this._haElementsRequested=!0;try{const n=await(null===(t=(e=window).loadCardHelpers)||void 0===t?void 0:t.call(e));n&&await(null===(i=n.createCardElement)||void 0===i?void 0:i.call(n,{type:"entities",entities:[]}))}catch(e){}const n=["ha-form","ha-formfield","ha-icon-picker","ha-switch","space-hub-textfield","ha-expansion-panel","ha-yaml-editor"],o=e=>Promise.race([customElements.whenDefined(e),new Promise((e=>setTimeout(e,1500)))]);try{await Promise.all(n.map(o))}catch(e){}this.requestUpdate()}_fireConfigChanged(){We(this,"config-changed",{config:Ge(this._config)}),this.requestUpdate()}_valueChanged(e,t){const i=e.split(".");let n=this._config;for(let e=0;e<i.length-1;e++){const t=i[e],o=Number(t);if(Number.isFinite(o)){if(!Array.isArray(n))return;n[o]||(n[o]={}),n=n[o]}else void 0===n[t]&&(n[t]={}),n=n[t]}const o=i[i.length-1];""===t||null==t?delete n[o]:n[o]=t,this._fireConfigChanged()}_getNestedValue(e){const t=e.split(".");let i=this._config;for(const e of t){if(null==i)return;const t=Number(e);i=Number.isFinite(t)?i[t]:i[e]}return i}_checkedFromEvent(e){var t;return!!(null===(t=e.currentTarget)||void 0===t?void 0:t.checked)}_clampIndex(e,t){return t<=0?0:Math.min(Math.max(e,0),t-1)}_moveArrayItem(e,t,i){const n=this._getNestedValue(e);if(!Array.isArray(n))return!1;const o=t+i;if(o<0||o>=n.length)return!1;const a=[...n],[r]=a.splice(t,1);return a.splice(o,0,r),this._valueChanged(e,a),!0}_moveSwitchRow(e,t){const i=this._config.switch_rows;if(!Array.isArray(i))return;const n=e+t;if(n<0||n>=i.length)return;const o=[...i],[a]=o.splice(e,1);o.splice(n,0,a),this._selectedSwitchRowIndex=n,this._valueChanged("switch_rows",o)}_moveHeader(e,t){const i=this._config.headers;if(!Array.isArray(i))return;const n=e+t;if(n<0||n>=i.length)return;const o=[...i],[a]=o.splice(e,1);o.splice(n,0,a),this._selectedHeaderIndex=n,this._valueChanged("headers",o)}_handleSelectChanged(e,t){const i=e.split("."),n=i[i.length-1],o=i[i.length-2];"action"===n&&["tap_action","hold_action","double_tap_action"].includes(o)?this._handleActionTypeChanged(i.slice(0,-1).join("."),t):this._valueChanged(e,t)}_handleActionTypeChanged(e,t){if(!t)return void this._valueChanged(e,void 0);const i=Ze(this._getNestedValue(e)),n=i?Object.assign({},i):{};n.action=t,"more-info"!==t&&delete n.entity,"navigate"!==t&&(delete n.navigation_path,delete n.navigation_replace),"url"!==t&&delete n.url_path,"perform-action"!==t&&(delete n.perform_action,delete n.data,delete n.target,delete n.service,delete n.service_data),"assist"!==t&&(delete n.pipeline_id,delete n.start_listening),"perform-action"!==t||n.perform_action||(n.perform_action=""),"navigate"!==t||n.navigation_path||(n.navigation_path=""),"url"!==t||n.url_path||(n.url_path=""),"assist"===t&&void 0===n.start_listening&&(n.start_listening=!1),this._valueChanged(e,n)}_setActionConfirmation(e,t){const i=Ze(this._getNestedValue(e));if(!i)return;const n=Object.assign({},i);if(t){const e=Ke(n.confirmation);n.confirmation=e&&"object"==typeof e?e:{title:"Please confirm",text:"Are you sure?"}}else delete n.confirmation;this._valueChanged(e,n)}_setActionConfirmationField(e,t,i){const n=Ze(this._getNestedValue(e));if(!n)return;const o=Object.assign({},n),a=Ke(o.confirmation),r=a&&"object"==typeof a?Object.assign({},a):{};i.trim()?r[t]=i:delete r[t],o.confirmation=!Object.keys(r).length||r,this._valueChanged(e,o)}_setSwitchConfirmation(e,t){if(!t)return void this._valueChanged(e,void 0);const i=Ke(this._getNestedValue(e));this._valueChanged(e,i&&"object"==typeof i?i:{title:"Please confirm",text:"Are you sure?"})}_setSwitchConfirmationField(e,t,i){const n=Ke(this._getNestedValue(e)),o=n&&"object"==typeof n?Object.assign({},n):{};i.trim()?o[t]=i:delete o[t],this._valueChanged(e,!Object.keys(o).length||o)}_setSwitchInactiveIcon(e,t){const i=this._getNestedValue(e),n=i&&"object"==typeof i?Object.assign({},i):{},o="string"==typeof t?t.trim():"";o?n.icon=o:delete n.icon,delete n.icon_inactive,delete n.icon_off,delete n["icon-inactive"],delete n["icon-off"],this._valueChanged(e,n)}_renderSelectField(e,t,i,n){const o=i||n[0]||"",a=o&&!n.includes(o)?[o,...n]:[...n],r=a.includes(i||"")?i||"":o;return L`
+    `}};i([mi()],ce.prototype,"label",void 0),i([mi()],ce.prototype,"value",void 0),i([mi()],ce.prototype,"placeholder",void 0),i([mi()],ce.prototype,"type",void 0),i([mi()],ce.prototype,"step",void 0),i([mi()],ce.prototype,"min",void 0),i([mi()],ce.prototype,"max",void 0),i([mi({type:Boolean,reflect:!0})],ce.prototype,"disabled",void 0),ce=i([pi("space-hub-textfield")],ce);let re=class extends ni{constructor(){super(...arguments),this._selectedHeaderIndex=0,this._selectedSwitchRowIndex=0,this._yamlMode=!1,this._yamlError="",this._haElementsRequested=!1}setConfig(i){this._config=Ri(i)}connectedCallback(){super.connectedCallback(),this._loadHAElements()}async _loadHAElements(){var i,e,t;if(this._haElementsRequested)return;this._haElementsRequested=!0;try{const a=await(null===(e=(i=window).loadCardHelpers)||void 0===e?void 0:e.call(i));a&&await(null===(t=a.createCardElement)||void 0===t?void 0:t.call(a,{type:"entities",entities:[]}))}catch(i){}const a=["ha-form","ha-formfield","ha-icon-picker","ha-switch","space-hub-textfield","ha-expansion-panel","ha-yaml-editor"],n=i=>Promise.race([customElements.whenDefined(i),new Promise((i=>setTimeout(i,1500)))]);try{await Promise.all(a.map(n))}catch(i){}this.requestUpdate()}_fireConfigChanged(){Gi(this,"config-changed",{config:Ri(this._config)}),this.requestUpdate()}_valueChanged(i,e){const t=i.split(".");let a=this._config;for(let i=0;i<t.length-1;i++){const e=t[i],n=Number(e);if(Number.isFinite(n)){if(!Array.isArray(a))return;a[n]||(a[n]={}),a=a[n]}else void 0===a[e]&&(a[e]={}),a=a[e]}const n=t[t.length-1];""===e||null==e?delete a[n]:a[n]=e,this._fireConfigChanged()}_getNestedValue(i){const e=i.split(".");let t=this._config;for(const i of e){if(null==t)return;const e=Number(i);t=Number.isFinite(e)?t[e]:t[i]}return t}_checkedFromEvent(i){var e;return!!(null===(e=i.currentTarget)||void 0===e?void 0:e.checked)}_clampIndex(i,e){return e<=0?0:Math.min(Math.max(i,0),e-1)}_moveArrayItem(i,e,t){const a=this._getNestedValue(i);if(!Array.isArray(a))return!1;const n=e+t;if(n<0||n>=a.length)return!1;const o=[...a],[c]=o.splice(e,1);return o.splice(n,0,c),this._valueChanged(i,o),!0}_moveSwitchRow(i,e){const t=this._config.switch_rows;if(!Array.isArray(t))return;const a=i+e;if(a<0||a>=t.length)return;const n=[...t],[o]=n.splice(i,1);n.splice(a,0,o),this._selectedSwitchRowIndex=a,this._valueChanged("switch_rows",n)}_moveHeader(i,e){const t=this._config.headers;if(!Array.isArray(t))return;const a=i+e;if(a<0||a>=t.length)return;const n=[...t],[o]=n.splice(i,1);n.splice(a,0,o),this._selectedHeaderIndex=a,this._valueChanged("headers",n)}_handleSelectChanged(i,e){const t=i.split("."),a=t[t.length-1],n=t[t.length-2];"action"===a&&["tap_action","hold_action","double_tap_action"].includes(n)?this._handleActionTypeChanged(t.slice(0,-1).join("."),e):this._valueChanged(i,e)}_handleActionTypeChanged(i,e){if(!e)return void this._valueChanged(i,void 0);const t=Ji(this._getNestedValue(i)),a=t?Object.assign({},t):{};a.action=e,"more-info"!==e&&delete a.entity,"navigate"!==e&&(delete a.navigation_path,delete a.navigation_replace),"url"!==e&&delete a.url_path,"perform-action"!==e&&(delete a.perform_action,delete a.data,delete a.target,delete a.service,delete a.service_data),"assist"!==e&&(delete a.pipeline_id,delete a.start_listening),"perform-action"!==e||a.perform_action||(a.perform_action=""),"navigate"!==e||a.navigation_path||(a.navigation_path=""),"url"!==e||a.url_path||(a.url_path=""),"assist"===e&&void 0===a.start_listening&&(a.start_listening=!1),this._valueChanged(i,a)}_setActionConfirmation(i,e){const t=Ji(this._getNestedValue(i));if(!t)return;const a=Object.assign({},t);if(e){const i=Hi(a.confirmation);a.confirmation=i&&"object"==typeof i?i:{title:"Please confirm",text:"Are you sure?"}}else delete a.confirmation;this._valueChanged(i,a)}_setActionConfirmationField(i,e,t){const a=Ji(this._getNestedValue(i));if(!a)return;const n=Object.assign({},a),o=Hi(n.confirmation),c=o&&"object"==typeof o?Object.assign({},o):{};t.trim()?c[e]=t:delete c[e],n.confirmation=!Object.keys(c).length||c,this._valueChanged(i,n)}_setSwitchConfirmation(i,e){if(!e)return void this._valueChanged(i,void 0);const t=Hi(this._getNestedValue(i));this._valueChanged(i,t&&"object"==typeof t?t:{title:"Please confirm",text:"Are you sure?"})}_setSwitchConfirmationField(i,e,t){const a=Hi(this._getNestedValue(i)),n=a&&"object"==typeof a?Object.assign({},a):{};t.trim()?n[e]=t:delete n[e],this._valueChanged(i,!Object.keys(n).length||n)}_setSwitchInactiveIcon(i,e){const t=this._getNestedValue(i),a=t&&"object"==typeof t?Object.assign({},t):{},n="string"==typeof e?e.trim():"";n?a.icon=n:delete a.icon,delete a.icon_inactive,delete a.icon_off,delete a["icon-inactive"],delete a["icon-off"],this._valueChanged(i,a)}_renderSelectField(i,e,t,a){const n=t||a[0]||"",o=n&&!a.includes(n)?[n,...a]:[...a],c=o.includes(t||"")?t||"":n;return E`
       <ha-form
         .hass=${this.hass}
-        .data=${{selection:r}}
-        .schema=${[{name:"selection",selector:{select:{mode:"dropdown",options:a.map((e=>({value:e,label:e})))}}}]}
-        .computeLabel=${t=>"selection"===t.name?e:void 0}
-        @value-changed=${e=>{var i;e.stopPropagation(),this._handleSelectChanged(t,null===(i=e.detail.value)||void 0===i?void 0:i.selection)}}
+        .data=${{selection:c}}
+        .schema=${[{name:"selection",selector:{select:{mode:"dropdown",options:o.map((i=>({value:i,label:i})))}}}]}
+        .computeLabel=${e=>"selection"===e.name?i:void 0}
+        @value-changed=${i=>{var t;i.stopPropagation(),this._handleSelectChanged(e,null===(t=i.detail.value)||void 0===t?void 0:t.selection)}}
       ></ha-form>
-    `}_renderEntityField(e,t,i,n={}){return L`
+    `}_renderEntityField(i,e,t,a={}){return E`
       <ha-form
         .hass=${this.hass}
-        .data=${{entity:i||""}}
-        .schema=${[{name:"entity",selector:{entity:n}}]}
-        .computeLabel=${t=>"entity"===t.name?e:void 0}
-        @value-changed=${e=>{var i;e.stopPropagation(),this._valueChanged(t,null===(i=e.detail.value)||void 0===i?void 0:i.entity)}}
+        .data=${{entity:t||""}}
+        .schema=${[{name:"entity",selector:{entity:a}}]}
+        .computeLabel=${e=>"entity"===e.name?i:void 0}
+        @value-changed=${i=>{var t;i.stopPropagation(),this._valueChanged(e,null===(t=i.detail.value)||void 0===t?void 0:t.entity)}}
       ></ha-form>
-    `}_friendlyEntityName(e){var t,i,n;return e&&(null===(i=null===(t=this.hass)||void 0===t?void 0:t.states)||void 0===i?void 0:i[e])&&(null===(n=this.hass.states[e].attributes)||void 0===n?void 0:n.friendly_name)||""}_entitySummary(e){if(!e)return"No entity selected";const t=this._friendlyEntityName(e);return t&&t!==e?`${t} • ${e}`:e}render(){return this.hass&&this._config?L`
+    `}_friendlyEntityName(i){var e,t,a;return i&&(null===(t=null===(e=this.hass)||void 0===e?void 0:e.states)||void 0===t?void 0:t[i])&&(null===(a=this.hass.states[i].attributes)||void 0===a?void 0:a.friendly_name)||""}_entitySummary(i){if(!i)return"No entity selected";const e=this._friendlyEntityName(i);return e&&e!==i?`${e} • ${i}`:i}render(){return this.hass&&this._config?E`
       <div class="editor-container">
         <div class="mode-toggle">
           <button
@@ -174,53 +174,53 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
         </div>
         ${this._yamlMode?this._renderYamlEditor():this._renderVisualEditor()}
       </div>
-    `:L``}_renderYamlEditor(){return L`
+    `:E``}_renderYamlEditor(){return E`
       <ha-yaml-editor
         .defaultValue=${this._config}
         @value-changed=${this._yamlChanged}
       ></ha-yaml-editor>
-      ${this._yamlError?L`<div class="yaml-error">${this._yamlError}</div>`:W}
-    `}_yamlChanged(e){e.stopPropagation();const t=e.detail.value;t&&"object"==typeof t?(this._yamlError="",this._config=Ge(t),this._fireConfigChanged()):this._yamlError="Invalid YAML"}_renderVisualEditor(){return L`
+      ${this._yamlError?E`<div class="yaml-error">${this._yamlError}</div>`:G}
+    `}_yamlChanged(i){i.stopPropagation();const e=i.detail.value;e&&"object"==typeof e?(this._yamlError="",this._config=Ri(e),this._fireConfigChanged()):this._yamlError="Invalid YAML"}_renderVisualEditor(){return E`
       ${this._renderAppearanceSection()}
       ${this._renderHeadersSection()}
       ${this._renderSwitchRowsSection()}
       ${this._renderCardsSection()}
-    `}_renderAppearanceSection(){var e,t,i,n,o;return L`
+    `}_renderAppearanceSection(){var i,e,t,a,n;return E`
       <ha-expansion-panel outlined .header=${"Appearance"}>
         <div class="section-content">
           <div class="side-by-side">
             <space-hub-textfield
               label="Tile Height (px)"
               type="number"
-              .value=${String(null!==(e=this._config.tile_height)&&void 0!==e?e:"")}
-              @input=${e=>{const t=Number(e.target.value);this._valueChanged("tile_height",Number.isFinite(t)&&t>0?t:void 0)}}
+              .value=${String(null!==(i=this._config.tile_height)&&void 0!==i?i:"")}
+              @input=${i=>{const e=Number(i.target.value);this._valueChanged("tile_height",Number.isFinite(e)&&e>0?e:void 0)}}
             ></space-hub-textfield>
             <space-hub-textfield
               label="Main Icon Size (px)"
               type="number"
-              .value=${String(null!==(t=this._config.main_icon_size)&&void 0!==t?t:"")}
-              @input=${e=>{const t=Number(e.target.value);this._valueChanged("main_icon_size",Number.isFinite(t)&&t>0?t:void 0)}}
+              .value=${String(null!==(e=this._config.main_icon_size)&&void 0!==e?e:"")}
+              @input=${i=>{const e=Number(i.target.value);this._valueChanged("main_icon_size",Number.isFinite(e)&&e>0?e:void 0)}}
             ></space-hub-textfield>
           </div>
           <div class="side-by-side">
             <space-hub-textfield
               label="Chip Icon Size (px)"
               type="number"
-              .value=${String(null!==(i=this._config.chip_icon_size)&&void 0!==i?i:"")}
-              @input=${e=>{const t=Number(e.target.value);this._valueChanged("chip_icon_size",Number.isFinite(t)&&t>0?t:void 0)}}
+              .value=${String(null!==(t=this._config.chip_icon_size)&&void 0!==t?t:"")}
+              @input=${i=>{const e=Number(i.target.value);this._valueChanged("chip_icon_size",Number.isFinite(e)&&e>0?e:void 0)}}
             ></space-hub-textfield>
             <space-hub-textfield
               label="Chip Font Size (px)"
               type="number"
-              .value=${String(null!==(n=this._config.chip_font_size)&&void 0!==n?n:"")}
-              @input=${e=>{const t=Number(e.target.value);this._valueChanged("chip_font_size",Number.isFinite(t)&&t>0?t:void 0)}}
+              .value=${String(null!==(a=this._config.chip_font_size)&&void 0!==a?a:"")}
+              @input=${i=>{const e=Number(i.target.value);this._valueChanged("chip_font_size",Number.isFinite(e)&&e>0?e:void 0)}}
             ></space-hub-textfield>
           </div>
           <div class="side-by-side">
             <space-hub-textfield
               label="Shadow Color"
               .value=${this._config.card_shadow_color||""}
-              @input=${e=>this._valueChanged("card_shadow_color",e.target.value)}
+              @input=${i=>this._valueChanged("card_shadow_color",i.target.value)}
             ></space-hub-textfield>
             <space-hub-textfield
               label="Shadow Intensity (0-1)"
@@ -228,100 +228,118 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
               step="0.05"
               min="0"
               max="1"
-              .value=${String(null!==(o=this._config.card_shadow_intensity)&&void 0!==o?o:"")}
-              @input=${e=>{const t=Number(e.target.value);this._valueChanged("card_shadow_intensity",Number.isFinite(t)?t:void 0)}}
+              .value=${String(null!==(n=this._config.card_shadow_intensity)&&void 0!==n?n:"")}
+              @input=${i=>{const e=Number(i.target.value);this._valueChanged("card_shadow_intensity",Number.isFinite(e)?e:void 0)}}
             ></space-hub-textfield>
           </div>
           <space-hub-textfield
             label="Unavailable Pulse Color"
             .value=${this._config.unavailable_pulse_color||""}
-            @input=${e=>this._valueChanged("unavailable_pulse_color",e.target.value)}
+            @input=${i=>this._valueChanged("unavailable_pulse_color",i.target.value)}
           ></space-hub-textfield>
         </div>
       </ha-expansion-panel>
-    `}_renderHeadersSection(){const e=this._config.headers||[],t=this._clampIndex(this._selectedHeaderIndex,e.length);return L`
-      <ha-expansion-panel outlined .header=${`Headers (${e.length})`}>
+    `}_renderHeadersSection(){const i=this._config.headers||[],e=this._clampIndex(this._selectedHeaderIndex,i.length);return E`
+      <ha-expansion-panel outlined .header=${`Headers (${i.length})`}>
         <div class="section-content">
-          ${e.length>1?L`
+          ${i.length>1?E`
             <div class="tab-bar">
-              ${e.map(((e,i)=>L`<button class="tab-btn${t===i?" active":""}" @click=${()=>{this._selectedHeaderIndex=i,this.requestUpdate()}}>Header ${i+1}</button>`))}
+              ${i.map(((i,t)=>E`<button class="tab-btn${e===t?" active":""}" @click=${()=>{this._selectedHeaderIndex=t,this.requestUpdate()}}>Header ${t+1}</button>`))}
             </div>
-          `:W}
-          ${e.length?this._renderHeader(e[t],t):L`<div class="empty-hint">No headers configured.</div>`}
+          `:G}
+          ${i.length?this._renderHeader(i[e],e):E`<div class="empty-hint">No headers configured.</div>`}
           <div class="action-row">
             <button class="editor-btn" @click=${this._addHeader}>
               <ha-icon icon="mdi:plus"></ha-icon> Add Header
             </button>
-            ${e.length>0?L`
+            ${i.length>0?E`
               <button
                 class="editor-btn"
-                .disabled=${t<=0}
-                @click=${()=>this._moveHeader(t,-1)}
+                .disabled=${e<=0}
+                @click=${()=>this._moveHeader(e,-1)}
               >
                 <ha-icon icon="mdi:arrow-up"></ha-icon> Move Header Up
               </button>
               <button
                 class="editor-btn"
-                .disabled=${t>=e.length-1}
-                @click=${()=>this._moveHeader(t,1)}
+                .disabled=${e>=i.length-1}
+                @click=${()=>this._moveHeader(e,1)}
               >
                 <ha-icon icon="mdi:arrow-down"></ha-icon> Move Header Down
               </button>
-              <button class="editor-btn danger" @click=${()=>this._removeHeader(t)}>
-                <ha-icon icon="mdi:delete"></ha-icon> Remove Header ${t+1}
+              <button class="editor-btn danger" @click=${()=>this._removeHeader(e)}>
+                <ha-icon icon="mdi:delete"></ha-icon> Remove Header ${e+1}
               </button>
-            `:W}
+            `:G}
           </div>
         </div>
       </ha-expansion-panel>
-    `}_addHeader(){this._config.headers||(this._config.headers=[]),this._config.headers.push({main:{main_name:"New Room"}}),this._selectedHeaderIndex=this._config.headers.length-1,this._fireConfigChanged()}_removeHeader(e){this._config.headers&&(this._config.headers.splice(e,1),this._selectedHeaderIndex>=this._config.headers.length&&(this._selectedHeaderIndex=Math.max(0,this._config.headers.length-1)),this._fireConfigChanged())}_renderHeader(e,t){const i=`headers.${t}`;return L`
-      ${this._renderWeatherConfig(e.weather,`${i}.weather`)}
-      ${this._renderMainTileConfig(e.main,`${i}.main`)}
-      ${this._renderACConfig(e.ac,`${i}.ac`)}
-      ${this._renderThermostatConfig(e.thermostat,`${i}.thermostat`)}
-    `}_renderWeatherConfig(e,t){var i,n;const o=e||{};return L`
+    `}_addHeader(){this._config.headers||(this._config.headers=[]),this._config.headers.push({main:{main_name:"New Room"}}),this._selectedHeaderIndex=this._config.headers.length-1,this._fireConfigChanged()}_removeHeader(i){this._config.headers&&(this._config.headers.splice(i,1),this._selectedHeaderIndex>=this._config.headers.length&&(this._selectedHeaderIndex=Math.max(0,this._config.headers.length-1)),this._fireConfigChanged())}_renderHeader(i,e){const t=`headers.${e}`;return E`
+      ${this._renderWeatherConfig(i.weather,`${t}.weather`)}
+      ${this._renderMainTileConfig(i.main,`${t}.main`)}
+      ${this._renderACConfig(i.ac,`${t}.ac`)}
+      ${this._renderThermostatConfig(i.thermostat,`${t}.thermostat`)}
+    `}_renderWeatherConfig(i,e){var t,a,n,o,c;const r=i||{};return E`
       <ha-expansion-panel outlined .header=${"Weather Tile"}>
         <div class="section-content">
-          ${!!e?L`
+          ${!!i?E`
             <div class="side-by-side">
               <space-hub-textfield
                 label="Name"
-                .value=${o.name||""}
-                @input=${e=>this._valueChanged(`${t}.name`,e.target.value)}
+                .value=${r.name||""}
+                @input=${i=>this._valueChanged(`${e}.name`,i.target.value)}
               ></space-hub-textfield>
               <ha-icon-picker
                 .hass=${this.hass}
                 label="Icon"
-                .value=${o.icon||""}
-                @value-changed=${e=>this._valueChanged(`${t}.icon`,e.detail.value)}
+                .value=${r.icon||""}
+                @value-changed=${i=>this._valueChanged(`${e}.icon`,i.detail.value)}
               ></ha-icon-picker>
             </div>
             <div class="side-by-side">
-              ${this._renderEntityField("Weather Entity",`${t}.entity`,o.entity,{domain:"weather"})}
+              ${this._renderEntityField("Weather Entity",`${e}.entity`,r.entity,{domain:"weather"})}
               <space-hub-textfield
                 label="Tile Height (px)"
                 type="number"
-                .value=${String(null!==(i=o.height)&&void 0!==i?i:"")}
-                @input=${e=>{const i=Number(e.target.value);this._valueChanged(`${t}.height`,Number.isFinite(i)&&i>0?i:void 0)}}
+                .value=${String(null!==(t=r.height)&&void 0!==t?t:"")}
+                @input=${i=>{const t=Number(i.target.value);this._valueChanged(`${e}.height`,Number.isFinite(t)&&t>0?t:void 0)}}
+              ></space-hub-textfield>
+            </div>
+            <div class="side-by-side">
+              <space-hub-textfield
+                label="Temperature Size (px)"
+                type="number"
+                min="18"
+                max="56"
+                .value=${String(null!==(a=r.temp_size)&&void 0!==a?a:"")}
+                @input=${i=>{const t=Number(i.target.value);this._valueChanged(`${e}.temp_size`,Number.isFinite(t)&&t>0?t:void 0)}}
+              ></space-hub-textfield>
+              <space-hub-textfield
+                label="Icon Size (px)"
+                type="number"
+                min="28"
+                max="76"
+                .value=${String(null!==(n=r.icon_size)&&void 0!==n?n:"")}
+                @input=${i=>{const t=Number(i.target.value);this._valueChanged(`${e}.icon_size`,Number.isFinite(t)&&t>0?t:void 0)}}
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
               <ha-formfield label="Animated icons">
                 <ha-switch
-                  .checked=${!1!==o.animated_icons}
-                  @change=${e=>{this._valueChanged(`${t}.animated_icons`,!!this._checkedFromEvent(e)&&void 0)}}
+                  .checked=${!1!==r.animated_icons}
+                  @change=${i=>{this._valueChanged(`${e}.animated_icons`,!!this._checkedFromEvent(i)&&void 0)}}
                 ></ha-switch>
               </ha-formfield>
               <ha-formfield label="Show forecast">
                 <ha-switch
-                  .checked=${!1!==o.show_forecast}
-                  @change=${e=>{this._valueChanged(`${t}.show_forecast`,!!this._checkedFromEvent(e)&&void 0)}}
+                  .checked=${!1!==r.show_forecast}
+                  @change=${i=>{this._valueChanged(`${e}.show_forecast`,!!this._checkedFromEvent(i)&&void 0)}}
                 ></ha-switch>
               </ha-formfield>
             </div>
             <div class="side-by-side">
-              ${this._renderSelectField("Forecast Type",`${t}.forecast_type`,o.forecast_type,et)}
-              ${this._renderSelectField("Time Format",`${t}.time_format`,o.time_format,tt)}
+              ${this._renderSelectField("Forecast Type",`${e}.forecast_type`,r.forecast_type,ie)}
+              ${this._renderSelectField("Time Format",`${e}.time_format`,r.time_format,ee)}
             </div>
             <div class="side-by-side">
               <space-hub-textfield
@@ -329,357 +347,362 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
                 type="number"
                 min="1"
                 max="24"
-                .value=${String(null!==(n=o.forecast_slots)&&void 0!==n?n:"")}
-                @input=${e=>{const i=Number(e.target.value);this._valueChanged(`${t}.forecast_slots`,Number.isFinite(i)&&i>0?i:void 0)}}
+                .value=${String(null!==(o=r.forecast_slots)&&void 0!==o?o:"")}
+                @input=${i=>{const t=Number(i.target.value);this._valueChanged(`${e}.forecast_slots`,Number.isFinite(t)&&t>0?t:void 0)}}
+              ></space-hub-textfield>
+              <space-hub-textfield
+                label="Graph Height (px)"
+                type="number"
+                min="82"
+                max="260"
+                .value=${String(null!==(c=r.graph_height)&&void 0!==c?c:"")}
+                @input=${i=>{const t=Number(i.target.value);this._valueChanged(`${e}.graph_height`,Number.isFinite(t)&&t>0?t:void 0)}}
               ></space-hub-textfield>
             </div>
             <space-hub-textfield
               label="Forecast Fields"
               placeholder="temperature, precipitation_probability"
-              .value=${Array.isArray(o.forecast_fields)?o.forecast_fields.join(", "):o.forecast_fields||""}
-              @input=${e=>{const i=e.target.value.split(",").map((e=>e.trim())).filter((e=>e));this._valueChanged(`${t}.forecast_fields`,i.length?i:void 0)}}
+              .value=${Array.isArray(r.forecast_fields)?r.forecast_fields.join(", "):r.forecast_fields||""}
+              @input=${i=>{const t=i.target.value.split(",").map((i=>i.trim())).filter((i=>i));this._valueChanged(`${e}.forecast_fields`,t.length?t:void 0)}}
             ></space-hub-textfield>
             <div class="side-by-side">
-              ${this._renderEntityField("Temperature Sensor",`${t}.temp_sensor`,o.temp_sensor,{domain:"sensor"})}
-              ${this._renderEntityField("Humidity Sensor",`${t}.humidity_sensor`,o.humidity_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("Temperature Sensor",`${e}.temp_sensor`,r.temp_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("Humidity Sensor",`${e}.humidity_sensor`,r.humidity_sensor,{domain:"sensor"})}
             </div>
             <div class="side-by-side">
-              ${this._renderEntityField("24h Min Temperature Sensor",`${t}.temp_min_24h_sensor`,o.temp_min_24h_sensor,{domain:"sensor"})}
-              ${this._renderEntityField("24h Max Temperature Sensor",`${t}.temp_max_24h_sensor`,o.temp_max_24h_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("24h Min Temperature Sensor",`${e}.temp_min_24h_sensor`,r.temp_min_24h_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("24h Max Temperature Sensor",`${e}.temp_max_24h_sensor`,r.temp_max_24h_sensor,{domain:"sensor"})}
+            </div>
+            ${this._renderEntityField("Feels Like Sensor",`${e}.feels_like_sensor`,r.feels_like_sensor,{domain:"sensor"})}
+            <div class="side-by-side">
+              ${this._renderEntityField("Wind Speed Sensor",`${e}.wind_speed_sensor`,r.wind_speed_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("Wind Gust Sensor",`${e}.wind_gust_sensor`,r.wind_gust_sensor,{domain:"sensor"})}
             </div>
             <div class="side-by-side">
-              ${this._renderEntityField("Feels Like Sensor",`${t}.feels_like_sensor`,o.feels_like_sensor,{domain:"sensor"})}
-              ${this._renderEntityField("Dew Point Sensor",`${t}.dewpoint_sensor`,o.dewpoint_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("Wind Direction Sensor",`${e}.wind_direction_sensor`,r.wind_direction_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("Rain State Sensor",`${e}.rain_state_sensor`,r.rain_state_sensor,{domain:"binary_sensor"})}
             </div>
             <div class="side-by-side">
-              ${this._renderEntityField("Wind Speed Sensor",`${t}.wind_speed_sensor`,o.wind_speed_sensor,{domain:"sensor"})}
-              ${this._renderEntityField("Wind Gust Sensor",`${t}.wind_gust_sensor`,o.wind_gust_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("Rain Today Sensor",`${e}.rain_today_sensor`,r.rain_today_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("Rain Rate Sensor",`${e}.rain_rate_sensor`,r.rain_rate_sensor,{domain:"sensor"})}
             </div>
             <div class="side-by-side">
-              ${this._renderEntityField("Wind Direction Sensor",`${t}.wind_direction_sensor`,o.wind_direction_sensor,{domain:"sensor"})}
-              ${this._renderEntityField("Rain State Sensor",`${t}.rain_state_sensor`,o.rain_state_sensor,{domain:"binary_sensor"})}
+              ${this._renderEntityField("UV Sensor",`${e}.uv_sensor`,r.uv_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("Solar Lux Sensor",`${e}.solar_lux_sensor`,r.solar_lux_sensor,{domain:"sensor"})}
             </div>
-            <div class="side-by-side">
-              ${this._renderEntityField("Rain Today Sensor",`${t}.rain_today_sensor`,o.rain_today_sensor,{domain:"sensor"})}
-              ${this._renderEntityField("Rain Rate Sensor",`${t}.rain_rate_sensor`,o.rain_rate_sensor,{domain:"sensor"})}
-            </div>
-            <div class="side-by-side">
-              ${this._renderEntityField("UV Sensor",`${t}.uv_sensor`,o.uv_sensor,{domain:"sensor"})}
-              ${this._renderEntityField("Solar Lux Sensor",`${t}.solar_lux_sensor`,o.solar_lux_sensor,{domain:"sensor"})}
-            </div>
-            ${this._renderEntityField("Pressure Sensor",`${t}.pressure_sensor`,o.pressure_sensor,{domain:"sensor"})}
-            ${this._renderChipsConfig(o.chips||[],t)}
-            ${this._renderActionConfig("Tap Action",`${t}.tap_action`,o.tap_action)}
-            ${this._renderActionConfig("Hold Action",`${t}.hold_action`,o.hold_action)}
-            ${this._renderActionConfig("Double Tap Action",`${t}.double_tap_action`,o.double_tap_action)}
-            <button class="editor-btn danger" @click=${()=>this._valueChanged(t,void 0)}>
+            ${this._renderEntityField("Pressure Sensor",`${e}.pressure_sensor`,r.pressure_sensor,{domain:"sensor"})}
+            ${this._renderChipsConfig(r.chips||[],e)}
+            ${this._renderActionConfig("Tap Action",`${e}.tap_action`,r.tap_action)}
+            ${this._renderActionConfig("Hold Action",`${e}.hold_action`,r.hold_action)}
+            ${this._renderActionConfig("Double Tap Action",`${e}.double_tap_action`,r.double_tap_action)}
+            <button class="editor-btn danger" @click=${()=>this._valueChanged(e,void 0)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove Weather Tile
             </button>
-          `:L`
-            <button class="editor-btn" @click=${()=>{this._valueChanged(t,{name:"Weather"})}}>
+          `:E`
+            <button class="editor-btn" @click=${()=>{this._valueChanged(e,{name:"Weather"})}}>
               <ha-icon icon="mdi:plus"></ha-icon> Add Weather Tile
             </button>
           `}
         </div>
       </ha-expansion-panel>
-    `}_renderMainTileConfig(e,t){const i=e||{};return L`
+    `}_renderMainTileConfig(i,e){const t=i||{};return E`
       <ha-expansion-panel outlined .header=${"Main Tile"}>
         <div class="section-content">
-          ${!!e?L`
+          ${!!i?E`
             <div class="side-by-side">
               <space-hub-textfield
                 label="Name"
-                .value=${i.main_name||""}
-                @input=${e=>this._valueChanged(`${t}.main_name`,e.target.value)}
+                .value=${t.main_name||""}
+                @input=${i=>this._valueChanged(`${e}.main_name`,i.target.value)}
               ></space-hub-textfield>
               <ha-icon-picker
                 .hass=${this.hass}
                 label="Icon"
-                .value=${i.main_icon||""}
-                @value-changed=${e=>this._valueChanged(`${t}.main_icon`,e.detail.value)}
+                .value=${t.main_icon||""}
+                @value-changed=${i=>this._valueChanged(`${e}.main_icon`,i.detail.value)}
               ></ha-icon-picker>
             </div>
-            ${this._renderEntityField("Light Group Entity (tap toggles)",`${t}.light_group_entity`,i.light_group_entity)}
+            ${this._renderEntityField("Light Group Entity (tap toggles)",`${e}.light_group_entity`,t.light_group_entity)}
             <div class="side-by-side">
-              ${this._renderEntityField("Tap Entity",`${t}.tap_entity`,i.tap_entity)}
-              ${this._renderEntityField("Hold Entity (more-info)",`${t}.hold_entity`,i.hold_entity)}
+              ${this._renderEntityField("Tap Entity",`${e}.tap_entity`,t.tap_entity)}
+              ${this._renderEntityField("Hold Entity (more-info)",`${e}.hold_entity`,t.hold_entity)}
             </div>
             <div class="side-by-side">
-              ${this._renderEntityField("Temperature Sensor",`${t}.temp_sensor`,i.temp_sensor,{domain:"sensor"})}
-              ${this._renderEntityField("Humidity Sensor",`${t}.humidity_sensor`,i.humidity_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("Temperature Sensor",`${e}.temp_sensor`,t.temp_sensor,{domain:"sensor"})}
+              ${this._renderEntityField("Humidity Sensor",`${e}.humidity_sensor`,t.humidity_sensor,{domain:"sensor"})}
             </div>
-            ${this._renderSelectField("Glow Mode",`${t}.glow_mode`,i.glow_mode,Qe)}
-            ${this._renderChipsConfig(i.chips||[],t)}
-            ${this._renderActionConfig("Tap Action",`${t}.tap_action`,i.tap_action)}
-            ${this._renderActionConfig("Hold Action",`${t}.hold_action`,i.hold_action)}
-            ${this._renderActionConfig("Double Tap Action",`${t}.double_tap_action`,i.double_tap_action)}
-            <button class="editor-btn danger" @click=${()=>this._valueChanged(t,void 0)}>
+            ${this._renderSelectField("Glow Mode",`${e}.glow_mode`,t.glow_mode,qi)}
+            ${this._renderChipsConfig(t.chips||[],e)}
+            ${this._renderActionConfig("Tap Action",`${e}.tap_action`,t.tap_action)}
+            ${this._renderActionConfig("Hold Action",`${e}.hold_action`,t.hold_action)}
+            ${this._renderActionConfig("Double Tap Action",`${e}.double_tap_action`,t.double_tap_action)}
+            <button class="editor-btn danger" @click=${()=>this._valueChanged(e,void 0)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove Main Tile
             </button>
-          `:L`
-            <button class="editor-btn" @click=${()=>{this._valueChanged(t,{main_name:"Room"})}}>
+          `:E`
+            <button class="editor-btn" @click=${()=>{this._valueChanged(e,{main_name:"Room"})}}>
               <ha-icon icon="mdi:plus"></ha-icon> Add Main Tile
             </button>
           `}
         </div>
       </ha-expansion-panel>
-    `}_renderChipsConfig(e,t){const i=`${t}.chips`;return L`
-      <ha-expansion-panel outlined .header=${`Chips (${e.length})`}>
+    `}_renderChipsConfig(i,e){const t=`${e}.chips`;return E`
+      <ha-expansion-panel outlined .header=${`Chips (${i.length})`}>
         <div class="section-content">
-          ${e.map(((e,t)=>this._renderSingleChip(e,`${i}.${t}`,t,i)))}
-          <button class="editor-btn" @click=${()=>{const e=this._getNestedValue(i)||[];e.push({type:"custom",entity:""}),this._valueChanged(i,e)}}>
+          ${i.map(((i,e)=>this._renderSingleChip(i,`${t}.${e}`,e,t)))}
+          <button class="editor-btn" @click=${()=>{const i=this._getNestedValue(t)||[];i.push({type:"custom",entity:""}),this._valueChanged(t,i)}}>
             <ha-icon icon="mdi:plus"></ha-icon> Add Chip
           </button>
         </div>
       </ha-expansion-panel>
-    `}_renderSingleChip(e,t,i,n){return L`
+    `}_renderSingleChip(i,e,t,a){return E`
       <div class="sub-item">
         <div class="sub-item-header">
           <div class="sub-item-heading">
-            <span class="sub-item-title">Chip ${i+1}: ${e.type||"custom"}</span>
-            <span class="sub-item-meta">${this._entitySummary(e.entity)}</span>
+            <span class="sub-item-title">Chip ${t+1}: ${i.type||"custom"}</span>
+            <span class="sub-item-meta">${this._entitySummary(i.entity)}</span>
           </div>
           <ha-icon-button
             .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"}
-            @click=${()=>{const e=this._getNestedValue(n)||[];e.splice(i,1),this._valueChanged(n,[...e])}}
+            @click=${()=>{const i=this._getNestedValue(a)||[];i.splice(t,1),this._valueChanged(a,[...i])}}
           ></ha-icon-button>
         </div>
         <div class="side-by-side">
-          ${this._renderSelectField("Type",`${t}.type`,e.type,Xe)}
-          ${this._renderEntityField("Entity",`${t}.entity`,e.entity)}
+          ${this._renderSelectField("Type",`${e}.type`,i.type,Xi)}
+          ${this._renderEntityField("Entity",`${e}.entity`,i.entity)}
         </div>
         <div class="side-by-side">
           <ha-icon-picker
             .hass=${this.hass}
             label="Icon"
-            .value=${e.icon||""}
-            @value-changed=${e=>this._valueChanged(`${t}.icon`,e.detail.value)}
+            .value=${i.icon||""}
+            @value-changed=${i=>this._valueChanged(`${e}.icon`,i.detail.value)}
           ></ha-icon-picker>
           <ha-icon-picker
             .hass=${this.hass}
             label="Icon (Active)"
-            .value=${e.icon_active||""}
-            @value-changed=${e=>this._valueChanged(`${t}.icon_active`,e.detail.value)}
+            .value=${i.icon_active||""}
+            @value-changed=${i=>this._valueChanged(`${e}.icon_active`,i.detail.value)}
           ></ha-icon-picker>
         </div>
         <div class="side-by-side">
           <ha-icon-picker
             .hass=${this.hass}
             label="Icon (Inactive)"
-            .value=${e.icon_inactive||""}
-            @value-changed=${e=>this._valueChanged(`${t}.icon_inactive`,e.detail.value)}
+            .value=${i.icon_inactive||""}
+            @value-changed=${i=>this._valueChanged(`${e}.icon_inactive`,i.detail.value)}
           ></ha-icon-picker>
           <ha-icon-picker
             .hass=${this.hass}
             label="Icon (Unavailable)"
-            .value=${e.icon_unavailable||""}
-            @value-changed=${e=>this._valueChanged(`${t}.icon_unavailable`,e.detail.value)}
+            .value=${i.icon_unavailable||""}
+            @value-changed=${i=>this._valueChanged(`${e}.icon_unavailable`,i.detail.value)}
           ></ha-icon-picker>
         </div>
         <div class="side-by-side">
           <space-hub-textfield
             label="Background (Active)"
-            .value=${e.background_active||""}
-            @input=${e=>this._valueChanged(`${t}.background_active`,e.target.value)}
+            .value=${i.background_active||""}
+            @input=${i=>this._valueChanged(`${e}.background_active`,i.target.value)}
           ></space-hub-textfield>
           <space-hub-textfield
             label="Background (Unavailable)"
-            .value=${e.background_unavailable||""}
-            @input=${e=>this._valueChanged(`${t}.background_unavailable`,e.target.value)}
+            .value=${i.background_unavailable||""}
+            @input=${i=>this._valueChanged(`${e}.background_unavailable`,i.target.value)}
           ></space-hub-textfield>
         </div>
         <space-hub-textfield
           label="Icon Color (Unavailable)"
-          .value=${e.icon_color_unavailable||""}
-          @input=${e=>this._valueChanged(`${t}.icon_color_unavailable`,e.target.value)}
+          .value=${i.icon_color_unavailable||""}
+          @input=${i=>this._valueChanged(`${e}.icon_color_unavailable`,i.target.value)}
         ></space-hub-textfield>
       </div>
-    `}_renderACConfig(e,t){const i=e||{};return L`
+    `}_renderACConfig(i,e){const t=i||{};return E`
       <ha-expansion-panel outlined .header=${"AC Tile"}>
         <div class="section-content">
-          ${!!e?L`
-            ${this._renderEntityField("Climate Entity",`${t}.entity`,i.entity,{domain:"climate"})}
-            ${this._renderSelectField("Glow Mode",`${t}.glow_mode`,i.glow_mode,Qe)}
-            ${this._renderActionConfig("Tap Action",`${t}.tap_action`,i.tap_action)}
-            ${this._renderActionConfig("Hold Action",`${t}.hold_action`,i.hold_action)}
-            <button class="editor-btn danger" @click=${()=>this._valueChanged(t,void 0)}>
+          ${!!i?E`
+            ${this._renderEntityField("Climate Entity",`${e}.entity`,t.entity,{domain:"climate"})}
+            ${this._renderSelectField("Glow Mode",`${e}.glow_mode`,t.glow_mode,qi)}
+            ${this._renderActionConfig("Tap Action",`${e}.tap_action`,t.tap_action)}
+            ${this._renderActionConfig("Hold Action",`${e}.hold_action`,t.hold_action)}
+            <button class="editor-btn danger" @click=${()=>this._valueChanged(e,void 0)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove AC Tile
             </button>
-          `:L`
-            <button class="editor-btn" @click=${()=>{this._valueChanged(t,{entity:""})}}>
+          `:E`
+            <button class="editor-btn" @click=${()=>{this._valueChanged(e,{entity:""})}}>
               <ha-icon icon="mdi:plus"></ha-icon> Add AC Tile
             </button>
           `}
         </div>
       </ha-expansion-panel>
-    `}_renderThermostatConfig(e,t){const i=e||{};return L`
+    `}_renderThermostatConfig(i,e){const t=i||{};return E`
       <ha-expansion-panel outlined .header=${"Thermostat Tile"}>
         <div class="section-content">
-          ${!!e?L`
-            ${this._renderEntityField("Climate Entity",`${t}.entity`,i.entity,{domain:"climate"})}
-            ${this._renderSelectField("Glow Mode",`${t}.glow_mode`,i.glow_mode,Qe)}
-            ${this._renderActionConfig("Tap Action",`${t}.tap_action`,i.tap_action)}
-            ${this._renderActionConfig("Hold Action",`${t}.hold_action`,i.hold_action)}
-            <button class="editor-btn danger" @click=${()=>this._valueChanged(t,void 0)}>
+          ${!!i?E`
+            ${this._renderEntityField("Climate Entity",`${e}.entity`,t.entity,{domain:"climate"})}
+            ${this._renderSelectField("Glow Mode",`${e}.glow_mode`,t.glow_mode,qi)}
+            ${this._renderActionConfig("Tap Action",`${e}.tap_action`,t.tap_action)}
+            ${this._renderActionConfig("Hold Action",`${e}.hold_action`,t.hold_action)}
+            <button class="editor-btn danger" @click=${()=>this._valueChanged(e,void 0)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove Thermostat Tile
             </button>
-          `:L`
-            <button class="editor-btn" @click=${()=>{this._valueChanged(t,{entity:""})}}>
+          `:E`
+            <button class="editor-btn" @click=${()=>{this._valueChanged(e,{entity:""})}}>
               <ha-icon icon="mdi:plus"></ha-icon> Add Thermostat Tile
             </button>
           `}
         </div>
       </ha-expansion-panel>
-    `}_renderSwitchRowsSection(){const e=this._config.switch_rows||[],t=this._clampIndex(this._selectedSwitchRowIndex,e.length);return L`
-      <ha-expansion-panel outlined .header=${`Switch Rows (${e.length})`}>
+    `}_renderSwitchRowsSection(){const i=this._config.switch_rows||[],e=this._clampIndex(this._selectedSwitchRowIndex,i.length);return E`
+      <ha-expansion-panel outlined .header=${`Switch Rows (${i.length})`}>
         <div class="section-content">
-          ${e.length>1?L`
+          ${i.length>1?E`
             <div class="tab-bar">
-              ${e.map(((e,i)=>L`<button class="tab-btn${t===i?" active":""}" @click=${()=>{this._selectedSwitchRowIndex=i,this.requestUpdate()}}>Row ${i+1}</button>`))}
+              ${i.map(((i,t)=>E`<button class="tab-btn${e===t?" active":""}" @click=${()=>{this._selectedSwitchRowIndex=t,this.requestUpdate()}}>Row ${t+1}</button>`))}
             </div>
-          `:W}
-          ${e.length?this._renderSwitchRow(e[t],t):L`<div class="empty-hint">No switch rows configured.</div>`}
+          `:G}
+          ${i.length?this._renderSwitchRow(i[e],e):E`<div class="empty-hint">No switch rows configured.</div>`}
           <div class="action-row">
             <button class="editor-btn" @click=${this._addSwitchRow}>
               <ha-icon icon="mdi:plus"></ha-icon> Add Switch Row
             </button>
-            ${e.length>0?L`
+            ${i.length>0?E`
               <button
                 class="editor-btn"
-                .disabled=${t<=0}
-                @click=${()=>this._moveSwitchRow(t,-1)}
+                .disabled=${e<=0}
+                @click=${()=>this._moveSwitchRow(e,-1)}
               >
                 <ha-icon icon="mdi:arrow-up"></ha-icon> Move Row Up
               </button>
               <button
                 class="editor-btn"
-                .disabled=${t>=e.length-1}
-                @click=${()=>this._moveSwitchRow(t,1)}
+                .disabled=${e>=i.length-1}
+                @click=${()=>this._moveSwitchRow(e,1)}
               >
                 <ha-icon icon="mdi:arrow-down"></ha-icon> Move Row Down
               </button>
-              <button class="editor-btn danger" @click=${()=>this._removeSwitchRow(t)}>
-                <ha-icon icon="mdi:delete"></ha-icon> Remove Row ${t+1}
+              <button class="editor-btn danger" @click=${()=>this._removeSwitchRow(e)}>
+                <ha-icon icon="mdi:delete"></ha-icon> Remove Row ${e+1}
               </button>
-            `:W}
+            `:G}
           </div>
         </div>
       </ha-expansion-panel>
-    `}_addSwitchRow(){this._config.switch_rows||(this._config.switch_rows=[]),this._config.switch_rows.push({row:[{entity:"",name:"",icon:"mdi:toggle-switch"}]}),this._selectedSwitchRowIndex=this._config.switch_rows.length-1,this._fireConfigChanged()}_removeSwitchRow(e){this._config.switch_rows&&(this._config.switch_rows.splice(e,1),this._selectedSwitchRowIndex>=this._config.switch_rows.length&&(this._selectedSwitchRowIndex=Math.max(0,this._config.switch_rows.length-1)),this._fireConfigChanged())}_renderSwitchRow(e,t){const i=Array.isArray(e)?e:Array.isArray(null==e?void 0:e.row)?e.row:[],n=`switch_rows.${t}`,o=Array.isArray(e)?n:`${n}.row`;return L`
+    `}_addSwitchRow(){this._config.switch_rows||(this._config.switch_rows=[]),this._config.switch_rows.push({row:[{entity:"",name:"",icon:"mdi:toggle-switch"}]}),this._selectedSwitchRowIndex=this._config.switch_rows.length-1,this._fireConfigChanged()}_removeSwitchRow(i){this._config.switch_rows&&(this._config.switch_rows.splice(i,1),this._selectedSwitchRowIndex>=this._config.switch_rows.length&&(this._selectedSwitchRowIndex=Math.max(0,this._config.switch_rows.length-1)),this._fireConfigChanged())}_renderSwitchRow(i,e){const t=Array.isArray(i)?i:Array.isArray(null==i?void 0:i.row)?i.row:[],a=`switch_rows.${e}`,n=Array.isArray(i)?a:`${a}.row`;return E`
       <div class="section-content">
-        ${i.map(((e,t)=>this._renderSwitchItem(e,`${o}.${t}`,t,o,i.length)))}
-        <button class="editor-btn" @click=${()=>{const e=this._getNestedValue(o)||[];e.push({entity:"",name:"",icon:"mdi:toggle-switch"}),this._valueChanged(o,[...e])}}>
+        ${t.map(((i,e)=>this._renderSwitchItem(i,`${n}.${e}`,e,n,t.length)))}
+        <button class="editor-btn" @click=${()=>{const i=this._getNestedValue(n)||[];i.push({entity:"",name:"",icon:"mdi:toggle-switch"}),this._valueChanged(n,[...i])}}>
           <ha-icon icon="mdi:plus"></ha-icon> Add Switch
         </button>
       </div>
-    `}_renderSwitchItem(e,t,i,n,o){const a=Ke(null==e?void 0:e.confirmation),r=void 0!==a,s=a&&"object"==typeof a&&a.title||"",l=a&&"object"==typeof a&&a.text||"",c=a&&"object"==typeof a&&a.confirm_text||"",d=a&&"object"==typeof a&&a.dismiss_text||"",h=`${t}.confirmation`;return L`
+    `}_renderSwitchItem(i,e,t,a,n){const o=Hi(null==i?void 0:i.confirmation),c=void 0!==o,r=o&&"object"==typeof o&&o.title||"",s=o&&"object"==typeof o&&o.text||"",l=o&&"object"==typeof o&&o.confirm_text||"",M=o&&"object"==typeof o&&o.dismiss_text||"",g=`${e}.confirmation`;return E`
       <div class="sub-item">
         <div class="sub-item-header">
           <div class="sub-item-heading">
-            <span class="sub-item-title">${e.name||this._friendlyEntityName(e.entity)||`Switch ${i+1}`}</span>
-            <span class="sub-item-meta">${this._entitySummary(e.entity)}</span>
+            <span class="sub-item-title">${i.name||this._friendlyEntityName(i.entity)||`Switch ${t+1}`}</span>
+            <span class="sub-item-meta">${this._entitySummary(i.entity)}</span>
           </div>
           <div class="header-actions">
             <ha-icon-button
-              .path=${nt}
+              .path=${ae}
               .label=${"Move switch up"}
-              .disabled=${i<=0}
-              @click=${()=>this._moveArrayItem(n,i,-1)}
+              .disabled=${t<=0}
+              @click=${()=>this._moveArrayItem(a,t,-1)}
             ></ha-icon-button>
             <ha-icon-button
-              .path=${ot}
+              .path=${ne}
               .label=${"Move switch down"}
-              .disabled=${i>=o-1}
-              @click=${()=>this._moveArrayItem(n,i,1)}
+              .disabled=${t>=n-1}
+              @click=${()=>this._moveArrayItem(a,t,1)}
             ></ha-icon-button>
             <ha-icon-button
-              .path=${at}
+              .path=${oe}
               .label=${"Remove switch"}
-              @click=${()=>{const e=this._getNestedValue(n)||[];e.splice(i,1),this._valueChanged(n,[...e])}}
+              @click=${()=>{const i=this._getNestedValue(a)||[];i.splice(t,1),this._valueChanged(a,[...i])}}
             ></ha-icon-button>
           </div>
         </div>
-        ${this._renderEntityField("Controlled Entity",`${t}.entity`,e.entity)}
+        ${this._renderEntityField("Controlled Entity",`${e}.entity`,i.entity)}
         <div class="side-by-side">
           <space-hub-textfield
             label="Name"
-            .value=${e.name||""}
-            @input=${e=>this._valueChanged(`${t}.name`,e.target.value)}
+            .value=${i.name||""}
+            @input=${i=>this._valueChanged(`${e}.name`,i.target.value)}
           ></space-hub-textfield>
           <ha-icon-picker
             .hass=${this.hass}
             label="Inactive State Icon"
-            .value=${e.icon_inactive||e.icon_off||e["icon-inactive"]||e["icon-off"]||e.icon||""}
-            @value-changed=${e=>this._setSwitchInactiveIcon(t,e.detail.value)}
+            .value=${i.icon_inactive||i.icon_off||i["icon-inactive"]||i["icon-off"]||i.icon||""}
+            @value-changed=${i=>this._setSwitchInactiveIcon(e,i.detail.value)}
           ></ha-icon-picker>
         </div>
         <div class="side-by-side">
           <ha-icon-picker
             .hass=${this.hass}
             label="Active State Icon"
-            .value=${e.icon_active||""}
-            @value-changed=${e=>this._valueChanged(`${t}.icon_active`,e.detail.value)}
+            .value=${i.icon_active||""}
+            @value-changed=${i=>this._valueChanged(`${e}.icon_active`,i.detail.value)}
           ></ha-icon-picker>
           <space-hub-textfield
             label="Icon Size"
-            .value=${e.icon_size||""}
-            @input=${e=>this._valueChanged(`${t}.icon_size`,e.target.value)}
+            .value=${i.icon_size||""}
+            @input=${i=>this._valueChanged(`${e}.icon_size`,i.target.value)}
           ></space-hub-textfield>
         </div>
         <div class="side-by-side">
-          ${this._renderSelectField("Type",`${t}.type`,e.type,Je)}
-          ${this._renderSelectField("Glow Mode",`${t}.glow_mode`,e.glow_mode,Qe)}
+          ${this._renderSelectField("Type",`${e}.type`,i.type,Ki)}
+          ${this._renderSelectField("Glow Mode",`${e}.glow_mode`,i.glow_mode,qi)}
         </div>
         <div class="side-by-side">
           <space-hub-textfield
             label="Font Size"
-            .value=${e.font_size||e["font-size"]||""}
-            @input=${e=>this._valueChanged(`${t}.font_size`,e.target.value)}
+            .value=${i.font_size||i["font-size"]||""}
+            @input=${i=>this._valueChanged(`${e}.font_size`,i.target.value)}
           ></space-hub-textfield>
           <space-hub-textfield
             label="Font Weight"
-            .value=${e.font_weight||e["font-weight"]||""}
-            @input=${e=>this._valueChanged(`${t}.font_weight`,e.target.value)}
+            .value=${i.font_weight||i["font-weight"]||""}
+            @input=${i=>this._valueChanged(`${e}.font_weight`,i.target.value)}
           ></space-hub-textfield>
         </div>
-        ${this._renderEntityField("Hold Entity (more-info on hold)",`${t}.hold_entity`,e.hold_entity)}
+        ${this._renderEntityField("Hold Entity (more-info on hold)",`${e}.hold_entity`,i.hold_entity)}
 
         <div class="confirmation-settings">
           <ha-formfield label="Require confirmation on tap">
             <ha-switch
-              .checked=${r}
-              @change=${e=>{this._setSwitchConfirmation(h,this._checkedFromEvent(e))}}
+              .checked=${c}
+              @change=${i=>{this._setSwitchConfirmation(g,this._checkedFromEvent(i))}}
             ></ha-switch>
           </ha-formfield>
           <div class="confirmation-fields">
             <space-hub-textfield
               label="Confirmation Title"
-              .value=${s}
+              .value=${r}
               placeholder="Please confirm"
-              .disabled=${!r}
-              @input=${e=>this._setSwitchConfirmationField(h,"title",e.target.value)}
+              .disabled=${!c}
+              @input=${i=>this._setSwitchConfirmationField(g,"title",i.target.value)}
             ></space-hub-textfield>
             <space-hub-textfield
               label="Confirmation Message"
-              .value=${l}
+              .value=${s}
               placeholder="Are you sure?"
-              .disabled=${!r}
-              @input=${e=>this._setSwitchConfirmationField(h,"text",e.target.value)}
+              .disabled=${!c}
+              @input=${i=>this._setSwitchConfirmationField(g,"text",i.target.value)}
             ></space-hub-textfield>
             <div class="side-by-side">
               <space-hub-textfield
                 label="Confirm Button Text"
-                .value=${c}
+                .value=${l}
                 placeholder="OK"
-                .disabled=${!r}
-                @input=${e=>this._setSwitchConfirmationField(h,"confirm_text",e.target.value)}
+                .disabled=${!c}
+                @input=${i=>this._setSwitchConfirmationField(g,"confirm_text",i.target.value)}
               ></space-hub-textfield>
               <space-hub-textfield
                 label="Dismiss Button Text"
-                .value=${d}
+                .value=${M}
                 placeholder="Cancel"
-                .disabled=${!r}
-                @input=${e=>this._setSwitchConfirmationField(h,"dismiss_text",e.target.value)}
+                .disabled=${!c}
+                @input=${i=>this._setSwitchConfirmationField(g,"dismiss_text",i.target.value)}
               ></space-hub-textfield>
             </div>
           </div>
@@ -687,183 +710,183 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
 
         <ha-expansion-panel outlined .header=${"Actions"}>
           <div class="section-content">
-            ${this._renderActionConfig("Tap Action",`${t}.tap_action`,e.tap_action)}
-            ${this._renderActionConfig("Hold Action",`${t}.hold_action`,e.hold_action)}
-            ${this._renderActionConfig("Double Tap Action",`${t}.double_tap_action`,e.double_tap_action)}
+            ${this._renderActionConfig("Tap Action",`${e}.tap_action`,i.tap_action)}
+            ${this._renderActionConfig("Hold Action",`${e}.hold_action`,i.hold_action)}
+            ${this._renderActionConfig("Double Tap Action",`${e}.double_tap_action`,i.double_tap_action)}
           </div>
         </ha-expansion-panel>
 
         <ha-expansion-panel outlined .header=${"Info Templates"}>
           <div class="section-content">
-            ${this._renderInfoTemplates(e,t)}
+            ${this._renderInfoTemplates(i,e)}
           </div>
         </ha-expansion-panel>
       </div>
-    `}_renderInfoTemplates(e,t){const i=Array.isArray(e.info_templates)?e.info_templates:e.info_template?[e.info_template]:[];return L`
-      ${i.map(((e,n)=>L`
+    `}_renderInfoTemplates(i,e){const t=Array.isArray(i.info_templates)?i.info_templates:i.info_template?[i.info_template]:[];return E`
+      ${t.map(((i,a)=>E`
         <div class="side-by-side">
           <space-hub-textfield
-            label="Template ${n+1}"
-            .value=${e||""}
-            @input=${e=>{const o=[...i];o[n]=e.target.value,this._valueChanged(`${t}.info_templates`,o)}}
+            label="Template ${a+1}"
+            .value=${i||""}
+            @input=${i=>{const n=[...t];n[a]=i.target.value,this._valueChanged(`${e}.info_templates`,n)}}
           ></space-hub-textfield>
           <ha-icon-button
             .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"}
-            @click=${()=>{const e=[...i];e.splice(n,1),this._valueChanged(`${t}.info_templates`,e.length?e:void 0)}}
+            @click=${()=>{const i=[...t];i.splice(a,1),this._valueChanged(`${e}.info_templates`,i.length?i:void 0)}}
           ></ha-icon-button>
         </div>
       `))}
-      ${i.length<2?L`
-        <button class="editor-btn" @click=${()=>{const e=[...i,""];this._valueChanged(`${t}.info_templates`,e)}}>
+      ${t.length<2?E`
+        <button class="editor-btn" @click=${()=>{const i=[...t,""];this._valueChanged(`${e}.info_templates`,i)}}>
           <ha-icon icon="mdi:plus"></ha-icon> Add Template
         </button>
-      `:W}
-    `}_renderCardsSection(){const e=this._config.cards||[];return L`
-      <ha-expansion-panel outlined .header=${`Embedded Cards (${e.length})`}>
+      `:G}
+    `}_renderCardsSection(){const i=this._config.cards||[];return E`
+      <ha-expansion-panel outlined .header=${`Embedded Cards (${i.length})`}>
         <div class="section-content">
           <div class="empty-hint">
             Add extra Home Assistant cards below the switch rows. Each card is a standard HA card config in YAML.
           </div>
-          ${e.map(((t,i)=>this._renderEmbeddedCardItem(t,i,e.length)))}
-          <button class="editor-btn" @click=${()=>{const t=[...e,{type:"tile",entity:""}];this._valueChanged("cards",t)}}>
+          ${i.map(((e,t)=>this._renderEmbeddedCardItem(e,t,i.length)))}
+          <button class="editor-btn" @click=${()=>{const e=[...i,{type:"tile",entity:""}];this._valueChanged("cards",e)}}>
             <ha-icon icon="mdi:plus"></ha-icon> Add Card
           </button>
         </div>
       </ha-expansion-panel>
-    `}_renderEmbeddedCardItem(e,t,i){return L`
+    `}_renderEmbeddedCardItem(i,e,t){return E`
       <div class="sub-item">
         <div class="sub-item-header">
           <div class="sub-item-heading">
-            <span class="sub-item-title">Card ${t+1}: ${e.type||"unknown"}</span>
+            <span class="sub-item-title">Card ${e+1}: ${i.type||"unknown"}</span>
           </div>
           <div class="header-actions">
             <ha-icon-button
-              .path=${nt}
+              .path=${ae}
               .label=${"Move card up"}
-              .disabled=${t<=0}
-              @click=${()=>this._moveArrayItem("cards",t,-1)}
+              .disabled=${e<=0}
+              @click=${()=>this._moveArrayItem("cards",e,-1)}
             ></ha-icon-button>
             <ha-icon-button
-              .path=${ot}
+              .path=${ne}
               .label=${"Move card down"}
-              .disabled=${t>=i-1}
-              @click=${()=>this._moveArrayItem("cards",t,1)}
+              .disabled=${e>=t-1}
+              @click=${()=>this._moveArrayItem("cards",e,1)}
             ></ha-icon-button>
             <ha-icon-button
-              .path=${at}
+              .path=${oe}
               .label=${"Remove card"}
-              @click=${()=>{const e=[...this._config.cards||[]];e.splice(t,1),this._valueChanged("cards",e.length?e:void 0)}}
+              @click=${()=>{const i=[...this._config.cards||[]];i.splice(e,1),this._valueChanged("cards",i.length?i:void 0)}}
             ></ha-icon-button>
           </div>
         </div>
         <ha-yaml-editor
-          .defaultValue=${e}
-          @value-changed=${e=>{e.stopPropagation();const i=[...this._config.cards||[]];i[t]=e.detail.value,this._valueChanged("cards",i)}}
+          .defaultValue=${i}
+          @value-changed=${i=>{i.stopPropagation();const t=[...this._config.cards||[]];t[e]=i.detail.value,this._valueChanged("cards",t)}}
         ></ha-yaml-editor>
       </div>
-    `}_renderActionConfig(e,t,i){const n=Ze(i),o=!!n,a=Ke(null==n?void 0:n.confirmation),r=void 0!==a,s=a&&"object"==typeof a&&a.title||"",l=a&&"object"==typeof a&&a.text||"",c=a&&"object"==typeof a&&a.confirm_text||"",d=a&&"object"==typeof a&&a.dismiss_text||"";return L`
-      <ha-expansion-panel outlined .header=${e}>
+    `}_renderActionConfig(i,e,t){const a=Ji(t),n=!!a,o=Hi(null==a?void 0:a.confirmation),c=void 0!==o,r=o&&"object"==typeof o&&o.title||"",s=o&&"object"==typeof o&&o.text||"",l=o&&"object"==typeof o&&o.confirm_text||"",M=o&&"object"==typeof o&&o.dismiss_text||"";return E`
+      <ha-expansion-panel outlined .header=${i}>
         <div class="section-content">
-          ${o?L`
-            ${this._renderSelectField("Action",`${t}.action`,null==n?void 0:n.action,it)}
-            ${"more-info"===(null==n?void 0:n.action)?L`
-              ${this._renderEntityField("More Info Entity",`${t}.entity`,n.entity)}
-            `:W}
-            ${"navigate"===(null==n?void 0:n.action)?L`
+          ${n?E`
+            ${this._renderSelectField("Action",`${e}.action`,null==a?void 0:a.action,te)}
+            ${"more-info"===(null==a?void 0:a.action)?E`
+              ${this._renderEntityField("More Info Entity",`${e}.entity`,a.entity)}
+            `:G}
+            ${"navigate"===(null==a?void 0:a.action)?E`
               <space-hub-textfield
                 label="Navigation Path"
-                .value=${n.navigation_path||""}
-                @input=${e=>this._valueChanged(`${t}.navigation_path`,e.target.value)}
+                .value=${a.navigation_path||""}
+                @input=${i=>this._valueChanged(`${e}.navigation_path`,i.target.value)}
               ></space-hub-textfield>
               <ha-formfield label="Replace current path">
                 <ha-switch
-                  .checked=${!!n.navigation_replace}
-                  @change=${e=>this._valueChanged(`${t}.navigation_replace`,this._checkedFromEvent(e)||void 0)}
+                  .checked=${!!a.navigation_replace}
+                  @change=${i=>this._valueChanged(`${e}.navigation_replace`,this._checkedFromEvent(i)||void 0)}
                 ></ha-switch>
               </ha-formfield>
-            `:W}
-            ${"url"===(null==n?void 0:n.action)?L`
+            `:G}
+            ${"url"===(null==a?void 0:a.action)?E`
               <space-hub-textfield
                 label="URL"
-                .value=${n.url_path||""}
-                @input=${e=>this._valueChanged(`${t}.url_path`,e.target.value)}
+                .value=${a.url_path||""}
+                @input=${i=>this._valueChanged(`${e}.url_path`,i.target.value)}
               ></space-hub-textfield>
-            `:W}
-            ${"perform-action"===(null==n?void 0:n.action)?L`
+            `:G}
+            ${"perform-action"===(null==a?void 0:a.action)?E`
               <space-hub-textfield
                 label="Action"
-                .value=${n.perform_action||""}
-                @input=${e=>this._valueChanged(`${t}.perform_action`,e.target.value)}
+                .value=${a.perform_action||""}
+                @input=${i=>this._valueChanged(`${e}.perform_action`,i.target.value)}
               ></space-hub-textfield>
               <ha-yaml-editor
                 label="Target"
-                .defaultValue=${n.target||{}}
-                @value-changed=${e=>{e.stopPropagation(),this._valueChanged(`${t}.target`,e.detail.value)}}
+                .defaultValue=${a.target||{}}
+                @value-changed=${i=>{i.stopPropagation(),this._valueChanged(`${e}.target`,i.detail.value)}}
               ></ha-yaml-editor>
               <ha-yaml-editor
                 label="Data"
-                .defaultValue=${n.data||{}}
-                @value-changed=${e=>{e.stopPropagation(),this._valueChanged(`${t}.data`,e.detail.value)}}
+                .defaultValue=${a.data||{}}
+                @value-changed=${i=>{i.stopPropagation(),this._valueChanged(`${e}.data`,i.detail.value)}}
               ></ha-yaml-editor>
-            `:W}
-            ${"assist"===(null==n?void 0:n.action)?L`
+            `:G}
+            ${"assist"===(null==a?void 0:a.action)?E`
               <space-hub-textfield
                 label="Pipeline ID"
-                .value=${n.pipeline_id||""}
-                @input=${e=>this._valueChanged(`${t}.pipeline_id`,e.target.value)}
+                .value=${a.pipeline_id||""}
+                @input=${i=>this._valueChanged(`${e}.pipeline_id`,i.target.value)}
               ></space-hub-textfield>
               <ha-formfield label="Start listening immediately">
                 <ha-switch
-                  .checked=${!!n.start_listening}
-                  @change=${e=>this._valueChanged(`${t}.start_listening`,this._checkedFromEvent(e)||void 0)}
+                  .checked=${!!a.start_listening}
+                  @change=${i=>this._valueChanged(`${e}.start_listening`,this._checkedFromEvent(i)||void 0)}
                 ></ha-switch>
               </ha-formfield>
-            `:W}
+            `:G}
             <ha-formfield label="Require confirmation">
               <ha-switch
-                .checked=${r}
-                @change=${e=>this._setActionConfirmation(t,this._checkedFromEvent(e))}
+                .checked=${c}
+                @change=${i=>this._setActionConfirmation(e,this._checkedFromEvent(i))}
               ></ha-switch>
             </ha-formfield>
-            ${r?L`
+            ${c?E`
               <space-hub-textfield
                 label="Confirmation Title"
-                .value=${s}
+                .value=${r}
                 placeholder="Please confirm"
-                @input=${e=>this._setActionConfirmationField(t,"title",e.target.value)}
+                @input=${i=>this._setActionConfirmationField(e,"title",i.target.value)}
               ></space-hub-textfield>
               <space-hub-textfield
                 label="Confirmation Message"
-                .value=${l}
+                .value=${s}
                 placeholder="Are you sure?"
-                @input=${e=>this._setActionConfirmationField(t,"text",e.target.value)}
+                @input=${i=>this._setActionConfirmationField(e,"text",i.target.value)}
               ></space-hub-textfield>
               <div class="side-by-side">
                 <space-hub-textfield
                   label="Confirm Button Text"
-                  .value=${c}
+                  .value=${l}
                   placeholder="OK"
-                  @input=${e=>this._setActionConfirmationField(t,"confirm_text",e.target.value)}
+                  @input=${i=>this._setActionConfirmationField(e,"confirm_text",i.target.value)}
                 ></space-hub-textfield>
                 <space-hub-textfield
                   label="Dismiss Button Text"
-                  .value=${d}
+                  .value=${M}
                   placeholder="Cancel"
-                  @input=${e=>this._setActionConfirmationField(t,"dismiss_text",e.target.value)}
+                  @input=${i=>this._setActionConfirmationField(e,"dismiss_text",i.target.value)}
                 ></space-hub-textfield>
               </div>
-            `:W}
-            <button class="editor-btn danger" @click=${()=>this._valueChanged(t,void 0)}>
+            `:G}
+            <button class="editor-btn danger" @click=${()=>this._valueChanged(e,void 0)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove
             </button>
-          `:L`
-            <button class="editor-btn" @click=${()=>this._valueChanged(t,{action:"more-info"})}>
-              <ha-icon icon="mdi:plus"></ha-icon> Configure ${e}
+          `:E`
+            <button class="editor-btn" @click=${()=>this._valueChanged(e,{action:"more-info"})}>
+              <ha-icon icon="mdi:plus"></ha-icon> Configure ${i}
             </button>
           `}
         </div>
       </ha-expansion-panel>
-    `}};st.styles=r`
+    `}};re.styles=c`
     .editor-container {
       display: flex;
       flex-direction: column;
@@ -1038,92 +1061,96 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
       align-items: center;
       padding: 4px 0;
     }
-  `,e([xe({attribute:!1})],st.prototype,"hass",void 0),e([Ae()],st.prototype,"_config",void 0),e([Ae()],st.prototype,"_selectedHeaderIndex",void 0),e([Ae()],st.prototype,"_selectedSwitchRowIndex",void 0),e([Ae()],st.prototype,"_yamlMode",void 0),e([Ae()],st.prototype,"_yamlError",void 0),st=e([ye("space-hub-card-editor")],st);const lt=new WeakMap,ct=e=>{void 0!==e.holdTimer&&(window.clearTimeout(e.holdTimer),e.holdTimer=void 0)},dt=(e,t)=>{const i=new Event("hass-action",{bubbles:!0,composed:!0});i.detail={action:t},e.dispatchEvent(i)},ht=(e,t={})=>{const i=lt.get(e);if(i)return void(i.options=t);const n={options:t,held:!1,startX:0,startY:0,pointerActive:!1};lt.set(e,n),e.addEventListener("contextmenu",(e=>{e.preventDefault(),e.stopPropagation()})),e.addEventListener("pointerdown",(t=>{if(0===t.button&&(n.pointerActive=!0,n.held=!1,n.startX=t.clientX,n.startY=t.clientY,ct(n),n.options.hasHold&&(n.holdTimer=window.setTimeout((()=>{n.holdTimer=void 0,n.held=!0}),500),"function"==typeof e.setPointerCapture)))try{e.setPointerCapture(t.pointerId)}catch(e){}}),{passive:!0}),e.addEventListener("pointermove",(e=>{if(!n.pointerActive||void 0===n.holdTimer)return;const t=Math.abs(e.clientX-n.startX),i=Math.abs(e.clientY-n.startY);(t>10||i>10)&&(ct(n),n.held=!1)}),{passive:!0});const o=()=>{n.pointerActive=!1,n.held=!1,ct(n)};e.addEventListener("pointercancel",o),e.addEventListener("pointerleave",o),e.addEventListener("blur",o),e.addEventListener("pointerup",(t=>{if(n.pointerActive){if(n.pointerActive=!1,ct(n),"function"==typeof e.releasePointerCapture)try{e.releasePointerCapture(t.pointerId)}catch(e){}if(n.held)return n.held=!1,void dt(e,"hold");if(n.options.hasDoubleClick)return void 0!==n.doubleTapTimer?((e=>{void 0!==e.doubleTapTimer&&(window.clearTimeout(e.doubleTapTimer),e.doubleTapTimer=void 0)})(n),void dt(e,"double_tap")):void(n.doubleTapTimer=window.setTimeout((()=>{n.doubleTapTimer=void 0,dt(e,"tap")}),250));dt(e,"tap")}})),e.addEventListener("keyup",(t=>{"Enter"!==t.key&&" "!==t.key||(t.preventDefault(),dt(e,"tap"))}))},pt=se(class extends le{update(e,[t]){return ht(e.element,t),j}render(e){}});function ut(e,t,i){var n,o,a,r;return t?{bg:null!==(o=null!==(n=i?t.background_active:t.background_inactive)&&void 0!==n?n:t.background)&&void 0!==o?o:e.bg,iconColor:null!==(r=null!==(a=i?t.icon_color_active:t.icon_color_inactive)&&void 0!==a?a:t.icon_color)&&void 0!==r?r:e.iconColor}:e}function mt(e,t){var i;return"lock"===e||null!==(i=null==t?void 0:t.startsWith("lock."))&&void 0!==i&&i}function vt(e,t){var i;const n=(null==t?void 0:t.entity)||(null==t?void 0:t.tap_entity),o=String((null==t?void 0:t.type)||"").toLowerCase(),a=n&&(null==e?void 0:e.hass)?e.hass.states[n]:void 0,r=((null==a?void 0:a.state)||"").toLowerCase(),s=!a||"unavailable"===r||"unknown"===r||""===r,l=!s&&function(e,t,i){var n;return!!t&&("lock"===i||null!==(n=null==e?void 0:e.startsWith("lock."))&&void 0!==n&&n?"locked"===t:"on"===t||"open"===t||"opening"===t)}(n,r,o),c=function(e,t,i,n,o,a){var r,s,l;return a?null!==(l=null!==(s=null!==(r=null==n?void 0:n.icon_unavailable)&&void 0!==r?r:null==n?void 0:n.icon_inactive)&&void 0!==s?s:null==n?void 0:n.icon)&&void 0!==l?l:"mdi:alert-circle-outline":o&&(null==n?void 0:n.icon_active)?n.icon_active:!o&&(null==n?void 0:n.icon_inactive)?n.icon_inactive:(null==n?void 0:n.icon)?n.icon:mt(e,t)?o?"mdi:lock":"mdi:lock-open-variant":"door"===e?o?"mdi:door-open":"mdi:door":"presence"===e?"on"===i?"mdi:human-greeting":"mdi:human-handsdown":"smart_plug"===e?"on"===i?"mdi:power-plug":i&&"off"!==i?"mdi:power-plug-outline":"mdi:power-plug-off":"sliding_gate"===e?o?"mdi:gate-open":"mdi:gate-arrow-left":"gate"===e?o?"mdi:gate-open":"mdi:gate":o?"mdi:check-circle":"mdi:checkbox-blank-circle-outline"}(o,n,r,t,l,s),{bg:d,iconColor:h}=function(e,t,i,n,o,a){if(a)return function(e){var t,i,n,o,a,r;return{bg:null!==(n=null!==(i=null!==(t=null==e?void 0:e.background_unavailable)&&void 0!==t?t:null==e?void 0:e.background_inactive)&&void 0!==i?i:null==e?void 0:e.background)&&void 0!==n?n:"var(--chip-unavailable-background, rgba(0,0,0,0.12))",iconColor:null!==(r=null!==(a=null!==(o=null==e?void 0:e.icon_color_unavailable)&&void 0!==o?o:null==e?void 0:e.icon_color_inactive)&&void 0!==a?a:null==e?void 0:e.icon_color)&&void 0!==r?r:"var(--state-unavailable-color, var(--disabled-text-color, var(--secondary-text-color)))"}}(n);if(mt(e,t))return ut(o?{bg:"#66bb6a",iconColor:"#ffffff"}:{bg:"var(--chip-background-color)",iconColor:"var(--secondary-text-color)"},n,o);if("door"===e||"sliding_gate"===e||"gate"===e)return ut(o?{bg:"#e53935",iconColor:"#ffffff"}:{bg:"#66bb6a",iconColor:"#ffffff"},n,o);if("presence"===e){const e="on"===i;return ut(e?{bg:"#42a5f5",iconColor:"#ffffff"}:{bg:"var(--chip-background-color)",iconColor:"var(--secondary-text-color)"},n,e)}if("smart_plug"===e)return ut(o?{bg:"#ff9800",iconColor:"#ffffff"}:{bg:"var(--chip-background-color)",iconColor:"var(--secondary-text-color)"},n,o);return ut(o?{bg:"#42a5f5",iconColor:"#ffffff"}:{bg:"var(--chip-background-color)",iconColor:"var(--secondary-text-color)"},n,o)}(o,n,r,t,l,s),p="chip"+(s?" chip-unavailable":""),u=s?"icon-unavailable":"",m=null!==(i=null==a?void 0:a.state)&&void 0!==i?i:"unavailable";return L`
+  `,i([mi({attribute:!1})],re.prototype,"hass",void 0),i([wi()],re.prototype,"_config",void 0),i([wi()],re.prototype,"_selectedHeaderIndex",void 0),i([wi()],re.prototype,"_selectedSwitchRowIndex",void 0),i([wi()],re.prototype,"_yamlMode",void 0),i([wi()],re.prototype,"_yamlError",void 0),re=i([pi("space-hub-card-editor")],re);const se=new WeakMap,le=i=>{void 0!==i.holdTimer&&(window.clearTimeout(i.holdTimer),i.holdTimer=void 0)},Me=(i,e)=>{const t=new Event("hass-action",{bubbles:!0,composed:!0});t.detail={action:e},i.dispatchEvent(t)},ge=(i,e={})=>{const t=se.get(i);if(t)return void(t.options=e);const a={options:e,held:!1,startX:0,startY:0,pointerActive:!1};se.set(i,a),i.addEventListener("contextmenu",(i=>{i.preventDefault(),i.stopPropagation()})),i.addEventListener("pointerdown",(e=>{if(0===e.button&&(a.pointerActive=!0,a.held=!1,a.startX=e.clientX,a.startY=e.clientY,le(a),a.options.hasHold&&(a.holdTimer=window.setTimeout((()=>{a.holdTimer=void 0,a.held=!0}),500),"function"==typeof i.setPointerCapture)))try{i.setPointerCapture(e.pointerId)}catch(i){}}),{passive:!0}),i.addEventListener("pointermove",(i=>{if(!a.pointerActive||void 0===a.holdTimer)return;const e=Math.abs(i.clientX-a.startX),t=Math.abs(i.clientY-a.startY);(e>10||t>10)&&(le(a),a.held=!1)}),{passive:!0});const n=()=>{a.pointerActive=!1,a.held=!1,le(a)};i.addEventListener("pointercancel",n),i.addEventListener("pointerleave",n),i.addEventListener("blur",n),i.addEventListener("pointerup",(e=>{if(a.pointerActive){if(a.pointerActive=!1,le(a),"function"==typeof i.releasePointerCapture)try{i.releasePointerCapture(e.pointerId)}catch(i){}if(a.held)return a.held=!1,void Me(i,"hold");if(a.options.hasDoubleClick)return void 0!==a.doubleTapTimer?((i=>{void 0!==i.doubleTapTimer&&(window.clearTimeout(i.doubleTapTimer),i.doubleTapTimer=void 0)})(a),void Me(i,"double_tap")):void(a.doubleTapTimer=window.setTimeout((()=>{a.doubleTapTimer=void 0,Me(i,"tap")}),250));Me(i,"tap")}})),i.addEventListener("keyup",(e=>{"Enter"!==e.key&&" "!==e.key||(e.preventDefault(),Me(i,"tap"))}))},Ie=ri(class extends si{update(i,[e]){return ge(i.element,e),Z}render(i){}});function Ne(i,e,t){var a,n,o,c;return e?{bg:null!==(n=null!==(a=t?e.background_active:e.background_inactive)&&void 0!==a?a:e.background)&&void 0!==n?n:i.bg,iconColor:null!==(c=null!==(o=t?e.icon_color_active:e.icon_color_inactive)&&void 0!==o?o:e.icon_color)&&void 0!==c?c:i.iconColor}:i}function de(i,e){var t;return"lock"===i||null!==(t=null==e?void 0:e.startsWith("lock."))&&void 0!==t&&t}function ue(i,e){var t;const a=(null==e?void 0:e.entity)||(null==e?void 0:e.tap_entity),n=String((null==e?void 0:e.type)||"").toLowerCase(),o=a&&(null==i?void 0:i.hass)?i.hass.states[a]:void 0,c=((null==o?void 0:o.state)||"").toLowerCase(),r=!o||"unavailable"===c||"unknown"===c||""===c,s=!r&&function(i,e,t){var a;return!!e&&("lock"===t||null!==(a=null==i?void 0:i.startsWith("lock."))&&void 0!==a&&a?"locked"===e:"on"===e||"open"===e||"opening"===e)}(a,c,n),l=function(i,e,t,a,n,o){var c,r,s;return o?null!==(s=null!==(r=null!==(c=null==a?void 0:a.icon_unavailable)&&void 0!==c?c:null==a?void 0:a.icon_inactive)&&void 0!==r?r:null==a?void 0:a.icon)&&void 0!==s?s:"mdi:alert-circle-outline":n&&(null==a?void 0:a.icon_active)?a.icon_active:!n&&(null==a?void 0:a.icon_inactive)?a.icon_inactive:(null==a?void 0:a.icon)?a.icon:de(i,e)?n?"mdi:lock":"mdi:lock-open-variant":"door"===i?n?"mdi:door-open":"mdi:door":"presence"===i?"on"===t?"mdi:human-greeting":"mdi:human-handsdown":"smart_plug"===i?"on"===t?"mdi:power-plug":t&&"off"!==t?"mdi:power-plug-outline":"mdi:power-plug-off":"sliding_gate"===i?n?"mdi:gate-open":"mdi:gate-arrow-left":"gate"===i?n?"mdi:gate-open":"mdi:gate":n?"mdi:check-circle":"mdi:checkbox-blank-circle-outline"}(n,a,c,e,s,r),{bg:M,iconColor:g}=function(i,e,t,a,n,o){if(o)return function(i){var e,t,a,n,o,c;return{bg:null!==(a=null!==(t=null!==(e=null==i?void 0:i.background_unavailable)&&void 0!==e?e:null==i?void 0:i.background_inactive)&&void 0!==t?t:null==i?void 0:i.background)&&void 0!==a?a:"var(--chip-unavailable-background, rgba(0,0,0,0.12))",iconColor:null!==(c=null!==(o=null!==(n=null==i?void 0:i.icon_color_unavailable)&&void 0!==n?n:null==i?void 0:i.icon_color_inactive)&&void 0!==o?o:null==i?void 0:i.icon_color)&&void 0!==c?c:"var(--state-unavailable-color, var(--disabled-text-color, var(--secondary-text-color)))"}}(a);if(de(i,e))return Ne(n?{bg:"#66bb6a",iconColor:"#ffffff"}:{bg:"var(--chip-background-color)",iconColor:"var(--secondary-text-color)"},a,n);if("door"===i||"sliding_gate"===i||"gate"===i)return Ne(n?{bg:"#e53935",iconColor:"#ffffff"}:{bg:"#66bb6a",iconColor:"#ffffff"},a,n);if("presence"===i){const i="on"===t;return Ne(i?{bg:"#42a5f5",iconColor:"#ffffff"}:{bg:"var(--chip-background-color)",iconColor:"var(--secondary-text-color)"},a,i)}if("smart_plug"===i)return Ne(n?{bg:"#ff9800",iconColor:"#ffffff"}:{bg:"var(--chip-background-color)",iconColor:"var(--secondary-text-color)"},a,n);return Ne(n?{bg:"#42a5f5",iconColor:"#ffffff"}:{bg:"var(--chip-background-color)",iconColor:"var(--secondary-text-color)"},a,n)}(n,a,c,e,s,r),I="chip"+(r?" chip-unavailable":""),N=r?"icon-unavailable":"",d=null!==(t=null==o?void 0:o.state)&&void 0!==t?t:"unavailable";return E`
     <div
-      class=${p}
-      style=${`background:${d}`}
-      title=${m}
-      data-state=${r||"unavailable"}
+      class=${I}
+      style=${`background:${M}`}
+      title=${d}
+      data-state=${c||"unavailable"}
       role="img"
-      aria-label=${o?`${o} ${m}`:m}
+      aria-label=${n?`${n} ${d}`:d}
     >
-      <ha-icon .icon=${c} class=${u} style=${`color:${h}`}></ha-icon>
+      <ha-icon .icon=${l} class=${N} style=${`color:${g}`}></ha-icon>
     </div>
-  `}const _t={weak:"rgba(255,193,7,0.16)",strong:"rgba(255,193,7,0.30)"},gt={weak:"rgba(0,200,83,0.16)",strong:"rgba(0,200,83,0.30)"},ft={weak:"rgba(229,57,53,0.16)",strong:"rgba(229,57,53,0.30)"};const bt={weak:"rgba(255,112,67,0.12)",strong:"rgba(255,112,67,0.26)"};function wt(e,t="static",i=!1){if(!e||"none"===t||!i)return{style:"",overlay:W};return{style:`${`--pulse-weak: ${e.weak}; --pulse-strong: ${e.strong};`} ${"pulse"===t?"animation: glowPulse 2.4s ease-in-out infinite;":""} ${`box-shadow: 0 18px 40px var(--pulse-strong, ${e.strong}), 0 6px 18px var(--pulse-weak, ${e.weak});`}`,overlay:L`<div class="glow-overlay" aria-hidden="true"></div>`}}function yt(e,t){var i;const n=(null==t?void 0:t.icon)||"mdi:sofa-outline",o=(null==t?void 0:t.name)||"",a="function"==typeof(null==e?void 0:e._fmt2)?e._fmt2(null==t?void 0:t.temp_sensor,2,"°"):"—°",r="function"==typeof(null==e?void 0:e._fmt2)?e._fmt2(null==t?void 0:t.humidity_sensor,2,"%"):"—%",s=!(!(null==t?void 0:t.double_tap_action)&&!(null===(i=null==e?void 0:e._config)||void 0===i?void 0:i.double_tap_action)),l=!!(null==t?void 0:t.light_group_entity),c=(null==t?void 0:t.light_group_entity)||(null==t?void 0:t.tap_entity)||(null==t?void 0:t.entity),d=l&&"function"==typeof(null==e?void 0:e._isOn)&&e._isOn(c),h=(null==t?void 0:t.light_group_entity)||(null==t?void 0:t.tap_entity)||(null==t?void 0:t.entity),p=(null==t?void 0:t.glow_mode)||"static",u=!!(null==t?void 0:t.light_group_entity)&&d&&"none"!==p,m=_t,{style:v,overlay:_}=wt(m,p,u),g="chip main-light-chip "+(d?"on":"off"),f=Array.isArray(null==t?void 0:t.chips)?t.chips:[],b=f.find((e=>"illuminance"===String((null==e?void 0:e.type)||"").toLowerCase())),w=f.filter((e=>"illuminance"!==String((null==e?void 0:e.type)||"").toLowerCase())).map((t=>vt(e,t))),y=b?function(e,t){const i=(null==t?void 0:t.entity)||(null==t?void 0:t.tap_entity),n=(null==t?void 0:t.icon)||"mdi:brightness-5",o="function"==typeof(null==e?void 0:e._fmt2)?e._fmt2(i,0," lx"):"— lx";return L`
+  `}const De={weak:"rgba(255,193,7,0.16)",strong:"rgba(255,193,7,0.30)"},he={weak:"rgba(0,200,83,0.16)",strong:"rgba(0,200,83,0.30)"},je={weak:"rgba(229,57,53,0.16)",strong:"rgba(229,57,53,0.30)"};const ze={weak:"rgba(255,112,67,0.12)",strong:"rgba(255,112,67,0.26)"};function ye(i,e="static",t=!1){if(!i||"none"===e||!t)return{style:"",overlay:G};return{style:`${`--pulse-weak: ${i.weak}; --pulse-strong: ${i.strong};`} ${"pulse"===e?"animation: glowPulse 2.4s ease-in-out infinite;":""} ${`box-shadow: 0 18px 40px var(--pulse-strong, ${i.strong}), 0 6px 18px var(--pulse-weak, ${i.weak});`}`,overlay:E`<div class="glow-overlay" aria-hidden="true"></div>`}}function pe(i,e){var t;const a=(null==e?void 0:e.icon)||"mdi:sofa-outline",n=(null==e?void 0:e.name)||"",o="function"==typeof(null==i?void 0:i._fmt2)?i._fmt2(null==e?void 0:e.temp_sensor,2,"°"):"—°",c="function"==typeof(null==i?void 0:i._fmt2)?i._fmt2(null==e?void 0:e.humidity_sensor,2,"%"):"—%",r=!(!(null==e?void 0:e.double_tap_action)&&!(null===(t=null==i?void 0:i._config)||void 0===t?void 0:t.double_tap_action)),s=!!(null==e?void 0:e.light_group_entity),l=(null==e?void 0:e.light_group_entity)||(null==e?void 0:e.tap_entity)||(null==e?void 0:e.entity),M=s&&"function"==typeof(null==i?void 0:i._isOn)&&i._isOn(l),g=(null==e?void 0:e.light_group_entity)||(null==e?void 0:e.tap_entity)||(null==e?void 0:e.entity),I=(null==e?void 0:e.glow_mode)||"static",N=!!(null==e?void 0:e.light_group_entity)&&M&&"none"!==I,d=De,{style:u,overlay:D}=ye(d,I,N),h="chip main-light-chip "+(M?"on":"off"),j=Array.isArray(null==e?void 0:e.chips)?e.chips:[],z=j.find((i=>"illuminance"===String((null==i?void 0:i.type)||"").toLowerCase())),y=j.filter((i=>"illuminance"!==String((null==i?void 0:i.type)||"").toLowerCase())).map((e=>ue(i,e))),p=z?function(i,e){const t=(null==e?void 0:e.entity)||(null==e?void 0:e.tap_entity),a=(null==e?void 0:e.icon)||"mdi:brightness-5",n="function"==typeof(null==i?void 0:i._fmt2)?i._fmt2(t,0," lx"):"— lx";return E`
     <div class="illuminance-chip">
-      <ha-icon .icon=${n}></ha-icon>
-      <span class="illuminance-value">${o}</span>
+      <ha-icon .icon=${a}></ha-icon>
+      <span class="illuminance-value">${n}</span>
     </div>
-  `}(e,b):W;return L`
+  `}(i,z):G;return E`
     <div class="tile-wrap">
       <!-- glow rendered as a sibling so it can appear under/around the tile -->
-      <div class="glow-under" style=${v}>${_}</div>
+      <div class="glow-under" style=${u}>${D}</div>
       <ha-control-button
-        class="main-tile ${d?"on":""}"
-        @hass-action=${i=>{"function"==typeof(null==e?void 0:e._onMainAction)&&e._onMainAction(i,t,null==t?void 0:t.tap_entity,null==t?void 0:t.hold_entity,h)}}
-        .actionHandler=${pt({hasHold:!0,hasDoubleClick:s})}
+        class="main-tile ${M?"on":""}"
+        @hass-action=${t=>{"function"==typeof(null==i?void 0:i._onMainAction)&&i._onMainAction(t,e,null==e?void 0:e.tap_entity,null==e?void 0:e.hold_entity,g)}}
+        .actionHandler=${Ie({hasHold:!0,hasDoubleClick:r})}
         role="button" tabindex="0"
       >
-        <ha-icon class="main-icon" .icon=${n}></ha-icon>
+        <ha-icon class="main-icon" .icon=${a}></ha-icon>
         <div class="chip-temperature-humidity" data-role="chip">
           <ha-icon icon="mdi:thermometer" class="chip-ico"></ha-icon>
-          <span class="temperature-value">${a}</span>
+          <span class="temperature-value">${o}</span>
           <span style="opacity:.6;">|</span>
           <ha-icon icon="mdi:water-percent" class="chip-ico"></ha-icon>
-          <span class="humidity-value">${r}</span>
+          <span class="humidity-value">${c}</span>
         </div>
-        ${y}
+        ${p}
         <div class="main-chips-bottom-right" data-role="chips">
-          ${l?L`<div class=${g}>
+          ${s?E`<div class=${h}>
                 <ha-icon .icon=${"mdi:lightbulb"}></ha-icon>
-              </div>`:W}
-          ${w.length?L`${w}`:W}
+              </div>`:G}
+          ${y.length?E`${y}`:G}
         </div>
-        <div class="main-name">${o}</div>
+        <div class="main-name">${n}</div>
   </ha-control-button>
     </div>
-  `}const $t=new Set(["","unknown","unavailable"]),xt=["temperature","precipitation_probability"],At={temp:"temperature",temperature:"temperature",rain_chance:"precipitation_probability",precipitation_probability:"precipitation_probability",precip_probability:"precipitation_probability",probability:"precipitation_probability",pop:"precipitation_probability",rain:"precipitation",precipitation:"precipitation",humidity:"humidity",hum:"humidity",wind:"wind_speed",wind_speed:"wind_speed",gust:"wind_gust_speed",wind_gust:"wind_gust_speed",wind_gust_speed:"wind_gust_speed",uv:"uv_index",uv_index:"uv_index",cloud:"cloud_coverage",clouds:"cloud_coverage",cloud_coverage:"cloud_coverage"},Ct={"clear-night":"mdi:weather-night",cloudy:"mdi:weather-cloudy",exceptional:"mdi:alert-circle-outline",fog:"mdi:weather-fog",hail:"mdi:weather-hail",lightning:"mdi:weather-lightning","lightning-rainy":"mdi:weather-lightning-rainy",partlycloudy:"mdi:weather-partly-cloudy",pouring:"mdi:weather-pouring",rainy:"mdi:weather-rainy",snowy:"mdi:weather-snowy","snowy-rainy":"mdi:weather-snowy-rainy",sunny:"mdi:weather-sunny",windy:"mdi:weather-windy","windy-variant":"mdi:weather-windy-variant"};function kt(e){return e<=0?"#3aa7ff":e<=8?"#50c5d8":e<=15?"#9bd57b":e<=22?"#ffd34a":e<=28?"#ff9d24":"#ff5d38"}function St(e,t){var i;if(t&&(null==e?void 0:e.hass))return null===(i=e.hass.states)||void 0===i?void 0:i[t]}function Et(e){const t=void 0===(null==e?void 0:e.state)||null===(null==e?void 0:e.state)?"":String(e.state);return $t.has(t.toLowerCase())?"":t}function Tt(e,t){const i=Et(St(e,t));if(!i)return;const n=Number(i);return Number.isFinite(n)?n:void 0}function Ft(e,t,i=!1){if(null==e||""===e)return"—";const n=Number(e);return Number.isFinite(n)?i&&Math.abs(n)>=1e3?`${(n/1e3).toFixed(1)}k`:n.toFixed(t):String(e)}function zt(e,t,i,n=!1){var o;const a=St(e,t),r=Et(a);if(!r)return"—";const s=(null===(o=null==a?void 0:a.attributes)||void 0===o?void 0:o.unit_of_measurement)||"",l=Ft(r,i,n);return s?`${l} ${s}`:l}function Nt(e,t){const i=Tt(e,t);return void 0===i?"—°":`${i.toFixed(1)}°`}function Mt(e,t,i){const n=zt(e,t,1),o=function(e,t){const i=Tt(e,t);if(void 0===i)return"";const n=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];return n[Math.round((i%360+360)%360/22.5)%n.length]}(e,i);return"—"===n?o||"—":o?`${n} ${o}`:n}function Pt(e){if(!e)return"Weather";const t={"clear-night":"Clear night",partlycloudy:"Partly cloudy","lightning-rainy":"Storm rain","snowy-rainy":"Sleet","windy-variant":"Windy"};return t[e]?t[e]:e.replace(/[-_]/g," ").replace(/\b\w/g,(e=>e.toUpperCase()))}function Ht(e){return(e||"unknown").replace(/[^a-z0-9_-]/gi,"-").toLowerCase()}function It(e,t){const i=Et(St(e,t.rain_state_sensor)).toLowerCase();if("on"===i||"wet"===i)return!0;const n=Tt(e,t.rain_rate_sensor);return void 0!==n&&n>0}function Rt(e,t,i,n,o=!1){if(n||"—"!==i)return{icon:e,label:t,value:i,entity:n,active:o}}function Lt(e,t){const i=It(e,t),n=t.rain_state_sensor||t.rain_rate_sensor||t.rain_today_sensor,o=function(e,t){const i=It(e,t);if(!t.rain_state_sensor&&!t.rain_rate_sensor)return"";if(!i)return"No rain";const n=zt(e,t.rain_rate_sensor,1);return"—"===n||"0.0 mm/h"===n?"Raining":`Raining ${n}`}(e,t)||zt(e,t.rain_today_sensor,1);return[Rt("mdi:weather-windy","Wind",Mt(e,t.wind_speed_sensor,t.wind_direction_sensor),t.wind_speed_sensor),Rt("mdi:weather-tornado","Gust",zt(e,t.wind_gust_sensor,1),t.wind_gust_sensor),Rt(i?"mdi:weather-pouring":"mdi:water-outline","Rain",o,n,i),Rt("mdi:sun-wireless-outline","UV",zt(e,t.uv_sensor,0),t.uv_sensor),Rt("mdi:white-balance-sunny","Solar",zt(e,t.solar_lux_sensor,1,!0),t.solar_lux_sensor),Rt("mdi:gauge","Pressure",zt(e,t.pressure_sensor,0),t.pressure_sensor)].filter((e=>!!e))}function Ot(e){return Array.isArray(e)?e.filter((e=>!!e&&"object"==typeof e)).map((e=>({condition:"string"==typeof e.condition?e.condition:void 0,datetime:"string"==typeof e.datetime?e.datetime:void 0,temperature:e.temperature,precipitation_probability:e.precipitation_probability,precipitation:e.precipitation,humidity:e.humidity,wind_speed:e.wind_speed,wind_gust_speed:e.wind_gust_speed,uv_index:e.uv_index,cloud_coverage:e.cloud_coverage,templow:e.templow}))):[]}function jt(e,t){if(!e.datetime)return"";const i=new Date(e.datetime);if(Number.isNaN(i.getTime()))return"";const n=function(e){const t=String(e||"").trim().toLowerCase().replace(/[-_\s]/g,"");return["12","12h","12hour","12hours","ampm"].includes(t)?"12h":["24","24h","24hour","24hours"].includes(t)?"24h":void 0}(t),o={hour:"2-digit",minute:"2-digit"};return n&&(o.hour12="12h"===n),new Intl.DateTimeFormat(void 0,o).format(i)}function Wt(e,t){const i=Number(e[t]);return Number.isFinite(i)?i:void 0}function Vt(e,t,i){const n=e.map(((e,i)=>({item:e,index:i,value:Wt(e,t)}))).filter((e=>void 0!==e.value));if(!n.length)return{points:[],min:0,max:1};const o=n.map((e=>e.value)),{min:a,max:r}=function(e,t){if("precipitation_probability"===e)return{min:0,max:100};let i=Math.min(...t),n=Math.max(...t);if("temperature"===e)i=5*Math.floor((i-2)/5),n=5*Math.ceil((n+2)/5);else{const e=Math.max(.18*(n-i),1);i=Math.max(0,i-e),n+=e}return n<=i&&(n=i+1),{min:i,max:n}}(t,o),s=i.width-i.left-i.right,l=i.height-i.top-i.bottom,c=n.map(((e,t)=>{const o=1===n.length?i.left+s/2:i.left+t/(n.length-1)*s,c=i.top+(r-e.value)/(r-a)*l;return Object.assign(Object.assign({},e),{x:o,y:c})}));return{points:c,min:a,max:r}}function Dt(e){return e<=0?[]:Array.from(new Set([0,Math.floor((e-1)/3),Math.floor(2*(e-1)/3),e-1])).filter((t=>t>=0&&t<e))}function Ut(e){return e.replace(/[^a-z0-9_-]/gi,"-").toLowerCase()}function Gt(e){if(!e.length)return"";if(1===e.length)return`M ${e[0].x.toFixed(2)} ${e[0].y.toFixed(2)}`;let t=`M ${e[0].x.toFixed(2)} ${e[0].y.toFixed(2)}`;for(let i=0;i<e.length-1;i+=1){const n=e[i],o=e[i+1],a=e[i-1]||n,r=e[i+2]||o,s=n.x+(o.x-a.x)/6,l=n.y+(o.y-a.y)/6,c=o.x-(r.x-n.x)/6,d=o.y-(r.y-n.y)/6;t+=` C ${s.toFixed(2)} ${l.toFixed(2)}, ${c.toFixed(2)} ${d.toFixed(2)}, ${o.x.toFixed(2)} ${o.y.toFixed(2)}`}return t}function qt(e,t){if(!e.length)return"";const i=e[0],n=e[e.length-1];return`${Gt(e)} L ${n.x.toFixed(2)} ${t.toFixed(2)} L ${i.x.toFixed(2)} ${t.toFixed(2)} Z`}function Bt(e){if(!e)return"";const t=new Date(e);if(Number.isNaN(t.getTime()))return"";return`${t.getFullYear()}-${`${t.getMonth()+1}`.padStart(2,"0")}-${`${t.getDate()}`.padStart(2,"0")}`}function Yt(e,t){const i=Number(e[t]);return Number.isFinite(i)?i:void 0}function Kt(e,t,i){return Math.max(0,Math.min(100,(e-t)/(i-t)*100))}function Zt(e,t,i,n){const o=i.slice(0,7);if(!o.length)return W;const a=function(e){const t=new Map;return e.forEach(((e,i)=>{const n=Bt(e.datetime),o=Wt(e,"temperature");if(!n||void 0===o)return;const a={item:e,value:o,x:0,y:0,index:i},r=t.get(n)||{};(!r.low||o<r.low.value)&&(r.low=a),(!r.high||o>r.high.value)&&(r.high=a),t.set(n,r)})),t}(n),{min:r,max:s}=function(e,t){const i=[];if(e.forEach((e=>{const t=Yt(e,"templow"),n=Yt(e,"temperature");void 0!==t&&i.push(t),void 0!==n&&i.push(n)})),t.forEach((e=>{const t=Wt(e,"temperature");void 0!==t&&i.push(t)})),!i.length)return{min:0,max:1};let n=5*Math.floor((Math.min(...i)-2)/5),o=5*Math.ceil((Math.max(...i)+2)/5);return o<=n&&(o=n+1),{min:n,max:o}}(o,n),l=Bt((new Date).toISOString()),c=function(e,t){return Tt(e,t.temp_sensor)}(e,t);return L`
+  `}const Ae={barometer:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9ImJhcm9tZXRlciI+CjxnIGlkPSJCYXJvbWV0ZXIiPgo8Y2lyY2xlIGlkPSJIb3VzaW5nIiBjeD0iNjQiIGN5PSI2NCIgcj0iMzkuNSIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzE4NDNfODA5MykiIHN0cm9rZT0iIzFFMjkzQiIvPgo8ZyBpZD0iTGluZXMiPgo8cGF0aCBpZD0iTGluZSAxIiBkPSJNNjQgMzNWNDIiIHN0cm9rZT0iIzY0NzQ4QiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggaWQ9IkxpbmUgNyIgZD0iTTQyLjA3OTcgNDIuMDc5N0w0OC40NDM2IDQ4LjQ0MzYiIHN0cm9rZT0iIzY0NzQ4QiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggaWQ9IkxpbmUgNSIgZD0iTTg1LjkyMDMgNDIuMDc5N0w3OS41NTY0IDQ4LjQ0MzYiIHN0cm9rZT0iIzY0NzQ4QiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggaWQ9IkxpbmUgMyIgZD0iTTk1IDY0TDg2IDY0IiBzdHJva2U9IiM2NDc0OEIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGlkPSJMaW5lIDgiIGQ9Ik03OS41NTY0IDc5LjU1NjRMODUuOTIwMyA4NS45MjAzIiBzdHJva2U9IiM2NDc0OEIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGlkPSJMaW5lIDYiIGQ9Ik00OC40NDM2IDc5LjU1NjRMNDIuMDc5NyA4NS45MjAzIiBzdHJva2U9IiM2NDc0OEIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGlkPSJMaW5lIDQiIGQ9Ik00MiA2NEwzMyA2NCIgc3Ryb2tlPSIjNjQ3NDhCIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L2c+CjwvZz4KPGcgaWQ9IkJhcm9tZXRlcl8yIj4KPGcgaWQ9IlBvaW50ZXIiIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xODQzXzgwOTMpIj4KPGNpcmNsZSBpZD0iTmVlZGxlIE1vdW50IiBjeD0iNjQiIGN5PSI2NCIgcj0iNSIgdHJhbnNmb3JtPSJyb3RhdGUoNDUgNjQgNjQpIiBmaWxsPSIjRUY0NDQ0Ii8+CjxyZWN0IGlkPSJOZWVkbGUiIHg9Ijc5LjU1NjQiIHk9IjQ1LjYxNTIiIHdpZHRoPSI0IiBoZWlnaHQ9IjMzIiByeD0iMiIgdHJhbnNmb3JtPSJyb3RhdGUoNDUgNzkuNTU2NCA0NS42MTUyKSIgZmlsbD0iI0VGNDQ0NCIvPgo8Y2lyY2xlIGlkPSJIb2xkZXIiIGN4PSI2NCIgY3k9IjY0IiByPSIyLjUiIHRyYW5zZm9ybT0icm90YXRlKDQ1IDY0IDY0KSIgZmlsbD0iIzQ3NTU2OSIgc3Ryb2tlPSIjMjkzNjQ5Ii8+CjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0icm90YXRlIiB2YWx1ZXM9Ii02IDY0IDY0OzYgNjQgNjQ7LTYgNjQgNjQiIGR1cj0iM3MiIGJlZ2luPSIwcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIC41OCAxOyAuNDIgMCAuNTggMSIvPjwvZz4KPC9nPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTg0M184MDkzIiB4MT0iNjQiIHkxPSIyNCIgeDI9IjY0IiB5Mj0iMTA0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiMzMzQxNTUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMUUyOTNCIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMTg0M184MDkzIj4KPHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjQ4IiBmaWxsPSJ3aGl0ZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNzcuNDM1IDQzLjQ5MzkpIHJvdGF0ZSg0NSkiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4=","clear-day":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9ImNsZWFyLWRheSI+CjxnIGlkPSJTdW4iPgo8Y2lyY2xlIGlkPSJDb3JlIiBjeD0iNjQiIGN5PSI2My45OTk5IiByPSIxOS41IiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfMTgwMl81MTg2KSIgc3Ryb2tlPSIjRjhBRjE4Ii8+CjxnIGlkPSJSYXlzIj4KPHBhdGggZD0iTTYxIDE5QzYxIDE3LjM0MzEgNjIuMzQzMSAxNiA2NCAxNkM2NS42NTY4IDE2IDY3IDE3LjM0MzEgNjcgMTlWMzNDNjcgMzQuNjU2OSA2NS42NTY4IDM2IDY0IDM2QzYyLjM0MzEgMzYgNjEgMzQuNjU2OSA2MSAzM1YxOVoiIGZpbGw9IiNGOEFGMTgiLz4KPHBhdGggZD0iTTkzLjY5ODUgMzAuMDU4OUM5NC44NyAyOC44ODczIDk2Ljc2OTYgMjguODg3MyA5Ny45NDExIDMwLjA1ODlDOTkuMTEyNyAzMS4yMzA0IDk5LjExMjcgMzMuMTI5OSA5Ny45NDExIDM0LjMwMTVMODguMDQxNiA0NC4yMDFDODYuODcwMSA0NS4zNzI2IDg0Ljk3MDYgNDUuMzcyNiA4My43OTkgNDQuMjAxQzgyLjYyNzQgNDMuMDI5NCA4Mi42Mjc0IDQxLjEyOTkgODMuNzk5IDM5Ljk1ODRMOTMuNjk4NSAzMC4wNTg5WiIgZmlsbD0iI0Y4QUYxOCIvPgo8cGF0aCBkPSJNMTA5IDYxQzExMC42NTcgNjEgMTEyIDYyLjM0MzIgMTEyIDY0QzExMiA2NS42NTY5IDExMC42NTcgNjcgMTA5IDY3SDk1QzkzLjM0MzEgNjcgOTIgNjUuNjU2OSA5MiA2NEM5MiA2Mi4zNDMyIDkzLjM0MzEgNjEgOTUgNjFIMTA5WiIgZmlsbD0iI0Y4QUYxOCIvPgo8cGF0aCBkPSJNOTcuOTQxMSA5My42OTg1Qzk5LjExMjcgOTQuODcwMSA5OS4xMTI3IDk2Ljc2OTYgOTcuOTQxMSA5Ny45NDExQzk2Ljc2OTYgOTkuMTEyNyA5NC44NzAxIDk5LjExMjcgOTMuNjk4NSA5Ny45NDExTDgzLjc5OSA4OC4wNDE2QzgyLjYyNzQgODYuODcwMSA4Mi42Mjc0IDg0Ljk3MDYgODMuNzk5IDgzLjc5OUM4NC45NzA2IDgyLjYyNzQgODYuODcwMSA4Mi42Mjc0IDg4LjA0MTYgODMuNzk5TDk3Ljk0MTEgOTMuNjk4NVoiIGZpbGw9IiNGOEFGMTgiLz4KPHBhdGggZD0iTTYxIDk1QzYxIDkzLjM0MzEgNjIuMzQzMSA5MiA2NCA5MkM2NS42NTY4IDkyIDY3IDkzLjM0MzEgNjcgOTVWMTA5QzY3IDExMC42NTcgNjUuNjU2OCAxMTIgNjQgMTEyQzYyLjM0MzEgMTEyIDYxIDExMC42NTcgNjEgMTA5Vjk1WiIgZmlsbD0iI0Y4QUYxOCIvPgo8cGF0aCBkPSJNMzkuOTU4NCA4My43OTlDNDEuMTI5OSA4Mi42Mjc0IDQzLjAyOTQgODIuNjI3NCA0NC4yMDEgODMuNzk5QzQ1LjM3MjYgODQuOTcwNiA0NS4zNzI2IDg2Ljg3MDEgNDQuMjAxIDg4LjA0MTZMMzQuMzAxNSA5Ny45NDExQzMzLjEyOTkgOTkuMTEyNyAzMS4yMzA0IDk5LjExMjcgMzAuMDU4OSA5Ny45NDExQzI4Ljg4NzMgOTYuNzY5NiAyOC44ODczIDk0Ljg3IDMwLjA1ODkgOTMuNjk4NUwzOS45NTg0IDgzLjc5OVoiIGZpbGw9IiNGOEFGMTgiLz4KPHBhdGggZD0iTTMzIDYxQzM0LjY1NjkgNjEgMzYgNjIuMzQzMSAzNiA2NEMzNiA2NS42NTY4IDM0LjY1NjkgNjcgMzMgNjdIMTlDMTcuMzQzMSA2NyAxNiA2NS42NTY4IDE2IDY0QzE2IDYyLjM0MzEgMTcuMzQzMSA2MSAxOSA2MUgzM1oiIGZpbGw9IiNGOEFGMTgiLz4KPHBhdGggZD0iTTQ0LjIwMSAzOS45NTg0QzQ1LjM3MjYgNDEuMTI5OSA0NS4zNzI2IDQzLjAyOTQgNDQuMjAxIDQ0LjIwMUM0My4wMjk0IDQ1LjM3MjYgNDEuMTI5OSA0NS4zNzI2IDM5Ljk1ODQgNDQuMjAxTDMwLjA1ODkgMzQuMzAxNUMyOC44ODczIDMzLjEyOTkgMjguODg3MyAzMS4yMzA1IDMwLjA1ODkgMzAuMDU4OUMzMS4yMzA1IDI4Ljg4NzMgMzMuMTI5OSAyOC44ODczIDM0LjMwMTUgMzAuMDU4OUw0NC4yMDEgMzkuOTU4NFoiIGZpbGw9IiNGOEFGMTgiLz4KPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIHZhbHVlcz0iMCA2NC4wIDY0LjA7MzYwIDY0LjAgNjQuMCIgZHVyPSI2cyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvZz4KPC9nPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTgwMl81MTg2IiB4MT0iNjQiIHkxPSI0My45OTk5IiB4Mj0iNjQiIHkyPSI4My45OTk5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGQkJGMjQiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRjhBRjE4Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+","clear-night":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9ImNsZWFyLW5pZ2h0Ij4KPGcgaWQ9Ik1vb24iPgo8cGF0aCBpZD0iTW9vbl8yIiBkPSJNNjAuMzAxOCAzMi41ODJDNTUuMjgxNyA1My42OTk5IDczLjYwMDEgNzQuMzQ3NyA5NS4zMjUyIDcyLjUxNDZDOTEuNTE5MyA4NS43NzAyIDc5LjE5ODYgOTUuNDk5OCA2NC41MzYxIDk1LjVDNDYuODM3NSA5NS41IDMyLjUwMDEgODEuMzQ0NCAzMi41IDYzLjg5ODRDMzIuNSA0Ny44Njg4IDQ0LjYwNjYgMzQuNjI3OCA2MC4zMDE4IDMyLjU4MloiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xODM3XzUwODApIiBzdHJva2U9IiM3MkI5RDUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgdmFsdWVzPSItNiA2My45IDY0LjA7NiA2My45IDY0LjA7LTYgNjMuOSA2NC4wIiBkdXI9IjNzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiLz48L2c+CjwvZz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xODM3XzUwODAiIHgxPSI2NCIgeTE9IjMyIiB4Mj0iNjQiIHkyPSI5NiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjODZDM0RCIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzcyQjlENSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",cloudy:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9ImNsb3VkeSIgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzE4NThfODE0NCkiPgo8ZyBpZD0iU2t5Ij4KPGcgaWQ9IkNsb3VkcyI+CjxnIGlkPSJDbG91ZCI+CjxwYXRoIGlkPSJDbG91ZF8yIiBkPSJNNTUuMjYyMyA0OC40NzQ2QzYwLjEyMjcgNDAuNjExMSA3MC4yOTc1IDM3LjM4IDc4LjgxNTEgNDAuOTQzNEM4Ny4zMjE0IDQ0LjUwMjMgOTIuMTM4IDU0LjAwMjYgODkuOTAzIDYyLjk2NDhMODkuNzQxOCA2My42MTQzTDkwLjQxMDggNjMuNTg1Qzk3LjQyMDMgNjMuMjc5MSAxMDMuNSA2OC45OTE3IDEwMy41IDc2LjAyODNDMTAzLjUgODIuODM5NSA5Ny43NzE3IDg4LjQ5OTcgOTAuOTc3MiA4OC41SDM3Ljk1MzdDMzEuMTI3NSA4OC41MDE4IDI1LjIwMjkgODMuMTcwOSAyNC41NTkyIDc2LjM2MDRDMjMuOTE1OCA2OS41NTE4IDI4LjczNjkgNjMuMjEyNCAzNS40NDMgNjEuOTQ1M0wzNS45MjY0IDYxLjg1MzVMMzUuODQyNCA2MS4zNjkxQzM1LjAyNTYgNTYuNjIzOSAzNy4xMjU4IDUxLjcxNjggNDEuMTA1MSA0OS4wMTI3QzQ1LjA5NTEgNDYuMzAxNCA1MC40NDU5IDQ2LjE1MzcgNTQuNTc5NyA0OC42Mzk2TDU1LjAwMjYgNDguODk0NUw1NS4yNjIzIDQ4LjQ3NDZaIiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfMTg1OF84MTQ0KSIgc3Ryb2tlPSIjRTZFRkZDIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPC9nPgo8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAtMzswIDAiIGR1cj0iM3MiIGJlZ2luPSIwcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIC41OCAxOyAuNDIgMCAuNTggMSIvPjwvZz4KPC9nPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTg1OF84MTQ0IiB4MT0iNjQuMDAwOCIgeTE9IjM5IiB4Mj0iNjQuMDAwOCIgeTI9Ijg5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGM0Y3RkUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTZFRkZDIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMTg1OF84MTQ0Ij4KPHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+",drizzle:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9ImRyaXp6bGUiIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xODU4Xzg1MTIpIj4KPGcgaWQ9IlNreSI+CjxnIGlkPSJDbG91ZHMiPgo8ZyBpZD0iQ2xvdWQiPgo8cGF0aCBpZD0iQ2xvdWRfMiIgZD0iTTU1LjI2MjMgNDguNDc0NkM2MC4xMjI3IDQwLjYxMTEgNzAuMjk3NSAzNy4zOCA3OC44MTUxIDQwLjk0MzRDODcuMzIxNCA0NC41MDIzIDkyLjEzOCA1NC4wMDI2IDg5LjkwMyA2Mi45NjQ4TDg5Ljc0MTggNjMuNjE0M0w5MC40MTA4IDYzLjU4NUM5Ny40MjAzIDYzLjI3OTEgMTAzLjUgNjguOTkxNyAxMDMuNSA3Ni4wMjgzQzEwMy41IDgyLjgzOTUgOTcuNzcxNyA4OC40OTk3IDkwLjk3NzIgODguNUgzNy45NTM3QzMxLjEyNzUgODguNTAxOCAyNS4yMDI5IDgzLjE3MDkgMjQuNTU5MiA3Ni4zNjA0QzIzLjkxNTggNjkuNTUxOCAyOC43MzY5IDYzLjIxMjQgMzUuNDQzIDYxLjk0NTNMMzUuOTI2NCA2MS44NTM1TDM1Ljg0MjQgNjEuMzY5MUMzNS4wMjU2IDU2LjYyMzkgMzcuMTI1OCA1MS43MTY4IDQxLjEwNTEgNDkuMDEyN0M0NS4wOTUxIDQ2LjMwMTQgNTAuNDQ1OSA0Ni4xNTM3IDU0LjU3OTcgNDguNjM5Nkw1NS4wMDI2IDQ4Ljg5NDVMNTUuMjYyMyA0OC40NzQ2WiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzE4NThfODUxMikiIHN0cm9rZT0iI0U2RUZGQyIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIi8+CjwvZz4KPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgLTM7MCAwIiBkdXI9IjNzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiLz48L2c+CjwvZz4KPGcgaWQ9IlByZWNpcGl0YXRpb24iPgo8ZyBpZD0iUmFpbmRyb3BzIj4KPHBhdGggaWQ9IlJhaW5kcm9wIDEiIGQ9Ik01MiA4N1Y5MCIgc3Ryb2tlPSIjMEE1QUQ0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgMjAiIGR1cj0iMXMiIGJlZ2luPSIwcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIDEgMSIvPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMDsxOzE7MCIgZHVyPSIxcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIga2V5VGltZXM9IjA7MC4xNTswLjg1OzEiLz48L3BhdGg+CjxwYXRoIGlkPSJSYWluZHJvcCAyIiBkPSJNNjQgODdWOTAiIHN0cm9rZT0iIzBBNUFENCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIDIwIiBkdXI9IjFzIiBiZWdpbj0iMC40cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIDEgMSIvPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMDsxOzE7MCIgZHVyPSIxcyIgYmVnaW49IjAuNHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBrZXlUaW1lcz0iMDswLjE1OzAuODU7MSIvPjwvcGF0aD4KPHBhdGggaWQ9IlJhaW5kcm9wIDMiIGQ9Ik03NiA4N1Y5MCIgc3Ryb2tlPSIjMEE1QUQ0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMCI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgMjAiIGR1cj0iMXMiIGJlZ2luPSIwLjhzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgMSAxIi8+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIwOzE7MTswIiBkdXI9IjFzIiBiZWdpbj0iMC44cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGtleVRpbWVzPSIwOzAuMTU7MC44NTsxIi8+PC9wYXRoPgo8L2c+CjwvZz4KPC9nPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzE4NThfODUxMiIgeDE9IjY0LjAwMDgiIHkxPSIzOSIgeDI9IjY0LjAwMDgiIHkyPSI4OSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRjNGN0ZFIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0U2RUZGQyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzE4NThfODUxMiI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPg==",fog:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9ImZvZyIgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzE4NThfOTM3NCkiPgo8ZyBpZD0iU2t5Ij4KPGcgaWQ9IkNsb3VkcyI+CjxnIGlkPSJDbG91ZCI+CjxwYXRoIGlkPSJDbG91ZF8yIiBkPSJNNTUuMjYyMyA0OC40NzQ2QzYwLjEyMjcgNDAuNjExMSA3MC4yOTc1IDM3LjM4IDc4LjgxNTEgNDAuOTQzNEM4Ny4zMjE0IDQ0LjUwMjMgOTIuMTM4IDU0LjAwMjYgODkuOTAzIDYyLjk2NDhMODkuNzQxOCA2My42MTQzTDkwLjQxMDggNjMuNTg1Qzk3LjQyMDMgNjMuMjc5MSAxMDMuNSA2OC45OTE3IDEwMy41IDc2LjAyODNDMTAzLjUgODIuODM5NSA5Ny43NzE3IDg4LjQ5OTcgOTAuOTc3MiA4OC41SDM3Ljk1MzdDMzEuMTI3NSA4OC41MDE4IDI1LjIwMjkgODMuMTcwOSAyNC41NTkyIDc2LjM2MDRDMjMuOTE1OCA2OS41NTE4IDI4LjczNjkgNjMuMjEyNCAzNS40NDMgNjEuOTQ1M0wzNS45MjY0IDYxLjg1MzVMMzUuODQyNCA2MS4zNjkxQzM1LjAyNTYgNTYuNjIzOSAzNy4xMjU4IDUxLjcxNjggNDEuMTA1MSA0OS4wMTI3QzQ1LjA5NTEgNDYuMzAxNCA1MC40NDU5IDQ2LjE1MzcgNTQuNTc5NyA0OC42Mzk2TDU1LjAwMjYgNDguODk0NUw1NS4yNjIzIDQ4LjQ3NDZaIiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfMTg1OF85Mzc0KSIgc3Ryb2tlPSIjRTZFRkZDIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPC9nPgo8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAtMzswIDAiIGR1cj0iM3MiIGJlZ2luPSIwcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIC41OCAxOyAuNDIgMCAuNTggMSIvPjwvZz4KPC9nPgo8ZyBpZD0iUHJlY2lwaXRhdGlvbiI+CjxwYXRoIGlkPSJMaW5lIDIiIGQ9Ik00MCA5NUg4OCIgc3Ryb2tlPSIjRTJFOEYwIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MyAwOzAgMCIgZHVyPSIzcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9wYXRoPgo8cGF0aCBpZD0iTGluZSAxIiBkPSJNNDAgMTAzSDg4IiBzdHJva2U9IiNFMkU4RjAiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDszIDA7MCAwIiBkdXI9IjNzIiBiZWdpbj0iMC4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIC41OCAxOyAuNDIgMCAuNTggMSIvPjwvcGF0aD4KPC9nPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTg1OF85Mzc0IiB4MT0iNjQuMDAwOCIgeTE9IjM5IiB4Mj0iNjQuMDAwOCIgeTI9Ijg5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGM0Y3RkUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTZFRkZDIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMTg1OF85Mzc0Ij4KPHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+",hail:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9ImhhaWwiIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xODU4Xzg3MTgpIj4KPGcgaWQ9IlNreSI+CjxnIGlkPSJDbG91ZHMiPgo8ZyBpZD0iQ2xvdWQiPgo8cGF0aCBpZD0iQ2xvdWRfMiIgZD0iTTU1LjI2MjMgNDguNDc0NkM2MC4xMjI3IDQwLjYxMTEgNzAuMjk3NSAzNy4zOCA3OC44MTUxIDQwLjk0MzRDODcuMzIxNCA0NC41MDIzIDkyLjEzOCA1NC4wMDI2IDg5LjkwMyA2Mi45NjQ4TDg5Ljc0MTggNjMuNjE0M0w5MC40MTA4IDYzLjU4NUM5Ny40MjAzIDYzLjI3OTEgMTAzLjUgNjguOTkxNyAxMDMuNSA3Ni4wMjgzQzEwMy41IDgyLjgzOTUgOTcuNzcxNyA4OC40OTk3IDkwLjk3NzIgODguNUgzNy45NTM3QzMxLjEyNzUgODguNTAxOCAyNS4yMDI5IDgzLjE3MDkgMjQuNTU5MiA3Ni4zNjA0QzIzLjkxNTggNjkuNTUxOCAyOC43MzY5IDYzLjIxMjQgMzUuNDQzIDYxLjk0NTNMMzUuOTI2NCA2MS44NTM1TDM1Ljg0MjQgNjEuMzY5MUMzNS4wMjU2IDU2LjYyMzkgMzcuMTI1OCA1MS43MTY4IDQxLjEwNTEgNDkuMDEyN0M0NS4wOTUxIDQ2LjMwMTQgNTAuNDQ1OSA0Ni4xNTM3IDU0LjU3OTcgNDguNjM5Nkw1NS4wMDI2IDQ4Ljg5NDVMNTUuMjYyMyA0OC40NzQ2WiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzE4NThfODcxOCkiIHN0cm9rZT0iI0U2RUZGQyIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIi8+CjwvZz4KPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgLTM7MCAwIiBkdXI9IjNzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiLz48L2c+CjwvZz4KPGcgaWQ9IlByZWNpcGl0YXRpb24iPgo8ZyBpZD0iSWNlIGJhbGxzIj4KPHBhdGggaWQ9IkljZSBCYWxsIDEiIGQ9Ik01MiA4NkM1MS40MDY3IDg2IDUwLjgyNjYgODYuMTc1OSA1MC4zMzMzIDg2LjUwNTZDNDkuODM5OSA4Ni44MzUyIDQ5LjQ1NTQgODcuMzAzOCA0OS4yMjgzIDg3Ljg1MkM0OS4wMDEzIDg4LjQwMDEgNDguOTQxOSA4OS4wMDMzIDQ5LjA1NzcgODkuNTg1M0M0OS4xNzM0IDkwLjE2NzIgNDkuNDU5MSA5MC43MDE4IDQ5Ljg3ODcgOTEuMTIxM0M1MC4yOTgzIDkxLjU0MDkgNTAuODMyOSA5MS44MjY2IDUxLjQxNDggOTEuOTQyNEM1MS45OTY4IDkyLjA1ODEgNTIuNTk5OCA5MS45OTg3IDUzLjE0OCA5MS43NzE2QzUzLjY5NjEgOTEuNTQ0NiA1NC4xNjQ3IDkxLjE2MDEgNTQuNDk0NCA5MC42NjY3QzU0LjgyNCA5MC4xNzM0IDU1IDg5LjU5MzMgNTUgODlDNTUgODguMjA0NCA1NC42ODM5IDg3LjQ0MTMgNTQuMTIxMyA4Ni44Nzg3QzUzLjU1ODcgODYuMzE2MSA1Mi43OTU3IDg2IDUyIDg2WiIgZmlsbD0iIzg2QzNEQiI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgMjAiIGR1cj0iMXMiIGJlZ2luPSIwcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIDEgMSIvPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMDsxOzE7MCIgZHVyPSIxcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIga2V5VGltZXM9IjA7MC4xNTswLjg1OzEiLz48L3BhdGg+CjxwYXRoIGlkPSJJY2UgQmFsbCAyIiBkPSJNNjQgODZDNjMuNDA2NyA4NiA2Mi44MjY2IDg2LjE3NTkgNjIuMzMzMyA4Ni41MDU2QzYxLjgzOTkgODYuODM1MiA2MS40NTU0IDg3LjMwMzggNjEuMjI4MyA4Ny44NTJDNjEuMDAxMyA4OC40MDAxIDYwLjk0MTkgODkuMDAzMyA2MS4wNTc3IDg5LjU4NTNDNjEuMTczNCA5MC4xNjcyIDYxLjQ1OTEgOTAuNzAxOCA2MS44Nzg3IDkxLjEyMTNDNjIuMjk4MyA5MS41NDA5IDYyLjgzMjkgOTEuODI2NiA2My40MTQ4IDkxLjk0MjRDNjMuOTk2OCA5Mi4wNTgxIDY0LjU5OTggOTEuOTk4NyA2NS4xNDggOTEuNzcxNkM2NS42OTYxIDkxLjU0NDYgNjYuMTY0NyA5MS4xNjAxIDY2LjQ5NDQgOTAuNjY2N0M2Ni44MjQgOTAuMTczNCA2NyA4OS41OTMzIDY3IDg5QzY3IDg4LjIwNDQgNjYuNjgzOSA4Ny40NDEzIDY2LjEyMTMgODYuODc4N0M2NS41NTg3IDg2LjMxNjEgNjQuNzk1NyA4NiA2NCA4NloiIGZpbGw9IiM4NkMzREIiIG9wYWNpdHk9IjAiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIDIwIiBkdXI9IjFzIiBiZWdpbj0iMC4zcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIDEgMSIvPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMDsxOzE7MCIgZHVyPSIxcyIgYmVnaW49IjAuM3MiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBrZXlUaW1lcz0iMDswLjE1OzAuODU7MSIvPjwvcGF0aD4KPHBhdGggaWQ9IkljZSBCYWxsIDMiIGQ9Ik03NiA4NkM3NS40MDY3IDg2IDc0LjgyNjYgODYuMTc1OSA3NC4zMzMzIDg2LjUwNTZDNzMuODM5OSA4Ni44MzUyIDczLjQ1NTQgODcuMzAzOCA3My4yMjgzIDg3Ljg1MkM3My4wMDEzIDg4LjQwMDEgNzIuOTQxOSA4OS4wMDMzIDczLjA1NzcgODkuNTg1M0M3My4xNzM0IDkwLjE2NzIgNzMuNDU5MSA5MC43MDE4IDczLjg3ODcgOTEuMTIxM0M3NC4yOTgzIDkxLjU0MDkgNzQuODMyOSA5MS44MjY2IDc1LjQxNDggOTEuOTQyNEM3NS45OTY4IDkyLjA1ODEgNzYuNTk5OCA5MS45OTg3IDc3LjE0OCA5MS43NzE2Qzc3LjY5NjEgOTEuNTQ0NiA3OC4xNjQ3IDkxLjE2MDEgNzguNDk0NCA5MC42NjY3Qzc4LjgyNCA5MC4xNzM0IDc5IDg5LjU5MzMgNzkgODlDNzkgODguMjA0NCA3OC42ODM5IDg3LjQ0MTMgNzguMTIxMyA4Ni44Nzg3Qzc3LjU1ODcgODYuMzE2MSA3Ni43OTU3IDg2IDc2IDg2WiIgZmlsbD0iIzg2QzNEQiIgb3BhY2l0eT0iMCI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgMjAiIGR1cj0iMXMiIGJlZ2luPSIwLjZzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgMSAxIi8+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIwOzE7MTswIiBkdXI9IjFzIiBiZWdpbj0iMC42cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGtleVRpbWVzPSIwOzAuMTU7MC44NTsxIi8+PC9wYXRoPgo8L2c+CjwvZz4KPC9nPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzE4NThfODcxOCIgeDE9IjY0LjAwMDgiIHkxPSIzOSIgeDI9IjY0LjAwMDgiIHkyPSI4OSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRjNGN0ZFIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0U2RUZGQyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzE4NThfODcxOCI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPg==","not-available":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9Im5vdC1hdmFpbGFibGUiIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xODU4Xzc1MzYpIj4KPGcgaWQ9IlRleHQiIGNsaXAtcGF0aD0idXJsKCNjbGlwMV8xODU4Xzc1MzYpIj4KPHBhdGggaWQ9IlRleHRfMiIgZD0iTTQ2Ljg1MzEgNjYuMTY2VjUyLjUwNEg1Mi45MjUyVjc2SDQ2Ljc1NDFMMzguNjAzMSA2Mi40MDRWNzZIMzIuNDk4MVY1Mi41MDRIMzguNjAzMUw0Ni44NTMxIDY2LjE2NlpNNjEuOTM4OCA3Nkg1NS45OTg4TDY1Ljc2NjggNTIuNTA0SDcxLjcwNjhMNjEuOTM4OCA3NlpNOTYuODkwMiA3Nkg5MC4zODkyTDg5LjA2OTIgNzEuOTc0SDgxLjE0OTJMNzkuODI5MiA3Nkg3My4zNjEyTDgxLjk0MTIgNTIuNTA0SDg4LjQ0MjJMOTYuODkwMiA3NlpNODMuNjkwMiA2NC4yNTJMODIuNjM0MiA2Ny40NTNIODcuNjE3Mkw4Ni41NjEyIDY0LjI1Mkw4NS4xMDkyIDU5LjMzNUw4My42OTAyIDY0LjI1MloiIGZpbGw9IiMyMDI5MzkiLz4KPC9nPgo8L2c+CjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzE4NThfNzUzNiI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8Y2xpcFBhdGggaWQ9ImNsaXAxXzE4NThfNzUzNiI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPgo=","partly-cloudy-day":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InBhcnRseS1jbG91ZHktZGF5IiBjbGlwLXBhdGg9InVybCgjY2xpcDBfMTg1OF84MjQxKSI+CjxnIGlkPSJTa3kiPgo8ZyBpZD0iU3VuIj4KPGNpcmNsZSBpZD0iQ29yZSIgY3g9IjM5IiBjeT0iNTEiIHI9IjguNSIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzE4NThfODI0MSkiIHN0cm9rZT0iI0Y4QUYxOCIvPgo8ZyBpZD0iUmF5cyI+CjxwYXRoIGQ9Ik0zNy42ODc1IDMxLjMxMjVDMzcuNjg3NSAzMC41ODc2IDM4LjI3NTEgMzAgMzkgMzBDMzkuNzI0OSAzMCA0MC4zMTI1IDMwLjU4NzYgNDAuMzEyNSAzMS4zMTI1VjM3LjQzNzVDNDAuMzEyNSAzOC4xNjI0IDM5LjcyNDkgMzguNzUgMzkgMzguNzVDMzguMjc1MSAzOC43NSAzNy42ODc1IDM4LjE2MjQgMzcuNjg3NSAzNy40Mzc1VjMxLjMxMjVaIiBmaWxsPSIjRjhBRjE4Ii8+CjxwYXRoIGQ9Ik01MS45OTMxIDM2LjE1MDhDNTIuNTA1NiAzNS42MzgyIDUzLjMzNjcgMzUuNjM4MiA1My44NDkyIDM2LjE1MDhDNTQuMzYxOCAzNi42NjMzIDU0LjM2MTggMzcuNDk0MyA1My44NDkyIDM4LjAwNjlMNDkuNTE4MiA0Mi4zMzc5QzQ5LjAwNTYgNDIuODUwNSA0OC4xNzQ2IDQyLjg1MDUgNDcuNjYyMSA0Mi4zMzc5QzQ3LjE0OTUgNDEuODI1NCA0Ny4xNDk1IDQwLjk5NDQgNDcuNjYyMSA0MC40ODE4TDUxLjk5MzEgMzYuMTUwOFoiIGZpbGw9IiNGOEFGMTgiLz4KPHBhdGggZD0iTTU4LjY4NzUgNDkuNjg3NUM1OS40MTI0IDQ5LjY4NzUgNjAgNTAuMjc1MSA2MCA1MUM2MCA1MS43MjQ5IDU5LjQxMjQgNTIuMzEyNSA1OC42ODc1IDUyLjMxMjVINTIuNTYyNUM1MS44Mzc2IDUyLjMxMjUgNTEuMjUgNTEuNzI0OSA1MS4yNSA1MUM1MS4yNSA1MC4yNzUxIDUxLjgzNzYgNDkuNjg3NSA1Mi41NjI1IDQ5LjY4NzVINTguNjg3NVoiIGZpbGw9IiNGOEFGMTgiLz4KPHBhdGggZD0iTTUzLjg0OTIgNjMuOTkzMUM1NC4zNjE4IDY0LjUwNTcgNTQuMzYxOCA2NS4zMzY3IDUzLjg0OTIgNjUuODQ5MkM1My4zMzY3IDY2LjM2MTggNTIuNTA1NiA2Ni4zNjE4IDUxLjk5MzEgNjUuODQ5Mkw0Ny42NjIxIDYxLjUxODJDNDcuMTQ5NSA2MS4wMDU3IDQ3LjE0OTUgNjAuMTc0NiA0Ny42NjIxIDU5LjY2MjFDNDguMTc0NiA1OS4xNDk1IDQ5LjAwNTcgNTkuMTQ5NSA0OS41MTgyIDU5LjY2MjFMNTMuODQ5MiA2My45OTMxWiIgZmlsbD0iI0Y4QUYxOCIvPgo8cGF0aCBkPSJNMzcuNjg3NSA2NC41NjI1QzM3LjY4NzUgNjMuODM3NiAzOC4yNzUxIDYzLjI1IDM5IDYzLjI1QzM5LjcyNDkgNjMuMjUgNDAuMzEyNSA2My44Mzc2IDQwLjMxMjUgNjQuNTYyNVY3MC42ODc1QzQwLjMxMjUgNzEuNDEyNCAzOS43MjQ5IDcyIDM5IDcyQzM4LjI3NTEgNzIgMzcuNjg3NSA3MS40MTI0IDM3LjY4NzUgNzAuNjg3NVY2NC41NjI1WiIgZmlsbD0iI0Y4QUYxOCIvPgo8cGF0aCBkPSJNMjguNDgxOCA1OS42NjIxQzI4Ljk5NDMgNTkuMTQ5NSAyOS44MjU0IDU5LjE0OTUgMzAuMzM3OSA1OS42NjIxQzMwLjg1MDUgNjAuMTc0NiAzMC44NTA1IDYxLjAwNTYgMzAuMzM3OSA2MS41MTgyTDI2LjAwNjkgNjUuODQ5MkMyNS40OTQzIDY2LjM2MTggMjQuNjYzMyA2Ni4zNjE4IDI0LjE1MDggNjUuODQ5MkMyMy42MzgyIDY1LjMzNjcgMjMuNjM4MiA2NC41MDU2IDI0LjE1MDggNjMuOTkzMUwyOC40ODE4IDU5LjY2MjFaIiBmaWxsPSIjRjhBRjE4Ii8+CjxwYXRoIGQ9Ik0yNS40Mzc1IDQ5LjY4NzVDMjYuMTYyNCA0OS42ODc1IDI2Ljc1IDUwLjI3NTEgMjYuNzUgNTFDMjYuNzUgNTEuNzI0OSAyNi4xNjI0IDUyLjMxMjUgMjUuNDM3NSA1Mi4zMTI1SDE5LjMxMjVDMTguNTg3NiA1Mi4zMTI1IDE4IDUxLjcyNDkgMTggNTFDMTggNTAuMjc1MSAxOC41ODc2IDQ5LjY4NzUgMTkuMzEyNSA0OS42ODc1SDI1LjQzNzVaIiBmaWxsPSIjRjhBRjE4Ii8+CjxwYXRoIGQ9Ik0zMC4zMzc5IDQwLjQ4MThDMzAuODUwNSA0MC45OTQ0IDMwLjg1MDUgNDEuODI1NCAzMC4zMzc5IDQyLjMzNzlDMjkuODI1NCA0Mi44NTA1IDI4Ljk5NDQgNDIuODUwNSAyOC40ODE4IDQyLjMzNzlMMjQuMTUwOCAzOC4wMDY5QzIzLjYzODIgMzcuNDk0NCAyMy42MzgyIDM2LjY2MzMgMjQuMTUwOCAzNi4xNTA4QzI0LjY2MzMgMzUuNjM4MiAyNS40OTQ0IDM1LjYzODIgMjYuMDA2OSAzNi4xNTA4TDMwLjMzNzkgNDAuNDgxOFoiIGZpbGw9IiNGOEFGMTgiLz4KPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIHZhbHVlcz0iMCAzOS4wIDUxLjA7MzYwIDM5LjAgNTEuMCIgZHVyPSI2cyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvZz4KPC9nPgo8ZyBpZD0iQ2xvdWRzIj4KPGcgaWQ9IkNsb3VkIj4KPHBhdGggaWQ9IkNsb3VkXzIiIGQ9Ik01NS4yNjIzIDQ4LjQ3NDZDNjAuMTIyNyA0MC42MTExIDcwLjI5NzUgMzcuMzggNzguODE1MSA0MC45NDM0Qzg3LjMyMTQgNDQuNTAyMyA5Mi4xMzggNTQuMDAyNiA4OS45MDMgNjIuOTY0OEw4OS43NDE4IDYzLjYxNDNMOTAuNDEwOCA2My41ODVDOTcuNDIwMyA2My4yNzkxIDEwMy41IDY4Ljk5MTcgMTAzLjUgNzYuMDI4M0MxMDMuNSA4Mi44Mzk1IDk3Ljc3MTcgODguNDk5NyA5MC45NzcyIDg4LjVIMzcuOTUzN0MzMS4xMjc1IDg4LjUwMTggMjUuMjAyOSA4My4xNzA5IDI0LjU1OTIgNzYuMzYwNEMyMy45MTU4IDY5LjU1MTggMjguNzM2OSA2My4yMTI0IDM1LjQ0MyA2MS45NDUzTDM1LjkyNjQgNjEuODUzNUwzNS44NDI0IDYxLjM2OTFDMzUuMDI1NiA1Ni42MjM5IDM3LjEyNTggNTEuNzE2OCA0MS4xMDUxIDQ5LjAxMjdDNDUuMDk1MSA0Ni4zMDE0IDUwLjQ0NTkgNDYuMTUzNyA1NC41Nzk3IDQ4LjYzOTZMNTUuMDAyNiA0OC44OTQ1TDU1LjI2MjMgNDguNDc0NloiIGZpbGw9InVybCgjcGFpbnQxX2xpbmVhcl8xODU4XzgyNDEpIiBzdHJva2U9IiNFNkVGRkMiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIvPgo8L2c+CjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC0zOzAgMCIgZHVyPSIzcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9nPgo8L2c+CjwvZz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xODU4XzgyNDEiIHgxPSIzOSIgeTE9IjQyIiB4Mj0iMzkiIHkyPSI2MCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRkJCRjI0Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0Y4QUYxOCIvPgo8L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MV9saW5lYXJfMTg1OF84MjQxIiB4MT0iNjQuMDAwOCIgeTE9IjM5IiB4Mj0iNjQuMDAwOCIgeTI9Ijg5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGM0Y3RkUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTZFRkZDIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMTg1OF84MjQxIj4KPHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+","partly-cloudy-night":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InBhcnRseS1jbG91ZHktbmlnaHQiIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xODU4XzgyNTIpIj4KPGcgaWQ9IlNreSI+CjxnIGlkPSJNb29uIj4KPHBhdGggaWQ9Ik1vb25fMiIgZD0iTTM1LjExNTIgMzQuNTk0N0MzMy4zNzc3IDQzLjE2MjUgNDAuNzUzMiA1MS4yMTQxIDQ5LjMxMzUgNTAuNzgzMkM0Ny42NzMyIDU1LjgzMzggNDIuODg5MSA1OS40OTk5IDM3LjIxNzggNTkuNUMzMC4xODggNTkuNSAyNC41MDAyIDUzLjg3ODYgMjQuNSA0Ni45NTlDMjQuNSA0MC43NDUxIDI5LjA4NzkgMzUuNTgzOCAzNS4xMTUyIDM0LjU5NDdaIiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfMTg1OF84MjUyKSIgc3Ryb2tlPSIjNzJCOUQ1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIHZhbHVlcz0iLTYgMzYuOSA0Ny4wOzYgMzYuOSA0Ny4wOy02IDM2LjkgNDcuMCIgZHVyPSIzcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9nPgo8ZyBpZD0iQ2xvdWRzIj4KPGcgaWQ9IkNsb3VkIj4KPHBhdGggaWQ9IkNsb3VkXzIiIGQ9Ik01NS4yNjIzIDQ4LjQ3NDZDNjAuMTIyNyA0MC42MTExIDcwLjI5NzUgMzcuMzggNzguODE1MSA0MC45NDM0Qzg3LjMyMTQgNDQuNTAyMyA5Mi4xMzggNTQuMDAyNiA4OS45MDMgNjIuOTY0OEw4OS43NDE4IDYzLjYxNDNMOTAuNDEwOCA2My41ODVDOTcuNDIwMyA2My4yNzkxIDEwMy41IDY4Ljk5MTcgMTAzLjUgNzYuMDI4M0MxMDMuNSA4Mi44Mzk1IDk3Ljc3MTcgODguNDk5NyA5MC45NzcyIDg4LjVIMzcuOTUzN0MzMS4xMjc1IDg4LjUwMTggMjUuMjAyOSA4My4xNzA5IDI0LjU1OTIgNzYuMzYwNEMyMy45MTU4IDY5LjU1MTggMjguNzM2OSA2My4yMTI0IDM1LjQ0MyA2MS45NDUzTDM1LjkyNjQgNjEuODUzNUwzNS44NDI0IDYxLjM2OTFDMzUuMDI1NiA1Ni42MjM5IDM3LjEyNTggNTEuNzE2OCA0MS4xMDUxIDQ5LjAxMjdDNDUuMDk1MSA0Ni4zMDE0IDUwLjQ0NTkgNDYuMTUzNyA1NC41Nzk3IDQ4LjYzOTZMNTUuMDAyNiA0OC44OTQ1TDU1LjI2MjMgNDguNDc0NloiIGZpbGw9InVybCgjcGFpbnQxX2xpbmVhcl8xODU4XzgyNTIpIiBzdHJva2U9IiNFNkVGRkMiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIvPgo8L2c+CjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC0zOzAgMCIgZHVyPSIzcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9nPgo8L2c+CjwvZz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xODU4XzgyNTIiIHgxPSIzNyIgeTE9IjM0IiB4Mj0iMzciIHkyPSI2MCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjODZDM0RCIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzcyQjlENSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MV9saW5lYXJfMTg1OF84MjUyIiB4MT0iNjQuMDAwOCIgeTE9IjM5IiB4Mj0iNjQuMDAwOCIgeTI9Ijg5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGM0Y3RkUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTZFRkZDIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMTg1OF84MjUyIj4KPHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+","pressure-high":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InByZXNzdXJlLWhpZ2giPgo8ZyBpZD0iQXJyb3dzIj4KPHBhdGggaWQ9IkFycm93IDMiIGQ9Ik03MC42Njc4IDc2Ljk5NzRDNzAuMzE3NSA3Ni45OTkxIDY5Ljk4IDc2Ljg1OTkgNjkuNzI1MyA3Ni42MDg2TDY0LjAwMTIgNzAuOTE2Mkw1OC4yNzYxIDc2LjYxMTRDNTguMDIwNCA3Ni44NjEyIDU3LjY4MzQgNzcuMDAwMiA1Ny4zMzMzIDc3LjAwMDJDNTYuOTgzMiA3Ny4wMDAyIDU2LjY0NjIgNzYuODYxMiA1Ni4zOTA1IDc2LjYxMTRDNTYuMjY3MyA3Ni40OTE0IDU2LjE2OSA3Ni4zNDYzIDU2LjEwMTkgNzYuMTg0OUM1Ni4wMzQ3IDc2LjAyMzYgNTYgNzUuODQ5NSA1NiA3NS42NzM1QzU2IDc1LjQ5NzYgNTYuMDM0NyA3NS4zMjM1IDU2LjEwMTkgNzUuMTYyMkM1Ni4xNjkgNzUuMDAwOCA1Ni4yNjczIDc0Ljg1NTYgNTYuMzkwNSA3NC43MzU3TDYzLjA1NzEgNjguMTAzMkM2My4zMTI4IDY3Ljg1MzQgNjMuNjQ5OSA2Ny43MTQ0IDY0IDY3LjcxNDRDNjQuMzUwMSA2Ny43MTQ0IDY0LjY4NzEgNjcuODUzNCA2NC45NDI4IDY4LjEwMzJMNzEuNjA5NCA3NC43MzU3QzcxLjczMjcgNzQuODU1NiA3MS44MzA5IDc1LjAwMDggNzEuODk4MSA3NS4xNjIyQzcxLjk2NTMgNzUuMzIzNSA3MS45OTk5IDc1LjQ5NzYgNzEuOTk5OSA3NS42NzM1QzcxLjk5OTkgNzUuODQ5NSA3MS45NjUzIDc2LjAyMzYgNzEuODk4MSA3Ni4xODQ5QzcxLjgzMDkgNzYuMzQ2MyA3MS43MzI3IDc2LjQ5MTQgNzEuNjA5NCA3Ni42MTE0QzcxLjM1NDYgNzYuODYxNSA3MS4wMTc1IDc2Ljk5OTYgNzAuNjY3OCA3Ni45OTc0WiIgZmlsbD0iI0VGNDQ0NCI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgLTQ7MCAwIiBkdXI9IjJzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiLz48L3BhdGg+CjxwYXRoIGlkPSJBcnJvdyAyIiBkPSJNNzAuNjY3OCA2OC42NDAyQzcwLjMxNzUgNjguNjQyIDY5Ljk4IDY4LjUwMjcgNjkuNzI1MyA2OC4yNTE0TDY0LjAwMTIgNjIuNTU5TDU4LjI3NjEgNjguMjU0MkM1OC4wMjA0IDY4LjUwNDEgNTcuNjgzNCA2OC42NDMxIDU3LjMzMzMgNjguNjQzMUM1Ni45ODMyIDY4LjY0MzEgNTYuNjQ2MiA2OC41MDQxIDU2LjM5MDUgNjguMjU0MkM1Ni4yNjczIDY4LjEzNDIgNTYuMTY5IDY3Ljk4OTEgNTYuMTAxOSA2Ny44Mjc3QzU2LjAzNDcgNjcuNjY2NCA1NiA2Ny40OTIzIDU2IDY3LjMxNjRDNTYgNjcuMTQwNCA1Ni4wMzQ3IDY2Ljk2NjMgNTYuMTAxOSA2Ni44MDVDNTYuMTY5IDY2LjY0MzcgNTYuMjY3MyA2Ni40OTg1IDU2LjM5MDUgNjYuMzc4NUw2My4wNTcxIDU5Ljc0NkM2My4zMTI4IDU5LjQ5NjIgNjMuNjQ5OSA1OS4zNTcyIDY0IDU5LjM1NzJDNjQuMzUwMSA1OS4zNTcyIDY0LjY4NzEgNTkuNDk2MiA2NC45NDI4IDU5Ljc0Nkw3MS42MDk0IDY2LjM3ODVDNzEuNzMyNyA2Ni40OTg1IDcxLjgzMDkgNjYuNjQzNyA3MS44OTgxIDY2LjgwNUM3MS45NjUzIDY2Ljk2NjMgNzEuOTk5OSA2Ny4xNDA0IDcxLjk5OTkgNjcuMzE2NEM3MS45OTk5IDY3LjQ5MjMgNzEuOTY1MyA2Ny42NjY0IDcxLjg5ODEgNjcuODI3N0M3MS44MzA5IDY3Ljk4OTEgNzEuNzMyNyA2OC4xMzQyIDcxLjYwOTQgNjguMjU0MkM3MS4zNTQ2IDY4LjUwNDMgNzEuMDE3NSA2OC42NDI1IDcwLjY2NzggNjguNjQwMloiIGZpbGw9IiNFRjQ0NDQiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC00OzAgMCIgZHVyPSIycyIgYmVnaW49IjAuM3MiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiLz48L3BhdGg+CjxwYXRoIGlkPSJBcnJvdyAxIiBkPSJNNzAuNjY3OCA2MC4yODNDNzAuMzE3NSA2MC4yODQ4IDY5Ljk4IDYwLjE0NTYgNjkuNzI1MyA1OS44OTQzTDY0LjAwMTIgNTQuMjAxOEw1OC4yNzYxIDU5Ljg5N0M1OC4wMjA0IDYwLjE0NjkgNTcuNjgzNCA2MC4yODU5IDU3LjMzMzMgNjAuMjg1OUM1Ni45ODMyIDYwLjI4NTkgNTYuNjQ2MiA2MC4xNDY5IDU2LjM5MDUgNTkuODk3QzU2LjI2NzMgNTkuNzc3MSA1Ni4xNjkgNTkuNjMxOSA1Ni4xMDE5IDU5LjQ3MDZDNTYuMDM0NyA1OS4zMDkyIDU2IDU5LjEzNTEgNTYgNTguOTU5MkM1NiA1OC43ODMyIDU2LjAzNDcgNTguNjA5MiA1Ni4xMDE5IDU4LjQ0NzhDNTYuMTY5IDU4LjI4NjUgNTYuMjY3MyA1OC4xNDEzIDU2LjM5MDUgNTguMDIxM0w2My4wNTcxIDUxLjM4ODlDNjMuMzEyOCA1MS4xMzkgNjMuNjQ5OSA1MSA2NCA1MUM2NC4zNTAxIDUxIDY0LjY4NzEgNTEuMTM5IDY0Ljk0MjggNTEuMzg4OUw3MS42MDk0IDU4LjAyMTNDNzEuNzMyNyA1OC4xNDEzIDcxLjgzMDkgNTguMjg2NSA3MS44OTgxIDU4LjQ0NzhDNzEuOTY1MyA1OC42MDkyIDcxLjk5OTkgNTguNzgzMiA3MS45OTk5IDU4Ljk1OTJDNzEuOTk5OSA1OS4xMzUxIDcxLjk2NTMgNTkuMzA5MiA3MS44OTgxIDU5LjQ3MDZDNzEuODMwOSA1OS42MzE5IDcxLjczMjcgNTkuNzc3MSA3MS42MDk0IDU5Ljg5N0M3MS4zNTQ2IDYwLjE0NzEgNzEuMDE3NSA2MC4yODUzIDcwLjY2NzggNjAuMjgzWiIgZmlsbD0iI0VGNDQ0NCI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgLTQ7MCAwIiBkdXI9IjJzIiBiZWdpbj0iMC42cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIC41OCAxOyAuNDIgMCAuNTggMSIvPjwvcGF0aD4KPC9nPgo8L2c+Cjwvc3ZnPg==",rain:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InJhaW4iIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xODU4XzgzNzApIj4KPGcgaWQ9IlNreSI+CjxnIGlkPSJDbG91ZHMiPgo8ZyBpZD0iQ2xvdWQiPgo8cGF0aCBpZD0iQ2xvdWRfMiIgZD0iTTU1LjI2MjMgNDguNDc0NkM2MC4xMjI3IDQwLjYxMTEgNzAuMjk3NSAzNy4zOCA3OC44MTUxIDQwLjk0MzRDODcuMzIxNCA0NC41MDIzIDkyLjEzOCA1NC4wMDI2IDg5LjkwMyA2Mi45NjQ4TDg5Ljc0MTggNjMuNjE0M0w5MC40MTA4IDYzLjU4NUM5Ny40MjAzIDYzLjI3OTEgMTAzLjUgNjguOTkxNyAxMDMuNSA3Ni4wMjgzQzEwMy41IDgyLjgzOTUgOTcuNzcxNyA4OC40OTk3IDkwLjk3NzIgODguNUgzNy45NTM3QzMxLjEyNzUgODguNTAxOCAyNS4yMDI5IDgzLjE3MDkgMjQuNTU5MiA3Ni4zNjA0QzIzLjkxNTggNjkuNTUxOCAyOC43MzY5IDYzLjIxMjQgMzUuNDQzIDYxLjk0NTNMMzUuOTI2NCA2MS44NTM1TDM1Ljg0MjQgNjEuMzY5MUMzNS4wMjU2IDU2LjYyMzkgMzcuMTI1OCA1MS43MTY4IDQxLjEwNTEgNDkuMDEyN0M0NS4wOTUxIDQ2LjMwMTQgNTAuNDQ1OSA0Ni4xNTM3IDU0LjU3OTcgNDguNjM5Nkw1NS4wMDI2IDQ4Ljg5NDVMNTUuMjYyMyA0OC40NzQ2WiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzE4NThfODM3MCkiIHN0cm9rZT0iI0U2RUZGQyIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIi8+CjwvZz4KPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgLTM7MCAwIiBkdXI9IjNzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiLz48L2c+CjwvZz4KPGcgaWQ9IlByZWNpcGl0YXRpb24iPgo8ZyBpZD0iUmFpbmRyb3BzIj4KPHBhdGggaWQ9IlJhaW5kcm9wIDEiIGQ9Ik01MiA4M1Y5NSIgc3Ryb2tlPSIjMEE1QUQ0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgMjAiIGR1cj0iMXMiIGJlZ2luPSIwcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIDEgMSIvPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMDsxOzE7MCIgZHVyPSIxcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIga2V5VGltZXM9IjA7MC4xNTswLjg1OzEiLz48L3BhdGg+CjxwYXRoIGlkPSJSYWluZHJvcCAyIiBkPSJNNjQgODNWOTUiIHN0cm9rZT0iIzBBNUFENCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIDIwIiBkdXI9IjFzIiBiZWdpbj0iMC40cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIDEgMSIvPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMDsxOzE7MCIgZHVyPSIxcyIgYmVnaW49IjAuNHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBrZXlUaW1lcz0iMDswLjE1OzAuODU7MSIvPjwvcGF0aD4KPHBhdGggaWQ9IlJhaW5kcm9wIDMiIGQ9Ik03NiA4M1Y5NSIgc3Ryb2tlPSIjMEE1QUQ0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMCI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgMjAiIGR1cj0iMXMiIGJlZ2luPSIwLjhzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgMSAxIi8+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIwOzE7MTswIiBkdXI9IjFzIiBiZWdpbj0iMC44cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGtleVRpbWVzPSIwOzAuMTU7MC44NTsxIi8+PC9wYXRoPgo8L2c+CjwvZz4KPC9nPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzE4NThfODM3MCIgeDE9IjY0LjAwMDgiIHkxPSIzOSIgeDI9IjY0LjAwMDgiIHkyPSI4OSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRjNGN0ZFIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0U2RUZGQyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzE4NThfODM3MCI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPg==",raindrop:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InJhaW5kcm9wIj4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQuNSw2NC4yKSI+PGcgaWQ9IlJhaW5kcm9wIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtNjQuNSwtNjQuMikiPgo8cGF0aCBpZD0iVmVjdG9yIiBkPSJNNjQuNSAzNC45MDcyQzcwLjI1MTggNDMuNjE0MiA3NC45NjEzIDUwLjcwNDYgNzguMjU4OCA1Ni45NTUxQzgxLjYzMzkgNjMuMzUyNyA4My41IDY4LjgxNzggODMuNSA3NC4xNzQ4QzgzLjUgODQuODU2NSA3NC45ODk4IDkzLjUgNjQuNSA5My41QzU0LjAxMDYgOTMuNSA0NS41IDg0LjgzMiA0NS41IDc0LjE3NDhDNDUuNSA2OC44MzA1IDQ3LjM2NiA2My4zNzE1IDUwLjc0MTIgNTYuOTczNkM1NC4wMzg4IDUwLjcyMyA1OC43NDgxIDQzLjYyNjMgNjQuNSAzNC45MDcyWiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzE4NThfMjM0KSIgc3Ryb2tlPSIjMUQ0RUQ4IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPC9nPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0ic2NhbGUiIHZhbHVlcz0iMSAxOzEuMSAxLjE7MSAxIiBkdXI9IjNzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiIGFkZGl0aXZlPSJzdW0iLz48L2c+CjwvZz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xODU4XzIzNCIgeDE9IjY0LjUiIHkxPSIzNCIgeDI9IjY0LjUiIHkyPSI5NCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMjU2M0VCIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzFENEVEOCIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",raindrops:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InJhaW5kcm9wcyI+CjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDU0LjUsNjQuMikiPjxnIGlkPSJSYWluZHJvcCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTU0LjUsLTY0LjIpIj4KPHBhdGggaWQ9IlZlY3RvciIgZD0iTTU0LjUgMzQuOTA3MkM2MC4yNTE4IDQzLjYxNDIgNjQuOTYxMyA1MC43MDQ2IDY4LjI1ODggNTYuOTU1MUM3MS42MzM5IDYzLjM1MjcgNzMuNSA2OC44MTc4IDczLjUgNzQuMTc0OEM3My41IDg0Ljg1NjUgNjQuOTg5OCA5My41IDU0LjUgOTMuNUM0NC4wMTA2IDkzLjUgMzUuNSA4NC44MzIgMzUuNSA3NC4xNzQ4QzM1LjUgNjguODMwNSAzNy4zNjYgNjMuMzcxNSA0MC43NDEyIDU2Ljk3MzZDNDQuMDM4OCA1MC43MjMgNDguNzQ4MSA0My42MjYzIDU0LjUgMzQuOTA3MloiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xODU4XzI1NCkiIHN0cm9rZT0iIzFENEVEOCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIi8+CjwvZz48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InNjYWxlIiB2YWx1ZXM9IjEgMTsxLjEgMS4xOzEgMSIgZHVyPSIzcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIiBhZGRpdGl2ZT0ic3VtIi8+PC9nPgo8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg3NC41LDY0LjIpIj48ZyBpZD0iUmFpbmRyb3BfMiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTc0LjUsLTY0LjIpIj4KPHBhdGggaWQ9IlZlY3Rvcl8yIiBkPSJNNzQuNSAzNC45MDcyQzgwLjI1MTggNDMuNjE0MiA4NC45NjEzIDUwLjcwNDYgODguMjU4OCA1Ni45NTUxQzkxLjYzMzkgNjMuMzUyNyA5My41IDY4LjgxNzggOTMuNSA3NC4xNzQ4QzkzLjUgODQuODU2NSA4NC45ODk4IDkzLjUgNzQuNSA5My41QzY0LjAxMDYgOTMuNSA1NS41IDg0LjgzMiA1NS41IDc0LjE3NDhDNTUuNSA2OC44MzA1IDU3LjM2NiA2My4zNzE1IDYwLjc0MTIgNTYuOTczNkM2NC4wMzg4IDUwLjcyMyA2OC43NDgxIDQzLjYyNjMgNzQuNSAzNC45MDcyWiIgZmlsbD0idXJsKCNwYWludDFfbGluZWFyXzE4NThfMjU0KSIgc3Ryb2tlPSIjMUQ0RUQ4IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPC9nPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0ic2NhbGUiIHZhbHVlcz0iMSAxOzEuMSAxLjE7MSAxIiBkdXI9IjNzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiIGFkZGl0aXZlPSJzdW0iLz48L2c+CjwvZz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xODU4XzI1NCIgeDE9IjU0LjUiIHkxPSIzNCIgeDI9IjU0LjUiIHkyPSI5NCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMjU2M0VCIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzFENEVEOCIvPgo8L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MV9saW5lYXJfMTg1OF8yNTQiIHgxPSI3NC41IiB5MT0iMzQiIHgyPSI3NC41IiB5Mj0iOTQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzI1NjNFQiIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxRDRFRDgiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4=",sleet:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InNsZWV0IiBjbGlwLXBhdGg9InVybCgjY2xpcDBfMTg1OF85MDkwKSI+CjxnIGlkPSJTa3kiPgo8ZyBpZD0iQ2xvdWRzIj4KPGcgaWQ9IkNsb3VkIj4KPHBhdGggaWQ9IkNsb3VkXzIiIGQ9Ik01NS4yNjIzIDQ4LjQ3NDZDNjAuMTIyNyA0MC42MTExIDcwLjI5NzUgMzcuMzggNzguODE1MSA0MC45NDM0Qzg3LjMyMTQgNDQuNTAyMyA5Mi4xMzggNTQuMDAyNiA4OS45MDMgNjIuOTY0OEw4OS43NDE4IDYzLjYxNDNMOTAuNDEwOCA2My41ODVDOTcuNDIwMyA2My4yNzkxIDEwMy41IDY4Ljk5MTcgMTAzLjUgNzYuMDI4M0MxMDMuNSA4Mi44Mzk1IDk3Ljc3MTcgODguNDk5NyA5MC45NzcyIDg4LjVIMzcuOTUzN0MzMS4xMjc1IDg4LjUwMTggMjUuMjAyOSA4My4xNzA5IDI0LjU1OTIgNzYuMzYwNEMyMy45MTU4IDY5LjU1MTggMjguNzM2OSA2My4yMTI0IDM1LjQ0MyA2MS45NDUzTDM1LjkyNjQgNjEuODUzNUwzNS44NDI0IDYxLjM2OTFDMzUuMDI1NiA1Ni42MjM5IDM3LjEyNTggNTEuNzE2OCA0MS4xMDUxIDQ5LjAxMjdDNDUuMDk1MSA0Ni4zMDE0IDUwLjQ0NTkgNDYuMTUzNyA1NC41Nzk3IDQ4LjYzOTZMNTUuMDAyNiA0OC44OTQ1TDU1LjI2MjMgNDguNDc0NloiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xODU4XzkwOTApIiBzdHJva2U9IiNFNkVGRkMiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIvPgo8L2c+CjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC0zOzAgMCIgZHVyPSIzcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9nPgo8L2c+CjxnIGlkPSJQcmVjaXBpdGF0aW9uIj4KPGcgaWQ9IlNub3dmbGFrZXMiPgo8cGF0aCBpZD0iU25vd2ZsYWtlIDEiIGQ9Ik01Mi41NzgxIDkwLjM2Nkw1MS4zNzM1IDg5LjY3NzVDNTEuNDc5NCA4OS4yMzI2IDUxLjQ3ODYgODguNzY4NyA1MS4zNzA4IDg4LjMyNDFMNTIuNTc4MSA4Ny42MzQ1QzUyLjY3MzggODcuNTgwNSA1Mi43NTc3IDg3LjUwNzkgNTIuODI1MiA4Ny40MjFDNTIuODkyNiA4Ny4zMzQyIDUyLjk0MjMgODcuMjM0NyA1Mi45NzExIDg3LjEyODRDNTIuOTk5OCA4Ny4wMjIxIDUzLjAwNzEgODYuOTExMiA1Mi45OTI2IDg2LjgwMkM1Mi45NzgyIDg2LjY5MjggNTIuOTQyMiA4Ni41ODc2IDUyLjg4NjggODYuNDkyNkM1Mi43NzMyIDg2LjI5OTggNTIuNTg4NiA4Ni4xNTk3IDUyLjM3MjggODYuMTAyNUM1Mi4xNTcgODYuMDQ1MiA1MS45Mjc2IDg2LjA3NTQgNTEuNzMzOSA4Ni4xODY2TDUwLjUyNzggODYuODc2M0M1MC4xOTMxIDg2LjU1ODYgNDkuNzg2OCA4Ni4zMjY0IDQ5LjM0MzcgODYuMTk5NVY4NC44MjAyQzQ5LjMzNjggODQuNjAwMyA0OS4yNDUgODQuMzkxOCA0OS4wODc1IDg0LjIzODdDNDguOTMgODQuMDg1NiA0OC43MTkyIDg0IDQ4LjQ5OTggODRDNDguMjgwNSA4NCA0OC4wNjk5IDg0LjA4NTYgNDcuOTEyNCA4NC4yMzg3QzQ3Ljc1NDggODQuMzkxOCA0Ny42NjI4IDg0LjYwMDMgNDcuNjU2IDg0LjgyMDJWODYuMTk5NUM0Ny4yMTQgODYuMzI4OSA0Ni44MDgxIDg2LjU1OTggNDYuNDcwNiA4Ni44NzRMNDUuMjY2MiA4Ni4xODUzQzQ1LjA3MjQgODYuMDc0MiA0NC44NDI4IDg2LjA0NCA0NC42MjcgODYuMTAxM0M0NC40MTEzIDg2LjE1ODUgNDQuMjI2NyA4Ni4yOTg2IDQ0LjExMyA4Ni40OTEzQzQ0LjA1NzYgODYuNTg2NCA0NC4wMjE3IDg2LjY5MTYgNDQuMDA3MiA4Ni44MDA3QzQzLjk5MjggODYuOTA5OSA0NCA4Ny4wMjA5IDQ0LjAyODggODcuMTI3MUM0NC4wNTc1IDg3LjIzMzQgNDQuMTA3MiA4Ny4zMzI5IDQ0LjE3NDcgODcuNDE5OEM0NC4yNDIxIDg3LjUwNjcgNDQuMzI2IDg3LjU3OTIgNDQuNDIxNyA4Ny42MzMyTDQ1LjYyNjQgODguMzIxNkM0NS41MjA0IDg4Ljc2NjYgNDUuNTIxMyA4OS4yMzA1IDQ1LjYyOSA4OS42NzVMNDQuNDIxNyA5MC4zNjQ3QzQ0LjMyNiA5MC40MTg3IDQ0LjI0MjEgOTAuNDkxMiA0NC4xNzQ3IDkwLjU3ODFDNDQuMTA3MiA5MC42NjUgNDQuMDU3NSA5MC43NjQ1IDQ0LjAyODggOTAuODcwOEM0NCA5MC45NzcxIDQzLjk5MjggOTEuMDg4IDQ0LjAwNzIgOTEuMTk3MkM0NC4wMjE3IDkxLjMwNjMgNDQuMDU3NiA5MS40MTE1IDQ0LjExMyA5MS41MDY2QzQ0LjIyNjcgOTEuNjk5MiA0NC40MTEzIDkxLjgzOTIgNDQuNjI3IDkxLjg5NjVDNDQuODQyOCA5MS45NTM3IDQ1LjA3MjQgOTEuOTIzNiA0NS4yNjYyIDkxLjgxMjZMNDYuNDcyMSA5MS4xMjI5QzQ2LjgwNjMgOTEuNDQwOSA0Ny4yMTI4IDkxLjY3MjYgNDcuNjU2MiA5MS43OTc5VjkzLjE3OThDNDcuNjYzMSA5My4zOTk3IDQ3Ljc1NSA5My42MDgyIDQ3LjkxMjYgOTMuNzYxM0M0OC4wNzAxIDkzLjkxNDQgNDguMjgwNyA5NCA0OC41IDk0QzQ4LjcxOTQgOTQgNDguOTMwMiA5My45MTQ0IDQ5LjA4NzcgOTMuNzYxM0M0OS4yNDUyIDkzLjYwODIgNDkuMzM3IDkzLjM5OTcgNDkuMzQzOSA5My4xNzk4VjkxLjc5NzVDNDkuNzg1MyA5MS42NjgzIDUwLjE5MDcgOTEuNDM3OCA1MC41Mjc4IDkxLjEyNDJMNTEuNzM0MSA5MS44MTM4QzUxLjkyNzggOTEuOTI0OCA1Mi4xNTczIDkxLjk1NSA1Mi4zNzMgOTEuODk3N0M1Mi41ODg4IDkxLjg0MDUgNTIuNzczMyA5MS43MDA1IDUyLjg4NyA5MS41MDc5QzUyLjk0MjQgOTEuNDEyOCA1Mi45Nzg0IDkxLjMwNzYgNTIuOTkyOCA5MS4xOTg0QzUzLjAwNzMgOTEuMDg5MiA1Mi45OTk4IDkwLjk3ODMgNTIuOTcxMSA5MC44NzJDNTIuOTQyMyA5MC43NjU3IDUyLjg5MjkgOTAuNjY2MiA1Mi44MjU0IDkwLjU3OTNDNTIuNzU3OSA5MC40OTI1IDUyLjY3MzggOTAuNDE5OSA1Mi41NzgxIDkwLjM2NlpNNDcuODY2NCA5MC4wODYxQzQ3LjcyMjkgOTAuMDA1IDQ3LjU5NjggODkuODk2MSA0Ny40OTU2IDg5Ljc2NTdDNDcuMzk0NCA4OS42MzUzIDQ3LjMyMDIgODkuNDg2IDQ3LjI3NzEgODkuMzI2NkM0Ny4yMzM5IDg5LjE2NzEgNDcuMjIyOCA4OS4wMDA3IDQ3LjI0NDMgODguODM2OUM0Ny4yNjU4IDg4LjY3MzEgNDcuMzE5NyA4OC41MTUyIDQ3LjQwMjYgODguMzcyNEM0Ny41NzM1IDg4LjA4NCA0Ny44NTAzIDg3Ljg3NDMgNDguMTczNiA4Ny43ODgzQzQ4LjQ5NyA4Ny43MDIzIDQ4Ljg0MTEgODcuNzQ3IDQ5LjEzMjEgODcuOTEyNkM0OS4yNzU2IDg3Ljk5MzggNDkuNDAxNiA4OC4xMDI3IDQ5LjUwMjggODguMjMzMUM0OS42MDQgODguMzYzNSA0OS42NzgyIDg4LjUxMjcgNDkuNzIxNCA4OC42NzIyQzQ5Ljc2NDUgODguODMxNiA0OS43NzU3IDg4Ljk5ODEgNDkuNzU0MSA4OS4xNjE5QzQ5LjczMjYgODkuMzI1NyA0OS42Nzg3IDg5LjQ4MzYgNDkuNTk1OCA4OS42MjYzQzQ5LjQyNSA4OS45MTQ5IDQ5LjE0ODIgOTAuMTI0NyA0OC44MjQ4IDkwLjIxMDhDNDguNTAxNCA5MC4yOTY5IDQ4LjE1NzQgOTAuMjUyMyA0Ny44NjY0IDkwLjA4NjdWOTAuMDg2MVoiIGZpbGw9IiM4NkMzREIiIG9wYWNpdHk9IjAiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIDIwIiBkdXI9IjFzIiBiZWdpbj0iMC4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIDEgMSIvPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMDsxOzE7MCIgZHVyPSIxcyIgYmVnaW49IjAuMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBrZXlUaW1lcz0iMDswLjE1OzAuODU7MSIvPjwvcGF0aD4KPHBhdGggaWQ9IlNub3dmbGFrZSAyIiBkPSJNNjcuNTc4MSA5MC4zNjZMNjYuMzczNSA4OS42Nzc1QzY2LjQ3OTQgODkuMjMyNiA2Ni40Nzg2IDg4Ljc2ODcgNjYuMzcwOCA4OC4zMjQxTDY3LjU3ODEgODcuNjM0NUM2Ny42NzM4IDg3LjU4MDUgNjcuNzU3NyA4Ny41MDc5IDY3LjgyNTIgODcuNDIxQzY3Ljg5MjYgODcuMzM0MiA2Ny45NDIzIDg3LjIzNDcgNjcuOTcxMSA4Ny4xMjg0QzY3Ljk5OTggODcuMDIyMSA2OC4wMDcxIDg2LjkxMTIgNjcuOTkyNiA4Ni44MDJDNjcuOTc4MiA4Ni42OTI4IDY3Ljk0MjIgODYuNTg3NiA2Ny44ODY4IDg2LjQ5MjZDNjcuNzczMiA4Ni4yOTk4IDY3LjU4ODYgODYuMTU5NyA2Ny4zNzI4IDg2LjEwMjVDNjcuMTU3IDg2LjA0NTIgNjYuOTI3NiA4Ni4wNzU0IDY2LjczMzkgODYuMTg2Nkw2NS41Mjc4IDg2Ljg3NjNDNjUuMTkzMSA4Ni41NTg2IDY0Ljc4NjggODYuMzI2NCA2NC4zNDM3IDg2LjE5OTVWODQuODIwMkM2NC4zMzY4IDg0LjYwMDMgNjQuMjQ1IDg0LjM5MTggNjQuMDg3NSA4NC4yMzg3QzYzLjkzIDg0LjA4NTYgNjMuNzE5MiA4NCA2My40OTk4IDg0QzYzLjI4MDUgODQgNjMuMDY5OSA4NC4wODU2IDYyLjkxMjQgODQuMjM4N0M2Mi43NTQ4IDg0LjM5MTggNjIuNjYyOCA4NC42MDAzIDYyLjY1NiA4NC44MjAyVjg2LjE5OTVDNjIuMjE0IDg2LjMyODkgNjEuODA4MSA4Ni41NTk4IDYxLjQ3MDYgODYuODc0TDYwLjI2NjIgODYuMTg1M0M2MC4wNzI0IDg2LjA3NDIgNTkuODQyOCA4Ni4wNDQgNTkuNjI3IDg2LjEwMTNDNTkuNDExMyA4Ni4xNTg1IDU5LjIyNjcgODYuMjk4NiA1OS4xMTMgODYuNDkxM0M1OS4wNTc2IDg2LjU4NjQgNTkuMDIxNyA4Ni42OTE2IDU5LjAwNzIgODYuODAwN0M1OC45OTI4IDg2LjkwOTkgNTkgODcuMDIwOSA1OS4wMjg4IDg3LjEyNzFDNTkuMDU3NSA4Ny4yMzM0IDU5LjEwNzIgODcuMzMyOSA1OS4xNzQ3IDg3LjQxOThDNTkuMjQyMSA4Ny41MDY3IDU5LjMyNiA4Ny41NzkyIDU5LjQyMTcgODcuNjMzMkw2MC42MjY0IDg4LjMyMTZDNjAuNTIwNCA4OC43NjY2IDYwLjUyMTMgODkuMjMwNSA2MC42MjkgODkuNjc1TDU5LjQyMTcgOTAuMzY0N0M1OS4zMjYgOTAuNDE4NyA1OS4yNDIxIDkwLjQ5MTIgNTkuMTc0NyA5MC41NzgxQzU5LjEwNzIgOTAuNjY1IDU5LjA1NzUgOTAuNzY0NSA1OS4wMjg4IDkwLjg3MDhDNTkgOTAuOTc3MSA1OC45OTI4IDkxLjA4OCA1OS4wMDcyIDkxLjE5NzJDNTkuMDIxNyA5MS4zMDYzIDU5LjA1NzYgOTEuNDExNSA1OS4xMTMgOTEuNTA2NkM1OS4yMjY3IDkxLjY5OTIgNTkuNDExMyA5MS44MzkyIDU5LjYyNyA5MS44OTY1QzU5Ljg0MjggOTEuOTUzNyA2MC4wNzI0IDkxLjkyMzYgNjAuMjY2MiA5MS44MTI2TDYxLjQ3MjEgOTEuMTIyOUM2MS44MDYzIDkxLjQ0MDkgNjIuMjEyOCA5MS42NzI2IDYyLjY1NjIgOTEuNzk3OVY5My4xNzk4QzYyLjY2MzEgOTMuMzk5NyA2Mi43NTUgOTMuNjA4MiA2Mi45MTI2IDkzLjc2MTNDNjMuMDcwMSA5My45MTQ0IDYzLjI4MDcgOTQgNjMuNSA5NEM2My43MTk0IDk0IDYzLjkzMDIgOTMuOTE0NCA2NC4wODc3IDkzLjc2MTNDNjQuMjQ1MiA5My42MDgyIDY0LjMzNyA5My4zOTk3IDY0LjM0MzkgOTMuMTc5OFY5MS43OTc1QzY0Ljc4NTMgOTEuNjY4MyA2NS4xOTA3IDkxLjQzNzggNjUuNTI3OCA5MS4xMjQyTDY2LjczNDEgOTEuODEzOEM2Ni45Mjc4IDkxLjkyNDggNjcuMTU3MyA5MS45NTUgNjcuMzczIDkxLjg5NzdDNjcuNTg4OCA5MS44NDA1IDY3Ljc3MzMgOTEuNzAwNSA2Ny44ODcgOTEuNTA3OUM2Ny45NDI0IDkxLjQxMjggNjcuOTc4NCA5MS4zMDc2IDY3Ljk5MjggOTEuMTk4NEM2OC4wMDczIDkxLjA4OTIgNjcuOTk5OCA5MC45NzgzIDY3Ljk3MTEgOTAuODcyQzY3Ljk0MjMgOTAuNzY1NyA2Ny44OTI5IDkwLjY2NjIgNjcuODI1NCA5MC41NzkzQzY3Ljc1NzkgOTAuNDkyNSA2Ny42NzM4IDkwLjQxOTkgNjcuNTc4MSA5MC4zNjZaTTYyLjg2NjQgOTAuMDg2MUM2Mi43MjI5IDkwLjAwNSA2Mi41OTY4IDg5Ljg5NjEgNjIuNDk1NiA4OS43NjU3QzYyLjM5NDQgODkuNjM1MyA2Mi4zMjAyIDg5LjQ4NiA2Mi4yNzcxIDg5LjMyNjZDNjIuMjMzOSA4OS4xNjcxIDYyLjIyMjggODkuMDAwNyA2Mi4yNDQzIDg4LjgzNjlDNjIuMjY1OCA4OC42NzMxIDYyLjMxOTcgODguNTE1MiA2Mi40MDI2IDg4LjM3MjRDNjIuNTczNSA4OC4wODQgNjIuODUwMyA4Ny44NzQzIDYzLjE3MzYgODcuNzg4M0M2My40OTcgODcuNzAyMyA2My44NDExIDg3Ljc0NyA2NC4xMzIxIDg3LjkxMjZDNjQuMjc1NiA4Ny45OTM4IDY0LjQwMTYgODguMTAyNyA2NC41MDI4IDg4LjIzMzFDNjQuNjA0IDg4LjM2MzUgNjQuNjc4MiA4OC41MTI3IDY0LjcyMTQgODguNjcyMkM2NC43NjQ1IDg4LjgzMTYgNjQuNzc1NyA4OC45OTgxIDY0Ljc1NDEgODkuMTYxOUM2NC43MzI2IDg5LjMyNTcgNjQuNjc4NyA4OS40ODM2IDY0LjU5NTggODkuNjI2M0M2NC40MjUgODkuOTE0OSA2NC4xNDgyIDkwLjEyNDcgNjMuODI0OCA5MC4yMTA4QzYzLjUwMTQgOTAuMjk2OSA2My4xNTc0IDkwLjI1MjMgNjIuODY2NCA5MC4wODY3VjkwLjA4NjFaIiBmaWxsPSIjODZDM0RCIiBvcGFjaXR5PSIwIj48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAyMCIgZHVyPSIxcyIgYmVnaW49IjAuN3MiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAxIDEiLz48YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjA7MTsxOzAiIGR1cj0iMXMiIGJlZ2luPSIwLjdzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIga2V5VGltZXM9IjA7MC4xNTswLjg1OzEiLz48L3BhdGg+CjxwYXRoIGlkPSJTbm93Zmxha2UgMyIgZD0iTTgyLjU3ODEgOTAuMzY2TDgxLjM3MzUgODkuNjc3NUM4MS40Nzk0IDg5LjIzMjYgODEuNDc4NiA4OC43Njg3IDgxLjM3MDggODguMzI0MUw4Mi41NzgxIDg3LjYzNDVDODIuNjczOCA4Ny41ODA1IDgyLjc1NzcgODcuNTA3OSA4Mi44MjUyIDg3LjQyMUM4Mi44OTI2IDg3LjMzNDIgODIuOTQyMyA4Ny4yMzQ3IDgyLjk3MTEgODcuMTI4NEM4Mi45OTk4IDg3LjAyMjEgODMuMDA3MSA4Ni45MTEyIDgyLjk5MjYgODYuODAyQzgyLjk3ODIgODYuNjkyOCA4Mi45NDIyIDg2LjU4NzYgODIuODg2OCA4Ni40OTI2QzgyLjc3MzIgODYuMjk5OCA4Mi41ODg2IDg2LjE1OTcgODIuMzcyOCA4Ni4xMDI1QzgyLjE1NyA4Ni4wNDUyIDgxLjkyNzYgODYuMDc1NCA4MS43MzM5IDg2LjE4NjZMODAuNTI3OCA4Ni44NzYzQzgwLjE5MzEgODYuNTU4NiA3OS43ODY4IDg2LjMyNjQgNzkuMzQzNyA4Ni4xOTk1Vjg0LjgyMDJDNzkuMzM2OCA4NC42MDAzIDc5LjI0NSA4NC4zOTE4IDc5LjA4NzUgODQuMjM4N0M3OC45MyA4NC4wODU2IDc4LjcxOTIgODQgNzguNDk5OCA4NEM3OC4yODA1IDg0IDc4LjA2OTkgODQuMDg1NiA3Ny45MTI0IDg0LjIzODdDNzcuNzU0OCA4NC4zOTE4IDc3LjY2MjggODQuNjAwMyA3Ny42NTYgODQuODIwMlY4Ni4xOTk1Qzc3LjIxNCA4Ni4zMjg5IDc2LjgwODEgODYuNTU5OCA3Ni40NzA2IDg2Ljg3NEw3NS4yNjYyIDg2LjE4NTNDNzUuMDcyNCA4Ni4wNzQyIDc0Ljg0MjggODYuMDQ0IDc0LjYyNyA4Ni4xMDEzQzc0LjQxMTMgODYuMTU4NSA3NC4yMjY3IDg2LjI5ODYgNzQuMTEzIDg2LjQ5MTNDNzQuMDU3NiA4Ni41ODY0IDc0LjAyMTcgODYuNjkxNiA3NC4wMDcyIDg2LjgwMDdDNzMuOTkyOCA4Ni45MDk5IDc0IDg3LjAyMDkgNzQuMDI4OCA4Ny4xMjcxQzc0LjA1NzUgODcuMjMzNCA3NC4xMDcyIDg3LjMzMjkgNzQuMTc0NyA4Ny40MTk4Qzc0LjI0MjEgODcuNTA2NyA3NC4zMjYgODcuNTc5MiA3NC40MjE3IDg3LjYzMzJMNzUuNjI2NCA4OC4zMjE2Qzc1LjUyMDQgODguNzY2NiA3NS41MjEzIDg5LjIzMDUgNzUuNjI5IDg5LjY3NUw3NC40MjE3IDkwLjM2NDdDNzQuMzI2IDkwLjQxODcgNzQuMjQyMSA5MC40OTEyIDc0LjE3NDcgOTAuNTc4MUM3NC4xMDcyIDkwLjY2NSA3NC4wNTc1IDkwLjc2NDUgNzQuMDI4OCA5MC44NzA4Qzc0IDkwLjk3NzEgNzMuOTkyOCA5MS4wODggNzQuMDA3MiA5MS4xOTcyQzc0LjAyMTcgOTEuMzA2MyA3NC4wNTc2IDkxLjQxMTUgNzQuMTEzIDkxLjUwNjZDNzQuMjI2NyA5MS42OTkyIDc0LjQxMTMgOTEuODM5MiA3NC42MjcgOTEuODk2NUM3NC44NDI4IDkxLjk1MzcgNzUuMDcyNCA5MS45MjM2IDc1LjI2NjIgOTEuODEyNkw3Ni40NzIxIDkxLjEyMjlDNzYuODA2MyA5MS40NDA5IDc3LjIxMjggOTEuNjcyNiA3Ny42NTYyIDkxLjc5NzlWOTMuMTc5OEM3Ny42NjMxIDkzLjM5OTcgNzcuNzU1IDkzLjYwODIgNzcuOTEyNiA5My43NjEzQzc4LjA3MDEgOTMuOTE0NCA3OC4yODA3IDk0IDc4LjUgOTRDNzguNzE5NCA5NCA3OC45MzAyIDkzLjkxNDQgNzkuMDg3NyA5My43NjEzQzc5LjI0NTIgOTMuNjA4MiA3OS4zMzcgOTMuMzk5NyA3OS4zNDM5IDkzLjE3OThWOTEuNzk3NUM3OS43ODUzIDkxLjY2ODMgODAuMTkwNyA5MS40Mzc4IDgwLjUyNzggOTEuMTI0Mkw4MS43MzQxIDkxLjgxMzhDODEuOTI3OCA5MS45MjQ4IDgyLjE1NzMgOTEuOTU1IDgyLjM3MyA5MS44OTc3QzgyLjU4ODggOTEuODQwNSA4Mi43NzMzIDkxLjcwMDUgODIuODg3IDkxLjUwNzlDODIuOTQyNCA5MS40MTI4IDgyLjk3ODQgOTEuMzA3NiA4Mi45OTI4IDkxLjE5ODRDODMuMDA3MyA5MS4wODkyIDgyLjk5OTggOTAuOTc4MyA4Mi45NzExIDkwLjg3MkM4Mi45NDIzIDkwLjc2NTcgODIuODkyOSA5MC42NjYyIDgyLjgyNTQgOTAuNTc5M0M4Mi43NTc5IDkwLjQ5MjUgODIuNjczOCA5MC40MTk5IDgyLjU3ODEgOTAuMzY2Wk03Ny44NjY0IDkwLjA4NjFDNzcuNzIyOSA5MC4wMDUgNzcuNTk2OCA4OS44OTYxIDc3LjQ5NTYgODkuNzY1N0M3Ny4zOTQ0IDg5LjYzNTMgNzcuMzIwMiA4OS40ODYgNzcuMjc3MSA4OS4zMjY2Qzc3LjIzMzkgODkuMTY3MSA3Ny4yMjI4IDg5LjAwMDcgNzcuMjQ0MyA4OC44MzY5Qzc3LjI2NTggODguNjczMSA3Ny4zMTk3IDg4LjUxNTIgNzcuNDAyNiA4OC4zNzI0Qzc3LjU3MzUgODguMDg0IDc3Ljg1MDMgODcuODc0MyA3OC4xNzM2IDg3Ljc4ODNDNzguNDk3IDg3LjcwMjMgNzguODQxMSA4Ny43NDcgNzkuMTMyMSA4Ny45MTI2Qzc5LjI3NTYgODcuOTkzOCA3OS40MDE2IDg4LjEwMjcgNzkuNTAyOCA4OC4yMzMxQzc5LjYwNCA4OC4zNjM1IDc5LjY3ODIgODguNTEyNyA3OS43MjE0IDg4LjY3MjJDNzkuNzY0NSA4OC44MzE2IDc5Ljc3NTcgODguOTk4MSA3OS43NTQxIDg5LjE2MTlDNzkuNzMyNiA4OS4zMjU3IDc5LjY3ODcgODkuNDgzNiA3OS41OTU4IDg5LjYyNjNDNzkuNDI1IDg5LjkxNDkgNzkuMTQ4MiA5MC4xMjQ3IDc4LjgyNDggOTAuMjEwOEM3OC41MDE0IDkwLjI5NjkgNzguMTU3NCA5MC4yNTIzIDc3Ljg2NjQgOTAuMDg2N1Y5MC4wODYxWiIgZmlsbD0iIzg2QzNEQiIgb3BhY2l0eT0iMCI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgMjAiIGR1cj0iMXMiIGJlZ2luPSIxLjJzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgMSAxIi8+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIwOzE7MTswIiBkdXI9IjFzIiBiZWdpbj0iMS4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGtleVRpbWVzPSIwOzAuMTU7MC44NTsxIi8+PC9wYXRoPgo8L2c+CjxnIGlkPSJSYWluZHJvcHMiPgo8cGF0aCBpZD0iUmFpbmRyb3AgMSIgZD0iTTUyIDg4VjkxIiBzdHJva2U9IiMwQTVBRDQiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAyMCIgZHVyPSIxcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgMSAxIi8+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIwOzE7MTswIiBkdXI9IjFzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBrZXlUaW1lcz0iMDswLjE1OzAuODU7MSIvPjwvcGF0aD4KPHBhdGggaWQ9IlJhaW5kcm9wIDIiIGQ9Ik02NCA4OFY5MSIgc3Ryb2tlPSIjMEE1QUQ0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMCI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgMjAiIGR1cj0iMXMiIGJlZ2luPSIwLjRzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgMSAxIi8+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIwOzE7MTswIiBkdXI9IjFzIiBiZWdpbj0iMC40cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGtleVRpbWVzPSIwOzAuMTU7MC44NTsxIi8+PC9wYXRoPgo8cGF0aCBpZD0iUmFpbmRyb3AgMyIgZD0iTTc2IDg4VjkxIiBzdHJva2U9IiMwQTVBRDQiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwIj48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAyMCIgZHVyPSIxcyIgYmVnaW49IjAuOHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAxIDEiLz48YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjA7MTsxOzAiIGR1cj0iMXMiIGJlZ2luPSIwLjhzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIga2V5VGltZXM9IjA7MC4xNTswLjg1OzEiLz48L3BhdGg+CjwvZz4KPC9nPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTg1OF85MDkwIiB4MT0iNjQuMDAwOCIgeTE9IjM5IiB4Mj0iNjQuMDAwOCIgeTI9Ijg5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGM0Y3RkUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTZFRkZDIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMTg1OF85MDkwIj4KPHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+",snow:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InNub3ciIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xODU4Xzg4NjApIj4KPGcgaWQ9IlNreSI+CjxnIGlkPSJDbG91ZHMiPgo8ZyBpZD0iQ2xvdWQiPgo8cGF0aCBpZD0iQ2xvdWRfMiIgZD0iTTU1LjI2MjMgNDguNDc0NkM2MC4xMjI3IDQwLjYxMTEgNzAuMjk3NSAzNy4zOCA3OC44MTUxIDQwLjk0MzRDODcuMzIxNCA0NC41MDIzIDkyLjEzOCA1NC4wMDI2IDg5LjkwMyA2Mi45NjQ4TDg5Ljc0MTggNjMuNjE0M0w5MC40MTA4IDYzLjU4NUM5Ny40MjAzIDYzLjI3OTEgMTAzLjUgNjguOTkxNyAxMDMuNSA3Ni4wMjgzQzEwMy41IDgyLjgzOTUgOTcuNzcxNyA4OC40OTk3IDkwLjk3NzIgODguNUgzNy45NTM3QzMxLjEyNzUgODguNTAxOCAyNS4yMDI5IDgzLjE3MDkgMjQuNTU5MiA3Ni4zNjA0QzIzLjkxNTggNjkuNTUxOCAyOC43MzY5IDYzLjIxMjQgMzUuNDQzIDYxLjk0NTNMMzUuOTI2NCA2MS44NTM1TDM1Ljg0MjQgNjEuMzY5MUMzNS4wMjU2IDU2LjYyMzkgMzcuMTI1OCA1MS43MTY4IDQxLjEwNTEgNDkuMDEyN0M0NS4wOTUxIDQ2LjMwMTQgNTAuNDQ1OSA0Ni4xNTM3IDU0LjU3OTcgNDguNjM5Nkw1NS4wMDI2IDQ4Ljg5NDVMNTUuMjYyMyA0OC40NzQ2WiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzE4NThfODg2MCkiIHN0cm9rZT0iI0U2RUZGQyIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIi8+CjwvZz4KPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgLTM7MCAwIiBkdXI9IjNzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiLz48L2c+CjwvZz4KPGcgaWQ9IlByZWNpcGl0YXRpb24iPgo8ZyBpZD0iU25vd2ZsYWtlcyI+CjxwYXRoIGlkPSJTbm93Zmxha2UgMSIgZD0iTTUyLjU3ODEgOTAuMzY2TDUxLjM3MzUgODkuNjc3NUM1MS40Nzk0IDg5LjIzMjYgNTEuNDc4NiA4OC43Njg3IDUxLjM3MDggODguMzI0MUw1Mi41NzgxIDg3LjYzNDVDNTIuNjczOCA4Ny41ODA1IDUyLjc1NzcgODcuNTA3OSA1Mi44MjUyIDg3LjQyMUM1Mi44OTI2IDg3LjMzNDIgNTIuOTQyMyA4Ny4yMzQ3IDUyLjk3MTEgODcuMTI4NEM1Mi45OTk4IDg3LjAyMjEgNTMuMDA3MSA4Ni45MTEyIDUyLjk5MjYgODYuODAyQzUyLjk3ODIgODYuNjkyOCA1Mi45NDIyIDg2LjU4NzYgNTIuODg2OCA4Ni40OTI2QzUyLjc3MzIgODYuMjk5OCA1Mi41ODg2IDg2LjE1OTcgNTIuMzcyOCA4Ni4xMDI1QzUyLjE1NyA4Ni4wNDUyIDUxLjkyNzYgODYuMDc1NCA1MS43MzM5IDg2LjE4NjZMNTAuNTI3OCA4Ni44NzYzQzUwLjE5MzEgODYuNTU4NiA0OS43ODY4IDg2LjMyNjQgNDkuMzQzNyA4Ni4xOTk1Vjg0LjgyMDJDNDkuMzM2OCA4NC42MDAzIDQ5LjI0NSA4NC4zOTE4IDQ5LjA4NzUgODQuMjM4N0M0OC45MyA4NC4wODU2IDQ4LjcxOTIgODQgNDguNDk5OCA4NEM0OC4yODA1IDg0IDQ4LjA2OTkgODQuMDg1NiA0Ny45MTI0IDg0LjIzODdDNDcuNzU0OCA4NC4zOTE4IDQ3LjY2MjggODQuNjAwMyA0Ny42NTYgODQuODIwMlY4Ni4xOTk1QzQ3LjIxNCA4Ni4zMjg5IDQ2LjgwODEgODYuNTU5OCA0Ni40NzA2IDg2Ljg3NEw0NS4yNjYyIDg2LjE4NTNDNDUuMDcyNCA4Ni4wNzQyIDQ0Ljg0MjggODYuMDQ0IDQ0LjYyNyA4Ni4xMDEzQzQ0LjQxMTMgODYuMTU4NSA0NC4yMjY3IDg2LjI5ODYgNDQuMTEzIDg2LjQ5MTNDNDQuMDU3NiA4Ni41ODY0IDQ0LjAyMTcgODYuNjkxNiA0NC4wMDcyIDg2LjgwMDdDNDMuOTkyOCA4Ni45MDk5IDQ0IDg3LjAyMDkgNDQuMDI4OCA4Ny4xMjcxQzQ0LjA1NzUgODcuMjMzNCA0NC4xMDcyIDg3LjMzMjkgNDQuMTc0NyA4Ny40MTk4QzQ0LjI0MjEgODcuNTA2NyA0NC4zMjYgODcuNTc5MiA0NC40MjE3IDg3LjYzMzJMNDUuNjI2NCA4OC4zMjE2QzQ1LjUyMDQgODguNzY2NiA0NS41MjEzIDg5LjIzMDUgNDUuNjI5IDg5LjY3NUw0NC40MjE3IDkwLjM2NDdDNDQuMzI2IDkwLjQxODcgNDQuMjQyMSA5MC40OTEyIDQ0LjE3NDcgOTAuNTc4MUM0NC4xMDcyIDkwLjY2NSA0NC4wNTc1IDkwLjc2NDUgNDQuMDI4OCA5MC44NzA4QzQ0IDkwLjk3NzEgNDMuOTkyOCA5MS4wODggNDQuMDA3MiA5MS4xOTcyQzQ0LjAyMTcgOTEuMzA2MyA0NC4wNTc2IDkxLjQxMTUgNDQuMTEzIDkxLjUwNjZDNDQuMjI2NyA5MS42OTkyIDQ0LjQxMTMgOTEuODM5MiA0NC42MjcgOTEuODk2NUM0NC44NDI4IDkxLjk1MzcgNDUuMDcyNCA5MS45MjM2IDQ1LjI2NjIgOTEuODEyNkw0Ni40NzIxIDkxLjEyMjlDNDYuODA2MyA5MS40NDA5IDQ3LjIxMjggOTEuNjcyNiA0Ny42NTYyIDkxLjc5NzlWOTMuMTc5OEM0Ny42NjMxIDkzLjM5OTcgNDcuNzU1IDkzLjYwODIgNDcuOTEyNiA5My43NjEzQzQ4LjA3MDEgOTMuOTE0NCA0OC4yODA3IDk0IDQ4LjUgOTRDNDguNzE5NCA5NCA0OC45MzAyIDkzLjkxNDQgNDkuMDg3NyA5My43NjEzQzQ5LjI0NTIgOTMuNjA4MiA0OS4zMzcgOTMuMzk5NyA0OS4zNDM5IDkzLjE3OThWOTEuNzk3NUM0OS43ODUzIDkxLjY2ODMgNTAuMTkwNyA5MS40Mzc4IDUwLjUyNzggOTEuMTI0Mkw1MS43MzQxIDkxLjgxMzhDNTEuOTI3OCA5MS45MjQ4IDUyLjE1NzMgOTEuOTU1IDUyLjM3MyA5MS44OTc3QzUyLjU4ODggOTEuODQwNSA1Mi43NzMzIDkxLjcwMDUgNTIuODg3IDkxLjUwNzlDNTIuOTQyNCA5MS40MTI4IDUyLjk3ODQgOTEuMzA3NiA1Mi45OTI4IDkxLjE5ODRDNTMuMDA3MyA5MS4wODkyIDUyLjk5OTggOTAuOTc4MyA1Mi45NzExIDkwLjg3MkM1Mi45NDIzIDkwLjc2NTcgNTIuODkyOSA5MC42NjYyIDUyLjgyNTQgOTAuNTc5M0M1Mi43NTc5IDkwLjQ5MjUgNTIuNjczOCA5MC40MTk5IDUyLjU3ODEgOTAuMzY2Wk00Ny44NjY0IDkwLjA4NjFDNDcuNzIyOSA5MC4wMDUgNDcuNTk2OCA4OS44OTYxIDQ3LjQ5NTYgODkuNzY1N0M0Ny4zOTQ0IDg5LjYzNTMgNDcuMzIwMiA4OS40ODYgNDcuMjc3MSA4OS4zMjY2QzQ3LjIzMzkgODkuMTY3MSA0Ny4yMjI4IDg5LjAwMDcgNDcuMjQ0MyA4OC44MzY5QzQ3LjI2NTggODguNjczMSA0Ny4zMTk3IDg4LjUxNTIgNDcuNDAyNiA4OC4zNzI0QzQ3LjU3MzUgODguMDg0IDQ3Ljg1MDMgODcuODc0MyA0OC4xNzM2IDg3Ljc4ODNDNDguNDk3IDg3LjcwMjMgNDguODQxMSA4Ny43NDcgNDkuMTMyMSA4Ny45MTI2QzQ5LjI3NTYgODcuOTkzOCA0OS40MDE2IDg4LjEwMjcgNDkuNTAyOCA4OC4yMzMxQzQ5LjYwNCA4OC4zNjM1IDQ5LjY3ODIgODguNTEyNyA0OS43MjE0IDg4LjY3MjJDNDkuNzY0NSA4OC44MzE2IDQ5Ljc3NTcgODguOTk4MSA0OS43NTQxIDg5LjE2MTlDNDkuNzMyNiA4OS4zMjU3IDQ5LjY3ODcgODkuNDgzNiA0OS41OTU4IDg5LjYyNjNDNDkuNDI1IDg5LjkxNDkgNDkuMTQ4MiA5MC4xMjQ3IDQ4LjgyNDggOTAuMjEwOEM0OC41MDE0IDkwLjI5NjkgNDguMTU3NCA5MC4yNTIzIDQ3Ljg2NjQgOTAuMDg2N1Y5MC4wODYxWiIgZmlsbD0iIzg2QzNEQiIgb3BhY2l0eT0iMCI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJ0cmFuc2xhdGUiIHZhbHVlcz0iMCAwOzAgMjAiIGR1cj0iMXMiIGJlZ2luPSIwLjJzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgMSAxIi8+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIwOzE7MTswIiBkdXI9IjFzIiBiZWdpbj0iMC4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGtleVRpbWVzPSIwOzAuMTU7MC44NTsxIi8+PC9wYXRoPgo8cGF0aCBpZD0iU25vd2ZsYWtlIDIiIGQ9Ik02Ny41NzgxIDkwLjM2Nkw2Ni4zNzM1IDg5LjY3NzVDNjYuNDc5NCA4OS4yMzI2IDY2LjQ3ODYgODguNzY4NyA2Ni4zNzA4IDg4LjMyNDFMNjcuNTc4MSA4Ny42MzQ1QzY3LjY3MzggODcuNTgwNSA2Ny43NTc3IDg3LjUwNzkgNjcuODI1MiA4Ny40MjFDNjcuODkyNiA4Ny4zMzQyIDY3Ljk0MjMgODcuMjM0NyA2Ny45NzExIDg3LjEyODRDNjcuOTk5OCA4Ny4wMjIxIDY4LjAwNzEgODYuOTExMiA2Ny45OTI2IDg2LjgwMkM2Ny45NzgyIDg2LjY5MjggNjcuOTQyMiA4Ni41ODc2IDY3Ljg4NjggODYuNDkyNkM2Ny43NzMyIDg2LjI5OTggNjcuNTg4NiA4Ni4xNTk3IDY3LjM3MjggODYuMTAyNUM2Ny4xNTcgODYuMDQ1MiA2Ni45Mjc2IDg2LjA3NTQgNjYuNzMzOSA4Ni4xODY2TDY1LjUyNzggODYuODc2M0M2NS4xOTMxIDg2LjU1ODYgNjQuNzg2OCA4Ni4zMjY0IDY0LjM0MzcgODYuMTk5NVY4NC44MjAyQzY0LjMzNjggODQuNjAwMyA2NC4yNDUgODQuMzkxOCA2NC4wODc1IDg0LjIzODdDNjMuOTMgODQuMDg1NiA2My43MTkyIDg0IDYzLjQ5OTggODRDNjMuMjgwNSA4NCA2My4wNjk5IDg0LjA4NTYgNjIuOTEyNCA4NC4yMzg3QzYyLjc1NDggODQuMzkxOCA2Mi42NjI4IDg0LjYwMDMgNjIuNjU2IDg0LjgyMDJWODYuMTk5NUM2Mi4yMTQgODYuMzI4OSA2MS44MDgxIDg2LjU1OTggNjEuNDcwNiA4Ni44NzRMNjAuMjY2MiA4Ni4xODUzQzYwLjA3MjQgODYuMDc0MiA1OS44NDI4IDg2LjA0NCA1OS42MjcgODYuMTAxM0M1OS40MTEzIDg2LjE1ODUgNTkuMjI2NyA4Ni4yOTg2IDU5LjExMyA4Ni40OTEzQzU5LjA1NzYgODYuNTg2NCA1OS4wMjE3IDg2LjY5MTYgNTkuMDA3MiA4Ni44MDA3QzU4Ljk5MjggODYuOTA5OSA1OSA4Ny4wMjA5IDU5LjAyODggODcuMTI3MUM1OS4wNTc1IDg3LjIzMzQgNTkuMTA3MiA4Ny4zMzI5IDU5LjE3NDcgODcuNDE5OEM1OS4yNDIxIDg3LjUwNjcgNTkuMzI2IDg3LjU3OTIgNTkuNDIxNyA4Ny42MzMyTDYwLjYyNjQgODguMzIxNkM2MC41MjA0IDg4Ljc2NjYgNjAuNTIxMyA4OS4yMzA1IDYwLjYyOSA4OS42NzVMNTkuNDIxNyA5MC4zNjQ3QzU5LjMyNiA5MC40MTg3IDU5LjI0MjEgOTAuNDkxMiA1OS4xNzQ3IDkwLjU3ODFDNTkuMTA3MiA5MC42NjUgNTkuMDU3NSA5MC43NjQ1IDU5LjAyODggOTAuODcwOEM1OSA5MC45NzcxIDU4Ljk5MjggOTEuMDg4IDU5LjAwNzIgOTEuMTk3MkM1OS4wMjE3IDkxLjMwNjMgNTkuMDU3NiA5MS40MTE1IDU5LjExMyA5MS41MDY2QzU5LjIyNjcgOTEuNjk5MiA1OS40MTEzIDkxLjgzOTIgNTkuNjI3IDkxLjg5NjVDNTkuODQyOCA5MS45NTM3IDYwLjA3MjQgOTEuOTIzNiA2MC4yNjYyIDkxLjgxMjZMNjEuNDcyMSA5MS4xMjI5QzYxLjgwNjMgOTEuNDQwOSA2Mi4yMTI4IDkxLjY3MjYgNjIuNjU2MiA5MS43OTc5VjkzLjE3OThDNjIuNjYzMSA5My4zOTk3IDYyLjc1NSA5My42MDgyIDYyLjkxMjYgOTMuNzYxM0M2My4wNzAxIDkzLjkxNDQgNjMuMjgwNyA5NCA2My41IDk0QzYzLjcxOTQgOTQgNjMuOTMwMiA5My45MTQ0IDY0LjA4NzcgOTMuNzYxM0M2NC4yNDUyIDkzLjYwODIgNjQuMzM3IDkzLjM5OTcgNjQuMzQzOSA5My4xNzk4VjkxLjc5NzVDNjQuNzg1MyA5MS42NjgzIDY1LjE5MDcgOTEuNDM3OCA2NS41Mjc4IDkxLjEyNDJMNjYuNzM0MSA5MS44MTM4QzY2LjkyNzggOTEuOTI0OCA2Ny4xNTczIDkxLjk1NSA2Ny4zNzMgOTEuODk3N0M2Ny41ODg4IDkxLjg0MDUgNjcuNzczMyA5MS43MDA1IDY3Ljg4NyA5MS41MDc5QzY3Ljk0MjQgOTEuNDEyOCA2Ny45Nzg0IDkxLjMwNzYgNjcuOTkyOCA5MS4xOTg0QzY4LjAwNzMgOTEuMDg5MiA2Ny45OTk4IDkwLjk3ODMgNjcuOTcxMSA5MC44NzJDNjcuOTQyMyA5MC43NjU3IDY3Ljg5MjkgOTAuNjY2MiA2Ny44MjU0IDkwLjU3OTNDNjcuNzU3OSA5MC40OTI1IDY3LjY3MzggOTAuNDE5OSA2Ny41NzgxIDkwLjM2NlpNNjIuODY2NCA5MC4wODYxQzYyLjcyMjkgOTAuMDA1IDYyLjU5NjggODkuODk2MSA2Mi40OTU2IDg5Ljc2NTdDNjIuMzk0NCA4OS42MzUzIDYyLjMyMDIgODkuNDg2IDYyLjI3NzEgODkuMzI2NkM2Mi4yMzM5IDg5LjE2NzEgNjIuMjIyOCA4OS4wMDA3IDYyLjI0NDMgODguODM2OUM2Mi4yNjU4IDg4LjY3MzEgNjIuMzE5NyA4OC41MTUyIDYyLjQwMjYgODguMzcyNEM2Mi41NzM1IDg4LjA4NCA2Mi44NTAzIDg3Ljg3NDMgNjMuMTczNiA4Ny43ODgzQzYzLjQ5NyA4Ny43MDIzIDYzLjg0MTEgODcuNzQ3IDY0LjEzMjEgODcuOTEyNkM2NC4yNzU2IDg3Ljk5MzggNjQuNDAxNiA4OC4xMDI3IDY0LjUwMjggODguMjMzMUM2NC42MDQgODguMzYzNSA2NC42NzgyIDg4LjUxMjcgNjQuNzIxNCA4OC42NzIyQzY0Ljc2NDUgODguODMxNiA2NC43NzU3IDg4Ljk5ODEgNjQuNzU0MSA4OS4xNjE5QzY0LjczMjYgODkuMzI1NyA2NC42Nzg3IDg5LjQ4MzYgNjQuNTk1OCA4OS42MjYzQzY0LjQyNSA4OS45MTQ5IDY0LjE0ODIgOTAuMTI0NyA2My44MjQ4IDkwLjIxMDhDNjMuNTAxNCA5MC4yOTY5IDYzLjE1NzQgOTAuMjUyMyA2Mi44NjY0IDkwLjA4NjdWOTAuMDg2MVoiIGZpbGw9IiM4NkMzREIiIG9wYWNpdHk9IjAiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIDIwIiBkdXI9IjFzIiBiZWdpbj0iMC43cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIDEgMSIvPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMDsxOzE7MCIgZHVyPSIxcyIgYmVnaW49IjAuN3MiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBrZXlUaW1lcz0iMDswLjE1OzAuODU7MSIvPjwvcGF0aD4KPHBhdGggaWQ9IlNub3dmbGFrZSAzIiBkPSJNODIuNTc4MSA5MC4zNjZMODEuMzczNSA4OS42Nzc1QzgxLjQ3OTQgODkuMjMyNiA4MS40Nzg2IDg4Ljc2ODcgODEuMzcwOCA4OC4zMjQxTDgyLjU3ODEgODcuNjM0NUM4Mi42NzM4IDg3LjU4MDUgODIuNzU3NyA4Ny41MDc5IDgyLjgyNTIgODcuNDIxQzgyLjg5MjYgODcuMzM0MiA4Mi45NDIzIDg3LjIzNDcgODIuOTcxMSA4Ny4xMjg0QzgyLjk5OTggODcuMDIyMSA4My4wMDcxIDg2LjkxMTIgODIuOTkyNiA4Ni44MDJDODIuOTc4MiA4Ni42OTI4IDgyLjk0MjIgODYuNTg3NiA4Mi44ODY4IDg2LjQ5MjZDODIuNzczMiA4Ni4yOTk4IDgyLjU4ODYgODYuMTU5NyA4Mi4zNzI4IDg2LjEwMjVDODIuMTU3IDg2LjA0NTIgODEuOTI3NiA4Ni4wNzU0IDgxLjczMzkgODYuMTg2Nkw4MC41Mjc4IDg2Ljg3NjNDODAuMTkzMSA4Ni41NTg2IDc5Ljc4NjggODYuMzI2NCA3OS4zNDM3IDg2LjE5OTVWODQuODIwMkM3OS4zMzY4IDg0LjYwMDMgNzkuMjQ1IDg0LjM5MTggNzkuMDg3NSA4NC4yMzg3Qzc4LjkzIDg0LjA4NTYgNzguNzE5MiA4NCA3OC40OTk4IDg0Qzc4LjI4MDUgODQgNzguMDY5OSA4NC4wODU2IDc3LjkxMjQgODQuMjM4N0M3Ny43NTQ4IDg0LjM5MTggNzcuNjYyOCA4NC42MDAzIDc3LjY1NiA4NC44MjAyVjg2LjE5OTVDNzcuMjE0IDg2LjMyODkgNzYuODA4MSA4Ni41NTk4IDc2LjQ3MDYgODYuODc0TDc1LjI2NjIgODYuMTg1M0M3NS4wNzI0IDg2LjA3NDIgNzQuODQyOCA4Ni4wNDQgNzQuNjI3IDg2LjEwMTNDNzQuNDExMyA4Ni4xNTg1IDc0LjIyNjcgODYuMjk4NiA3NC4xMTMgODYuNDkxM0M3NC4wNTc2IDg2LjU4NjQgNzQuMDIxNyA4Ni42OTE2IDc0LjAwNzIgODYuODAwN0M3My45OTI4IDg2LjkwOTkgNzQgODcuMDIwOSA3NC4wMjg4IDg3LjEyNzFDNzQuMDU3NSA4Ny4yMzM0IDc0LjEwNzIgODcuMzMyOSA3NC4xNzQ3IDg3LjQxOThDNzQuMjQyMSA4Ny41MDY3IDc0LjMyNiA4Ny41NzkyIDc0LjQyMTcgODcuNjMzMkw3NS42MjY0IDg4LjMyMTZDNzUuNTIwNCA4OC43NjY2IDc1LjUyMTMgODkuMjMwNSA3NS42MjkgODkuNjc1TDc0LjQyMTcgOTAuMzY0N0M3NC4zMjYgOTAuNDE4NyA3NC4yNDIxIDkwLjQ5MTIgNzQuMTc0NyA5MC41NzgxQzc0LjEwNzIgOTAuNjY1IDc0LjA1NzUgOTAuNzY0NSA3NC4wMjg4IDkwLjg3MDhDNzQgOTAuOTc3MSA3My45OTI4IDkxLjA4OCA3NC4wMDcyIDkxLjE5NzJDNzQuMDIxNyA5MS4zMDYzIDc0LjA1NzYgOTEuNDExNSA3NC4xMTMgOTEuNTA2NkM3NC4yMjY3IDkxLjY5OTIgNzQuNDExMyA5MS44MzkyIDc0LjYyNyA5MS44OTY1Qzc0Ljg0MjggOTEuOTUzNyA3NS4wNzI0IDkxLjkyMzYgNzUuMjY2MiA5MS44MTI2TDc2LjQ3MjEgOTEuMTIyOUM3Ni44MDYzIDkxLjQ0MDkgNzcuMjEyOCA5MS42NzI2IDc3LjY1NjIgOTEuNzk3OVY5My4xNzk4Qzc3LjY2MzEgOTMuMzk5NyA3Ny43NTUgOTMuNjA4MiA3Ny45MTI2IDkzLjc2MTNDNzguMDcwMSA5My45MTQ0IDc4LjI4MDcgOTQgNzguNSA5NEM3OC43MTk0IDk0IDc4LjkzMDIgOTMuOTE0NCA3OS4wODc3IDkzLjc2MTNDNzkuMjQ1MiA5My42MDgyIDc5LjMzNyA5My4zOTk3IDc5LjM0MzkgOTMuMTc5OFY5MS43OTc1Qzc5Ljc4NTMgOTEuNjY4MyA4MC4xOTA3IDkxLjQzNzggODAuNTI3OCA5MS4xMjQyTDgxLjczNDEgOTEuODEzOEM4MS45Mjc4IDkxLjkyNDggODIuMTU3MyA5MS45NTUgODIuMzczIDkxLjg5NzdDODIuNTg4OCA5MS44NDA1IDgyLjc3MzMgOTEuNzAwNSA4Mi44ODcgOTEuNTA3OUM4Mi45NDI0IDkxLjQxMjggODIuOTc4NCA5MS4zMDc2IDgyLjk5MjggOTEuMTk4NEM4My4wMDczIDkxLjA4OTIgODIuOTk5OCA5MC45NzgzIDgyLjk3MTEgOTAuODcyQzgyLjk0MjMgOTAuNzY1NyA4Mi44OTI5IDkwLjY2NjIgODIuODI1NCA5MC41NzkzQzgyLjc1NzkgOTAuNDkyNSA4Mi42NzM4IDkwLjQxOTkgODIuNTc4MSA5MC4zNjZaTTc3Ljg2NjQgOTAuMDg2MUM3Ny43MjI5IDkwLjAwNSA3Ny41OTY4IDg5Ljg5NjEgNzcuNDk1NiA4OS43NjU3Qzc3LjM5NDQgODkuNjM1MyA3Ny4zMjAyIDg5LjQ4NiA3Ny4yNzcxIDg5LjMyNjZDNzcuMjMzOSA4OS4xNjcxIDc3LjIyMjggODkuMDAwNyA3Ny4yNDQzIDg4LjgzNjlDNzcuMjY1OCA4OC42NzMxIDc3LjMxOTcgODguNTE1MiA3Ny40MDI2IDg4LjM3MjRDNzcuNTczNSA4OC4wODQgNzcuODUwMyA4Ny44NzQzIDc4LjE3MzYgODcuNzg4M0M3OC40OTcgODcuNzAyMyA3OC44NDExIDg3Ljc0NyA3OS4xMzIxIDg3LjkxMjZDNzkuMjc1NiA4Ny45OTM4IDc5LjQwMTYgODguMTAyNyA3OS41MDI4IDg4LjIzMzFDNzkuNjA0IDg4LjM2MzUgNzkuNjc4MiA4OC41MTI3IDc5LjcyMTQgODguNjcyMkM3OS43NjQ1IDg4LjgzMTYgNzkuNzc1NyA4OC45OTgxIDc5Ljc1NDEgODkuMTYxOUM3OS43MzI2IDg5LjMyNTcgNzkuNjc4NyA4OS40ODM2IDc5LjU5NTggODkuNjI2M0M3OS40MjUgODkuOTE0OSA3OS4xNDgyIDkwLjEyNDcgNzguODI0OCA5MC4yMTA4Qzc4LjUwMTQgOTAuMjk2OSA3OC4xNTc0IDkwLjI1MjMgNzcuODY2NCA5MC4wODY3VjkwLjA4NjFaIiBmaWxsPSIjODZDM0RCIiBvcGFjaXR5PSIwIj48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAyMCIgZHVyPSIxcyIgYmVnaW49IjEuMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAxIDEiLz48YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjA7MTsxOzAiIGR1cj0iMXMiIGJlZ2luPSIxLjJzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIga2V5VGltZXM9IjA7MC4xNTswLjg1OzEiLz48L3BhdGg+CjwvZz4KPC9nPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTg1OF84ODYwIiB4MT0iNjQuMDAwOCIgeTE9IjM5IiB4Mj0iNjQuMDAwOCIgeTI9Ijg5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGM0Y3RkUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTZFRkZDIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMTg1OF84ODYwIj4KPHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+","sun-hot":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InN1bi1ob3QiIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xODc4XzQ2NzMpIj4KPGcgaWQ9Ik1hc2sgZ3JvdXAiPgo8bWFzayBpZD0ibWFzazBfMTg3OF80NjczIiBzdHlsZT0ibWFzay10eXBlOmFscGhhIiBtYXNrVW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4PSIwIiB5PSIwIiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CjxwYXRoIGlkPSJNYXNrIiBkPSJNMCAwSDEyOEwwIDEyOFYwWiIgZmlsbD0iYmxhY2siLz4KPC9tYXNrPgo8ZyBtYXNrPSJ1cmwoI21hc2swXzE4NzhfNDY3MykiPgo8ZyBpZD0iU3VuIj4KPGNpcmNsZSBpZD0iQ29yZSIgY3g9IjY0IiBjeT0iNjQiIHI9IjE5LjUiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xODc4XzQ2NzMpIiBzdHJva2U9IiNGOEFGMTgiLz4KPGcgaWQ9IlJheXMiPgo8cGF0aCBkPSJNNjEgMTlDNjEgMTcuMzQzMSA2Mi4zNDMxIDE2IDY0IDE2QzY1LjY1NjggMTYgNjcgMTcuMzQzMSA2NyAxOVYzM0M2NyAzNC42NTY5IDY1LjY1NjggMzYgNjQgMzZDNjIuMzQzMSAzNiA2MSAzNC42NTY5IDYxIDMzVjE5WiIgZmlsbD0iI0Y4QUYxOCIvPgo8cGF0aCBkPSJNOTMuNjk4NSAzMC4wNTg5Qzk0Ljg3IDI4Ljg4NzMgOTYuNzY5NiAyOC44ODczIDk3Ljk0MTEgMzAuMDU4OUM5OS4xMTI3IDMxLjIzMDQgOTkuMTEyNyAzMy4xMjk5IDk3Ljk0MTEgMzQuMzAxNUw4OC4wNDE2IDQ0LjIwMUM4Ni44NzAxIDQ1LjM3MjYgODQuOTcwNiA0NS4zNzI2IDgzLjc5OSA0NC4yMDFDODIuNjI3NCA0My4wMjk0IDgyLjYyNzQgNDEuMTI5OSA4My43OTkgMzkuOTU4NEw5My42OTg1IDMwLjA1ODlaIiBmaWxsPSIjRjhBRjE4Ii8+CjxwYXRoIGQ9Ik0xMDkgNjFDMTEwLjY1NyA2MSAxMTIgNjIuMzQzMiAxMTIgNjRDMTEyIDY1LjY1NjkgMTEwLjY1NyA2NyAxMDkgNjdIOTVDOTMuMzQzMSA2NyA5MiA2NS42NTY5IDkyIDY0QzkyIDYyLjM0MzIgOTMuMzQzMSA2MSA5NSA2MUgxMDlaIiBmaWxsPSIjRjhBRjE4Ii8+CjxwYXRoIGQ9Ik05Ny45NDExIDkzLjY5ODVDOTkuMTEyNyA5NC44NzAxIDk5LjExMjcgOTYuNzY5NiA5Ny45NDExIDk3Ljk0MTFDOTYuNzY5NiA5OS4xMTI3IDk0Ljg3MDEgOTkuMTEyNyA5My42OTg1IDk3Ljk0MTFMODMuNzk5IDg4LjA0MTZDODIuNjI3NCA4Ni44NzAxIDgyLjYyNzQgODQuOTcwNiA4My43OTkgODMuNzk5Qzg0Ljk3MDYgODIuNjI3NCA4Ni44NzAxIDgyLjYyNzQgODguMDQxNiA4My43OTlMOTcuOTQxMSA5My42OTg1WiIgZmlsbD0iI0Y4QUYxOCIvPgo8cGF0aCBkPSJNNjEgOTVDNjEgOTMuMzQzMSA2Mi4zNDMxIDkyIDY0IDkyQzY1LjY1NjggOTIgNjcgOTMuMzQzMSA2NyA5NVYxMDlDNjcgMTEwLjY1NyA2NS42NTY4IDExMiA2NCAxMTJDNjIuMzQzMSAxMTIgNjEgMTEwLjY1NyA2MSAxMDlWOTVaIiBmaWxsPSIjRjhBRjE4Ii8+CjxwYXRoIGQ9Ik0zOS45NTg0IDgzLjc5OUM0MS4xMjk5IDgyLjYyNzQgNDMuMDI5NCA4Mi42Mjc0IDQ0LjIwMSA4My43OTlDNDUuMzcyNiA4NC45NzA2IDQ1LjM3MjYgODYuODcwMSA0NC4yMDEgODguMDQxNkwzNC4zMDE1IDk3Ljk0MTFDMzMuMTI5OSA5OS4xMTI3IDMxLjIzMDQgOTkuMTEyNyAzMC4wNTg5IDk3Ljk0MTFDMjguODg3MyA5Ni43Njk2IDI4Ljg4NzMgOTQuODcgMzAuMDU4OSA5My42OTg1TDM5Ljk1ODQgODMuNzk5WiIgZmlsbD0iI0Y4QUYxOCIvPgo8cGF0aCBkPSJNMzMgNjFDMzQuNjU2OSA2MSAzNiA2Mi4zNDMxIDM2IDY0QzM2IDY1LjY1NjggMzQuNjU2OSA2NyAzMyA2N0gxOUMxNy4zNDMxIDY3IDE2IDY1LjY1NjggMTYgNjRDMTYgNjIuMzQzMSAxNy4zNDMxIDYxIDE5IDYxSDMzWiIgZmlsbD0iI0Y4QUYxOCIvPgo8cGF0aCBkPSJNNDQuMjAxIDM5Ljk1ODRDNDUuMzcyNiA0MS4xMjk5IDQ1LjM3MjYgNDMuMDI5NCA0NC4yMDEgNDQuMjAxQzQzLjAyOTQgNDUuMzcyNiA0MS4xMjk5IDQ1LjM3MjYgMzkuOTU4NCA0NC4yMDFMMzAuMDU4OSAzNC4zMDE1QzI4Ljg4NzMgMzMuMTI5OSAyOC44ODczIDMxLjIzMDUgMzAuMDU4OSAzMC4wNTg5QzMxLjIzMDUgMjguODg3MyAzMy4xMjk5IDI4Ljg4NzMgMzQuMzAxNSAzMC4wNTg5TDQ0LjIwMSAzOS45NTg0WiIgZmlsbD0iI0Y4QUYxOCIvPgo8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgdmFsdWVzPSIwIDY0LjAgNjQuMDszNjAgNjQuMCA2NC4wIiBkdXI9IjZzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+PC9nPgo8L2c+CjwvZz4KPC9nPgo8cGF0aCBpZD0icGF0aCIgZD0iTTQ3LjEwNDggOTYuMzk1MkM0NS42MzE3IDkyLjIxMTUgNDYuOTg3IDkwLjg1NjIgNTEuMTcwNyA5Mi4zMjk0QzU1LjM1NDQgOTMuODAyNSA1Ni43MDk3IDkyLjQ0NzIgNTUuMjM2NSA4OC4yNjM1QzUzLjc2MzQgODQuMDc5OCA1NS4xMTg3IDgyLjcyNDUgNTkuMzAyNCA4NC4xOTc3QzYzLjQ4NjEgODUuNjcwOCA2NC44NDE0IDg0LjMxNTUgNjMuMzY4MyA4MC4xMzE4QzYxLjg5NTEgNzUuOTQ4MSA2My4yNTA0IDc0LjU5MjggNjcuNDM0MSA3Ni4wNjU5QzcxLjYxNzkgNzcuNTM5MSA3Mi45NzMxIDc2LjE4MzggNzEuNSA3Mi4wMDAxQzcwLjAyNjkgNjcuODE2MyA3MS4zODIyIDY2LjQ2MTEgNzUuNTY1OSA2Ny45MzQyQzc5Ljc0OTYgNjkuNDA3MyA4MS4xMDQ5IDY4LjA1MiA3OS42MzE3IDYzLjg2ODNDNzguMTU4NiA1OS42ODQ2IDc5LjUxMzkgNTguMzI5MyA4My42OTc2IDU5LjgwMjVDODcuODgxMyA2MS4yNzU2IDg5LjIzNjYgNTkuOTIwMyA4Ny43NjM1IDU1LjczNjZDODYuMjkwMyA1MS41NTI5IDg3LjY0NTYgNTAuMTk3NiA5MS44MjkzIDUxLjY3MDdDOTYuMDEzIDUzLjE0MzkgOTcuMzY4MyA1MS43ODg2IDk1Ljg5NTIgNDcuNjA0OSIgc3Ryb2tlPSIjRTJFOEYwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBpZD0icGF0aF8yIiBkPSJNNjIuMTA0OCA5Ni4zOTUyQzYwLjYzMTcgOTIuMjExNSA2MS45ODcgOTAuODU2MiA2Ni4xNzA3IDkyLjMyOTRDNzAuMzU0NCA5My44MDI1IDcxLjcwOTcgOTIuNDQ3MiA3MC4yMzY1IDg4LjI2MzVDNjguNzYzNCA4NC4wNzk4IDcwLjExODcgODIuNzI0NSA3NC4zMDI0IDg0LjE5NzdDNzguNDg2MSA4NS42NzA4IDc5Ljg0MTQgODQuMzE1NSA3OC4zNjgzIDgwLjEzMThDNzYuODk1MSA3NS45NDgxIDc4LjI1MDQgNzQuNTkyOCA4Mi40MzQxIDc2LjA2NTlDODYuNjE3OSA3Ny41MzkxIDg3Ljk3MzEgNzYuMTgzOCA4Ni41IDcyLjAwMDFDODUuMDI2OSA2Ny44MTYzIDg2LjM4MjIgNjYuNDYxMSA5MC41NjU5IDY3LjkzNDJDOTQuNzQ5NiA2OS40MDczIDk2LjEwNDkgNjguMDUyIDk0LjYzMTcgNjMuODY4M0M5My4xNTg2IDU5LjY4NDYgOTQuNTEzOSA1OC4zMjkzIDk4LjY5NzYgNTkuODAyNUMxMDIuODgxIDYxLjI3NTYgMTA0LjIzNyA1OS45MjAzIDEwMi43NjMgNTUuNzM2NkMxMDEuMjkgNTEuNTUyOSAxMDIuNjQ2IDUwLjE5NzYgMTA2LjgyOSA1MS42NzA3QzExMS4wMTMgNTMuMTQzOSAxMTIuMzY4IDUxLjc4ODYgMTEwLjg5NSA0Ny42MDQ5IiBzdHJva2U9IiNFMkU4RjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjwvZz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xODc4XzQ2NzMiIHgxPSI2NCIgeTE9IjQ0IiB4Mj0iNjQiIHkyPSI4NCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRkJCRjI0Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0Y4QUYxOCIvPgo8L2xpbmVhckdyYWRpZW50Pgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzE4NzhfNDY3MyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPg==","thermometer-colder":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InRoZXJtb21ldGVyLWNvbGRlciIgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzE4NDRfMTU2NzMpIj4KPGcgaWQ9IlRoZXJtb21ldGVyIE1lcmN1cnkiPgo8Y2lyY2xlIGlkPSJSZXNlcnZvaXIiIGN4PSI2NCIgY3k9IjgzIiByPSI5IiBmaWxsPSIjMjU2M0VCIi8+CjxyZWN0IGlkPSJWYWx1ZSIgeD0iNjEiIHk9IjUwIiB3aWR0aD0iNiIgaGVpZ2h0PSIyOSIgcng9IjMiIGZpbGw9IiMyNTYzRUIiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC0yOzAgMCIgZHVyPSIzcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9yZWN0Pgo8L2c+CjxnIGlkPSJUaGVybW9tZXRlciBHbGFzcyI+CjxwYXRoIGlkPSJHbGFzcyIgZD0iTTUwLjUgODMuMTkxNEM1MC40OTUyIDgxLjA1NjYgNTEuMDE3NSA3OC45NTEgNTIuMDIzNCA3Ny4wNTE4QzUzLjAyOTQgNzUuMTUyNSA1NC40OTAxIDczLjUxNCA1Ni4yODQxIDcyLjI3NTRDNTYuNDE5MiA3Mi4xODIxIDU2LjQ5OTkgNzIuMDI4NCA1Ni41IDcxLjg2NDNWMzguNzc5M0M1Ni41IDM2Ljg1MzQgNTcuMjg2NCAzNS4wMDI5IDU4LjY5MTQgMzMuNjM2N0M2MC4wOTY5IDMyLjI3IDYyLjAwNjQgMzEuNSA2NCAzMS41QzY1Ljk5MzUgMzEuNSA2Ny45MDMgMzIuMjcgNjkuMzA4NiAzMy42MzY3QzcwLjcxMzYgMzUuMDAyOSA3MS41IDM2Ljg1MzQgNzEuNSAzOC43NzkzVjQyLjA0NjlINjVDNjQuNzIzOSA0Mi4wNDY5IDY0LjUgNDIuMjcwOCA2NC41IDQyLjU0NjlDNjQuNSA0Mi44MjMgNjQuNzIzOCA0My4wNDY5IDY1IDQzLjA0NjlINzEuNVY0OS44MjYySDY1QzY0LjcyMzggNDkuODI2MiA2NC41IDUwLjA1IDY0LjUgNTAuMzI2MkM2NC41MDAxIDUwLjYwMjIgNjQuNzIzOSA1MC44MjYyIDY1IDUwLjgyNjJINzEuNVY1Ny42MDQ1SDY1QzY0LjcyNCA1Ny42MDQ1IDY0LjUwMDIgNTcuODI4NiA2NC41IDU4LjEwNDVDNjQuNSA1OC4zODA2IDY0LjcyMzggNTguNjA0NSA2NSA1OC42MDQ1SDcxLjVWNzEuODM5OEM3MS41IDcyLjAwNCA3MS41ODA3IDcyLjE1NzYgNzEuNzE1OCA3Mi4yNTFDNzMuNTEzMiA3My40OTE5IDc0Ljk3NjMgNzUuMTM0NCA3NS45ODI0IDc3LjAzODFDNzYuOTg4NCA3OC45NDE2IDc3LjUwODYgODEuMDUxOCA3Ny41IDgzLjE5MDRWODMuMTkyNEM3Ny40OTk5IDkwLjU0MzEgNzEuNDgwMSA5Ni41IDY0IDk2LjVDNTYuNTE5OSA5Ni41IDUwLjUgOTAuNTQzMSA1MC41IDgzLjE5MjRWODMuMTkxNFoiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xODQ0XzE1NjczKSIgc3Ryb2tlPSIjQkZEQkZFIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPGcgaWQ9IkFycm93cyI+CjxwYXRoIGlkPSJBcnJvdyAzIiBkPSJNOTIuNjY3OCA0NS4wMDI5QzkyLjMxNzUgNDUuMDAxMSA5MS45OCA0NS4xNDAzIDkxLjcyNTMgNDUuMzkxNkw4Ni4wMDEyIDUxLjA4NDFMODAuMjc2MSA0NS4zODg5QzgwLjAyMDQgNDUuMTM5IDc5LjY4MzQgNDUgNzkuMzMzMyA0NUM3OC45ODMyIDQ1IDc4LjY0NjIgNDUuMTM5IDc4LjM5MDUgNDUuMzg4OUM3OC4yNjczIDQ1LjUwODggNzguMTY5IDQ1LjY1NCA3OC4xMDE5IDQ1LjgxNTNDNzguMDM0NyA0NS45NzY3IDc4IDQ2LjE1MDcgNzggNDYuMzI2N0M3OCA0Ni41MDI2IDc4LjAzNDcgNDYuNjc2NyA3OC4xMDE5IDQ2LjgzODFDNzguMTY5IDQ2Ljk5OTQgNzguMjY3MyA0Ny4xNDQ2IDc4LjM5MDUgNDcuMjY0Nkw4NS4wNTcxIDUzLjg5N0M4NS4zMTI4IDU0LjE0NjkgODUuNjQ5OSA1NC4yODU5IDg2IDU0LjI4NTlDODYuMzUwMSA1NC4yODU5IDg2LjY4NzEgNTQuMTQ2OSA4Ni45NDI4IDUzLjg5N0w5My42MDk0IDQ3LjI2NDZDOTMuNzMyNyA0Ny4xNDQ2IDkzLjgzMDkgNDYuOTk5NCA5My44OTgxIDQ2LjgzODFDOTMuOTY1MyA0Ni42NzY3IDkzLjk5OTkgNDYuNTAyNiA5My45OTk5IDQ2LjMyNjdDOTMuOTk5OSA0Ni4xNTA3IDkzLjk2NTMgNDUuOTc2NyA5My44OTgxIDQ1LjgxNTNDOTMuODMwOSA0NS42NTQgOTMuNzMyNyA0NS41MDg4IDkzLjYwOTQgNDUuMzg4OUM5My4zNTQ2IDQ1LjEzODggOTMuMDE3NSA0NS4wMDA2IDkyLjY2NzggNDUuMDAyOVoiIGZpbGw9IiMyNTYzRUIiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC00OzAgMCIgZHVyPSIycyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9wYXRoPgo8cGF0aCBpZD0iQXJyb3cgMiIgZD0iTTkyLjY2NzggNTMuMzZDOTIuMzE3NSA1My4zNTgzIDkxLjk4IDUzLjQ5NzUgOTEuNzI1MyA1My43NDg4TDg2LjAwMTIgNTkuNDQxM0w4MC4yNzYxIDUzLjc0NkM4MC4wMjA0IDUzLjQ5NjIgNzkuNjgzNCA1My4zNTcyIDc5LjMzMzMgNTMuMzU3MkM3OC45ODMyIDUzLjM1NzIgNzguNjQ2MiA1My40OTYyIDc4LjM5MDUgNTMuNzQ2Qzc4LjI2NzMgNTMuODY2IDc4LjE2OSA1NC4wMTEyIDc4LjEwMTkgNTQuMTcyNUM3OC4wMzQ3IDU0LjMzMzkgNzggNTQuNTA3OSA3OCA1NC42ODM5Qzc4IDU0Ljg1OTggNzguMDM0NyA1NS4wMzM5IDc4LjEwMTkgNTUuMTk1MkM3OC4xNjkgNTUuMzU2NiA3OC4yNjczIDU1LjUwMTggNzguMzkwNSA1NS42MjE3TDg1LjA1NzEgNjIuMjU0MkM4NS4zMTI4IDYyLjUwNDEgODUuNjQ5OSA2Mi42NDMxIDg2IDYyLjY0MzFDODYuMzUwMSA2Mi42NDMxIDg2LjY4NzEgNjIuNTA0MSA4Ni45NDI4IDYyLjI1NDJMOTMuNjA5NCA1NS42MjE3QzkzLjczMjcgNTUuNTAxOCA5My44MzA5IDU1LjM1NjYgOTMuODk4MSA1NS4xOTUyQzkzLjk2NTMgNTUuMDMzOSA5My45OTk5IDU0Ljg1OTggOTMuOTk5OSA1NC42ODM5QzkzLjk5OTkgNTQuNTA3OSA5My45NjUzIDU0LjMzMzkgOTMuODk4MSA1NC4xNzI1QzkzLjgzMDkgNTQuMDExMiA5My43MzI3IDUzLjg2NiA5My42MDk0IDUzLjc0NkM5My4zNTQ2IDUzLjQ5NiA5My4wMTc1IDUzLjM1NzggOTIuNjY3OCA1My4zNloiIGZpbGw9IiMyNTYzRUIiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC00OzAgMCIgZHVyPSIycyIgYmVnaW49IjAuM3MiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiLz48L3BhdGg+CjxwYXRoIGlkPSJBcnJvdyAxIiBkPSJNOTIuNjY3OCA2MS43MTcyQzkyLjMxNzUgNjEuNzE1NSA5MS45OCA2MS44NTQ3IDkxLjcyNTMgNjIuMTA2TDg2LjAwMTIgNjcuNzk4NEw4MC4yNzYxIDYyLjEwMzJDODAuMDIwNCA2MS44NTM0IDc5LjY4MzQgNjEuNzE0NCA3OS4zMzMzIDYxLjcxNDRDNzguOTgzMiA2MS43MTQ0IDc4LjY0NjIgNjEuODUzNCA3OC4zOTA1IDYyLjEwMzJDNzguMjY3MyA2Mi4yMjMyIDc4LjE2OSA2Mi4zNjgzIDc4LjEwMTkgNjIuNTI5N0M3OC4wMzQ3IDYyLjY5MSA3OCA2Mi44NjUxIDc4IDYzLjA0MTFDNzggNjMuMjE3IDc4LjAzNDcgNjMuMzkxMSA3OC4xMDE5IDYzLjU1MjRDNzguMTY5IDYzLjcxMzggNzguMjY3MyA2My44NTkgNzguMzkwNSA2My45Nzg5TDg1LjA1NzEgNzAuNjExNEM4NS4zMTI4IDcwLjg2MTIgODUuNjQ5OSA3MS4wMDAyIDg2IDcxLjAwMDJDODYuMzUwMSA3MS4wMDAyIDg2LjY4NzEgNzAuODYxMiA4Ni45NDI4IDcwLjYxMTRMOTMuNjA5NCA2My45Nzg5QzkzLjczMjcgNjMuODU5IDkzLjgzMDkgNjMuNzEzOCA5My44OTgxIDYzLjU1MjRDOTMuOTY1MyA2My4zOTExIDkzLjk5OTkgNjMuMjE3IDkzLjk5OTkgNjMuMDQxMUM5My45OTk5IDYyLjg2NTEgOTMuOTY1MyA2Mi42OTEgOTMuODk4MSA2Mi41Mjk3QzkzLjgzMDkgNjIuMzY4MyA5My43MzI3IDYyLjIyMzIgOTMuNjA5NCA2Mi4xMDMyQzkzLjM1NDYgNjEuODUzMSA5My4wMTc1IDYxLjcxNSA5Mi42Njc4IDYxLjcxNzJaIiBmaWxsPSIjMjU2M0VCIj48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAtNDswIDAiIGR1cj0iMnMiIGJlZ2luPSIwLjZzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9wYXRoPgo8L2c+CjwvZz4KPC9nPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzE4NDRfMTU2NzMiIHgxPSI2NCIgeTE9IjMxIiB4Mj0iNjQiIHkyPSI5Ny4xMjE1IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNEQkVBRkUiIHN0b3Atb3BhY2l0eT0iMC4yNSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCRkRCRkUiIHN0b3Atb3BhY2l0eT0iMC4yNSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzE4NDRfMTU2NzMiPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0id2hpdGUiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4=","thermometer-warmer":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InRoZXJtb21ldGVyLXdhcm1lciIgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzE4NDRfMTU2ODYpIj4KPGcgaWQ9IlRoZXJtb21ldGVyIE1lcmN1cnkiPgo8Y2lyY2xlIGlkPSJSZXNlcnZvaXIiIGN4PSI2NCIgY3k9IjgzIiByPSI5IiBmaWxsPSIjREMyNjI2Ii8+CjxyZWN0IGlkPSJWYWx1ZSIgeD0iNjEiIHk9IjUwIiB3aWR0aD0iNiIgaGVpZ2h0PSIyOSIgcng9IjMiIGZpbGw9IiNEQzI2MjYiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC0yOzAgMCIgZHVyPSIzcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9yZWN0Pgo8L2c+CjxnIGlkPSJUaGVybW9tZXRlciBHbGFzcyI+CjxwYXRoIGlkPSJHbGFzcyIgZD0iTTUwLjUgODMuMTkxNEM1MC40OTUyIDgxLjA1NjYgNTEuMDE3NSA3OC45NTEgNTIuMDIzNCA3Ny4wNTE4QzUzLjAyOTQgNzUuMTUyNSA1NC40OTAxIDczLjUxNCA1Ni4yODQxIDcyLjI3NTRDNTYuNDE5MiA3Mi4xODIxIDU2LjQ5OTkgNzIuMDI4NCA1Ni41IDcxLjg2NDNWMzguNzc5M0M1Ni41IDM2Ljg1MzQgNTcuMjg2NCAzNS4wMDI5IDU4LjY5MTQgMzMuNjM2N0M2MC4wOTY5IDMyLjI3IDYyLjAwNjQgMzEuNSA2NCAzMS41QzY1Ljk5MzUgMzEuNSA2Ny45MDMgMzIuMjcgNjkuMzA4NiAzMy42MzY3QzcwLjcxMzYgMzUuMDAyOSA3MS41IDM2Ljg1MzQgNzEuNSAzOC43NzkzVjQyLjA0NjlINjVDNjQuNzIzOSA0Mi4wNDY5IDY0LjUgNDIuMjcwOCA2NC41IDQyLjU0NjlDNjQuNSA0Mi44MjMgNjQuNzIzOCA0My4wNDY5IDY1IDQzLjA0NjlINzEuNVY0OS44MjYySDY1QzY0LjcyMzggNDkuODI2MiA2NC41IDUwLjA1IDY0LjUgNTAuMzI2MkM2NC41MDAxIDUwLjYwMjIgNjQuNzIzOSA1MC44MjYyIDY1IDUwLjgyNjJINzEuNVY1Ny42MDQ1SDY1QzY0LjcyNCA1Ny42MDQ1IDY0LjUwMDIgNTcuODI4NiA2NC41IDU4LjEwNDVDNjQuNSA1OC4zODA2IDY0LjcyMzggNTguNjA0NSA2NSA1OC42MDQ1SDcxLjVWNzEuODM5OEM3MS41IDcyLjAwNCA3MS41ODA3IDcyLjE1NzYgNzEuNzE1OCA3Mi4yNTFDNzMuNTEzMiA3My40OTE5IDc0Ljk3NjMgNzUuMTM0NCA3NS45ODI0IDc3LjAzODFDNzYuOTg4NCA3OC45NDE2IDc3LjUwODYgODEuMDUxOCA3Ny41IDgzLjE5MDRWODMuMTkyNEM3Ny40OTk5IDkwLjU0MzEgNzEuNDgwMSA5Ni41IDY0IDk2LjVDNTYuNTE5OSA5Ni41IDUwLjUgOTAuNTQzMSA1MC41IDgzLjE5MjRWODMuMTkxNFoiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xODQ0XzE1Njg2KSIgc3Ryb2tlPSIjQkZEQkZFIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPGcgaWQ9IkFycm93cyI+CjxwYXRoIGlkPSJBcnJvdyAzIiBkPSJNOTIuNjY3OCA3MC45OTc0QzkyLjMxNzUgNzAuOTk5MSA5MS45OCA3MC44NTk5IDkxLjcyNTMgNzAuNjA4Nkw4Ni4wMDEyIDY0LjkxNjJMODAuMjc2MSA3MC42MTE0QzgwLjAyMDQgNzAuODYxMiA3OS42ODM0IDcxLjAwMDIgNzkuMzMzMyA3MS4wMDAyQzc4Ljk4MzIgNzEuMDAwMiA3OC42NDYyIDcwLjg2MTIgNzguMzkwNSA3MC42MTE0Qzc4LjI2NzMgNzAuNDkxNCA3OC4xNjkgNzAuMzQ2MyA3OC4xMDE5IDcwLjE4NDlDNzguMDM0NyA3MC4wMjM2IDc4IDY5Ljg0OTUgNzggNjkuNjczNUM3OCA2OS40OTc2IDc4LjAzNDcgNjkuMzIzNSA3OC4xMDE5IDY5LjE2MjJDNzguMTY5IDY5LjAwMDggNzguMjY3MyA2OC44NTU2IDc4LjM5MDUgNjguNzM1N0w4NS4wNTcxIDYyLjEwMzJDODUuMzEyOCA2MS44NTM0IDg1LjY0OTkgNjEuNzE0NCA4NiA2MS43MTQ0Qzg2LjM1MDEgNjEuNzE0NCA4Ni42ODcxIDYxLjg1MzQgODYuOTQyOCA2Mi4xMDMyTDkzLjYwOTQgNjguNzM1N0M5My43MzI3IDY4Ljg1NTYgOTMuODMwOSA2OS4wMDA4IDkzLjg5ODEgNjkuMTYyMkM5My45NjUzIDY5LjMyMzUgOTMuOTk5OSA2OS40OTc2IDkzLjk5OTkgNjkuNjczNUM5My45OTk5IDY5Ljg0OTUgOTMuOTY1MyA3MC4wMjM2IDkzLjg5ODEgNzAuMTg0OUM5My44MzA5IDcwLjM0NjMgOTMuNzMyNyA3MC40OTE0IDkzLjYwOTQgNzAuNjExNEM5My4zNTQ2IDcwLjg2MTUgOTMuMDE3NSA3MC45OTk2IDkyLjY2NzggNzAuOTk3NFoiIGZpbGw9IiNFRjQ0NDQiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC00OzAgMCIgZHVyPSIycyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9wYXRoPgo8cGF0aCBpZD0iQXJyb3cgMiIgZD0iTTkyLjY2NzggNjIuNjQwMkM5Mi4zMTc1IDYyLjY0MiA5MS45OCA2Mi41MDI3IDkxLjcyNTMgNjIuMjUxNEw4Ni4wMDEyIDU2LjU1OUw4MC4yNzYxIDYyLjI1NDJDODAuMDIwNCA2Mi41MDQxIDc5LjY4MzQgNjIuNjQzMSA3OS4zMzMzIDYyLjY0MzFDNzguOTgzMiA2Mi42NDMxIDc4LjY0NjIgNjIuNTA0MSA3OC4zOTA1IDYyLjI1NDJDNzguMjY3MyA2Mi4xMzQyIDc4LjE2OSA2MS45ODkxIDc4LjEwMTkgNjEuODI3N0M3OC4wMzQ3IDYxLjY2NjQgNzggNjEuNDkyMyA3OCA2MS4zMTY0Qzc4IDYxLjE0MDQgNzguMDM0NyA2MC45NjYzIDc4LjEwMTkgNjAuODA1Qzc4LjE2OSA2MC42NDM3IDc4LjI2NzMgNjAuNDk4NSA3OC4zOTA1IDYwLjM3ODVMODUuMDU3MSA1My43NDZDODUuMzEyOCA1My40OTYyIDg1LjY0OTkgNTMuMzU3MiA4NiA1My4zNTcyQzg2LjM1MDEgNTMuMzU3MiA4Ni42ODcxIDUzLjQ5NjIgODYuOTQyOCA1My43NDZMOTMuNjA5NCA2MC4zNzg1QzkzLjczMjcgNjAuNDk4NSA5My44MzA5IDYwLjY0MzcgOTMuODk4MSA2MC44MDVDOTMuOTY1MyA2MC45NjYzIDkzLjk5OTkgNjEuMTQwNCA5My45OTk5IDYxLjMxNjRDOTMuOTk5OSA2MS40OTIzIDkzLjk2NTMgNjEuNjY2NCA5My44OTgxIDYxLjgyNzdDOTMuODMwOSA2MS45ODkxIDkzLjczMjcgNjIuMTM0MiA5My42MDk0IDYyLjI1NDJDOTMuMzU0NiA2Mi41MDQzIDkzLjAxNzUgNjIuNjQyNSA5Mi42Njc4IDYyLjY0MDJaIiBmaWxsPSIjRUY0NDQ0Ij48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAtNDswIDAiIGR1cj0iMnMiIGJlZ2luPSIwLjNzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9wYXRoPgo8cGF0aCBpZD0iQXJyb3cgMSIgZD0iTTkyLjY2NzggNTQuMjgzQzkyLjMxNzUgNTQuMjg0OCA5MS45OCA1NC4xNDU2IDkxLjcyNTMgNTMuODk0M0w4Ni4wMDEyIDQ4LjIwMThMODAuMjc2MSA1My44OTdDODAuMDIwNCA1NC4xNDY5IDc5LjY4MzQgNTQuMjg1OSA3OS4zMzMzIDU0LjI4NTlDNzguOTgzMiA1NC4yODU5IDc4LjY0NjIgNTQuMTQ2OSA3OC4zOTA1IDUzLjg5N0M3OC4yNjczIDUzLjc3NzEgNzguMTY5IDUzLjYzMTkgNzguMTAxOSA1My40NzA2Qzc4LjAzNDcgNTMuMzA5MiA3OCA1My4xMzUxIDc4IDUyLjk1OTJDNzggNTIuNzgzMiA3OC4wMzQ3IDUyLjYwOTIgNzguMTAxOSA1Mi40NDc4Qzc4LjE2OSA1Mi4yODY1IDc4LjI2NzMgNTIuMTQxMyA3OC4zOTA1IDUyLjAyMTNMODUuMDU3MSA0NS4zODg5Qzg1LjMxMjggNDUuMTM5IDg1LjY0OTkgNDUgODYgNDVDODYuMzUwMSA0NSA4Ni42ODcxIDQ1LjEzOSA4Ni45NDI4IDQ1LjM4ODlMOTMuNjA5NCA1Mi4wMjEzQzkzLjczMjcgNTIuMTQxMyA5My44MzA5IDUyLjI4NjUgOTMuODk4MSA1Mi40NDc4QzkzLjk2NTMgNTIuNjA5MiA5My45OTk5IDUyLjc4MzIgOTMuOTk5OSA1Mi45NTkyQzkzLjk5OTkgNTMuMTM1MSA5My45NjUzIDUzLjMwOTIgOTMuODk4MSA1My40NzA2QzkzLjgzMDkgNTMuNjMxOSA5My43MzI3IDUzLjc3NzEgOTMuNjA5NCA1My44OTdDOTMuMzU0NiA1NC4xNDcxIDkzLjAxNzUgNTQuMjg1MyA5Mi42Njc4IDU0LjI4M1oiIGZpbGw9IiNFRjQ0NDQiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC00OzAgMCIgZHVyPSIycyIgYmVnaW49IjAuNnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAuNTggMTsgLjQyIDAgLjU4IDEiLz48L3BhdGg+CjwvZz4KPC9nPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTg0NF8xNTY4NiIgeDE9IjY0IiB5MT0iMzEiIHgyPSI2NCIgeTI9Ijk3LjEyMTUiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0RCRUFGRSIgc3RvcC1vcGFjaXR5PSIwLjI1Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0JGREJGRSIgc3RvcC1vcGFjaXR5PSIwLjI1Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMTg0NF8xNTY4NiI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPg==",thunderstorms:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InRodW5kZXJzdG9ybXMiIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xODU4Xzk5MTEpIj4KPGcgaWQ9IlNreSI+CjxnIGlkPSJDbG91ZHMiPgo8ZyBpZD0iQ2xvdWQiPgo8cGF0aCBpZD0iQ2xvdWRfMiIgZD0iTTU1LjI2MjUgNDguNDc0NkM2MC4xMjI4IDQwLjYxMTEgNzAuMjk3NiAzNy4zOCA3OC44MTUyIDQwLjk0MzRDODcuMzIxNSA0NC41MDIzIDkyLjEzODEgNTQuMDAyNiA4OS45MDMxIDYyLjk2NDhMODkuNzQxOSA2My42MTQzTDkwLjQxMDkgNjMuNTg1Qzk3LjQyMDUgNjMuMjc5MSAxMDMuNSA2OC45OTE3IDEwMy41IDc2LjAyODNDMTAzLjUgODIuODM5NSA5Ny43NzE5IDg4LjQ5OTcgOTAuOTc3MyA4OC41SDM3Ljk1MzlDMzEuMTI3NiA4OC41MDE4IDI1LjIwMyA4My4xNzA5IDI0LjU1OTMgNzYuMzYwNEMyMy45MTU5IDY5LjU1MTggMjguNzM3MSA2My4yMTI0IDM1LjQ0MzEgNjEuOTQ1M0wzNS45MjY1IDYxLjg1MzVMMzUuODQyNSA2MS4zNjkxQzM1LjAyNTggNTYuNjIzOSAzNy4xMjU5IDUxLjcxNjggNDEuMTA1MiA0OS4wMTI3QzQ1LjA5NTIgNDYuMzAxNCA1MC40NDYxIDQ2LjE1MzcgNTQuNTc5OCA0OC42Mzk2TDU1LjAwMjcgNDguODk0NUw1NS4yNjI1IDQ4LjQ3NDZaIiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfMTg1OF85OTExKSIgc3Ryb2tlPSIjRTZFRkZDIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPC9nPgo8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAtMzswIDAiIGR1cj0iM3MiIGJlZ2luPSIwcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIC41OCAxOyAuNDIgMCAuNTggMSIvPjwvZz4KPC9nPgo8ZyBpZD0iTGlnaHRuaW5nIj4KPHBhdGggaWQ9IkxpZ2h0bmluZyBCb2x0IiBkPSJNNzEuMTcyOSA2OC41TDYzLjU1NjYgODMuMDQxTDYzLjE3MjkgODMuNzcyNUg3NS4wMDJMNTYuOTUyMSAxMDcuODkyTDYwLjQ4OTMgOTEuMDExN0w2MC42MTYyIDkwLjQwOTJINTIuNzA0MUw2MC4zNTU1IDY4LjVINzEuMTcyOVoiIGZpbGw9InVybCgjcGFpbnQxX2xpbmVhcl8xODU4Xzk5MTEpIiBzdHJva2U9IiNGNkE4MjMiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIxOzE7MDsxOzA7MTswOzE7MSIgZHVyPSIycyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIga2V5VGltZXM9IjA7MC4yNTswLjMzOzAuNDI7MC41OzAuNTc7MC42MzswLjY3OzEiLz48L3BhdGg+CjwvZz4KPC9nPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzE4NThfOTkxMSIgeDE9IjY0LjAwMDkiIHkxPSIzOSIgeDI9IjY0LjAwMDkiIHkyPSI4OSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRjNGN0ZFIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0U2RUZGQyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MV9saW5lYXJfMTg1OF85OTExIiB4MT0iNjQuNTI4IiB5MT0iNjYuMDM3NyIgeDI9Ijg0LjQxNDQiIHkyPSI3Ny40NTcyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGN0IyM0IiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRjZBODIzIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMTg1OF85OTExIj4KPHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+","thunderstorms-rain":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InRodW5kZXJzdG9ybXMtcmFpbiIgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzE4NThfOTkzMykiPgo8ZyBpZD0iU2t5Ij4KPGcgaWQ9IkNsb3VkcyI+CjxnIGlkPSJDbG91ZCI+CjxwYXRoIGlkPSJDbG91ZF8yIiBkPSJNNTUuMjYyNSA0OC40NzQ2QzYwLjEyMjggNDAuNjExMSA3MC4yOTc2IDM3LjM4IDc4LjgxNTIgNDAuOTQzNEM4Ny4zMjE1IDQ0LjUwMjMgOTIuMTM4MSA1NC4wMDI2IDg5LjkwMzEgNjIuOTY0OEw4OS43NDE5IDYzLjYxNDNMOTAuNDEwOSA2My41ODVDOTcuNDIwNSA2My4yNzkxIDEwMy41IDY4Ljk5MTcgMTAzLjUgNzYuMDI4M0MxMDMuNSA4Mi44Mzk1IDk3Ljc3MTkgODguNDk5NyA5MC45NzczIDg4LjVIMzcuOTUzOUMzMS4xMjc2IDg4LjUwMTggMjUuMjAzIDgzLjE3MDkgMjQuNTU5MyA3Ni4zNjA0QzIzLjkxNTkgNjkuNTUxOCAyOC43MzcxIDYzLjIxMjQgMzUuNDQzMSA2MS45NDUzTDM1LjkyNjUgNjEuODUzNUwzNS44NDI1IDYxLjM2OTFDMzUuMDI1OCA1Ni42MjM5IDM3LjEyNTkgNTEuNzE2OCA0MS4xMDUyIDQ5LjAxMjdDNDUuMDk1MiA0Ni4zMDE0IDUwLjQ0NjEgNDYuMTUzNyA1NC41Nzk4IDQ4LjYzOTZMNTUuMDAyNyA0OC44OTQ1TDU1LjI2MjUgNDguNDc0NloiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xODU4Xzk5MzMpIiBzdHJva2U9IiNFNkVGRkMiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIvPgo8L2c+CjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIC0zOzAgMCIgZHVyPSIzcyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgY2FsY01vZGU9InNwbGluZSIga2V5U3BsaW5lcz0iLjQyIDAgLjU4IDE7IC40MiAwIC41OCAxIi8+PC9nPgo8L2c+CjxnIGlkPSJQcmVjaXBpdGF0aW9uIj4KPGcgaWQ9IlJhaW5kcm9wcyI+CjxwYXRoIGlkPSJSYWluZHJvcCAxIiBkPSJNNTIgODNWOTUiIHN0cm9rZT0iIzBBNUFENCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIDIwIiBkdXI9IjFzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAxIDEiLz48YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjA7MTsxOzAiIGR1cj0iMXMiIGJlZ2luPSIwcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGtleVRpbWVzPSIwOzAuMTU7MC44NTsxIi8+PC9wYXRoPgo8cGF0aCBpZD0iUmFpbmRyb3AgMiIgZD0iTTY0IDgzVjk1IiBzdHJva2U9IiMwQTVBRDQiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwIj48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAyMCIgZHVyPSIxcyIgYmVnaW49IjAuNHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBjYWxjTW9kZT0ic3BsaW5lIiBrZXlTcGxpbmVzPSIuNDIgMCAxIDEiLz48YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjA7MTsxOzAiIGR1cj0iMXMiIGJlZ2luPSIwLjRzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIga2V5VGltZXM9IjA7MC4xNTswLjg1OzEiLz48L3BhdGg+CjxwYXRoIGlkPSJSYWluZHJvcCAzIiBkPSJNNzYgODNWOTUiIHN0cm9rZT0iIzBBNUFENCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0idHJhbnNsYXRlIiB2YWx1ZXM9IjAgMDswIDIwIiBkdXI9IjFzIiBiZWdpbj0iMC44cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIDEgMSIvPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMDsxOzE7MCIgZHVyPSIxcyIgYmVnaW49IjAuOHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBrZXlUaW1lcz0iMDswLjE1OzAuODU7MSIvPjwvcGF0aD4KPC9nPgo8L2c+CjxnIGlkPSJMaWdodG5pbmciPgo8cGF0aCBpZD0iTGlnaHRuaW5nIEJvbHQiIGQ9Ik03MS4xNzI5IDY4LjVMNjMuNTU2NiA4My4wNDFMNjMuMTcyOSA4My43NzI1SDc1LjAwMkw1Ni45NTIxIDEwNy44OTJMNjAuNDg5MyA5MS4wMTE3TDYwLjYxNjIgOTAuNDA5Mkg1Mi43MDQxTDYwLjM1NTUgNjguNUg3MS4xNzI5WiIgZmlsbD0idXJsKCNwYWludDFfbGluZWFyXzE4NThfOTkzMykiIHN0cm9rZT0iI0Y2QTgyMyIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIj48YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjE7MTswOzE7MDsxOzA7MTsxIiBkdXI9IjJzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBrZXlUaW1lcz0iMDswLjI1OzAuMzM7MC40MjswLjU7MC41NzswLjYzOzAuNjc7MSIvPjwvcGF0aD4KPC9nPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTg1OF85OTMzIiB4MT0iNjQuMDAwOSIgeTE9IjM5IiB4Mj0iNjQuMDAwOSIgeTI9Ijg5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGM0Y3RkUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTZFRkZDIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQxX2xpbmVhcl8xODU4Xzk5MzMiIHgxPSI2NC41MjgiIHkxPSI2Ni4wMzc3IiB4Mj0iODQuNDE0NCIgeTI9Ijc3LjQ1NzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0Y3QjIzQiIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNGNkE4MjMiLz4KPC9saW5lYXJHcmFkaWVudD4KPGNsaXBQYXRoIGlkPSJjbGlwMF8xODU4Xzk5MzMiPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0id2hpdGUiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4=","uv-index":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InV2LWluZGV4IiBjbGlwLXBhdGg9InVybCgjY2xpcDBfMTgzN180OTMwKSI+CjxnIGlkPSJVViBTdW4iPgo8bWFzayBpZD0ibWFzazBfMTgzN180OTMwIiBzdHlsZT0ibWFzay10eXBlOmFscGhhIiBtYXNrVW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4PSIwIiB5PSIwIiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CjxwYXRoIGlkPSJDdXRvdXQiIGQ9Ik0xMjggMEgwVjEyOEg2NFY4NUM2NCA3My40MDIgNzMuNDAyIDY0IDg1IDY0SDEyOFYwWiIgZmlsbD0iYmxhY2siLz4KPC9tYXNrPgo8ZyBtYXNrPSJ1cmwoI21hc2swXzE4MzdfNDkzMCkiPgo8ZyBpZD0iU3VuIj4KPGNpcmNsZSBpZD0iQ29yZSIgY3g9IjY0IiBjeT0iNjMuOTk5OSIgcj0iMTkuNSIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzE4MzdfNDkzMCkiIHN0cm9rZT0iI0Y4QUYxOCIvPgo8ZyBpZD0iUmF5cyI+CjxwYXRoIGQ9Ik02MSAxOUM2MSAxNy4zNDMxIDYyLjM0MzEgMTYgNjQgMTZDNjUuNjU2OCAxNiA2NyAxNy4zNDMxIDY3IDE5VjMzQzY3IDM0LjY1NjkgNjUuNjU2OCAzNiA2NCAzNkM2Mi4zNDMxIDM2IDYxIDM0LjY1NjkgNjEgMzNWMTlaIiBmaWxsPSIjRjhBRjE4Ii8+CjxwYXRoIGQ9Ik05My42OTg1IDMwLjA1ODlDOTQuODcgMjguODg3MyA5Ni43Njk2IDI4Ljg4NzMgOTcuOTQxMSAzMC4wNTg5Qzk5LjExMjcgMzEuMjMwNCA5OS4xMTI3IDMzLjEyOTkgOTcuOTQxMSAzNC4zMDE1TDg4LjA0MTYgNDQuMjAxQzg2Ljg3MDEgNDUuMzcyNiA4NC45NzA2IDQ1LjM3MjYgODMuNzk5IDQ0LjIwMUM4Mi42Mjc0IDQzLjAyOTQgODIuNjI3NCA0MS4xMjk5IDgzLjc5OSAzOS45NTg0TDkzLjY5ODUgMzAuMDU4OVoiIGZpbGw9IiNGOEFGMTgiLz4KPHBhdGggZD0iTTEwOSA2MUMxMTAuNjU3IDYxIDExMiA2Mi4zNDMyIDExMiA2NEMxMTIgNjUuNjU2OSAxMTAuNjU3IDY3IDEwOSA2N0g5NUM5My4zNDMxIDY3IDkyIDY1LjY1NjkgOTIgNjRDOTIgNjIuMzQzMiA5My4zNDMxIDYxIDk1IDYxSDEwOVoiIGZpbGw9IiNGOEFGMTgiLz4KPHBhdGggZD0iTTk3Ljk0MTEgOTMuNjk4NUM5OS4xMTI3IDk0Ljg3MDEgOTkuMTEyNyA5Ni43Njk2IDk3Ljk0MTEgOTcuOTQxMUM5Ni43Njk2IDk5LjExMjcgOTQuODcwMSA5OS4xMTI3IDkzLjY5ODUgOTcuOTQxMUw4My43OTkgODguMDQxNkM4Mi42Mjc0IDg2Ljg3MDEgODIuNjI3NCA4NC45NzA2IDgzLjc5OSA4My43OTlDODQuOTcwNiA4Mi42Mjc0IDg2Ljg3MDEgODIuNjI3NCA4OC4wNDE2IDgzLjc5OUw5Ny45NDExIDkzLjY5ODVaIiBmaWxsPSIjRjhBRjE4Ii8+CjxwYXRoIGQ9Ik02MSA5NUM2MSA5My4zNDMxIDYyLjM0MzEgOTIgNjQgOTJDNjUuNjU2OCA5MiA2NyA5My4zNDMxIDY3IDk1VjEwOUM2NyAxMTAuNjU3IDY1LjY1NjggMTEyIDY0IDExMkM2Mi4zNDMxIDExMiA2MSAxMTAuNjU3IDYxIDEwOVY5NVoiIGZpbGw9IiNGOEFGMTgiLz4KPHBhdGggZD0iTTM5Ljk1ODQgODMuNzk5QzQxLjEyOTkgODIuNjI3NCA0My4wMjk0IDgyLjYyNzQgNDQuMjAxIDgzLjc5OUM0NS4zNzI2IDg0Ljk3MDYgNDUuMzcyNiA4Ni44NzAxIDQ0LjIwMSA4OC4wNDE2TDM0LjMwMTUgOTcuOTQxMUMzMy4xMjk5IDk5LjExMjcgMzEuMjMwNCA5OS4xMTI3IDMwLjA1ODkgOTcuOTQxMUMyOC44ODczIDk2Ljc2OTYgMjguODg3MyA5NC44NyAzMC4wNTg5IDkzLjY5ODVMMzkuOTU4NCA4My43OTlaIiBmaWxsPSIjRjhBRjE4Ii8+CjxwYXRoIGQ9Ik0zMyA2MUMzNC42NTY5IDYxIDM2IDYyLjM0MzEgMzYgNjRDMzYgNjUuNjU2OCAzNC42NTY5IDY3IDMzIDY3SDE5QzE3LjM0MzEgNjcgMTYgNjUuNjU2OCAxNiA2NEMxNiA2Mi4zNDMxIDE3LjM0MzEgNjEgMTkgNjFIMzNaIiBmaWxsPSIjRjhBRjE4Ii8+CjxwYXRoIGQ9Ik00NC4yMDEgMzkuOTU4NEM0NS4zNzI2IDQxLjEyOTkgNDUuMzcyNiA0My4wMjk0IDQ0LjIwMSA0NC4yMDFDNDMuMDI5NCA0NS4zNzI2IDQxLjEyOTkgNDUuMzcyNiAzOS45NTg0IDQ0LjIwMUwzMC4wNTg5IDM0LjMwMTVDMjguODg3MyAzMy4xMjk5IDI4Ljg4NzMgMzEuMjMwNSAzMC4wNTg5IDMwLjA1ODlDMzEuMjMwNSAyOC44ODczIDMzLjEyOTkgMjguODg3MyAzNC4zMDE1IDMwLjA1ODlMNDQuMjAxIDM5Ljk1ODRaIiBmaWxsPSIjRjhBRjE4Ii8+CjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0icm90YXRlIiB2YWx1ZXM9IjAgNjQuMCA2NC4wOzM2MCA2NC4wIDY0LjAiIGR1cj0iNnMiIGJlZ2luPSIwcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz48L2c+CjwvZz4KPHBhdGggaWQ9IkZpeCIgZD0iTTYzLjUgODMuNUM2NC4wMzU5IDcyLjAzMDUgNzEuNzU2NCA2My44MzEyIDgzLjUgNjMuNTAwMSIgc3Ryb2tlPSIjRjhBRjE4Ii8+CjwvZz4KPC9nPgo8cGF0aCBpZD0iVVYiIGQ9Ik04Ny42MDYgOTcuNDE0Qzg1Ljg0MiA5Ny40MTQgODQuNDg2IDk3IDgzLjUzOCA5Ni4xNzJDODIuNTkgOTUuMzQ0IDgyLjExNiA5NC4xNTYgODIuMTE2IDkyLjYwOFY4NC4xODRIODUuNDgyVjkyLjYyNkM4NS40ODIgOTMuOTgyIDg2LjE5NiA5NC42NiA4Ny42MjQgOTQuNjZDODkuMDQgOTQuNjYgODkuNzQ4IDkzLjk4MiA4OS43NDggOTIuNjI2Vjg0LjE4NEg5My4xMTRWOTIuNjA4QzkzLjExNCA5NC4xNjggOTIuNjQgOTUuMzYyIDkxLjY5MiA5Ni4xOUM5MC43NDQgOTcuMDA2IDg5LjM4MiA5Ny40MTQgODcuNjA2IDk3LjQxNFpNMTAxLjUyNiA4OS40MjJMMTAzLjAyIDg0LjE4NEgxMDYuNDRMMTAyLjMgOTdIOTguNzM2M0w5NC41OTYzIDg0LjE4NEg5OC4wNTIzTDk5LjU2NDMgODkuNDA0TDEwMC41NTQgOTMuNDM2TDEwMS41MjYgODkuNDIyWiIgZmlsbD0iIzIwMjkzOSIvPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTgzN180OTMwIiB4MT0iNjQiIHkxPSI0My45OTk5IiB4Mj0iNjQiIHkyPSI4My45OTk5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGQkJGMjQiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRjhBRjE4Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMTgzN180OTMwIj4KPHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+","weather-alarm":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9IndlYXRoZXItYWxhcm0iIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xOTA1XzE5MDcwKSI+CjxnIGlkPSJTa3kiPgo8ZyBpZD0iQ2xvdWRzIj4KPGcgaWQ9IkNsb3VkIj4KPHBhdGggaWQ9IkNsb3VkXzIiIGQ9Ik01NS4yNjIzIDQ4LjQ3NDZDNjAuMTIyNyA0MC42MTExIDcwLjI5NzUgMzcuMzggNzguODE1MSA0MC45NDM0Qzg3LjMyMTQgNDQuNTAyMyA5Mi4xMzggNTQuMDAyNiA4OS45MDMgNjIuOTY0OEw4OS43NDE4IDYzLjYxNDNMOTAuNDEwOCA2My41ODVDOTcuNDIwMyA2My4yNzkxIDEwMy41IDY4Ljk5MTcgMTAzLjUgNzYuMDI4M0MxMDMuNSA4Mi44Mzk1IDk3Ljc3MTcgODguNDk5NyA5MC45NzcyIDg4LjVIMzcuOTUzN0MzMS4xMjc1IDg4LjUwMTggMjUuMjAyOSA4My4xNzA5IDI0LjU1OTIgNzYuMzYwNEMyMy45MTU4IDY5LjU1MTggMjguNzM2OSA2My4yMTI0IDM1LjQ0MyA2MS45NDUzTDM1LjkyNjQgNjEuODUzNUwzNS44NDI0IDYxLjM2OTFDMzUuMDI1NiA1Ni42MjM5IDM3LjEyNTggNTEuNzE2OCA0MS4xMDUxIDQ5LjAxMjdDNDUuMDk1MSA0Ni4zMDE0IDUwLjQ0NTkgNDYuMTUzNyA1NC41Nzk3IDQ4LjYzOTZMNTUuMDAyNiA0OC44OTQ1TDU1LjI2MjMgNDguNDc0NloiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xOTA1XzE5MDcwKSIgc3Ryb2tlPSIjRTZFRkZDIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPC9nPgo8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwIDA7MCAtMzswIDAiIGR1cj0iM3MiIGJlZ2luPSIwcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGNhbGNNb2RlPSJzcGxpbmUiIGtleVNwbGluZXM9Ii40MiAwIC41OCAxOyAuNDIgMCAuNTggMSIvPjwvZz4KPC9nPgo8ZyBpZD0iQWxlcnQiPgo8cGF0aCBpZD0iRXhjbGFtYXRpb24iIGQ9Ik04OS44MzUgNjguNzVDOTAuNzk3MiA2Ny4wODMzIDkzLjIwMjggNjcuMDgzMyA5NC4xNjUgNjguNzVMMTA2LjI4OSA4OS43NUMxMDcuMjUxIDkxLjQxNjcgMTA2LjA0OSA5My41IDEwNC4xMjQgOTMuNUg3OS44NzZDNzguMDExNSA5My41IDc2LjgyNDMgOTEuNTQ0NyA3Ny42MjcgODkuOTA3Mkw3Ny43MTA5IDg5Ljc1TDg5LjgzNSA2OC43NVoiIGZpbGw9InVybCgjcGFpbnQxX2xpbmVhcl8xOTA1XzE5MDcwKSIgc3Ryb2tlPSIjMjAyOTM5Ii8+CjxwYXRoIGlkPSJFeGNsYW1hdGlvbk1hcmsiIGQ9Ik05Mi43NTgyIDg0LjU5SDkxLjI2NDJMOTAuNDE4MiA3OS41NjhWNzYuMTg0SDkzLjU4NjJWNzkuNTY4TDkyLjc1ODIgODQuNTlaTTkzLjYwNDIgODlIOTAuNDAwMlY4NS45OTRIOTMuNjA0MlY4OVoiIGZpbGw9IndoaXRlIi8+CjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMTsxOzA7MDsxIiBkdXI9IjFzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBrZXlUaW1lcz0iMDswLjI5NDswLjU7MC43OTQ7MSIvPjwvZz4KPC9nPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzE5MDVfMTkwNzAiIHgxPSI2NC4wMDA4IiB5MT0iMzkiIHgyPSI2NC4wMDA4IiB5Mj0iODkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0YzRjdGRSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNFNkVGRkMiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDFfbGluZWFyXzE5MDVfMTkwNzAiIHgxPSI5MiIgeTE9IjY3IiB4Mj0iOTIiIHkyPSI5NCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMzY0RDZFIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzIwMjkzOSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzE5MDVfMTkwNzAiPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0id2hpdGUiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4=",wind:"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9IndpbmQiPgo8ZyBpZD0iV2luZCI+CjxwYXRoIGlkPSJXaW5kIExpbmUgMSIgZD0iTTg3Ljc5IDQwLjEzNTJDOTMuOTc1NiAzMy4zNDcgMTA1IDM4LjQwNDkgMTA1IDQ3LjQ0NjNDMTA1IDUzLjI3NDYgMTAwLjUyMiA1OCA5NSA1OEgyNCIgc3Ryb2tlPSIjRTJFOEYwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtZGFzaGFycmF5PSI1MCI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ic3Ryb2tlLWRhc2hvZmZzZXQiIHZhbHVlcz0iMDsxMDAwIiBkdXI9IjZzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+PC9wYXRoPgo8cGF0aCBpZD0iV2luZCBMaW5lIDFfMiIgZD0iTTYwLjEyODEgODcuODY4QzY2LjQyMDIgOTQuNTE4NiA3OCA4OS44NzE3IDc4IDgwLjU1NTZDNzggNzQuNzI2MyA3My4zNTAzIDcwIDY3LjYxNTQgNzBDNjEuODgwNSA3MCAyNCA3MCAyNCA3MCIgc3Ryb2tlPSIjRTJFOEYwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtZGFzaGFycmF5PSI1MCI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ic3Ryb2tlLWRhc2hvZmZzZXQiIHZhbHVlcz0iMDsxMDAwIiBkdXI9IjZzIiBiZWdpbj0iMC4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz48L3BhdGg+CjwvZz4KPC9nPgo8L3N2Zz4=","wind-alert":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9IndpbmQtYWxlcnQiPgo8ZyBpZD0iQWxlcnQiPgo8cGF0aCBpZD0iRXhjbGFtYXRpb24iIGQ9Ik05OC44MzUgNzAuNzVDOTkuNzk3MiA2OS4wODMzIDEwMi4yMDMgNjkuMDgzMyAxMDMuMTY1IDcwLjc1TDExNS4yODkgOTEuNzVDMTE2LjI1MSA5My40MTY3IDExNS4wNDkgOTUuNSAxMTMuMTI0IDk1LjVIODguODc2Qzg3LjAxMTUgOTUuNSA4NS44MjQzIDkzLjU0NDcgODYuNjI3IDkxLjkwNzJMODYuNzEwOSA5MS43NUw5OC44MzUgNzAuNzVaIiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfMTg2OF80Mzc0KSIgc3Ryb2tlPSIjMjAyOTM5Ii8+CjxwYXRoIGlkPSJFeGNsYW1hdGlvbk1hcmsiIGQ9Ik0xMDEuNzU4IDg2LjU5SDEwMC4yNjRMOTkuNDE4MiA4MS41NjhWNzguMTg0SDEwMi41ODZWODEuNTY4TDEwMS43NTggODYuNTlaTTEwMi42MDQgOTFIOTkuNDAwMlY4Ny45OTRIMTAyLjYwNFY5MVoiIGZpbGw9IndoaXRlIi8+CjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMTsxOzA7MDsxIiBkdXI9IjFzIiBiZWdpbj0iMHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBrZXlUaW1lcz0iMDswLjI5NDswLjU7MC43OTQ7MSIvPjwvZz4KPGcgaWQ9IldpbmQiPgo8cGF0aCBpZD0iV2luZCBMaW5lIDEiIGQ9Ik04Ny43OSA0MC4xMzUyQzkzLjk3NTYgMzMuMzQ3IDEwNSAzOC40MDQ5IDEwNSA0Ny40NDYzQzEwNSA1My4yNzQ2IDEwMC41MjIgNTggOTUgNThIMjQiIHN0cm9rZT0iI0UyRThGMCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWRhc2hhcnJheT0iNTAiPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9InN0cm9rZS1kYXNob2Zmc2V0IiB2YWx1ZXM9IjA7MTAwMCIgZHVyPSI2cyIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvcGF0aD4KPHBhdGggaWQ9IldpbmQgTGluZSAxXzIiIGQ9Ik02MC4xMjgxIDg3Ljg2OEM2Ni40MjAyIDk0LjUxODYgNzggODkuODcxNyA3OCA4MC41NTU2Qzc4IDc0LjcyNjMgNzMuMzUwMyA3MCA2Ny42MTU0IDcwQzYxLjg4MDUgNzAgMjQgNzAgMjQgNzAiIHN0cm9rZT0iI0UyRThGMCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWRhc2hhcnJheT0iNTAiPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9InN0cm9rZS1kYXNob2Zmc2V0IiB2YWx1ZXM9IjA7MTAwMCIgZHVyPSI2cyIgYmVnaW49IjAuMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+PC9wYXRoPgo8L2c+CjwvZz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xODY4XzQzNzQiIHgxPSIxMDEiIHkxPSI2OSIgeDI9IjEwMSIgeTI9Ijk2IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiMzNjRENkUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjAyOTM5Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+"},me=new Set(["","unknown","unavailable"]),we=["temperature","precipitation_probability"],Te={temp:"temperature",temperature:"temperature",rain_chance:"precipitation_probability",precipitation_probability:"precipitation_probability",precip_probability:"precipitation_probability",probability:"precipitation_probability",pop:"precipitation_probability",rain:"precipitation",precipitation:"precipitation",humidity:"humidity",hum:"humidity",wind:"wind_speed",wind_speed:"wind_speed",gust:"wind_gust_speed",wind_gust:"wind_gust_speed",wind_gust_speed:"wind_gust_speed",uv:"uv_index",uv_index:"uv_index",cloud:"cloud_coverage",clouds:"cloud_coverage",cloud_coverage:"cloud_coverage"},be={"clear-night":"clear-night",cloudy:"cloudy",exceptional:"weather-alarm",fog:"fog",hail:"hail",lightning:"thunderstorms","lightning-rainy":"thunderstorms-rain",partlycloudy:"partly-cloudy-day",pouring:"rain",rainy:"rain",snowy:"snow","snowy-rainy":"sleet",sunny:"clear-day",windy:"wind","windy-variant":"wind-alert"};function Oe(i){return i<=0?"#3aa7ff":i<=8?"#50c5d8":i<=15?"#9bd57b":i<=22?"#ffd34a":i<=28?"#ff9d24":"#ff5d38"}function xe(i,e){var t;if(e&&(null==i?void 0:i.hass))return null===(t=i.hass.states)||void 0===t?void 0:t[e]}function ve(i){const e=void 0===(null==i?void 0:i.state)||null===(null==i?void 0:i.state)?"":String(i.state);return me.has(e.toLowerCase())?"":e}function Se(i,e){const t=ve(xe(i,e));if(!t)return;const a=Number(t);return Number.isFinite(a)?a:void 0}function Le(i,e,t=!1){if(null==i||""===i)return"—";const a=Number(i);return Number.isFinite(a)?t&&Math.abs(a)>=1e3?`${(a/1e3).toFixed(1)}k`:a.toFixed(e):String(i)}function ke(i,e,t,a=!1){var n;const o=xe(i,e),c=ve(o);if(!c)return"—";const r=(null===(n=null==o?void 0:o.attributes)||void 0===n?void 0:n.unit_of_measurement)||"",s=Le(c,t,a);return r?`${s} ${r}`:s}function Ce(i,e){const t=Se(i,e);return void 0===t?"—°":`${t.toFixed(1)}°`}function Ye(i,e,t){const a=Number(i);if(Number.isFinite(a)&&!(a<=0))return Math.max(e,Math.min(t,a))}function fe(i,e,t){const a=ke(i,e,1),n=function(i,e){const t=Se(i,e);if(void 0===t)return"";const a=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];return a[Math.round((t%360+360)%360/22.5)%a.length]}(i,t);return"—"===a?n||"—":n?`${a} ${n}`:a}function _e(i){if(!i)return"Weather";const e={"clear-night":"Clear night",partlycloudy:"Partly cloudy","lightning-rainy":"Storm rain","snowy-rainy":"Sleet","windy-variant":"Windy"};return e[i]?e[i]:i.replace(/[-_]/g," ").replace(/\b\w/g,(i=>i.toUpperCase()))}function Qe(i){return(i||"unknown").replace(/[^a-z0-9_-]/gi,"-").toLowerCase()}function Ee(i,e){const t=ve(xe(i,e.rain_state_sensor)).toLowerCase();if("on"===t||"wet"===t)return!0;const a=Se(i,e.rain_rate_sensor);return void 0!==a&&a>0}function Ue(i,e,t,a,n=!1){if(a||"—"!==t)return{icon:i,label:e,value:t,entity:a,active:n}}function Ze(i){return be[i]||"partly-cloudy-day"}function Ge(i,e,t){return E`
+    <img
+      class=${e}
+      src=${Ae[i]}
+      alt=${t}
+      draggable="false"
+    />
+  `}function We(i,e){const t=Ee(i,e),a=e.rain_state_sensor||e.rain_rate_sensor||e.rain_today_sensor,n=function(i,e){const t=Ee(i,e);if(!e.rain_state_sensor&&!e.rain_rate_sensor)return"";if(!t)return"No rain";const a=ke(i,e.rain_rate_sensor,1);return"—"===a||"0.0 mm/h"===a?"Raining":`Raining ${a}`}(i,e)||ke(i,e.rain_today_sensor,1);return[Ue("wind","Wind",fe(i,e.wind_speed_sensor,e.wind_direction_sensor),e.wind_speed_sensor),Ue("wind-alert","Gust",ke(i,e.wind_gust_sensor,1),e.wind_gust_sensor),Ue("thermometer-colder","24h Min",Ce(i,e.temp_min_24h_sensor),e.temp_min_24h_sensor),Ue("thermometer-warmer","24h Max",Ce(i,e.temp_max_24h_sensor),e.temp_max_24h_sensor),Ue(t?"rain":"raindrop","Rain",n,a,t),Ue("uv-index","UV",ke(i,e.uv_sensor,0),e.uv_sensor),Ue("sun-hot","Solar",ke(i,e.solar_lux_sensor,1,!0),e.solar_lux_sensor),Ue("barometer","Pressure",ke(i,e.pressure_sensor,0),e.pressure_sensor)].filter((i=>!!i))}function Pe(i){return Array.isArray(i)?i.filter((i=>!!i&&"object"==typeof i)).map((i=>({condition:"string"==typeof i.condition?i.condition:void 0,datetime:"string"==typeof i.datetime?i.datetime:void 0,temperature:i.temperature,precipitation_probability:i.precipitation_probability,precipitation:i.precipitation,humidity:i.humidity,wind_speed:i.wind_speed,wind_gust_speed:i.wind_gust_speed,uv_index:i.uv_index,cloud_coverage:i.cloud_coverage,templow:i.templow}))):[]}function $e(i,e){if(!i.datetime)return"";const t=new Date(i.datetime);if(Number.isNaN(t.getTime()))return"";const a=function(i){const e=String(i||"").trim().toLowerCase().replace(/[-_\s]/g,"");return["12","12h","12hour","12hours","ampm"].includes(e)?"12h":["24","24h","24hour","24hours"].includes(e)?"24h":void 0}(e),n={hour:"2-digit",minute:"2-digit"};return a&&(n.hour12="12h"===a),new Intl.DateTimeFormat(void 0,n).format(t)}function Re(i,e){const t=Number(i[e]);return Number.isFinite(t)?t:void 0}function Ve(i,e,t){const a=i.map(((i,t)=>({item:i,index:t,value:Re(i,e)}))).filter((i=>void 0!==i.value));if(!a.length)return{points:[],min:0,max:1};const n=a.map((i=>i.value)),{min:o,max:c}=function(i,e){if("precipitation_probability"===i)return{min:0,max:100};let t=Math.min(...e),a=Math.max(...e);if("temperature"===i)t=5*Math.floor((t-2)/5),a=5*Math.ceil((a+2)/5);else{const i=Math.max(.18*(a-t),1);t=Math.max(0,t-i),a+=i}return a<=t&&(a=t+1),{min:t,max:a}}(e,n),r=t.width-t.left-t.right,s=t.height-t.top-t.bottom,l=a.map(((i,e)=>{const n=1===a.length?t.left+r/2:t.left+e/(a.length-1)*r,l=t.top+(c-i.value)/(c-o)*s;return Object.assign(Object.assign({},i),{x:n,y:l})}));return{points:l,min:o,max:c}}function Fe(i){return i<=0?[]:Array.from(new Set([0,Math.floor((i-1)/3),Math.floor(2*(i-1)/3),i-1])).filter((e=>e>=0&&e<i))}function Be(i){return i.replace(/[^a-z0-9_-]/gi,"-").toLowerCase()}function He(i){if(!i.length)return"";if(1===i.length)return`M ${i[0].x.toFixed(2)} ${i[0].y.toFixed(2)}`;let e=`M ${i[0].x.toFixed(2)} ${i[0].y.toFixed(2)}`;for(let t=0;t<i.length-1;t+=1){const a=i[t],n=i[t+1],o=i[t-1]||a,c=i[t+2]||n,r=a.x+(n.x-o.x)/6,s=a.y+(n.y-o.y)/6,l=n.x-(c.x-a.x)/6,M=n.y-(c.y-a.y)/6;e+=` C ${r.toFixed(2)} ${s.toFixed(2)}, ${l.toFixed(2)} ${M.toFixed(2)}, ${n.x.toFixed(2)} ${n.y.toFixed(2)}`}return e}function Je(i,e){if(!i.length)return"";const t=i[0],a=i[i.length-1];return`${He(i)} L ${a.x.toFixed(2)} ${e.toFixed(2)} L ${t.x.toFixed(2)} ${e.toFixed(2)} Z`}function Xe(i){if(!i)return"";const e=new Date(i);if(Number.isNaN(e.getTime()))return"";return`${e.getFullYear()}-${`${e.getMonth()+1}`.padStart(2,"0")}-${`${e.getDate()}`.padStart(2,"0")}`}function Ke(i,e){const t=Number(i[e]);return Number.isFinite(t)?t:void 0}function qe(i,e,t){return Math.max(0,Math.min(100,(i-e)/(t-e)*100))}function it(i){return Ye(i.graph_height,82,260)||118}function et(i,e,t,a){const n=t.slice(0,7);if(!n.length)return G;const o=function(i){const e=new Map;return i.forEach(((i,t)=>{const a=Xe(i.datetime),n=Re(i,"temperature");if(!a||void 0===n)return;const o={item:i,value:n,x:0,y:0,index:t},c=e.get(a)||{};(!c.low||n<c.low.value)&&(c.low=o),(!c.high||n>c.high.value)&&(c.high=o),e.set(a,c)})),e}(a),{min:c,max:r}=function(i,e){const t=[];if(i.forEach((i=>{const e=Ke(i,"templow"),a=Ke(i,"temperature");void 0!==e&&t.push(e),void 0!==a&&t.push(a)})),e.forEach((i=>{const e=Re(i,"temperature");void 0!==e&&t.push(e)})),!t.length)return{min:0,max:1};let a=5*Math.floor((Math.min(...t)-2)/5),n=5*Math.ceil((Math.max(...t)+2)/5);return n<=a&&(n=a+1),{min:a,max:n}}(n,a),s=Xe((new Date).toISOString()),l=function(i,e){return Se(i,e.temp_sensor)}(i,e);return E`
     <section class="weather-daily-forecast">
       <div class="weather-daily-forecast-heading">
         <ha-icon icon="mdi:calendar-range-outline"></ha-icon>
         <span>Daily Forecast</span>
         <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
       </div>
-      ${o.map((e=>{var i,n,o,d;const h=Bt(e.datetime),p=a.get(h),u=null!==(i=Yt(e,"templow"))&&void 0!==i?i:null===(n=null==p?void 0:p.low)||void 0===n?void 0:n.value,m=null!==(o=Yt(e,"temperature"))&&void 0!==o?o:null===(d=null==p?void 0:p.high)||void 0===d?void 0:d.value;if(void 0===u||void 0===m)return W;const v=Kt(u,r,s),_=Kt(m,r,s),g=Math.max(4,_-v),f=String(e.condition||""),b=Number(e.precipitation_probability),w=h===l&&void 0!==c?Kt(c,r,s):void 0;return L`
+      ${n.map((i=>{var t,a,n,M;const g=Xe(i.datetime),I=o.get(g),N=null!==(t=Ke(i,"templow"))&&void 0!==t?t:null===(a=null==I?void 0:I.low)||void 0===a?void 0:a.value,d=null!==(n=Ke(i,"temperature"))&&void 0!==n?n:null===(M=null==I?void 0:I.high)||void 0===M?void 0:M.value;if(void 0===N||void 0===d)return G;const u=qe(N,c,r),D=qe(d,c,r),h=Math.max(4,D-u),j=String(i.condition||""),z=Number(i.precipitation_probability),y=Number.isFinite(z)?`Rain ${Math.round(z)}%`:"",p=g===s&&void 0!==l?qe(l,c,r):void 0;return E`
           <div class="weather-daily-row">
-            <div class="weather-daily-day">${function(e){if(!e)return"";const t=new Date(e);if(Number.isNaN(t.getTime()))return"";const i=Bt((new Date).toISOString()),n=new Date;n.setDate(n.getDate()+1);const o=Bt(e);return o===i?"Today":o===Bt(n.toISOString())?"Tomorrow":new Intl.DateTimeFormat(void 0,{weekday:"short"}).format(t)}(e.datetime)}</div>
+            <div class="weather-daily-day">${function(i){if(!i)return"";const e=new Date(i);if(Number.isNaN(e.getTime()))return"";const t=Xe((new Date).toISOString()),a=new Date;a.setDate(a.getDate()+1);const n=Xe(i);return n===t?"Today":n===Xe(a.toISOString())?"Tomorrow":new Intl.DateTimeFormat(void 0,{weekday:"short"}).format(e)}(i.datetime)}</div>
             <div class="weather-daily-condition">
-              <ha-icon
-                class=${`weather-daily-icon weather-condition-${Ht(f)}${!1===t.animated_icons?"":" animated"}`}
-                .icon=${Ct[f]||"mdi:weather-partly-cloudy"}
-              ></ha-icon>
-              ${Number.isFinite(b)&&b>0?L`<span>${Math.round(b)}%</span>`:W}
+              ${Ge(Ze(j),`weather-daily-icon weather-condition-${Qe(j)}`,_e(j))}
+              ${y?E`<span title="Chance of precipitation">${y}</span>`:G}
             </div>
             <div class="weather-daily-low">
-              <span>${u.toFixed(0)}°</span>
-              ${(null==p?void 0:p.low)?L`<small>${jt(p.low.item,t.time_format)}</small>`:W}
+              <span>${N.toFixed(0)}°</span>
+              ${(null==I?void 0:I.low)?E`<small>${$e(I.low.item,e.time_format)}</small>`:G}
             </div>
             <div class="weather-daily-range">
               <div class="weather-daily-track"></div>
               <div
                 class="weather-daily-segment"
-                style=${`left:${v.toFixed(1)}%;width:${g.toFixed(1)}%;background:linear-gradient(90deg, ${kt(u)}, ${kt(m)});`}
+                style=${`left:${u.toFixed(1)}%;width:${h.toFixed(1)}%;background:linear-gradient(90deg, ${Oe(N)}, ${Oe(d)});`}
               ></div>
-              ${void 0!==w?L`
-                <span class="weather-daily-current-dot" style=${`left:${w.toFixed(1)}%;`}></span>
-              `:W}
+              ${void 0!==p?E`
+                <span class="weather-daily-current-dot" style=${`left:${p.toFixed(1)}%;`}></span>
+              `:G}
             </div>
             <div class="weather-daily-high">
-              <span>${m.toFixed(0)}°</span>
-              ${(null==p?void 0:p.high)?L`<small>${jt(p.high.item,t.time_format)}</small>`:W}
+              <span>${d.toFixed(0)}°</span>
+              ${(null==I?void 0:I.high)?E`<small>${$e(I.high.item,e.time_format)}</small>`:G}
             </div>
           </div>
         `}))}
     </section>
-  `}function Xt(e,t){if(!e.length)return"";const i=e[0],n=e.slice(0,12).reduce(((e,t)=>{const i=Number(e.precipitation_probability)||0,n=Number(t.precipitation_probability)||0,o=Number(e.precipitation)||0,a=Number(t.precipitation)||0;return a>o||a===o&&n>i?t:e}),i),o=Number(n.precipitation_probability)||0,a=Number(n.precipitation)||0;if(o>=25||a>0){const e=jt(n,t),i=o>0?`${Math.round(o)}%`:`${a.toFixed(1)} mm`;return e?`Rain ${i} at ${e}`:`Rain ${i}`}return`${Pt(String(i.condition||""))} ${r=i,`${Ft(r.temperature,0)}°`}`;var r}function Jt(e){e.stopPropagation()}function Qt(e,t,i){t.preventDefault(),t.stopPropagation(),i&&"function"==typeof(null==e?void 0:e._openMoreInfo)&&e._openMoreInfo(i)}function ei(e,t,i){"Enter"!==t.key&&" "!==t.key||Qt(e,t,i)}function ti(e,t,i,n){if(t.stopPropagation(),!n||"function"!=typeof(null==e?void 0:e._setWeatherForecastGraphSelection))return;const o=t.currentTarget.getBoundingClientRect(),a=o.width?Math.max(0,Math.min(1,(t.clientX-o.left)/o.width)):0;e._setWeatherForecastGraphSelection(i,Math.round(a*(n-1)))}function ii(e,t,i){const n="function"==typeof(null==e?void 0:e._getWeatherForecastGraphSelection)?e._getWeatherForecastGraphSelection(t):void 0,o=function(e){const t=Date.now();let i=0,n=Number.POSITIVE_INFINITY;return e.forEach(((e,o)=>{const a=e.item.datetime?new Date(e.item.datetime).getTime():Number.NaN;if(!Number.isFinite(a))return;const r=Math.abs(a-t);r<n&&(n=r,i=o)})),i}(i);return i[Math.max(0,Math.min(i.length-1,Number.isFinite(Number(n))?Number(n):o))]||i[0]}function ni(e,t,i,n){const o=e.height-e.bottom;return[...[0,1,2].map((t=>{const i=e.top+t*((o-e.top)/2);return O`<line class="weather-conditions-grid-line" x1=${e.left} x2=${e.width-e.right} y1=${i} y2=${i}></line>`})),...t.map((t=>{const a=i[t];return O`
-        <line class="weather-conditions-time-line" x1=${a.x} x2=${a.x} y1=${e.top} y2=${o}></line>
-        <text class="weather-conditions-time-label" x=${a.x} y=${e.height-6}>${jt(a.item,n)}</text>
-      `}))]}function oi(e,t,i,n){const o={width:360,height:118,left:14,right:42,top:15,bottom:24},{points:a,min:r,max:s}=Vt(i,"temperature",o);if(a.length<2)return W;const l=o.height-o.bottom,c=ii(e,n,a),d=a.reduce(((e,t)=>t.value<e.value?t:e),a[0]),h=a.reduce(((e,t)=>t.value>e.value?t:e),a[0]),p=Dt(a.length),u=function(e){if(e.length<=7)return e;const t=Math.max(1,Math.ceil(e.length/7));return e.filter(((e,i)=>i%t==0)).slice(0,7)}(a),m=Gt(a),v=qt(a,l),_=Ut(n),g=`weather-conditions-temp-line-${_}`,f=`weather-conditions-temp-fill-${_}`,b=(r+s)/2;return L`
+  `}function tt(i,e){if(!i.length)return"";const t=i[0],a=i.slice(0,12).reduce(((i,e)=>{const t=Number(i.precipitation_probability)||0,a=Number(e.precipitation_probability)||0,n=Number(i.precipitation)||0,o=Number(e.precipitation)||0;return o>n||o===n&&a>t?e:i}),t),n=Number(a.precipitation_probability)||0,o=Number(a.precipitation)||0;if(n>=25||o>0){const i=$e(a,e),t=n>0?`${Math.round(n)}%`:`${o.toFixed(1)} mm`;return i?`Rain ${t} at ${i}`:`Rain ${t}`}return`${_e(String(t.condition||""))} ${c=t,`${Le(c.temperature,0)}°`}`;var c}function at(i){i.stopPropagation()}function nt(i,e,t){e.preventDefault(),e.stopPropagation(),t&&"function"==typeof(null==i?void 0:i._openMoreInfo)&&i._openMoreInfo(t)}function ot(i,e,t){"Enter"!==e.key&&" "!==e.key||nt(i,e,t)}function ct(i,e,t,a){if(e.stopPropagation(),!a||"function"!=typeof(null==i?void 0:i._setWeatherForecastGraphSelection))return;const n=e.currentTarget.getBoundingClientRect(),o=n.width?Math.max(0,Math.min(1,(e.clientX-n.left)/n.width)):0;i._setWeatherForecastGraphSelection(t,Math.round(o*(a-1)))}function rt(i,e,t){const a="function"==typeof(null==i?void 0:i._getWeatherForecastGraphSelection)?i._getWeatherForecastGraphSelection(e):void 0,n=function(i){const e=Date.now();let t=0,a=Number.POSITIVE_INFINITY;return i.forEach(((i,n)=>{const o=i.item.datetime?new Date(i.item.datetime).getTime():Number.NaN;if(!Number.isFinite(o))return;const c=Math.abs(o-e);c<a&&(a=c,t=n)})),t}(t);return t[Math.max(0,Math.min(t.length-1,Number.isFinite(Number(a))?Number(a):n))]||t[0]}function st(i,e,t,a){const n=i.height-i.bottom;return[...[0,1,2].map((e=>{const t=i.top+e*((n-i.top)/2);return U`<line class="weather-conditions-grid-line" x1=${i.left} x2=${i.width-i.right} y1=${t} y2=${t}></line>`})),...e.map((e=>{const o=t[e];return U`
+        <line class="weather-conditions-time-line" x1=${o.x} x2=${o.x} y1=${i.top} y2=${n}></line>
+        <text class="weather-conditions-time-label" x=${o.x} y=${i.height-6}>${$e(o.item,a)}</text>
+      `}))]}function lt(i,e,t,a){const n={width:360,height:it(e),left:14,right:42,top:15,bottom:24},{points:o,min:c,max:r}=Ve(t,"temperature",n);if(o.length<2)return G;const s=n.height-n.bottom,l=rt(i,a,o),M=o.reduce(((i,e)=>e.value<i.value?e:i),o[0]),g=o.reduce(((i,e)=>e.value>i.value?e:i),o[0]),I=Fe(o.length),N=function(i){if(i.length<=7)return i;const e=Math.max(1,Math.ceil(i.length/7));return i.filter(((i,t)=>t%e==0)).slice(0,7)}(o),d=He(o),u=Je(o,s),D=Be(a),h=`weather-conditions-temp-line-${D}`,j=`weather-conditions-temp-fill-${D}`,z=(c+r)/2;return E`
     <section class="weather-conditions-card weather-conditions-temp">
       <div class="weather-conditions-head">
         <div class="weather-conditions-title">
@@ -1131,59 +1158,60 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
           <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
         </div>
         <div class="weather-conditions-selected">
-          <span>${jt(c.item,t.time_format)}</span>
-          <strong>${c.value.toFixed(0)}°</strong>
+          <span>${$e(l.item,e.time_format)}</span>
+          <strong>${l.value.toFixed(0)}°</strong>
         </div>
       </div>
 
-      ${u.length?L`
+      ${N.length?E`
         <div class="weather-conditions-icons">
-          ${u.map((e=>{const i=String(e.item.condition||"");return L`
-              <ha-icon
-                class=${`weather-conditions-icon weather-condition-${Ht(i)}${!1===t.animated_icons?"":" animated"}`}
-                .icon=${Ct[i]||"mdi:weather-partly-cloudy"}
-              ></ha-icon>
+          ${N.map((i=>{const e=String(i.item.condition||"");return E`
+              ${Ge(Ze(e),`weather-conditions-icon weather-condition-${Qe(e)}`,_e(e))}
             `}))}
         </div>
-      `:W}
+      `:G}
 
-      <svg
-        class="weather-conditions-chart"
-        viewBox=${`0 0 ${o.width} ${o.height}`}
-        preserveAspectRatio="none"
-        role="img"
-        aria-label="Temperature forecast graph"
-        @pointerdown=${Jt}
-        @pointermove=${t=>ti(e,t,n,a.length)}
-        @click=${t=>ti(e,t,n,a.length)}
-      >
-        <defs>
-          <linearGradient id=${f} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="rgba(255, 179, 28, 0.66)"></stop>
-            <stop offset="52%" stop-color="rgba(255, 179, 28, 0.24)"></stop>
-            <stop offset="100%" stop-color="rgba(47, 185, 221, 0.38)"></stop>
-          </linearGradient>
-          <linearGradient id=${g} x1=${o.left} x2=${o.width-o.right} y1="0" y2="0" gradientUnits="userSpaceOnUse">
-            ${a.map(((e,t)=>O`
-              <stop offset=${t/(a.length-1)*100+"%"} stop-color=${kt(e.value)}></stop>
-            `))}
-          </linearGradient>
-        </defs>
-        ${ni(o,p,a,t.time_format)}
-        <path class="weather-conditions-area" d=${v} fill=${`url(#${f})`}></path>
-        <path class="weather-conditions-line-shadow" d=${m}></path>
-        <path class="weather-conditions-temp-line" d=${m} stroke=${`url(#${g})`}></path>
-        <text class="weather-conditions-extreme" x=${d.x} y=${Math.max(12,d.y-9)}>L</text>
-        <text class="weather-conditions-extreme" x=${h.x} y=${Math.max(12,h.y-9)}>H</text>
-        <line class="weather-conditions-selected-line" x1=${c.x} x2=${c.x} y1=${o.top} y2=${l}></line>
-        <circle class="weather-conditions-dot" cx=${c.x} cy=${c.y} r="4.2"></circle>
-        <circle class="weather-conditions-dot-ring" cx=${c.x} cy=${c.y} r="7.2"></circle>
-        <text class="weather-conditions-axis" x=${o.width-5} y=${o.top+3}>${s.toFixed(0)}°</text>
-        <text class="weather-conditions-axis" x=${o.width-5} y=${o.top+(l-o.top)/2}>${b.toFixed(0)}°</text>
-        <text class="weather-conditions-axis" x=${o.width-5} y=${l}>${r.toFixed(0)}°</text>
-      </svg>
+      <div class="weather-conditions-chart-frame">
+        <svg
+          class="weather-conditions-chart"
+          viewBox=${`0 0 ${n.width} ${n.height}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label="Temperature forecast graph"
+          @pointerdown=${at}
+          @pointermove=${e=>ct(i,e,a,o.length)}
+          @click=${e=>ct(i,e,a,o.length)}
+        >
+          <defs>
+            <linearGradient id=${j} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(255, 179, 28, 0.66)"></stop>
+              <stop offset="52%" stop-color="rgba(255, 179, 28, 0.24)"></stop>
+              <stop offset="100%" stop-color="rgba(47, 185, 221, 0.38)"></stop>
+            </linearGradient>
+            <linearGradient id=${h} x1=${n.left} x2=${n.width-n.right} y1="0" y2="0" gradientUnits="userSpaceOnUse">
+              ${o.map(((i,e)=>U`
+                <stop offset=${e/(o.length-1)*100+"%"} stop-color=${Oe(i.value)}></stop>
+              `))}
+            </linearGradient>
+          </defs>
+          ${st(n,I,o,e.time_format)}
+          <path class="weather-conditions-area" d=${u} fill=${`url(#${j})`}></path>
+          <path class="weather-conditions-line-shadow" d=${d}></path>
+          <path class="weather-conditions-temp-line" d=${d} stroke=${`url(#${h})`}></path>
+          <text class="weather-conditions-extreme" x=${M.x} y=${Math.max(12,M.y-9)}>L</text>
+          <text class="weather-conditions-extreme" x=${g.x} y=${Math.max(12,g.y-9)}>H</text>
+          <line class="weather-conditions-selected-line" x1=${l.x} x2=${l.x} y1=${n.top} y2=${s}></line>
+          <text class="weather-conditions-axis" x=${n.width-5} y=${n.top+3}>${r.toFixed(0)}°</text>
+          <text class="weather-conditions-axis" x=${n.width-5} y=${n.top+(s-n.top)/2}>${z.toFixed(0)}°</text>
+          <text class="weather-conditions-axis" x=${n.width-5} y=${s}>${c.toFixed(0)}°</text>
+        </svg>
+        <span
+          class="weather-conditions-selected-dot"
+          style=${`left:${(l.x/n.width*100).toFixed(2)}%;top:${(l.y/n.height*100).toFixed(2)}%;`}
+        ></span>
+      </div>
     </section>
-  `}function ai(e,t,i,n,o){if(i.length<2)return W;const a=n.includes("temperature")?oi(e,t,i,`${o}-temperature`):W,r=n.includes("precipitation_probability")?function(e,t,i,n){const o={width:360,height:92,left:14,right:42,top:10,bottom:22},{points:a}=Vt(i,"precipitation_probability",o);if(a.length<2)return W;const r=o.height-o.bottom,s=ii(e,n,a),l=a.reduce(((e,t)=>t.value>e.value?t:e),a[0]),c=Dt(a.length),d=Gt(a),h=qt(a,r),p=`weather-conditions-rain-fill-${Ut(n)}`;return L`
+  `}function Mt(i,e,t,a,n){if(t.length<2)return G;const o=a.includes("temperature")?lt(i,e,t,`${n}-temperature`):G,c=a.includes("precipitation_probability")?function(i,e,t,a){const n={width:360,height:it(e),left:14,right:42,top:10,bottom:22},{points:o}=Ve(t,"precipitation_probability",n);if(o.length<2)return G;const c=n.height-n.bottom,r=rt(i,a,o),s=o.reduce(((i,e)=>e.value>i.value?e:i),o[0]),l=Fe(o.length),M=He(o),g=Je(o,c),I=`weather-conditions-rain-fill-${Be(a)}`;return E`
     <section class="weather-conditions-card weather-conditions-rain">
       <div class="weather-conditions-head">
         <div class="weather-conditions-title">
@@ -1191,50 +1219,54 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
           <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
         </div>
         <div class="weather-conditions-selected">
-          <span>${jt(s.item,t.time_format)}</span>
-          <strong>${Math.round(s.value)}%</strong>
+          <span>${$e(r.item,e.time_format)}</span>
+          <strong>${Math.round(r.value)}%</strong>
         </div>
       </div>
-      <div class="weather-conditions-subtitle">Today's chance: ${Math.round(l.value)}%</div>
-      <svg
-        class="weather-conditions-chart"
-        viewBox=${`0 0 ${o.width} ${o.height}`}
-        preserveAspectRatio="none"
-        role="img"
-        aria-label="Chance of precipitation forecast graph"
-        @pointerdown=${Jt}
-        @pointermove=${t=>ti(e,t,n,a.length)}
-        @click=${t=>ti(e,t,n,a.length)}
-      >
-        <defs>
-          <linearGradient id=${p} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="rgba(56, 199, 243, 0.48)"></stop>
-            <stop offset="100%" stop-color="rgba(56, 199, 243, 0.10)"></stop>
-          </linearGradient>
-        </defs>
-        ${ni(o,c,a,t.time_format)}
-        <path class="weather-conditions-rain-area" d=${h} fill=${`url(#${p})`}></path>
-        <path class="weather-conditions-line-shadow" d=${d}></path>
-        <path class="weather-conditions-rain-line" d=${d}></path>
-        <line class="weather-conditions-selected-line" x1=${s.x} x2=${s.x} y1=${o.top} y2=${r}></line>
-        <circle class="weather-conditions-dot" cx=${s.x} cy=${s.y} r="4.2"></circle>
-        <circle class="weather-conditions-dot-ring" cx=${s.x} cy=${s.y} r="7.2"></circle>
-        <text class="weather-conditions-axis" x=${o.width-5} y=${o.top+4}>100%</text>
-        <text class="weather-conditions-axis" x=${o.width-5} y=${o.top+(r-o.top)/2}>50%</text>
-        <text class="weather-conditions-axis" x=${o.width-5} y=${r}>0%</text>
-      </svg>
+      <div class="weather-conditions-subtitle">Today's chance: ${Math.round(s.value)}%</div>
+      <div class="weather-conditions-chart-frame">
+        <svg
+          class="weather-conditions-chart"
+          viewBox=${`0 0 ${n.width} ${n.height}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label="Chance of precipitation forecast graph"
+          @pointerdown=${at}
+          @pointermove=${e=>ct(i,e,a,o.length)}
+          @click=${e=>ct(i,e,a,o.length)}
+        >
+          <defs>
+            <linearGradient id=${I} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(56, 199, 243, 0.48)"></stop>
+              <stop offset="100%" stop-color="rgba(56, 199, 243, 0.10)"></stop>
+            </linearGradient>
+          </defs>
+          ${st(n,l,o,e.time_format)}
+          <path class="weather-conditions-rain-area" d=${g} fill=${`url(#${I})`}></path>
+          <path class="weather-conditions-line-shadow" d=${M}></path>
+          <path class="weather-conditions-rain-line" d=${M}></path>
+          <line class="weather-conditions-selected-line" x1=${r.x} x2=${r.x} y1=${n.top} y2=${c}></line>
+          <text class="weather-conditions-axis" x=${n.width-5} y=${n.top+4}>100%</text>
+          <text class="weather-conditions-axis" x=${n.width-5} y=${n.top+(c-n.top)/2}>50%</text>
+          <text class="weather-conditions-axis" x=${n.width-5} y=${c}>0%</text>
+        </svg>
+        <span
+          class="weather-conditions-selected-dot"
+          style=${`left:${(r.x/n.width*100).toFixed(2)}%;top:${(r.y/n.height*100).toFixed(2)}%;`}
+        ></span>
+      </div>
     </section>
-  `}(e,t,i,`${o}-precipitation`):W;return a===W&&r===W?W:L`
+  `}(i,e,t,`${n}-precipitation`):G;return o===G&&c===G?G:E`
     <div class="weather-conditions-panel">
-      ${a}
-      ${r}
+      ${o}
+      ${c}
     </div>
-  `}function ri(e,t){var i;const n=Et(St(e,t.entity)).toLowerCase(),o=t.name||"Weather",a=Nt(e,t.temp_sensor),r=Nt(e,t.temp_min_24h_sensor),s=Nt(e,t.temp_max_24h_sensor),l=function(e,t){const i=Tt(e,t);return void 0===i?"—%":`${i.toFixed(0)}%`}(e,t.humidity_sensor),c=Nt(e,t.feels_like_sensor),d=Nt(e,t.dewpoint_sensor),h=Lt(e,t),p=!1===t.show_forecast?[]:Ot(t.forecast),u=!1===t.show_forecast?[]:Ot(t.daily_forecast),m=Number(t.forecast_slots),v=Number.isFinite(m)&&m>0?Math.min(Math.floor(m),72):8,_=function(e){const t=Array.isArray(e)?e:"string"==typeof e?e.split(","):xt,i=[];return t.forEach((e=>{const t=At[String(e||"").trim().toLowerCase().replace(/[-\s]/g,"_")];t&&!i.includes(t)&&i.push(t)})),i.length?i:xt}(t.forecast_fields),g=Math.min(v,24),f=p.slice(0,g),b=Xt(p,t.time_format),w=String((null===(i=p[0])||void 0===i?void 0:i.condition)||n||"").toLowerCase(),y=t.icon||Ct[w]||Ct[n]||"mdi:weather-partly-cloudy",$=`weather-icon weather-condition-${Ht(w||n)}${!1===t.animated_icons?"":" animated"}`,x=b||Pt(w||n),A=L`<span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>`,C=t.forecast_graph_key||`weather-${t.entity||o}`,k=ai(e,t,f,_,C),S=Zt(e,t,u,p),E=Array.isArray(t.chips)?t.chips:[],T=!!t.double_tap_action,F=Number(t.height),z=Number.isFinite(F)&&F>0?`--weather-tile-h:${F}px;`:"";return L`
-    <div class="tile-wrap weather-tile-wrap" style=${z}>
+  `}function gt(i,e){var t,a;const n=ve(xe(i,e.entity)).toLowerCase(),o=e.name||"Weather",c=Ce(i,e.temp_sensor),r=function(i,e){const t=Se(i,e);return void 0===t?"—%":`${t.toFixed(0)}%`}(i,e.humidity_sensor),s=Ce(i,e.feels_like_sensor),l=We(i,e),M=!1===e.show_forecast?[]:Pe(e.forecast),g=!1===e.show_forecast?[]:Pe(e.daily_forecast),I=Number(e.forecast_slots),N=Number.isFinite(I)&&I>0?Math.min(Math.floor(I),72):8,d=function(i){const e=Array.isArray(i)?i:"string"==typeof i?i.split(","):we,t=[];return e.forEach((i=>{const e=Te[String(i||"").trim().toLowerCase().replace(/[-\s]/g,"_")];e&&!t.includes(e)&&t.push(e)})),t.length?t:we}(e.forecast_fields),u=Math.min(N,24),D=M.slice(0,u),h=tt(M,e.time_format),j=String((null===(t=M[0])||void 0===t?void 0:t.condition)||n||"").toLowerCase(),z=j||n,y=`weather-icon weather-condition-${Qe(z)}`,p=h||_e(j||n),A=E`<span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>`,m=e.forecast_graph_key||`weather-${e.entity||o}`,w=Mt(i,e,D,d,m),T=et(i,e,g,M),b=Array.isArray(e.chips)?e.chips:[],O=!!e.double_tap_action,x=Number(e.height),v=Ye(null!==(a=e.temp_size)&&void 0!==a?a:e.temperature_size,18,56),S=Ye(e.icon_size,28,76),L=Ye(e.graph_height,82,260),k=[Number.isFinite(x)&&x>0?`--weather-tile-h:${x}px;`:"",v?`--weather-temp-size:${v}px;`:"",S?`--weather-icon-size:${S}px;--weather-icon-bg-size:${S+16}px;`:"",L?`--weather-graph-height:${L}px;`:""].filter(Boolean).join("");return E`
+    <div class="tile-wrap weather-tile-wrap" style=${k}>
       <ha-control-button
         class="weather-tile"
-        @hass-action=${i=>{"function"==typeof(null==e?void 0:e._onWeatherAction)&&e._onWeatherAction(i,t)}}
-        .actionHandler=${pt({hasHold:!0,hasDoubleClick:T})}
+        @hass-action=${t=>{"function"==typeof(null==i?void 0:i._onWeatherAction)&&i._onWeatherAction(t,e)}}
+        .actionHandler=${Ie({hasHold:!0,hasDoubleClick:O})}
         role="button" tabindex="0"
       >
         <div class="weather-content">
@@ -1244,191 +1276,155 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
               role="button"
               tabindex="0"
               aria-label=${`Open ${o} weather details`}
-              @pointerdown=${Jt}
-              @pointerup=${Jt}
-              @click=${i=>Qt(e,i,t.entity)}
-              @keyup=${i=>ei(e,i,t.entity)}
+              @pointerdown=${at}
+              @pointerup=${at}
+              @click=${t=>nt(i,t,e.entity)}
+              @keyup=${t=>ot(i,t,e.entity)}
             >
               <div class="weather-headline-row">
-                <div class="weather-name">${x}</div>
-                ${p.length?A:W}
+                <div class="weather-name">${p}</div>
+                ${M.length?A:G}
               </div>
-              <div class="weather-secondary">
+              <div class="weather-primary">
                 <span
-                  class="weather-clickable"
+                  class="weather-temp weather-clickable"
                   role="button"
                   tabindex="0"
-                  aria-label="Open feels like temperature details"
-                  @pointerdown=${Jt}
-                  @pointerup=${Jt}
-                  @click=${i=>Qt(e,i,t.feels_like_sensor)}
-                  @keyup=${i=>ei(e,i,t.feels_like_sensor)}
-                >Feels ${c}</span>
+                  aria-label="Open outdoor temperature details"
+                  @pointerdown=${at}
+                  @pointerup=${at}
+                  @click=${t=>nt(i,t,e.temp_sensor)}
+                  @keyup=${t=>ot(i,t,e.temp_sensor)}
+                >${c}</span>
                 <span
-                  class="weather-clickable"
+                  class="weather-humidity weather-clickable"
                   role="button"
                   tabindex="0"
-                  aria-label="Open dew point details"
-                  @pointerdown=${Jt}
-                  @pointerup=${Jt}
-                  @click=${i=>Qt(e,i,t.dewpoint_sensor)}
-                  @keyup=${i=>ei(e,i,t.dewpoint_sensor)}
-                >Dew ${d}</span>
-                ${t.temp_min_24h_sensor?L`
-                  <span
-                    class="weather-clickable"
-                    role="button"
-                    tabindex="0"
-                    aria-label="Open 24 hour minimum temperature details"
-                    @pointerdown=${Jt}
-                    @pointerup=${Jt}
-                    @click=${i=>Qt(e,i,t.temp_min_24h_sensor)}
-                    @keyup=${i=>ei(e,i,t.temp_min_24h_sensor)}
-                  >24h Min ${r}</span>
-                `:W}
-                ${t.temp_max_24h_sensor?L`
-                  <span
-                    class="weather-clickable"
-                    role="button"
-                    tabindex="0"
-                    aria-label="Open 24 hour maximum temperature details"
-                    @pointerdown=${Jt}
-                    @pointerup=${Jt}
-                    @click=${i=>Qt(e,i,t.temp_max_24h_sensor)}
-                    @keyup=${i=>ei(e,i,t.temp_max_24h_sensor)}
-                  >24h Max ${s}</span>
-                `:W}
+                  aria-label="Open outdoor humidity details"
+                  @pointerdown=${at}
+                  @pointerup=${at}
+                  @click=${t=>nt(i,t,e.humidity_sensor)}
+                  @keyup=${t=>ot(i,t,e.humidity_sensor)}
+                >${r}</span>
               </div>
-            </div>
-            <div class="weather-primary">
-              <span
-                class="weather-temp weather-clickable"
+              <div
+                class="weather-feels weather-clickable"
                 role="button"
                 tabindex="0"
-                aria-label="Open outdoor temperature details"
-                @pointerdown=${Jt}
-                @pointerup=${Jt}
-                @click=${i=>Qt(e,i,t.temp_sensor)}
-                @keyup=${i=>ei(e,i,t.temp_sensor)}
-              >${a}</span>
-              <span
-                class="weather-humidity weather-clickable"
-                role="button"
-                tabindex="0"
-                aria-label="Open outdoor humidity details"
-                @pointerdown=${Jt}
-                @pointerup=${Jt}
-                @click=${i=>Qt(e,i,t.humidity_sensor)}
-                @keyup=${i=>ei(e,i,t.humidity_sensor)}
-              >${l}</span>
+                aria-label="Open feels like temperature details"
+                @pointerdown=${at}
+                @pointerup=${at}
+                @click=${t=>nt(i,t,e.feels_like_sensor)}
+                @keyup=${t=>ot(i,t,e.feels_like_sensor)}
+              >Feels like ${s}</div>
             </div>
             <div class="weather-icon-wrap weather-clickable"
               role="button"
               tabindex="0"
               aria-label=${`Open ${o} weather details`}
-              @pointerdown=${Jt}
-              @pointerup=${Jt}
-              @click=${i=>Qt(e,i,t.entity)}
-              @keyup=${i=>ei(e,i,t.entity)}
+              @pointerdown=${at}
+              @pointerup=${at}
+              @click=${t=>nt(i,t,e.entity)}
+              @keyup=${t=>ot(i,t,e.entity)}
             >
-              <ha-icon class=${$} .icon=${y}></ha-icon>
+              ${e.icon?E`<ha-icon class=${y} .icon=${e.icon}></ha-icon>`:Ge(Ze(z),y,_e(z))}
             </div>
           </div>
 
           <div class="weather-grid">
-            ${h.map((t=>L`
+            ${l.map((e=>E`
               <div
-                class=${"weather-metric weather-clickable"+(t.active?" active":"")}
-                title=${t.entity||t.label}
+                class=${"weather-metric weather-clickable"+(e.active?" active":"")}
+                title=${e.entity||e.label}
                 role="button"
                 tabindex="0"
-                aria-label=${`Open ${t.label} details`}
-                @pointerdown=${Jt}
-                @pointerup=${Jt}
-                @click=${i=>Qt(e,i,t.entity)}
-                @keyup=${i=>ei(e,i,t.entity)}
+                aria-label=${`Open ${e.label} details`}
+                @pointerdown=${at}
+                @pointerup=${at}
+                @click=${t=>nt(i,t,e.entity)}
+                @keyup=${t=>ot(i,t,e.entity)}
               >
-                <ha-icon .icon=${t.icon}></ha-icon>
-                <span class="weather-metric-label">${t.label}</span>
-                <span class="weather-metric-value">${t.value}</span>
+                ${Ge(e.icon,"weather-metric-icon",e.label)}
+                <span class="weather-metric-label">${e.label}</span>
+                <span class="weather-metric-value">${e.value}</span>
               </div>
             `))}
           </div>
 
-          ${k}
-          ${S}
+          ${w}
+          ${T}
         </div>
 
-        ${E.length?L`<div class="weather-chips-bottom-right">
-              ${E.map((t=>L`
+        ${b.length?E`<div class="weather-chips-bottom-right">
+              ${b.map((e=>E`
                 <div
                   class="weather-chip-hit weather-clickable"
                   role="button"
                   tabindex="0"
-                  aria-label=${`Open ${(null==t?void 0:t.entity)||"chip"} details`}
-                  @pointerdown=${Jt}
-                  @pointerup=${Jt}
-                  @click=${i=>Qt(e,i,(null==t?void 0:t.entity)||(null==t?void 0:t.tap_entity))}
-                  @keyup=${i=>ei(e,i,(null==t?void 0:t.entity)||(null==t?void 0:t.tap_entity))}
+                  aria-label=${`Open ${(null==e?void 0:e.entity)||"chip"} details`}
+                  @pointerdown=${at}
+                  @pointerup=${at}
+                  @click=${t=>nt(i,t,(null==e?void 0:e.entity)||(null==e?void 0:e.tap_entity))}
+                  @keyup=${t=>ot(i,t,(null==e?void 0:e.entity)||(null==e?void 0:e.tap_entity))}
                 >
-                  ${vt(e,t)}
+                  ${ue(i,e)}
                 </div>
               `))}
-            </div>`:W}
+            </div>`:G}
       </ha-control-button>
     </div>
-  `}const si=(...e)=>e.filter(Boolean).join(" ");function li(e,t){return t&&t.length?L`${t.map(((t,i)=>function(e,t,i){const n=t,o=Array.isArray(t)?t:Array.isArray(null==n?void 0:n.row)?n.row:[];let a=Array.isArray(null==n?void 0:n.cards)?n.cards:Array.isArray(null==n?void 0:n.extra_cards)?n.extra_cards:[];if(!Array.isArray(a)||!a.length){const e=(null==n?void 0:n.card)||(null==n?void 0:n.extra_card);e&&"object"==typeof e&&(a=[e])}const r=Math.max(1,o.length||1),s=Array.isArray(a)&&a.length&&"function"==typeof(null==e?void 0:e._renderEmbeddedRowCard)?L`<div class="switch-row-cards">
-        ${a.map(((t,n)=>e._renderEmbeddedRowCard(t,`switch-row-${i}-card-${n}`)))}
-      </div>`:W;return L`
+  `}const It=(...i)=>i.filter(Boolean).join(" ");function Nt(i,e){return e&&e.length?E`${e.map(((e,t)=>function(i,e,t){const a=e,n=Array.isArray(e)?e:Array.isArray(null==a?void 0:a.row)?a.row:[];let o=Array.isArray(null==a?void 0:a.cards)?a.cards:Array.isArray(null==a?void 0:a.extra_cards)?a.extra_cards:[];if(!Array.isArray(o)||!o.length){const i=(null==a?void 0:a.card)||(null==a?void 0:a.extra_card);i&&"object"==typeof i&&(o=[i])}const c=Math.max(1,n.length||1),r=Array.isArray(o)&&o.length&&"function"==typeof(null==i?void 0:i._renderEmbeddedRowCard)?E`<div class="switch-row-cards">
+        ${o.map(((e,a)=>i._renderEmbeddedRowCard(e,`switch-row-${t}-card-${a}`)))}
+      </div>`:G;return E`
     <div class="switch-row-wrap">
-      <div class="switch-row" style=${`--cols:${r}`}>${o.map((t=>function(e,t){var i,n,o,a,r,s,l;const c="string"==typeof(null==t?void 0:t.entity)?t.entity:"",d=(null==t?void 0:t.icon)||"",h=(null==t?void 0:t.name)||"",p=(null===(a=null===(o=null===(n=null===(i=null==e?void 0:e.hass)||void 0===i?void 0:i.states)||void 0===n?void 0:n[c])||void 0===o?void 0:o.attributes)||void 0===a?void 0:a.friendly_name)||"",u=h||p||c,m=String((null==t?void 0:t.type)||"switch").toLowerCase(),v="smart_plug"===m,_="lock"===m||c.startsWith("lock."),g="function"==typeof(null==e?void 0:e._isSwitchActive)?e._isSwitchActive(c,m):_?"unlocked"===((null===(l=null===(s=null===(r=null==e?void 0:e.hass)||void 0===r?void 0:r.states)||void 0===s?void 0:s[c])||void 0===l?void 0:l.state)||"").toLowerCase():"function"==typeof(null==e?void 0:e._isOn)&&e._isOn(c),f=(null==t?void 0:t.icon_size)||(null==t?void 0:t["icon-size"]),b=(null==t?void 0:t.font_weight)||(null==t?void 0:t["font-weight"]),w=(null==t?void 0:t.font_size)||(null==t?void 0:t["font-size"]),y=(null==t?void 0:t.icon_active)||(null==t?void 0:t.icon_on)||(null==t?void 0:t["icon-active"])||(null==t?void 0:t["icon-on"]),$=(null==t?void 0:t.icon_inactive)||(null==t?void 0:t.icon_off)||(null==t?void 0:t["icon-inactive"])||(null==t?void 0:t["icon-off"]),x=g?y||d||$:$||d,A=e=>{if(null==e||""===e)return"";const t=String(e).trim();return t?/^-?\d+(\.\d+)?$/.test(t)?`${t}px`:t:""},C=A(f),k=A(w),S=C?`--switch-icon-size:${C};width:${C};height:${C};--mdc-icon-size:${C};`:"",E=`${b?`font-weight:${b};`:""}${k?`font-size:${k};`:""}`,T=`${C?`--switch-icon-size:${C};`:""}${b?`font-weight:${b};`:""}${k?`--chip-text-font-size:${k};font-size:${k};`:""}`,F="undefined"!=typeof customElements&&!!customElements.get("ha-chip"),z="undefined"!=typeof customElements&&!!customElements.get("ha-control-button"),N=v?"smart":_?"lock":"",M=g?"on":"off",P=si("switch-chip",N,M),H=si("switch-icon",N,M),I=si("name","switch-name",N,M),R="function"==typeof(null==e?void 0:e._resolveSwitchTemplates)?e._resolveSwitchTemplates(t):[],O=Array.isArray(R)?R.map((e=>e&&"object"==typeof e?e.value:e)).slice(0,2):[],j=((e,t)=>{if(!Array.isArray(e)||!e.length)return W;const i=e.map((e=>{const t=null==e?"":String(e);return{text:t,trimmed:t.trim()}})).filter((e=>e.trimmed.length>0)).slice(0,2);return i.length?L`
-    <div class=${t}>
-      ${i.map((e=>L`<span>${e.text}</span>`))}
+      <div class="switch-row" style=${`--cols:${c}`}>${n.map((e=>function(i,e){var t,a,n,o,c,r,s;const l="string"==typeof(null==e?void 0:e.entity)?e.entity:"",M=(null==e?void 0:e.icon)||"",g=(null==e?void 0:e.name)||"",I=(null===(o=null===(n=null===(a=null===(t=null==i?void 0:i.hass)||void 0===t?void 0:t.states)||void 0===a?void 0:a[l])||void 0===n?void 0:n.attributes)||void 0===o?void 0:o.friendly_name)||"",N=g||I||l,d=String((null==e?void 0:e.type)||"switch").toLowerCase(),u="smart_plug"===d,D="lock"===d||l.startsWith("lock."),h="function"==typeof(null==i?void 0:i._isSwitchActive)?i._isSwitchActive(l,d):D?"unlocked"===((null===(s=null===(r=null===(c=null==i?void 0:i.hass)||void 0===c?void 0:c.states)||void 0===r?void 0:r[l])||void 0===s?void 0:s.state)||"").toLowerCase():"function"==typeof(null==i?void 0:i._isOn)&&i._isOn(l),j=(null==e?void 0:e.icon_size)||(null==e?void 0:e["icon-size"]),z=(null==e?void 0:e.font_weight)||(null==e?void 0:e["font-weight"]),y=(null==e?void 0:e.font_size)||(null==e?void 0:e["font-size"]),p=(null==e?void 0:e.icon_active)||(null==e?void 0:e.icon_on)||(null==e?void 0:e["icon-active"])||(null==e?void 0:e["icon-on"]),A=(null==e?void 0:e.icon_inactive)||(null==e?void 0:e.icon_off)||(null==e?void 0:e["icon-inactive"])||(null==e?void 0:e["icon-off"]),m=h?p||M||A:A||M,w=i=>{if(null==i||""===i)return"";const e=String(i).trim();return e?/^-?\d+(\.\d+)?$/.test(e)?`${e}px`:e:""},T=w(j),b=w(y),O=T?`--switch-icon-size:${T};width:${T};height:${T};--mdc-icon-size:${T};`:"",x=`${z?`font-weight:${z};`:""}${b?`font-size:${b};`:""}`,v=`${T?`--switch-icon-size:${T};`:""}${z?`font-weight:${z};`:""}${b?`--chip-text-font-size:${b};font-size:${b};`:""}`,S="undefined"!=typeof customElements&&!!customElements.get("ha-chip"),L="undefined"!=typeof customElements&&!!customElements.get("ha-control-button"),k=u?"smart":D?"lock":"",C=h?"on":"off",Y=It("switch-chip",k,C),f=It("switch-icon",k,C),_=It("name","switch-name",k,C),Q="function"==typeof(null==i?void 0:i._resolveSwitchTemplates)?i._resolveSwitchTemplates(e):[],U=Array.isArray(Q)?Q.map((i=>i&&"object"==typeof i?i.value:i)).slice(0,2):[],Z=((i,e)=>{if(!Array.isArray(i)||!i.length)return G;const t=i.map((i=>{const e=null==i?"":String(i);return{text:e,trimmed:e.trim()}})).filter((i=>i.trimmed.length>0)).slice(0,2);return t.length?E`
+    <div class=${e}>
+      ${t.map((i=>E`<span>${i.text}</span>`))}
     </div>
-  `:W})(O,si("switch-info",N,M)),V="function"==typeof(null==e?void 0:e._isSwitchPending)&&e._isSwitchPending(c),D=V?L`<span class=${si("switch-pending-spinner",N,M)} aria-hidden="true"></span>`:W,U=si("switch-tile",N,M,V&&"pending"),G=i=>{"function"==typeof(null==e?void 0:e._onSwitchAction)&&e._onSwitchAction(i,t)},q=(null==t?void 0:t.glow_mode)||"static",B=_?ft:v?gt:_t,{style:Y,overlay:K}=wt(B,q,g&&"none"!==q);if(z){const e=si("switch-tile-btn",N,g?"on":"off",V&&"pending");return L`
+  `:G})(U,It("switch-info",k,C)),W="function"==typeof(null==i?void 0:i._isSwitchPending)&&i._isSwitchPending(l),P=W?E`<span class=${It("switch-pending-spinner",k,C)} aria-hidden="true"></span>`:G,$=It("switch-tile",k,C,W&&"pending"),R=t=>{"function"==typeof(null==i?void 0:i._onSwitchAction)&&i._onSwitchAction(t,e)},V=(null==e?void 0:e.glow_mode)||"static",F=D?je:u?he:De,{style:B,overlay:H}=ye(F,V,h&&"none"!==V);if(L){const i=It("switch-tile-btn",k,h?"on":"off",W&&"pending");return E`
       <div class="tile-wrap">
-        <div class="glow-under" style=${Y}>${K}</div>
-        ${j}
-        ${D}
+        <div class="glow-under" style=${B}>${H}</div>
+        ${Z}
+        ${P}
         <ha-control-button
-          class=${e}
-          @hass-action=${G}
-          .actionHandler=${pt({hasHold:!0,hasDoubleClick:!!(null==t?void 0:t.double_tap_action)})}
-          role="button" tabindex="0" aria-busy=${V?"true":"false"}
+          class=${i}
+          @hass-action=${R}
+          .actionHandler=${Ie({hasHold:!0,hasDoubleClick:!!(null==e?void 0:e.double_tap_action)})}
+          role="button" tabindex="0" aria-busy=${W?"true":"false"}
         >
           <div class="tile-inner">
-            ${F?L`<ha-chip class=${P} style=${T||W}>
-                  ${x?L`<ha-icon class=${H} .icon=${x} style=${S||W}></ha-icon>`:W}
-                  ${u}
-                </ha-chip>`:L`
-                  ${x?L`<ha-icon class=${H} .icon=${x} style=${S||W}></ha-icon>`:W}
-                  ${u?L`<div class=${I} style=${E}>${u}</div>`:W}
+            ${S?E`<ha-chip class=${Y} style=${v||G}>
+                  ${m?E`<ha-icon class=${f} .icon=${m} style=${O||G}></ha-icon>`:G}
+                  ${N}
+                </ha-chip>`:E`
+                  ${m?E`<ha-icon class=${f} .icon=${m} style=${O||G}></ha-icon>`:G}
+                  ${N?E`<div class=${_} style=${x}>${N}</div>`:G}
                 `}
           </div>
         </ha-control-button>
       </div>
-    `}return L`
-    <div class="tile-wrap ${U}"
-         @hass-action=${G}
-         .actionHandler=${pt({hasHold:!0,hasDoubleClick:!!(null==t?void 0:t.double_tap_action)})}
-         role="button" tabindex="0" aria-busy=${V?"true":"false"}>
-      <div class="glow-under" style=${Y}>${K}</div>
-      ${j}
-      ${D}
+    `}return E`
+    <div class="tile-wrap ${$}"
+         @hass-action=${R}
+         .actionHandler=${Ie({hasHold:!0,hasDoubleClick:!!(null==e?void 0:e.double_tap_action)})}
+         role="button" tabindex="0" aria-busy=${W?"true":"false"}>
+      <div class="glow-under" style=${B}>${H}</div>
+      ${Z}
+      ${P}
       <div class="tile-inner">
-        ${F?L`<ha-chip class=${P} style=${T||W}>
-              ${x?L`<ha-icon class=${H} .icon=${x} style=${S||W}></ha-icon>`:W}
-              ${u}
-            </ha-chip>`:L`
-              ${x?L`<ha-icon class=${H} .icon=${x} style=${S||W}></ha-icon>`:W}
-              ${u?L`<div class=${I} style=${E}>${u}</div>`:W}
+        ${S?E`<ha-chip class=${Y} style=${v||G}>
+              ${m?E`<ha-icon class=${f} .icon=${m} style=${O||G}></ha-icon>`:G}
+              ${N}
+            </ha-chip>`:E`
+              ${m?E`<ha-icon class=${f} .icon=${m} style=${O||G}></ha-icon>`:G}
+              ${N?E`<div class=${_} style=${x}>${N}</div>`:G}
             `}
       </div>
     </div>
-  `}(e,t)))}</div>
-      ${s}
+  `}(i,e)))}</div>
+      ${r}
     </div>
-  `}(e,t,i)))}`:W}const ci=r`
+  `}(i,e,t)))}`:G}const dt=c`
   :host { 
     display:block; 
     /* Chip styling variables */
@@ -1615,7 +1611,7 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   .header-row.weather-row > * { height: var(--weather-tile-h, calc(var(--tile-h) * 1.85)); }
 
   .clickable { cursor: pointer; }
-`,di=r`
+`,ut=c`
   /* ==============================================
    * CHIP STYLING SYSTEM
    * ============================================== */
@@ -1855,7 +1851,7 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
     justify-content: center;
     margin-right: 6px;
   }
-`,hi=r`
+`,Dt=c`
   /* ==============================================
    * ANIMATION KEYFRAMES
    * ============================================== */
@@ -1924,7 +1920,7 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   .transition-colors {
     transition: background-color 0.12s ease, color 0.12s ease;
   }
-`,pi=r`
+`,ht=c`
   .main-tile { 
     position: relative; 
     width: 100%; 
@@ -1971,9 +1967,13 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   }
 
   .main-tile.on { border-radius: var(--tile-border-radius); box-shadow: var(--tile-shadow-active); }
-`,ui=r`
+`,jt=c`
   .weather-tile-wrap {
-    --weather-tile-h: calc(var(--tile-h) * 8.75);
+    --weather-tile-h: calc(var(--tile-h) * 10.5);
+    --weather-temp-size: 31px;
+    --weather-icon-size: 42px;
+    --weather-icon-bg-size: 58px;
+    --weather-graph-height: 118px;
   }
 
   .weather-tile {
@@ -2029,7 +2029,7 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
 
   .weather-top {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
     align-items: start;
     min-width: 0;
@@ -2038,8 +2038,8 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   .weather-icon-wrap {
     display: grid;
     place-items: center;
-    width: 58px;
-    height: 58px;
+    width: var(--weather-icon-bg-size);
+    height: var(--weather-icon-bg-size);
     border-radius: 50%;
     background: rgba(3, 169, 244, 0.14);
     color: var(--state-weather-sunny-color, #f6a000);
@@ -2047,67 +2047,27 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   }
 
   .weather-icon {
-    width: 42px;
-    height: 42px;
-    --mdc-icon-size: 42px;
+    width: var(--weather-icon-size);
+    height: var(--weather-icon-size);
+    --mdc-icon-size: var(--weather-icon-size);
     color: inherit;
     transform-origin: 50% 50%;
   }
 
-  .weather-icon.animated.weather-condition-sunny,
-  .weather-forecast-icon.animated.weather-condition-sunny {
-    animation: weatherSunSpin 12s linear infinite;
-  }
-
-  .weather-icon.animated.weather-condition-clear-night,
-  .weather-forecast-icon.animated.weather-condition-clear-night {
-    animation: weatherNightPulse 3.6s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-cloudy,
-  .weather-icon.animated.weather-condition-partlycloudy,
-  .weather-forecast-icon.animated.weather-condition-cloudy,
-  .weather-forecast-icon.animated.weather-condition-partlycloudy {
-    animation: weatherCloudDrift 4.8s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-rainy,
-  .weather-icon.animated.weather-condition-pouring,
-  .weather-icon.animated.weather-condition-lightning-rainy,
-  .weather-forecast-icon.animated.weather-condition-rainy,
-  .weather-forecast-icon.animated.weather-condition-pouring,
-  .weather-forecast-icon.animated.weather-condition-lightning-rainy {
-    animation: weatherRainPulse 1.9s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-lightning,
-  .weather-forecast-icon.animated.weather-condition-lightning {
-    animation: weatherStormFlash 2.4s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-snowy,
-  .weather-icon.animated.weather-condition-snowy-rainy,
-  .weather-forecast-icon.animated.weather-condition-snowy,
-  .weather-forecast-icon.animated.weather-condition-snowy-rainy {
-    animation: weatherSnowFloat 3.4s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-windy,
-  .weather-icon.animated.weather-condition-windy-variant,
-  .weather-forecast-icon.animated.weather-condition-windy,
-  .weather-forecast-icon.animated.weather-condition-windy-variant {
-    animation: weatherWindFloat 1.8s ease-in-out infinite;
-  }
-
-  .weather-icon.animated.weather-condition-fog,
-  .weather-forecast-icon.animated.weather-condition-fog {
-    animation: weatherFogFade 4s ease-in-out infinite;
+  .weather-icon,
+  .weather-conditions-icon,
+  .weather-daily-icon,
+  .weather-metric-icon {
+    display: block;
+    object-fit: contain;
+    user-select: none;
+    pointer-events: none;
   }
 
   .weather-heading {
     min-width: 0;
     display: grid;
-    gap: 4px;
+    gap: 3px;
     padding: 3px 4px;
     margin: -3px -4px;
   }
@@ -2157,14 +2117,15 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   .weather-primary {
     display: inline-flex;
     align-items: baseline;
-    gap: 6px;
+    justify-content: start;
+    gap: 7px;
     white-space: nowrap;
     color: var(--primary-text-color);
-    padding-top: 2px;
+    padding-top: 1px;
   }
 
   .weather-temp {
-    font-size: 25px;
+    font-size: var(--weather-temp-size);
     line-height: 1;
     font-weight: 700;
     padding: 2px 3px;
@@ -2172,7 +2133,7 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   }
 
   .weather-humidity {
-    font-size: 13px;
+    font-size: calc(var(--weather-temp-size) * 0.43);
     line-height: 1;
     font-weight: 700;
     color: var(--secondary-text-color);
@@ -2180,31 +2141,18 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
     margin: -2px -3px;
   }
 
-  .weather-secondary {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 3px 7px;
-    min-width: 0;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    color: var(--secondary-text-color);
-    font-size: 10px;
-    line-height: 1.08;
-    font-weight: 600;
-    white-space: normal;
-    padding: 0;
-  }
-
-  .weather-secondary span {
-    flex: 0 1 auto;
+  .weather-feels {
+    width: fit-content;
     max-width: 100%;
-    display: inline-flex;
-    align-items: center;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 0 3px;
-    margin: 0;
+    white-space: nowrap;
+    color: var(--secondary-text-color);
+    font-size: 11px;
+    line-height: 1.1;
+    font-weight: 650;
+    padding: 1px 3px;
+    margin: -1px -3px 0;
   }
 
   .weather-grid {
@@ -2239,11 +2187,11 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   }
 
   .weather-conditions-temp {
-    height: 158px;
+    height: calc(var(--weather-graph-height) + 54px);
   }
 
   .weather-conditions-rain {
-    height: 118px;
+    height: calc(var(--weather-graph-height) + 42px);
   }
 
   .weather-conditions-head {
@@ -2325,8 +2273,17 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
     transform-origin: 50% 50%;
   }
 
+  .weather-conditions-chart-frame {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    height: var(--weather-graph-height);
+    overflow: visible;
+  }
+
   .weather-conditions-chart {
     width: 100%;
+    height: 100%;
     min-width: 0;
     display: block;
     cursor: crosshair;
@@ -2335,11 +2292,11 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   }
 
   .weather-conditions-temp .weather-conditions-chart {
-    height: 104px;
+    height: 100%;
   }
 
   .weather-conditions-rain .weather-conditions-chart {
-    height: 76px;
+    height: 100%;
   }
 
   .weather-conditions-grid-line,
@@ -2386,18 +2343,26 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
     vector-effect: non-scaling-stroke;
   }
 
-  .weather-conditions-dot {
-    fill: var(--primary-text-color);
-    stroke: rgba(0, 0, 0, 0.48);
-    stroke-width: 2;
-    vector-effect: non-scaling-stroke;
+  .weather-conditions-selected-dot {
+    position: absolute;
+    z-index: 3;
+    width: 15px;
+    height: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.54);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.28);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
 
-  .weather-conditions-dot-ring {
-    fill: transparent;
-    stroke: rgba(255, 255, 255, 0.5);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
+  .weather-conditions-selected-dot::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: var(--primary-text-color);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
   }
 
   .weather-conditions-axis,
@@ -2456,9 +2421,9 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
     min-width: 0;
     min-height: 30px;
     display: grid;
-    grid-template-columns: minmax(54px, 0.7fr) 38px 40px minmax(92px, 1fr) 40px;
+    grid-template-columns: minmax(54px, 0.7fr) 52px 40px minmax(84px, 1fr) 40px;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
@@ -2487,7 +2452,7 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--secondary-text-color);
-    font-size: 8px;
+    font-size: 7.6px;
     line-height: 1;
     font-weight: 750;
   }
@@ -2558,7 +2523,8 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
     color: var(--primary-text-color);
   }
 
-  .weather-metric ha-icon {
+  .weather-metric ha-icon,
+  .weather-metric .weather-metric-icon {
     grid-row: 1 / span 2;
     width: 16px;
     height: 16px;
@@ -2608,46 +2574,7 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
     margin: -2px;
   }
 
-  @keyframes weatherSunSpin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  @keyframes weatherNightPulse {
-    0%, 100% { transform: scale(1); opacity: 0.88; }
-    50% { transform: scale(1.08); opacity: 1; }
-  }
-
-  @keyframes weatherCloudDrift {
-    0%, 100% { transform: translateX(-1px); }
-    50% { transform: translateX(2px); }
-  }
-
-  @keyframes weatherRainPulse {
-    0%, 100% { transform: translateY(-1px); opacity: 0.88; }
-    50% { transform: translateY(2px); opacity: 1; }
-  }
-
-  @keyframes weatherStormFlash {
-    0%, 72%, 100% { opacity: 0.88; transform: scale(1); }
-    76%, 84% { opacity: 1; transform: scale(1.12); }
-  }
-
-  @keyframes weatherSnowFloat {
-    0%, 100% { transform: translateY(-1px) rotate(-3deg); }
-    50% { transform: translateY(2px) rotate(3deg); }
-  }
-
-  @keyframes weatherWindFloat {
-    0%, 100% { transform: translateX(-2px); }
-    50% { transform: translateX(3px); }
-  }
-
-  @keyframes weatherFogFade {
-    0%, 100% { opacity: 0.65; transform: translateX(-1px); }
-    50% { opacity: 1; transform: translateX(2px); }
-  }
-`,mi=r`
+`,zt=c`
   .ac-tile.on {
     border-radius: var(--tile-border-radius);
     box-shadow: var(--tile-shadow-active);
@@ -2676,7 +2603,7 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   .ac-fan.ac-mode-fan { color: var(--ac-fan-color-fan); }
   .ac-fan.ac-mode-auto { color: var(--ac-fan-color-auto); }
   .ac-fan.ac-mode-default { color: var(--ac-fan-color-default); }
-`,vi=r`
+`,yt=c`
   .thermostat-tile.on {
     border-radius: var(--tile-border-radius);
     box-shadow: var(--tile-shadow-active);
@@ -2687,7 +2614,7 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   .thermostat-icon { color: var(--thermostat-idle-color); }
   .thermostat-icon.heating { color: var(--thermostat-heating-color); }
   .thermostat-icon.off { color: var(--thermostat-off-color); }
-`,_i=r`
+`,pt=c`
   .switch-row-wrap { display:flex; flex-direction:column; gap: var(--large-gap); width:100%; }
   .switch-row { display:grid; grid-template-columns: repeat(var(--cols,3), 1fr); gap: var(--large-gap); }
   .switch-row-cards { display:flex; flex-direction:column; gap: var(--large-gap); width:100%; }
@@ -2829,65 +2756,65 @@ const re=2,se=e=>(...t)=>({_$litDirective$:e,values:t});
   @keyframes switchPendingSpin {
     to { transform: rotate(360deg); }
   }
-`;var gi;let fi=gi=class extends oe{constructor(){super(...arguments),this._visiblePendingSwitches=new Set,this._weatherForecastGraphSelections=new Map,this._rowCardElements=new Map,this._rowCardConfigs=new Map,this._rowCardPromises=new Map,this._switchTemplateValues=new Map,this._weatherForecastValues=new Map,this._pendingSwitches=new Map,this._switchPendingDelayMs=300,this._switchPendingTimeoutMs=1e4}static getConfigElement(){return document.createElement("space-hub-card-editor")}static getStubConfig(){return{tile_height:80,chip_icon_size:14,main_icon_size:48,chip_font_size:12,card_shadow_color:"#000000",card_shadow_intensity:.5,unavailable_pulse_color:"#ff3b30",switch_rows:[],cards:[]}}setConfig(e){if(!e)throw new Error("Configuration is required");this._validateConfig(e,{allowIncomplete:!0});const t=Ge(e||{});Array.isArray(t.headers)||(t.headers=[]),Array.isArray(t.switch_rows)||(t.switch_rows=[]),Array.isArray(t.cards)||(t.cards=[]),this._clearRowCardCache(),this._config=t,this._syncTemplateEntries(t.switch_rows),this._syncWeatherForecastEntries(t.headers)}_isValidEntityId(e){return"string"==typeof e&&e.includes(".")&&!e.includes(" ")}_validateConfig(e,t={}){const i=!!t.allowIncomplete,n=[];e.headers&&Array.isArray(e.headers)&&e.headers.forEach(((e,t)=>{if(e){if(e.ac&&(e.ac.entity?this._isValidEntityId(e.ac.entity)||n.push(`Header ${t+1}: AC entity '${e.ac.entity}' must be a valid entity ID (e.g., 'climate.living_room')`):i||n.push(`Header ${t+1}: AC tile requires an 'entity' field`)),e.thermostat&&(e.thermostat.entity?this._isValidEntityId(e.thermostat.entity)||n.push(`Header ${t+1}: Thermostat entity '${e.thermostat.entity}' must be a valid entity ID (e.g., 'climate.bedroom')`):i||n.push(`Header ${t+1}: Thermostat tile requires an 'entity' field`)),e.main){const o=e.main;!!(o.main_name||o.main_icon||o.tap_entity||o.light_group_entity||o.temp_sensor||o.humidity_sensor||Array.isArray(o.chips)&&o.chips.length>0)||i||n.push(`Header ${t+1}: Main tile must have at least one of: main_name, main_icon, tap_entity, light_group_entity, temp_sensor, humidity_sensor, or chips`);["tap_entity","hold_entity","light_group_entity","temp_sensor","humidity_sensor"].forEach((e=>{const i=o[e];i&&!this._isValidEntityId(i)&&n.push(`Header ${t+1}: Main tile ${e} '${i}' must be a valid entity ID`)}))}if(e.weather){const o=e.weather;!!(o.name||o.icon||o.entity||void 0!==o.animated_icons||void 0!==o.show_forecast||o.forecast_type||o.forecast_slots||o.forecast_fields||o.time_format||o.height||o.temp_sensor||o.temp_min_24h_sensor||o.temp_max_24h_sensor||o.humidity_sensor||o.feels_like_sensor||o.dewpoint_sensor||o.wind_speed_sensor||o.wind_gust_sensor||o.wind_direction_sensor||o.rain_state_sensor||o.rain_today_sensor||o.rain_rate_sensor||o.uv_sensor||o.solar_lux_sensor||o.pressure_sensor||Array.isArray(o.chips)&&o.chips.length>0)||i||n.push(`Header ${t+1}: Weather tile must have at least one weather entity, sensor, name, icon, or chip`);if(["entity","temp_sensor","temp_min_24h_sensor","temp_max_24h_sensor","humidity_sensor","feels_like_sensor","dewpoint_sensor","wind_speed_sensor","wind_gust_sensor","wind_direction_sensor","rain_state_sensor","rain_today_sensor","rain_rate_sensor","uv_sensor","solar_lux_sensor","pressure_sensor"].forEach((e=>{const i=o[e];i&&!this._isValidEntityId(i)&&n.push(`Header ${t+1}: Weather tile ${e} '${i}' must be a valid entity ID`)})),void 0!==o.height&&null!==o.height){const e=Number(o.height);(!Number.isFinite(e)||e<0)&&n.push(`Header ${t+1}: Weather tile height must be a positive number, got: ${o.height}`)}if(void 0!==o.forecast_slots&&null!==o.forecast_slots){const e=Number(o.forecast_slots);(!Number.isFinite(e)||e<0)&&n.push(`Header ${t+1}: Weather tile forecast_slots must be a positive number, got: ${o.forecast_slots}`)}if(o.forecast_type&&!["hourly","daily","twice_daily"].includes(String(o.forecast_type))&&n.push(`Header ${t+1}: Weather tile forecast_type must be one of: hourly, daily, twice_daily`),o.time_format&&!["12h","24h"].includes(String(o.time_format).toLowerCase())&&n.push(`Header ${t+1}: Weather tile time_format must be one of: 12h, 24h`),void 0!==o.forecast_fields&&null!==o.forecast_fields){const e=Array.isArray(o.forecast_fields)?o.forecast_fields:String(o.forecast_fields).split(","),i=new Set(["temp","temperature","rain_chance","precipitation_probability","precip_probability","probability","pop","rain","precipitation","hum","humidity","wind","wind_speed","gust","wind_gust","wind_gust_speed","uv","uv_index","cloud","clouds","cloud_coverage"]);e.forEach((e=>{const o=String(e||"").trim().toLowerCase().replace(/[-\s]/g,"_");o&&!i.has(o)&&n.push(`Header ${t+1}: Weather tile forecast field '${e}' is not supported`)}))}}!e.ac&&!e.thermostat||e.main||i||n.push(`Header ${t+1}: AC and Thermostat tiles require a 'main' configuration block`)}else n.push(`Header ${t+1}: Header configuration cannot be empty`)})),e.switch_rows&&Array.isArray(e.switch_rows)&&e.switch_rows.forEach(((e,t)=>{if(!e)return void n.push(`Switch row ${t+1}: Switch row configuration cannot be empty`);const o=Array.isArray(e)?e:Array.isArray(e.row)?e.row:[];Array.isArray(o)&&0!==o.length||i?o.forEach(((e,o)=>{e&&e.entity?this._isValidEntityId(e.entity)||n.push(`Switch row ${t+1}, item ${o+1}: Switch entity '${e.entity}' must be a valid entity ID`):i||n.push(`Switch row ${t+1}, item ${o+1}: Switch item requires an 'entity' field`),(null==e?void 0:e.hold_entity)&&!this._isValidEntityId(e.hold_entity)&&n.push(`Switch row ${t+1}, item ${o+1}: hold_entity '${e.hold_entity}' must be a valid entity ID`)})):n.push(`Switch row ${t+1}: Switch row must contain at least one switch item`)}));if(Object.entries({tile_height:"Tile height",chip_icon_size:"Chip icon size",main_icon_size:"Main icon size",chip_font_size:"Chip font size",card_shadow_intensity:"Card shadow intensity"}).forEach((([t,i])=>{const o=e[t];if(null!=o){const e=Number(o);(!Number.isFinite(e)||e<0)&&n.push(`${i} must be a positive number, got: ${o}`)}})),void 0!==e.card_shadow_intensity&&null!==e.card_shadow_intensity){const t=Number(e.card_shadow_intensity);Number.isFinite(t)&&(t<0||t>1)&&n.push(`Card shadow intensity must be between 0 and 1, got: ${t}`)}if(["card_shadow_color","unavailable_pulse_color"].forEach((t=>{const i=e[t];if(i&&"string"==typeof i){/^(#[0-9a-fA-F]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+).*$/.test(i)||n.push(`${t.replace(/_/g," ")} '${i}' is not a valid color format`)}})),n.length>0)throw new Error(`Invalid space-hub-card configuration:\n${n.map((e=>`• ${e}`)).join("\n")}`)}getCardSize(){return 6}render(){var e,t,i,n,o,a,r,s,l;if(!this._config)return W;const c=gi.getStubConfig(),d=this._config||{},h={tile_height:null!==(e=d.tile_height)&&void 0!==e?e:c.tile_height,chip_icon_size:null!==(t=d.chip_icon_size)&&void 0!==t?t:c.chip_icon_size,main_icon_size:null!==(i=d.main_icon_size)&&void 0!==i?i:c.main_icon_size,chip_font_size:null!==(n=d.chip_font_size)&&void 0!==n?n:c.chip_font_size,card_shadow_color:null!==(o=d.card_shadow_color)&&void 0!==o?o:c.card_shadow_color,card_shadow_intensity:null!==(a=d.card_shadow_intensity)&&void 0!==a?a:c.card_shadow_intensity,unavailable_pulse_color:null!==(r=d.unavailable_pulse_color)&&void 0!==r?r:c.unavailable_pulse_color,headers:Array.isArray(d.headers)&&d.headers.length?d.headers:[],switch_rows:Array.isArray(d.switch_rows)?d.switch_rows:[],cards:Array.isArray(d.cards)?d.cards:[],tap_action:d.tap_action,hold_action:d.hold_action,double_tap_action:d.double_tap_action},p=Array.isArray(h.headers)&&h.headers.length?h.headers:[],u=Number(h.tile_height)||Number(c.tile_height)||80,m=Number(h.chip_icon_size)||Number(c.chip_icon_size)||14,v=Number(h.chip_font_size)||Number(c.chip_font_size)||12,_=Math.max(v+10,20),g=Math.round(.625*u),f=p[0]||{},b=Number(null!==(s=null==f?void 0:f.main_icon_size)&&void 0!==s?s:null==f?void 0:f.maicon_size),w=Number.isFinite(b)&&b>0?b:Number(h.main_icon_size)||Number(c.main_icon_size)||48,y=this._rgbaFromColor(h.card_shadow_color||c.card_shadow_color,null!==(l=h.card_shadow_intensity)&&void 0!==l?l:c.card_shadow_intensity),$=h.unavailable_pulse_color||c.unavailable_pulse_color||"#ff3b30",x=this._hasAnyUnavailable(h,p),A=this._rgbaFromColor($,.18),C=this._rgbaFromColor($,.36);return L`
-      <ha-card class=${x?"unavailable":""}
-               style=${`--panel-shadow-color:${x?A:y}; --unavail-weak:${A}; --unavail-strong:${C}`}>
-        <div class="metrics" style=${`--tile-h:${u}px; --chip-size:${_}px; --chip-icon-size:${m}px; --main-icon-size:${w}px; --chip-font-size:${v}px; --ac-thermostat-icon:${g}px;`}>
+`;var At;let mt=At=class extends ni{constructor(){super(...arguments),this._visiblePendingSwitches=new Set,this._weatherForecastGraphSelections=new Map,this._rowCardElements=new Map,this._rowCardConfigs=new Map,this._rowCardPromises=new Map,this._switchTemplateValues=new Map,this._weatherForecastValues=new Map,this._pendingSwitches=new Map,this._switchPendingDelayMs=300,this._switchPendingTimeoutMs=1e4}static getConfigElement(){return document.createElement("space-hub-card-editor")}static getStubConfig(){return{tile_height:80,chip_icon_size:14,main_icon_size:48,chip_font_size:12,card_shadow_color:"#000000",card_shadow_intensity:.5,unavailable_pulse_color:"#ff3b30",switch_rows:[],cards:[]}}setConfig(i){if(!i)throw new Error("Configuration is required");this._validateConfig(i,{allowIncomplete:!0});const e=Ri(i||{});Array.isArray(e.headers)||(e.headers=[]),Array.isArray(e.switch_rows)||(e.switch_rows=[]),Array.isArray(e.cards)||(e.cards=[]),this._clearRowCardCache(),this._config=e,this._syncTemplateEntries(e.switch_rows),this._syncWeatherForecastEntries(e.headers)}_isValidEntityId(i){return"string"==typeof i&&i.includes(".")&&!i.includes(" ")}_validateConfig(i,e={}){const t=!!e.allowIncomplete,a=[];i.headers&&Array.isArray(i.headers)&&i.headers.forEach(((i,e)=>{if(i){if(i.ac&&(i.ac.entity?this._isValidEntityId(i.ac.entity)||a.push(`Header ${e+1}: AC entity '${i.ac.entity}' must be a valid entity ID (e.g., 'climate.living_room')`):t||a.push(`Header ${e+1}: AC tile requires an 'entity' field`)),i.thermostat&&(i.thermostat.entity?this._isValidEntityId(i.thermostat.entity)||a.push(`Header ${e+1}: Thermostat entity '${i.thermostat.entity}' must be a valid entity ID (e.g., 'climate.bedroom')`):t||a.push(`Header ${e+1}: Thermostat tile requires an 'entity' field`)),i.main){const n=i.main;!!(n.main_name||n.main_icon||n.tap_entity||n.light_group_entity||n.temp_sensor||n.humidity_sensor||Array.isArray(n.chips)&&n.chips.length>0)||t||a.push(`Header ${e+1}: Main tile must have at least one of: main_name, main_icon, tap_entity, light_group_entity, temp_sensor, humidity_sensor, or chips`);["tap_entity","hold_entity","light_group_entity","temp_sensor","humidity_sensor"].forEach((i=>{const t=n[i];t&&!this._isValidEntityId(t)&&a.push(`Header ${e+1}: Main tile ${i} '${t}' must be a valid entity ID`)}))}if(i.weather){const n=i.weather;!!(n.name||n.icon||n.entity||void 0!==n.animated_icons||void 0!==n.show_forecast||n.forecast_type||n.forecast_slots||n.forecast_fields||n.time_format||n.height||n.temp_size||n.temperature_size||n.icon_size||n.graph_height||n.temp_sensor||n.temp_min_24h_sensor||n.temp_max_24h_sensor||n.humidity_sensor||n.feels_like_sensor||n.dewpoint_sensor||n.wind_speed_sensor||n.wind_gust_sensor||n.wind_direction_sensor||n.rain_state_sensor||n.rain_today_sensor||n.rain_rate_sensor||n.uv_sensor||n.solar_lux_sensor||n.pressure_sensor||Array.isArray(n.chips)&&n.chips.length>0)||t||a.push(`Header ${e+1}: Weather tile must have at least one weather entity, sensor, name, icon, or chip`);["entity","temp_sensor","temp_min_24h_sensor","temp_max_24h_sensor","humidity_sensor","feels_like_sensor","dewpoint_sensor","wind_speed_sensor","wind_gust_sensor","wind_direction_sensor","rain_state_sensor","rain_today_sensor","rain_rate_sensor","uv_sensor","solar_lux_sensor","pressure_sensor"].forEach((i=>{const t=n[i];t&&!this._isValidEntityId(t)&&a.push(`Header ${e+1}: Weather tile ${i} '${t}' must be a valid entity ID`)}));if(["height","temp_size","temperature_size","icon_size","graph_height"].forEach((i=>{const t=n[i];if(null!=t){const n=Number(t);(!Number.isFinite(n)||n<=0)&&a.push(`Header ${e+1}: Weather tile ${i} must be a positive number, got: ${t}`)}})),void 0!==n.forecast_slots&&null!==n.forecast_slots){const i=Number(n.forecast_slots);(!Number.isFinite(i)||i<0)&&a.push(`Header ${e+1}: Weather tile forecast_slots must be a positive number, got: ${n.forecast_slots}`)}if(n.forecast_type&&!["hourly","daily","twice_daily"].includes(String(n.forecast_type))&&a.push(`Header ${e+1}: Weather tile forecast_type must be one of: hourly, daily, twice_daily`),n.time_format&&!["12h","24h"].includes(String(n.time_format).toLowerCase())&&a.push(`Header ${e+1}: Weather tile time_format must be one of: 12h, 24h`),void 0!==n.forecast_fields&&null!==n.forecast_fields){const i=Array.isArray(n.forecast_fields)?n.forecast_fields:String(n.forecast_fields).split(","),t=new Set(["temp","temperature","rain_chance","precipitation_probability","precip_probability","probability","pop","rain","precipitation","hum","humidity","wind","wind_speed","gust","wind_gust","wind_gust_speed","uv","uv_index","cloud","clouds","cloud_coverage"]);i.forEach((i=>{const n=String(i||"").trim().toLowerCase().replace(/[-\s]/g,"_");n&&!t.has(n)&&a.push(`Header ${e+1}: Weather tile forecast field '${i}' is not supported`)}))}}!i.ac&&!i.thermostat||i.main||t||a.push(`Header ${e+1}: AC and Thermostat tiles require a 'main' configuration block`)}else a.push(`Header ${e+1}: Header configuration cannot be empty`)})),i.switch_rows&&Array.isArray(i.switch_rows)&&i.switch_rows.forEach(((i,e)=>{if(!i)return void a.push(`Switch row ${e+1}: Switch row configuration cannot be empty`);const n=Array.isArray(i)?i:Array.isArray(i.row)?i.row:[];Array.isArray(n)&&0!==n.length||t?n.forEach(((i,n)=>{i&&i.entity?this._isValidEntityId(i.entity)||a.push(`Switch row ${e+1}, item ${n+1}: Switch entity '${i.entity}' must be a valid entity ID`):t||a.push(`Switch row ${e+1}, item ${n+1}: Switch item requires an 'entity' field`),(null==i?void 0:i.hold_entity)&&!this._isValidEntityId(i.hold_entity)&&a.push(`Switch row ${e+1}, item ${n+1}: hold_entity '${i.hold_entity}' must be a valid entity ID`)})):a.push(`Switch row ${e+1}: Switch row must contain at least one switch item`)}));if(Object.entries({tile_height:"Tile height",chip_icon_size:"Chip icon size",main_icon_size:"Main icon size",chip_font_size:"Chip font size",card_shadow_intensity:"Card shadow intensity"}).forEach((([e,t])=>{const n=i[e];if(null!=n){const i=Number(n);(!Number.isFinite(i)||i<0)&&a.push(`${t} must be a positive number, got: ${n}`)}})),void 0!==i.card_shadow_intensity&&null!==i.card_shadow_intensity){const e=Number(i.card_shadow_intensity);Number.isFinite(e)&&(e<0||e>1)&&a.push(`Card shadow intensity must be between 0 and 1, got: ${e}`)}if(["card_shadow_color","unavailable_pulse_color"].forEach((e=>{const t=i[e];if(t&&"string"==typeof t){/^(#[0-9a-fA-F]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+).*$/.test(t)||a.push(`${e.replace(/_/g," ")} '${t}' is not a valid color format`)}})),a.length>0)throw new Error(`Invalid space-hub-card configuration:\n${a.map((i=>`• ${i}`)).join("\n")}`)}getCardSize(){return 6}render(){var i,e,t,a,n,o,c,r,s;if(!this._config)return G;const l=At.getStubConfig(),M=this._config||{},g={tile_height:null!==(i=M.tile_height)&&void 0!==i?i:l.tile_height,chip_icon_size:null!==(e=M.chip_icon_size)&&void 0!==e?e:l.chip_icon_size,main_icon_size:null!==(t=M.main_icon_size)&&void 0!==t?t:l.main_icon_size,chip_font_size:null!==(a=M.chip_font_size)&&void 0!==a?a:l.chip_font_size,card_shadow_color:null!==(n=M.card_shadow_color)&&void 0!==n?n:l.card_shadow_color,card_shadow_intensity:null!==(o=M.card_shadow_intensity)&&void 0!==o?o:l.card_shadow_intensity,unavailable_pulse_color:null!==(c=M.unavailable_pulse_color)&&void 0!==c?c:l.unavailable_pulse_color,headers:Array.isArray(M.headers)&&M.headers.length?M.headers:[],switch_rows:Array.isArray(M.switch_rows)?M.switch_rows:[],cards:Array.isArray(M.cards)?M.cards:[],tap_action:M.tap_action,hold_action:M.hold_action,double_tap_action:M.double_tap_action},I=Array.isArray(g.headers)&&g.headers.length?g.headers:[],N=Number(g.tile_height)||Number(l.tile_height)||80,d=Number(g.chip_icon_size)||Number(l.chip_icon_size)||14,u=Number(g.chip_font_size)||Number(l.chip_font_size)||12,D=Math.max(u+10,20),h=Math.round(.625*N),j=I[0]||{},z=Number(null!==(r=null==j?void 0:j.main_icon_size)&&void 0!==r?r:null==j?void 0:j.maicon_size),y=Number.isFinite(z)&&z>0?z:Number(g.main_icon_size)||Number(l.main_icon_size)||48,p=this._rgbaFromColor(g.card_shadow_color||l.card_shadow_color,null!==(s=g.card_shadow_intensity)&&void 0!==s?s:l.card_shadow_intensity),A=g.unavailable_pulse_color||l.unavailable_pulse_color||"#ff3b30",m=this._hasAnyUnavailable(g,I),w=this._rgbaFromColor(A,.18),T=this._rgbaFromColor(A,.36);return E`
+      <ha-card class=${m?"unavailable":""}
+               style=${`--panel-shadow-color:${m?w:p}; --unavail-weak:${w}; --unavail-strong:${T}`}>
+        <div class="metrics" style=${`--tile-h:${N}px; --chip-size:${D}px; --chip-icon-size:${d}px; --main-icon-size:${y}px; --chip-font-size:${u}px; --ac-thermostat-icon:${h}px;`}>
           <div class="root">
-            ${p.map(((e,t)=>this._renderHeaderRow(e,t)))}
-            ${li(this,h.switch_rows)}
-            ${Array.isArray(h.cards)&&h.cards.length?L`
+            ${I.map(((i,e)=>this._renderHeaderRow(i,e)))}
+            ${Nt(this,g.switch_rows)}
+            ${Array.isArray(g.cards)&&g.cards.length?E`
                   <div class="extra-cards">
-                    ${h.cards.map(((e,t)=>this._renderEmbeddedRowCard(e,`standalone-card-${t}`)))}
+                    ${g.cards.map(((i,e)=>this._renderEmbeddedRowCard(i,`standalone-card-${e}`)))}
                   </div>
-                `:W}
+                `:G}
           </div>
         </div>
       </ha-card>
-    `}updated(e){super.updated(e),e.has("hass")&&(this._rowCardElements.forEach((e=>{e&&(e.hass=this.hass)})),this._resumeTemplateSubscriptions(),this._resumeWeatherForecastSubscriptions(),this._syncPendingSwitches())}connectedCallback(){super.connectedCallback(),this._resumeTemplateSubscriptions(),this._resumeWeatherForecastSubscriptions()}disconnectedCallback(){super.disconnectedCallback(),this._switchTemplateValues.forEach((e=>this._disposeTemplateEntry(e))),this._weatherForecastValues.forEach((e=>this._disposeWeatherForecastEntry(e))),this._clearAllPendingSwitches()}_renderHeaderRow(e,t){const i=e.main||{},n=e.weather||{},o={tap_entity:i.tap_entity,hold_entity:i.hold_entity||i.tap_entity,glow_mode:i.glow_mode,light_group_entity:i.light_group_entity,name:i.main_name||i.name,icon:i.main_icon||i.icon,temp_sensor:i.temp_sensor,humidity_sensor:i.humidity_sensor,chips:Array.isArray(i.chips)?i.chips:[],tap_action:i.tap_action,hold_action:i.hold_action,double_tap_action:i.double_tap_action},a={entity:n.entity,name:n.name||n.main_name,icon:n.icon||n.main_icon,height:n.height,animated_icons:n.animated_icons,show_forecast:n.show_forecast,forecast_type:n.forecast_type,forecast_slots:n.forecast_slots,forecast_fields:n.forecast_fields,time_format:n.time_format,forecast_graph_key:`weather-${t}`,temp_sensor:n.temp_sensor,temp_min_24h_sensor:n.temp_min_24h_sensor,temp_max_24h_sensor:n.temp_max_24h_sensor,humidity_sensor:n.humidity_sensor,feels_like_sensor:n.feels_like_sensor,dewpoint_sensor:n.dewpoint_sensor,wind_speed_sensor:n.wind_speed_sensor,wind_gust_sensor:n.wind_gust_sensor,wind_direction_sensor:n.wind_direction_sensor,rain_state_sensor:n.rain_state_sensor,rain_today_sensor:n.rain_today_sensor,rain_rate_sensor:n.rain_rate_sensor,uv_sensor:n.uv_sensor,solar_lux_sensor:n.solar_lux_sensor,pressure_sensor:n.pressure_sensor,chips:Array.isArray(n.chips)?n.chips:[],tap_action:n.tap_action,hold_action:n.hold_action,double_tap_action:n.double_tap_action,forecast:!1===n.show_forecast?[]:this._getWeatherForecast(n.entity,n.forecast_type),daily_forecast:!1===n.show_forecast?[]:this._getWeatherForecast(n.entity,"daily")},r=e.ac||{},s=e.thermostat||{},l=!!(null==r?void 0:r.entity),c=!!(null==s?void 0:s.entity),d=!(!i||!(i.main_name||i.name||i.light_group_entity||i.entity||i.main_icon||i.icon||i.temp_sensor||i.humidity_sensor||Array.isArray(i.chips)&&i.chips.length)),h=!(!n||!(n.name||n.main_name||n.icon||n.main_icon||void 0!==n.animated_icons||void 0!==n.show_forecast||n.forecast_type||n.forecast_slots||n.forecast_fields||n.time_format||n.height||n.entity||n.temp_sensor||n.temp_min_24h_sensor||n.temp_max_24h_sensor||n.humidity_sensor||n.feels_like_sensor||n.dewpoint_sensor||n.wind_speed_sensor||n.wind_gust_sensor||n.wind_direction_sensor||n.rain_state_sensor||n.rain_today_sensor||n.rain_rate_sensor||n.uv_sensor||n.solar_lux_sensor||n.pressure_sensor||Array.isArray(n.chips)&&n.chips.length)),p=d&&l,u=d&&c;d||!l&&!c||console.warn("space-hub-card: header contains `ac`/`thermostat` outside of `main` — ignoring per configured rules.");const m=p||u?p&&u?"header-row":"header-row main-plus-one":"header-row only-main";return L`
-      ${h?L`
+    `}updated(i){super.updated(i),i.has("hass")&&(this._rowCardElements.forEach((i=>{i&&(i.hass=this.hass)})),this._resumeTemplateSubscriptions(),this._resumeWeatherForecastSubscriptions(),this._syncPendingSwitches())}connectedCallback(){super.connectedCallback(),this._resumeTemplateSubscriptions(),this._resumeWeatherForecastSubscriptions()}disconnectedCallback(){super.disconnectedCallback(),this._switchTemplateValues.forEach((i=>this._disposeTemplateEntry(i))),this._weatherForecastValues.forEach((i=>this._disposeWeatherForecastEntry(i))),this._clearAllPendingSwitches()}_renderHeaderRow(i,e){const t=i.main||{},a=i.weather||{},n={tap_entity:t.tap_entity,hold_entity:t.hold_entity||t.tap_entity,glow_mode:t.glow_mode,light_group_entity:t.light_group_entity,name:t.main_name||t.name,icon:t.main_icon||t.icon,temp_sensor:t.temp_sensor,humidity_sensor:t.humidity_sensor,chips:Array.isArray(t.chips)?t.chips:[],tap_action:t.tap_action,hold_action:t.hold_action,double_tap_action:t.double_tap_action},o={entity:a.entity,name:a.name||a.main_name,icon:a.icon||a.main_icon,height:a.height,temp_size:a.temp_size,temperature_size:a.temperature_size,icon_size:a.icon_size,graph_height:a.graph_height,animated_icons:a.animated_icons,show_forecast:a.show_forecast,forecast_type:a.forecast_type,forecast_slots:a.forecast_slots,forecast_fields:a.forecast_fields,time_format:a.time_format,forecast_graph_key:`weather-${e}`,temp_sensor:a.temp_sensor,temp_min_24h_sensor:a.temp_min_24h_sensor,temp_max_24h_sensor:a.temp_max_24h_sensor,humidity_sensor:a.humidity_sensor,feels_like_sensor:a.feels_like_sensor,dewpoint_sensor:a.dewpoint_sensor,wind_speed_sensor:a.wind_speed_sensor,wind_gust_sensor:a.wind_gust_sensor,wind_direction_sensor:a.wind_direction_sensor,rain_state_sensor:a.rain_state_sensor,rain_today_sensor:a.rain_today_sensor,rain_rate_sensor:a.rain_rate_sensor,uv_sensor:a.uv_sensor,solar_lux_sensor:a.solar_lux_sensor,pressure_sensor:a.pressure_sensor,chips:Array.isArray(a.chips)?a.chips:[],tap_action:a.tap_action,hold_action:a.hold_action,double_tap_action:a.double_tap_action,forecast:!1===a.show_forecast?[]:this._getWeatherForecast(a.entity,a.forecast_type),daily_forecast:!1===a.show_forecast?[]:this._getWeatherForecast(a.entity,"daily")},c=i.ac||{},r=i.thermostat||{},s=!!(null==c?void 0:c.entity),l=!!(null==r?void 0:r.entity),M=!(!t||!(t.main_name||t.name||t.light_group_entity||t.entity||t.main_icon||t.icon||t.temp_sensor||t.humidity_sensor||Array.isArray(t.chips)&&t.chips.length)),g=!(!a||!(a.name||a.main_name||a.icon||a.main_icon||void 0!==a.animated_icons||void 0!==a.show_forecast||a.forecast_type||a.forecast_slots||a.forecast_fields||a.time_format||a.height||a.temp_size||a.temperature_size||a.icon_size||a.graph_height||a.entity||a.temp_sensor||a.temp_min_24h_sensor||a.temp_max_24h_sensor||a.humidity_sensor||a.feels_like_sensor||a.dewpoint_sensor||a.wind_speed_sensor||a.wind_gust_sensor||a.wind_direction_sensor||a.rain_state_sensor||a.rain_today_sensor||a.rain_rate_sensor||a.uv_sensor||a.solar_lux_sensor||a.pressure_sensor||Array.isArray(a.chips)&&a.chips.length)),I=M&&s,N=M&&l;M||!s&&!l||console.warn("space-hub-card: header contains `ac`/`thermostat` outside of `main` — ignoring per configured rules.");const d=I||N?I&&N?"header-row":"header-row main-plus-one":"header-row only-main";return E`
+      ${g?E`
         <div class="header-row weather-row">
-          ${ri(this,a)}
+          ${gt(this,o)}
         </div>
-      `:W}
-      ${d?L`<div class=${m}>
-        ${d?yt(this,o):W}
-        ${p?function(e,t){var i,n,o;const a=(null==t?void 0:t.entity)||"",r=null==t?void 0:t.glow_mode,s=((null===(o=null===(n=null===(i=null==e?void 0:e.hass)||void 0===i?void 0:i.states)||void 0===n?void 0:n[a])||void 0===o?void 0:o.state)||"").toLowerCase(),l=!!s&&"off"!==s,c="function"==typeof(null==e?void 0:e._acChip)?e._acChip(s):{icon:"mdi:air-conditioner"},d=(null==c?void 0:c.icon)||"mdi:air-conditioner",h="ac-mode-"+((p=s)&&"off"!==p?p.includes("cool")?"cool":p.includes("heat")?"heat":p.includes("dry")?"dry":p.includes("fan")?"fan":p.includes("auto")?"auto":"default":"off");var p;const u=`chip chip-temperature-humidity ac-chip ${h}`,m=`ac-fan ${h}${l?" spinning":""}`,v=function(e){const t=(e||"").toLowerCase();return t&&"off"!==t?t.includes("cool")?{weak:"rgba(0,170,255,0.12)",strong:"rgba(0,170,255,0.26)"}:t.includes("heat")?{weak:"rgba(255,112,67,0.12)",strong:"rgba(255,112,67,0.26)"}:t.includes("dry")?{weak:"rgba(255,202,40,0.12)",strong:"rgba(255,202,40,0.26)"}:t.includes("fan")?{weak:"rgba(102,187,106,0.12)",strong:"rgba(102,187,106,0.26)"}:t.includes("auto")?{weak:"rgba(38,198,218,0.12)",strong:"rgba(38,198,218,0.26)"}:{weak:"rgba(0,0,0,0.06)",strong:"rgba(0,0,0,0.12)"}:{weak:"rgba(0,0,0,0.00)",strong:"rgba(0,0,0,0.00)"}}(s),_=null!=r?r:"static",{style:g,overlay:f}=wt(v,_,l);return L`
+      `:G}
+      ${M?E`<div class=${d}>
+        ${M?pe(this,n):G}
+        ${I?function(i,e){var t,a,n;const o=(null==e?void 0:e.entity)||"",c=null==e?void 0:e.glow_mode,r=((null===(n=null===(a=null===(t=null==i?void 0:i.hass)||void 0===t?void 0:t.states)||void 0===a?void 0:a[o])||void 0===n?void 0:n.state)||"").toLowerCase(),s=!!r&&"off"!==r,l="function"==typeof(null==i?void 0:i._acChip)?i._acChip(r):{icon:"mdi:air-conditioner"},M=(null==l?void 0:l.icon)||"mdi:air-conditioner",g="ac-mode-"+((I=r)&&"off"!==I?I.includes("cool")?"cool":I.includes("heat")?"heat":I.includes("dry")?"dry":I.includes("fan")?"fan":I.includes("auto")?"auto":"default":"off");var I;const N=`chip chip-temperature-humidity ac-chip ${g}`,d=`ac-fan ${g}${s?" spinning":""}`,u=function(i){const e=(i||"").toLowerCase();return e&&"off"!==e?e.includes("cool")?{weak:"rgba(0,170,255,0.12)",strong:"rgba(0,170,255,0.26)"}:e.includes("heat")?{weak:"rgba(255,112,67,0.12)",strong:"rgba(255,112,67,0.26)"}:e.includes("dry")?{weak:"rgba(255,202,40,0.12)",strong:"rgba(255,202,40,0.26)"}:e.includes("fan")?{weak:"rgba(102,187,106,0.12)",strong:"rgba(102,187,106,0.26)"}:e.includes("auto")?{weak:"rgba(38,198,218,0.12)",strong:"rgba(38,198,218,0.26)"}:{weak:"rgba(0,0,0,0.06)",strong:"rgba(0,0,0,0.12)"}:{weak:"rgba(0,0,0,0.00)",strong:"rgba(0,0,0,0.00)"}}(r),D=null!=c?c:"static",{style:h,overlay:j}=ye(u,D,s);return E`
     <div class="tile-wrap">
-      <div class="glow-under" style=${g}>${f}</div>
+      <div class="glow-under" style=${h}>${j}</div>
       <ha-control-button
-        class="square ac-tile ${l?"on":""}"
-        @hass-action=${i=>{"function"==typeof(null==e?void 0:e._onACAction)&&e._onACAction(i,t)}}
-        .actionHandler=${pt({hasHold:!0,hasDoubleClick:!1})}
+        class="square ac-tile ${s?"on":""}"
+        @hass-action=${t=>{"function"==typeof(null==i?void 0:i._onACAction)&&i._onACAction(t,e)}}
+        .actionHandler=${Ie({hasHold:!0,hasDoubleClick:!1})}
         role="button" tabindex="0"
       >
-        <div class=${u}>
-          <ha-icon .icon=${d}></ha-icon>
+        <div class=${N}>
+          <ha-icon .icon=${M}></ha-icon>
         </div>
         <div class="center-xy">
-          <ha-icon class=${m} icon="mdi:fan"></ha-icon>
+          <ha-icon class=${d} icon="mdi:fan"></ha-icon>
         </div>
       </ha-control-button>
     </div>
-  `}(this,r):W}
-        ${u?function(e,t){var i,n,o,a,r,s,l,c;const d=(null==t?void 0:t.entity)||"",h=null==t?void 0:t.glow_mode,p=null===(n=null===(i=null==e?void 0:e.hass)||void 0===i?void 0:i.states)||void 0===n?void 0:n[d],u="function"==typeof(null==e?void 0:e._fmtNumber)?e._fmtNumber.bind(e):e=>null==e?"—":String(e),m=u(null!==(s=null!==(a=null===(o=null==p?void 0:p.attributes)||void 0===o?void 0:o.temperature)&&void 0!==a?a:null===(r=null==p?void 0:p.attributes)||void 0===r?void 0:r.target_temp)&&void 0!==s?s:null===(l=null==p?void 0:p.attributes)||void 0===l?void 0:l.target_temperature,1)+"°",v="heating"===((null===(c=null==p?void 0:p.attributes)||void 0===c?void 0:c.hvac_action)||"").toLowerCase(),_="off"===((null==p?void 0:p.state)||"").toLowerCase()?"off":v?"heating":"idle",g=`thermostat-chip ${_}`,f=`temperature-chip ${_}`,b=`thermostat-icon ${_}`,w="undefined"!=typeof customElements&&!!customElements.get("ha-chip"),y=null!=h?h:"static",$=bt,{style:x,overlay:A}=wt($,y,v);return L`
+  `}(this,c):G}
+        ${N?function(i,e){var t,a,n,o,c,r,s,l;const M=(null==e?void 0:e.entity)||"",g=null==e?void 0:e.glow_mode,I=null===(a=null===(t=null==i?void 0:i.hass)||void 0===t?void 0:t.states)||void 0===a?void 0:a[M],N="function"==typeof(null==i?void 0:i._fmtNumber)?i._fmtNumber.bind(i):i=>null==i?"—":String(i),d=N(null!==(r=null!==(o=null===(n=null==I?void 0:I.attributes)||void 0===n?void 0:n.temperature)&&void 0!==o?o:null===(c=null==I?void 0:I.attributes)||void 0===c?void 0:c.target_temp)&&void 0!==r?r:null===(s=null==I?void 0:I.attributes)||void 0===s?void 0:s.target_temperature,1)+"°",u="heating"===((null===(l=null==I?void 0:I.attributes)||void 0===l?void 0:l.hvac_action)||"").toLowerCase(),D="off"===((null==I?void 0:I.state)||"").toLowerCase()?"off":u?"heating":"idle",h=`thermostat-chip ${D}`,j=`temperature-chip ${D}`,z=`thermostat-icon ${D}`,y="undefined"!=typeof customElements&&!!customElements.get("ha-chip"),p=null!=g?g:"static",A=ze,{style:m,overlay:w}=ye(A,p,u);return E`
     <div class="tile-wrap">
-      <div class="glow-under" style=${x}>${A}</div>
+      <div class="glow-under" style=${m}>${w}</div>
       <ha-control-button
-        class="square thermostat-tile ${v?"on":""}"
-        @hass-action=${i=>{"function"==typeof(null==e?void 0:e._onThermostatAction)&&e._onThermostatAction(i,t)}}
-        .actionHandler=${pt({hasHold:!0,hasDoubleClick:!1})}
+        class="square thermostat-tile ${u?"on":""}"
+        @hass-action=${t=>{"function"==typeof(null==i?void 0:i._onThermostatAction)&&i._onThermostatAction(t,e)}}
+        .actionHandler=${Ie({hasHold:!0,hasDoubleClick:!1})}
         role="button" tabindex="0"
       >
       
         <div class="temperature-chip-container">
-          ${w?L`<ha-chip class=${g}>${m}</ha-chip>`:L`<div class=${f}><span class="thermostat-target">${m}</span></div>`}
+          ${y?E`<ha-chip class=${h}>${d}</ha-chip>`:E`<div class=${j}><span class="thermostat-target">${d}</span></div>`}
         </div>
         <div class="center-xy">
-          <ha-icon class=${b} icon="mdi:thermostat"></ha-icon>
+          <ha-icon class=${z} icon="mdi:thermostat"></ha-icon>
         </div>
       </ha-control-button>
     </div>
-  `}(this,s):W}
-      </div>`:W}
-    `}_getWeatherForecastGraphSelection(e){return e?this._weatherForecastGraphSelections.get(e):void 0}_setWeatherForecastGraphSelection(e,t){if(!e||!Number.isFinite(t))return;if(this._weatherForecastGraphSelections.get(e)===t)return;const i=new Map(this._weatherForecastGraphSelections);i.set(e,t),this._weatherForecastGraphSelections=i}_renderEmbeddedRowCard(e,t){if(!e||"object"!=typeof e)return W;this._rowCardConfigs.get(t)!==e&&(this._rowCardElements.delete(t),this._rowCardPromises.delete(t)),this._rowCardConfigs.set(t,e);const i=this._rowCardElements.get(t);if(i)return i.hass=this.hass,L`<div class="embedded-card">${i}</div>`;const n=this._createRowCardElement(t,e).then((e=>(e.hass=this.hass,L`${e}`))).catch((t=>{const i=t instanceof Error?t.message:String(t),n=this._createErrorCard(i,e);return n.hass=this.hass,L`${n}`}));return L`<div class="embedded-card">${we(n,W)}</div>`}async _createRowCardElement(e,t){const i=this._rowCardPromises.get(e);if(i)return i;const n=(async()=>{const i=await this._getCardHelpers();let n;try{n=(null==i?void 0:i.createCardElement)?await i.createCardElement(t):Ue(t)}catch(e){const i=e instanceof Error?e.message:String(e);n=this._createErrorCard(i,t)}return n.addEventListener("ll-rebuild",(i=>{i.stopPropagation(),this._rowCardElements.delete(e),this._rowCardPromises.delete(e);const n=this._rowCardConfigs.get(e)||t;this._createRowCardElement(e,n).then((()=>this.requestUpdate()))})),this._rowCardElements.set(e,n),this._rowCardPromises.delete(e),n})();return this._rowCardPromises.set(e,n),n}_createErrorCard(e,t){try{const i=document.createElement("hui-error-card");return i.setConfig({type:"error",error:e,origConfig:t}),i}catch(i){return Ue({type:"hui-error-card",error:e,origConfig:t})}}async _getCardHelpers(){if(!this._helpersPromise){const e=window.loadCardHelpers;this._helpersPromise="function"==typeof e?e():Promise.resolve(void 0)}return this._helpersPromise}_clearRowCardCache(){this._rowCardElements.clear(),this._rowCardConfigs.clear(),this._rowCardPromises.clear()}_dispatchNativeAction(e,t){const i=new Event("hass-action",{bubbles:!0,composed:!0});i.detail={action:e,config:t},this.dispatchEvent(i)}_withActionOverrides(e,t){const i=Object.assign({},e);"string"==typeof(null==t?void 0:t.entity)&&t.entity&&(i.entity=t.entity);const n=Ze(null==t?void 0:t.tap_action);n&&(i.tap_action=n);const o=Ze(null==t?void 0:t.hold_action);o&&(i.hold_action=o);const a=Ze(null==t?void 0:t.double_tap_action);return a&&(i.double_tap_action=a),i}_dispatchActionEnvelope(e,t){("double_tap"===e?t.double_tap_action:"hold"===e?t.hold_action:t.tap_action)&&this._dispatchNativeAction(e,t)}_selectedAction(e,t){return"double_tap"===e?t.double_tap_action:"hold"===e?t.hold_action:t.tap_action}_withoutSelectedActionConfirmation(e,t){const i=this._selectedAction(e,t);if(!i||void 0===Ke(i.confirmation))return t;const n=Object.assign({},t),o=Object.assign({},i);return delete o.confirmation,"double_tap"===e?n.double_tap_action=o:"hold"===e?n.hold_action=o:n.tap_action=o,n}_isConfirmationExempt(e){var t,i;if(!e||"object"!=typeof e||!Array.isArray(e.exemptions))return!1;const n=null===(i=null===(t=this.hass)||void 0===t?void 0:t.user)||void 0===i?void 0:i.id;return!!n&&e.exemptions.some((e=>e.user===n))}_confirmSwitchAction(e,t){if(void 0===e||this._isConfirmationExempt(e))return Promise.resolve(!0);const i=e&&"object"==typeof e?e:{},n="string"==typeof i.title&&i.title.trim()?i.title.trim():"Please confirm",o="string"==typeof i.text&&i.text.trim()?i.text.trim():`Are you sure you want to ${t.action}?`,a="string"==typeof i.confirm_text&&i.confirm_text.trim()?i.confirm_text.trim():"OK",r="string"==typeof i.dismiss_text&&i.dismiss_text.trim()?i.dismiss_text.trim():"Cancel";return new Promise((e=>{const t=document.createElement("div"),i=document.createElement("div"),s=document.createElement("div"),l=document.createElement("div"),c=document.createElement("div"),d=document.createElement("button"),h=document.createElement("button");t.style.cssText=["position:fixed","inset:0","z-index:2147483647","display:flex","align-items:center","justify-content:center","padding:24px","background:rgba(0,0,0,0.32)","box-sizing:border-box"].join(";"),i.style.cssText=["width:min(420px,100%)","box-sizing:border-box","border-radius:12px","padding:20px","background:var(--ha-dialog-surface-background, var(--card-background-color, #fff))","color:var(--primary-text-color, #212121)","box-shadow:0 18px 48px rgba(0,0,0,0.32)","font-family:var(--paper-font-body1_-_font-family, Roboto, sans-serif)"].join(";"),s.style.cssText="font-size:20px;font-weight:500;line-height:1.3;margin-bottom:12px;",l.style.cssText="font-size:14px;line-height:1.45;color:var(--primary-text-color, #212121);white-space:pre-wrap;",c.style.cssText="display:flex;justify-content:flex-end;gap:8px;margin-top:24px;";const p=["border:0","border-radius:8px","padding:10px 14px","font:inherit","font-weight:500","cursor:pointer","background:transparent","color:var(--primary-color, #03a9f4)"].join(";");d.style.cssText=p,h.style.cssText=`${p};background:var(--primary-color, #03a9f4);color:var(--text-primary-color, #fff);`,s.textContent=n,l.textContent=o,d.textContent=r,h.textContent=a;const u=i=>{document.removeEventListener("keydown",m),t.remove(),e(i)},m=e=>{"Escape"===e.key&&u(!1)};t.addEventListener("click",(e=>{e.target===t&&u(!1)})),d.addEventListener("click",(()=>u(!1))),h.addEventListener("click",(()=>u(!0))),document.addEventListener("keydown",m),c.append(d,h),i.append(s,l,c),t.append(i),document.body.append(t),h.focus()}))}_isLockSwitch(e,t){return"lock"===String(e||"").toLowerCase()||!!(null==t?void 0:t.startsWith("lock."))}_buildDefaultSwitchTapAction(e,t,i){var n,o,a;if(e){if(this._isLockSwitch(t,e)){return{action:"perform-action",perform_action:"unlocked"===((null===(a=null===(o=null===(n=this.hass)||void 0===n?void 0:n.states)||void 0===o?void 0:o[e])||void 0===a?void 0:a.state)||"").toLowerCase()?"lock.lock":"lock.unlock",target:{entity_id:e},confirmation:i}}return{action:"toggle",confirmation:i}}}_applySwitchTapConfirmation(e,t){if(void 0===t||!e.tap_action)return e;return void 0!==Ke(e.tap_action.confirmation)?e:Object.assign(Object.assign({},e),{tap_action:Object.assign(Object.assign({},e.tap_action),{confirmation:t})})}_entityState(e){var t,i,n;const o=null===(n=null===(i=null===(t=this.hass)||void 0===t?void 0:t.states)||void 0===i?void 0:i[e])||void 0===n?void 0:n.state;return null==o?"":String(o)}_targetContainsEntity(e,t){if(!e||"object"!=typeof e)return!1;const i=e.entity_id;return Array.isArray(i)?i.includes(t):i===t}_actionCanChangeSwitchEntity(e,t,i){if(!t||"hold"===e)return!1;const n=this._selectedAction(e,i);return!!n&&("toggle"===n.action?i.entity===t:"perform-action"===n.action&&(this._targetContainsEntity(n.target,t)||this._targetContainsEntity(n.data,t)))}_setPendingSwitchVisible(e,t){if(this._visiblePendingSwitches.has(e)===t)return;const i=new Set(this._visiblePendingSwitches);t?i.add(e):i.delete(e),this._visiblePendingSwitches=i}_clearPendingSwitch(e){const t=this._pendingSwitches.get(e);t?(void 0!==t.showTimer&&window.clearTimeout(t.showTimer),void 0!==t.timeoutTimer&&window.clearTimeout(t.timeoutTimer),this._pendingSwitches.delete(e),this._setPendingSwitchVisible(e,!1)):this._setPendingSwitchVisible(e,!1)}_clearAllPendingSwitches(){[...this._pendingSwitches.keys()].forEach((e=>this._clearPendingSwitch(e)))}_trackPendingSwitch(e,t,i){if(!e||!this.hass||!this._actionCanChangeSwitchEntity(t,e,i))return;this._clearPendingSwitch(e);const n=this._entityState(e),o={initialState:n};o.showTimer=window.setTimeout((()=>{this._entityState(e)===n?this._setPendingSwitchVisible(e,!0):this._clearPendingSwitch(e)}),this._switchPendingDelayMs),o.timeoutTimer=window.setTimeout((()=>{this._clearPendingSwitch(e)}),this._switchPendingTimeoutMs),this._pendingSwitches.set(e,o)}_syncPendingSwitches(){this._pendingSwitches.forEach(((e,t)=>{this._entityState(t)!==e.initialState&&this._clearPendingSwitch(t)}))}_onMainAction(e,t,i,n,o){e.stopPropagation();const a=e.detail&&e.detail.action||"tap",r=o||i,s=n||i||o,l={entity:r,tap_action:r?{action:"toggle"}:void 0,hold_action:s?{action:"more-info",entity:s}:void 0},c=Ye(t)?t:Ye(this._config)?this._config:void 0;this._dispatchActionEnvelope(a,this._withActionOverrides(l,c))}_onWeatherAction(e,t){e.stopPropagation();const i=e.detail&&e.detail.action||"tap",n=(null==t?void 0:t.entity)||(null==t?void 0:t.temp_sensor)||(null==t?void 0:t.humidity_sensor),o={entity:n,tap_action:n?{action:"more-info",entity:n}:void 0,hold_action:n?{action:"more-info",entity:n}:void 0};this._dispatchActionEnvelope(i,this._withActionOverrides(o,t))}_onACAction(e,t){var i,n,o;e.stopPropagation();const a=e.detail&&e.detail.action||"tap",r=null==t?void 0:t.entity;if(!r)return;const s=((null===(o=null===(n=null===(i=this.hass)||void 0===i?void 0:i.states)||void 0===n?void 0:n[r])||void 0===o?void 0:o.state)||"").toLowerCase(),l={entity:r,tap_action:{action:"perform-action",perform_action:!!s&&"off"!==s?"climate.turn_off":"climate.turn_on",target:{entity_id:r}},hold_action:{action:"more-info",entity:r}};this._dispatchActionEnvelope(a,this._withActionOverrides(l,t))}_onThermostatAction(e,t){var i,n,o;e.stopPropagation();const a=e.detail&&e.detail.action||"tap",r=null==t?void 0:t.entity;if(!r)return;const s={entity:r,tap_action:{action:"perform-action",perform_action:"climate.set_hvac_mode",target:{entity_id:r},data:{hvac_mode:"off"===((null===(o=null===(n=null===(i=this.hass)||void 0===i?void 0:i.states)||void 0===n?void 0:n[r])||void 0===o?void 0:o.state)||"").toLowerCase()?"heat":"off"}},hold_action:{action:"more-info",entity:r}};this._dispatchActionEnvelope(a,this._withActionOverrides(s,t))}async _onSwitchAction(e,t){e.stopPropagation();const i=e.detail&&e.detail.action||"tap",n="string"==typeof(null==t?void 0:t.entity)?t.entity:void 0,o="string"==typeof(null==t?void 0:t.hold_entity)?t.hold_entity:n,a=Ke(null==t?void 0:t.confirmation),r={entity:n,tap_action:this._buildDefaultSwitchTapAction(n,null==t?void 0:t.type,a),hold_action:o?{action:"more-info",entity:o}:void 0,double_tap_action:n?{action:"toggle"}:void 0},s=this._withActionOverrides(r,t);let l=this._applySwitchTapConfirmation(s,a);const c=this._selectedAction(i,l);if(!c)return;const d=Ke(c.confirmation);if(void 0!==d){if(!await this._confirmSwitchAction(d,c))return;l=this._withoutSelectedActionConfirmation(i,l)}this._trackPendingSwitch(n,i,l),this._dispatchActionEnvelope(i,l)}_resolveSwitchTemplates(e){const t=this._extractTemplatesFromSwitch(e);return t.length?t.map((e=>({template:e,value:this._getTemplateDisplayValue(e)}))):[]}_extractTemplatesFromSwitch(e){if(!e||"object"!=typeof e)return[];const t=e,i=((...e)=>{for(const i of e)if(i in t)return t[i]})("info_templates","infoTemplates","info-templates","info_template","infoTemplate","info-template","top_right_templates","topRightTemplates","top-right-templates","top_right_template","topRightTemplate","top-right-template");if(null==i)return[];const n=Array.isArray(i)?i:[i],o=[];return n.some((e=>{let t;"string"==typeof e?t=e:e&&"object"==typeof e&&(t=e.template||e.value||e.value_template||e.text);const i="string"==typeof t?t.trim():"";return i&&o.push(i),o.length>=2})),o.slice(0,2)}_syncTemplateEntries(e){const t=this._collectTemplatesFromRows(e);if(!t.size&&!this._switchTemplateValues.size)return;const i=[];this._switchTemplateValues.forEach(((e,n)=>{t.has(n)||i.push(n)})),i.forEach((e=>{const t=this._switchTemplateValues.get(e);t&&this._disposeTemplateEntry(t),this._switchTemplateValues.delete(e)})),t.forEach((e=>this._ensureTemplateEntry(e)))}_collectTemplatesFromRows(e){const t=new Set;return Array.isArray(e)?(e.forEach((e=>{const i=Array.isArray(e)?e:Array.isArray(null==e?void 0:e.row)?e.row:[];Array.isArray(i)&&i.forEach((e=>{this._extractTemplatesFromSwitch(e).forEach((e=>t.add(e)))}))})),t):t}_ensureTemplateEntry(e){const t=(e||"").trim();if(!t)return;let i=this._switchTemplateValues.get(t);return i||(i={value:"",ready:!1},this._switchTemplateValues.set(t,i)),this._startTemplateSubscription(t,i),i}_getTemplateDisplayValue(e){var t;const i=this._ensureTemplateEntry(e);return i?i.error?"!":i.ready?null!==(t=i.value)&&void 0!==t?t:"":"…":""}_startTemplateSubscription(e,t){var i;!(null===(i=this.hass)||void 0===i?void 0:i.connection)||t.unsub||t.pending||(t.pending=!0,this.hass.connection.subscribeMessage((e=>{t.ready=!0,t.error=void 0;const i=e&&"object"==typeof e&&"result"in e?e.result:e;t.value=null!=i?String(i):"",this.requestUpdate()}),{type:"render_template",template:e},{resubscribe:!0}).then((e=>{t.unsub=e})).catch((i=>{t.ready=!0,t.error=(null==i?void 0:i.message)||"error",t.unsub=void 0,console.warn(`[space-hub-card] Template subscription failed for "${e}":`,i),this.requestUpdate()})).finally((()=>{t.pending=!1})))}_disposeTemplateEntry(e){if(e.unsub){try{e.unsub()}catch(e){}e.unsub=void 0}e.pending=!1}_resumeTemplateSubscriptions(){this.hass&&this._switchTemplateValues.forEach(((e,t)=>this._startTemplateSubscription(t,e)))}_normalizeForecastType(e){const t=String(e||"hourly");return["hourly","daily","twice_daily"].includes(t)?t:"hourly"}_weatherForecastKey(e,t){const i="string"==typeof e?e.trim():"";return i?`${i}|${this._normalizeForecastType(t)}`:""}_collectWeatherForecastKeys(e){const t=new Set;return Array.isArray(e)?(e.forEach((e=>{const i=null==e?void 0:e.weather;if(!i||!1===i.show_forecast)return;const n=this._weatherForecastKey(i.entity,i.forecast_type);n&&t.add(n);const o=this._weatherForecastKey(i.entity,"daily");o&&t.add(o)})),t):t}_syncWeatherForecastEntries(e){const t=this._collectWeatherForecastKeys(e),i=[];this._weatherForecastValues.forEach(((e,n)=>{t.has(n)||i.push(n)})),i.forEach((e=>{const t=this._weatherForecastValues.get(e);t&&this._disposeWeatherForecastEntry(t),this._weatherForecastValues.delete(e)})),t.forEach((e=>this._ensureWeatherForecastEntry(e)))}_ensureWeatherForecastEntry(e){const t=(e||"").trim();if(!t)return;let i=this._weatherForecastValues.get(t);return i||(i={forecast:[],ready:!1},this._weatherForecastValues.set(t,i)),this._startWeatherForecastSubscription(t,i),i}_getWeatherForecast(e,t){const i=this._weatherForecastKey(e,t);if(!i)return[];const n=this._ensureWeatherForecastEntry(i);return n&&Array.isArray(n.forecast)?n.forecast:[]}_extractForecast(e){var t,i;if(!e||"object"!=typeof e)return[];const n=e;return Array.isArray(n.forecast)?n.forecast:Array.isArray(null===(t=n.event)||void 0===t?void 0:t.forecast)?n.event.forecast:Array.isArray(null===(i=n.result)||void 0===i?void 0:i.forecast)?n.result.forecast:[]}_startWeatherForecastSubscription(e,t){var i;if(!(null===(i=this.hass)||void 0===i?void 0:i.connection)||t.unsub||t.pending)return;const[n,o]=e.split("|"),a=this._normalizeForecastType(o);n&&(t.pending=!0,this.hass.connection.subscribeMessage((e=>{t.ready=!0,t.error=void 0,t.forecast=this._extractForecast(e),this.requestUpdate()}),{type:"weather/subscribe_forecast",entity_id:n,forecast_type:a},{resubscribe:!0}).then((e=>{t.unsub=e})).catch((i=>{t.ready=!0,t.error=(null==i?void 0:i.message)||"error",t.unsub=void 0,console.warn(`[space-hub-card] Weather forecast subscription failed for "${e}":`,i),this.requestUpdate()})).finally((()=>{t.pending=!1})))}_disposeWeatherForecastEntry(e){if(e.unsub)try{e.unsub()}catch(e){}e.unsub=void 0,e.pending=!1}_resumeWeatherForecastSubscriptions(){this.hass&&this._weatherForecastValues.forEach(((e,t)=>this._startWeatherForecastSubscription(t,e)))}_fmt2(e,t,i){if(!e||!this.hass)return"—"+(i||"");const n=this.hass.states[e];if(!n||""===n.state||"unknown"===n.state||"unavailable"===n.state)return"—"+(i||"");const o=Number(n.state);return Number.isFinite(o)?o.toFixed(t)+(i||""):String(n.state)+(i||"")}_fmtNumber(e,t){if(null==e||""===e||"unknown"===e||"unavailable"===e)return"—";const i=Number(e);return Number.isFinite(i)?i.toFixed(t):String(e)}_acChip(e){return e&&"off"!==e?e.includes("cool")?{icon:"mdi:snowflake"}:e.includes("heat")?{icon:"mdi:fire"}:e.includes("dry")?{icon:"mdi:water-percent"}:e.includes("fan")?{icon:"mdi:fan"}:e.includes("auto")?{icon:"mdi:autorenew"}:{icon:"mdi:air-conditioner"}:{icon:"mdi:power"}}_openMoreInfo(e){e&&this.dispatchEvent(new CustomEvent("hass-more-info",{detail:{entityId:e},bubbles:!0,composed:!0}))}_acToggle(e){if(!e||!this.hass)return;const t=this.hass.states[e],i=((null==t?void 0:t.state)||"").toLowerCase(),n=!!i&&"off"!==i;this.hass.callService("climate",n?"turn_off":"turn_on",{entity_id:e})}_thermostatToggle(e){if(!e||!this.hass)return;const t=this.hass.states[e],i="off"===((null==t?void 0:t.state)||"").toLowerCase()?"heat":"off";this.hass.callService("climate","set_hvac_mode",{entity_id:e,hvac_mode:i})}_toggleGeneric(e){if(!e||!this.hass)return;const t=e.split(".")[0],i="switch"===t||"light"===t?`${t}.toggle`:"homeassistant.toggle",[n,o]=i.split(".");this.hass.callService(n,o,{entity_id:e})}_isOn(e){if(!e||!this.hass)return!1;const t=this.hass.states[e];return"on"===((null==t?void 0:t.state)||"").toLowerCase()}_isSwitchActive(e,t){if(!e||!this.hass)return!1;const i=this.hass.states[e];return this._isLockSwitch(t,e)?"unlocked"===((null==i?void 0:i.state)||"").toLowerCase():"on"===((null==i?void 0:i.state)||"").toLowerCase()}_isSwitchPending(e){return!!e&&this._visiblePendingSwitches.has(e)}_rgbaFromColor(e,t=.5){const i=Math.max(0,Math.min(1,Number(t)||0));if(!e||"string"!=typeof e)return`rgba(0,0,0,${i})`;const n=e.trim();if(n.startsWith("rgba(")||n.startsWith("rgb(")||n.startsWith("hsl(")||n.startsWith("var("))return n;const o=n.replace("#",""),a=e=>parseInt(e,16);if(3===o.length){return`rgba(${a(o[0]+o[0])},${a(o[1]+o[1])},${a(o[2]+o[2])},${i})`}if(o.length>=6){return`rgba(${a(o.slice(0,2))},${a(o.slice(2,4))},${a(o.slice(4,6))},${i})`}return`rgba(0,0,0,${i})`}_getAllCardEntities(e,t){const i=new Set,n=Array.isArray(t)?t:[t],o=new WeakSet,a=new Set(["entity","entity_id","tap_entity","hold_entity","double_tap_entity","light_group_entity","temp_sensor","temp_min_24h_sensor","temp_max_24h_sensor","humidity_sensor","feels_like_sensor","dewpoint_sensor","wind_speed_sensor","wind_gust_sensor","wind_direction_sensor","rain_state_sensor","rain_today_sensor","rain_rate_sensor","uv_sensor","solar_lux_sensor","pressure_sensor","camera_image"]),r=e=>{"string"==typeof e&&this._isValidEntityId(e)&&i.add(e)},s=e=>{"string"!=typeof e?Array.isArray(e)?e.forEach((e=>{"string"==typeof e?r(e):l(e)})):l(e):r(e)},l=e=>{if(!e||"object"!=typeof e)return;const t=e;o.has(t)||(o.add(t),Array.isArray(e)?e.forEach((e=>l(e))):Object.entries(e).forEach((([e,t])=>{a.has(e)?s(t):"target"!==e?Array.isArray(t)?t.forEach((e=>l(e))):t&&"object"==typeof t&&l(t):(e=>{if(!e||"object"!=typeof e)return;s(e.entity_id)})(t)})))};return l(n),l(e.switch_rows),l(e.cards),[...i]}_hasAnyUnavailable(e,t){if(!this.hass)return!1;const i=this._getAllCardEntities(e,t),n=new Set(["unavailable","unknown","offline"]);return i.some((e=>{var t,i;if(!e)return!1;const o=null===(i=null===(t=this.hass)||void 0===t?void 0:t.states)||void 0===i?void 0:i[e];if(!o)return!0;const a=(o.state||"").toLowerCase();return n.has(a)}))}};fi.styles=[ci,di,hi,pi,ui,mi,vi,_i],e([xe({attribute:!1})],fi.prototype,"hass",void 0),e([Ae()],fi.prototype,"_config",void 0),e([Ae()],fi.prototype,"_visiblePendingSwitches",void 0),e([Ae()],fi.prototype,"_weatherForecastGraphSelections",void 0),fi=gi=e([ye("space-hub-card")],fi),window.customCards=window.customCards||[],window.customCards.push({type:"space-hub-card",name:"Space Hub Card",description:"Space control hub card",preview:!1,version:"2.0.19"});try{const e=window;if(!e.__SPACE_HUB_CARD_LOGGED__){const t="background:#3f51b5;color:#fff;padding:2px 6px;border-radius:4px 0 0 4px;font-weight:700",i="background:#e0e0e0;color:#111;padding:2px 6px;border-radius:0 4px 4px 0;";console.info("%c🚀 Space hub card%c v2.0.19",t,i),e.__SPACE_HUB_CARD_LOGGED__=!0}}catch(e){}var bi=fi;export{fi as SpaceHubCard,bi as default};
+  `}(this,r):G}
+      </div>`:G}
+    `}_getWeatherForecastGraphSelection(i){return i?this._weatherForecastGraphSelections.get(i):void 0}_setWeatherForecastGraphSelection(i,e){if(!i||!Number.isFinite(e))return;if(this._weatherForecastGraphSelections.get(i)===e)return;const t=new Map(this._weatherForecastGraphSelections);t.set(i,e),this._weatherForecastGraphSelections=t}_renderEmbeddedRowCard(i,e){if(!i||"object"!=typeof i)return G;this._rowCardConfigs.get(e)!==i&&(this._rowCardElements.delete(e),this._rowCardPromises.delete(e)),this._rowCardConfigs.set(e,i);const t=this._rowCardElements.get(e);if(t)return t.hass=this.hass,E`<div class="embedded-card">${t}</div>`;const a=this._createRowCardElement(e,i).then((i=>(i.hass=this.hass,E`${i}`))).catch((e=>{const t=e instanceof Error?e.message:String(e),a=this._createErrorCard(t,i);return a.hass=this.hass,E`${a}`}));return E`<div class="embedded-card">${yi(a,G)}</div>`}async _createRowCardElement(i,e){const t=this._rowCardPromises.get(i);if(t)return t;const a=(async()=>{const t=await this._getCardHelpers();let a;try{a=(null==t?void 0:t.createCardElement)?await t.createCardElement(e):$i(e)}catch(i){const t=i instanceof Error?i.message:String(i);a=this._createErrorCard(t,e)}return a.addEventListener("ll-rebuild",(t=>{t.stopPropagation(),this._rowCardElements.delete(i),this._rowCardPromises.delete(i);const a=this._rowCardConfigs.get(i)||e;this._createRowCardElement(i,a).then((()=>this.requestUpdate()))})),this._rowCardElements.set(i,a),this._rowCardPromises.delete(i),a})();return this._rowCardPromises.set(i,a),a}_createErrorCard(i,e){try{const t=document.createElement("hui-error-card");return t.setConfig({type:"error",error:i,origConfig:e}),t}catch(t){return $i({type:"hui-error-card",error:i,origConfig:e})}}async _getCardHelpers(){if(!this._helpersPromise){const i=window.loadCardHelpers;this._helpersPromise="function"==typeof i?i():Promise.resolve(void 0)}return this._helpersPromise}_clearRowCardCache(){this._rowCardElements.clear(),this._rowCardConfigs.clear(),this._rowCardPromises.clear()}_dispatchNativeAction(i,e){const t=new Event("hass-action",{bubbles:!0,composed:!0});t.detail={action:i,config:e},this.dispatchEvent(t)}_withActionOverrides(i,e){const t=Object.assign({},i);"string"==typeof(null==e?void 0:e.entity)&&e.entity&&(t.entity=e.entity);const a=Ji(null==e?void 0:e.tap_action);a&&(t.tap_action=a);const n=Ji(null==e?void 0:e.hold_action);n&&(t.hold_action=n);const o=Ji(null==e?void 0:e.double_tap_action);return o&&(t.double_tap_action=o),t}_dispatchActionEnvelope(i,e){("double_tap"===i?e.double_tap_action:"hold"===i?e.hold_action:e.tap_action)&&this._dispatchNativeAction(i,e)}_selectedAction(i,e){return"double_tap"===i?e.double_tap_action:"hold"===i?e.hold_action:e.tap_action}_withoutSelectedActionConfirmation(i,e){const t=this._selectedAction(i,e);if(!t||void 0===Hi(t.confirmation))return e;const a=Object.assign({},e),n=Object.assign({},t);return delete n.confirmation,"double_tap"===i?a.double_tap_action=n:"hold"===i?a.hold_action=n:a.tap_action=n,a}_isConfirmationExempt(i){var e,t;if(!i||"object"!=typeof i||!Array.isArray(i.exemptions))return!1;const a=null===(t=null===(e=this.hass)||void 0===e?void 0:e.user)||void 0===t?void 0:t.id;return!!a&&i.exemptions.some((i=>i.user===a))}_confirmSwitchAction(i,e){if(void 0===i||this._isConfirmationExempt(i))return Promise.resolve(!0);const t=i&&"object"==typeof i?i:{},a="string"==typeof t.title&&t.title.trim()?t.title.trim():"Please confirm",n="string"==typeof t.text&&t.text.trim()?t.text.trim():`Are you sure you want to ${e.action}?`,o="string"==typeof t.confirm_text&&t.confirm_text.trim()?t.confirm_text.trim():"OK",c="string"==typeof t.dismiss_text&&t.dismiss_text.trim()?t.dismiss_text.trim():"Cancel";return new Promise((i=>{const e=document.createElement("div"),t=document.createElement("div"),r=document.createElement("div"),s=document.createElement("div"),l=document.createElement("div"),M=document.createElement("button"),g=document.createElement("button");e.style.cssText=["position:fixed","inset:0","z-index:2147483647","display:flex","align-items:center","justify-content:center","padding:24px","background:rgba(0,0,0,0.32)","box-sizing:border-box"].join(";"),t.style.cssText=["width:min(420px,100%)","box-sizing:border-box","border-radius:12px","padding:20px","background:var(--ha-dialog-surface-background, var(--card-background-color, #fff))","color:var(--primary-text-color, #212121)","box-shadow:0 18px 48px rgba(0,0,0,0.32)","font-family:var(--paper-font-body1_-_font-family, Roboto, sans-serif)"].join(";"),r.style.cssText="font-size:20px;font-weight:500;line-height:1.3;margin-bottom:12px;",s.style.cssText="font-size:14px;line-height:1.45;color:var(--primary-text-color, #212121);white-space:pre-wrap;",l.style.cssText="display:flex;justify-content:flex-end;gap:8px;margin-top:24px;";const I=["border:0","border-radius:8px","padding:10px 14px","font:inherit","font-weight:500","cursor:pointer","background:transparent","color:var(--primary-color, #03a9f4)"].join(";");M.style.cssText=I,g.style.cssText=`${I};background:var(--primary-color, #03a9f4);color:var(--text-primary-color, #fff);`,r.textContent=a,s.textContent=n,M.textContent=c,g.textContent=o;const N=t=>{document.removeEventListener("keydown",d),e.remove(),i(t)},d=i=>{"Escape"===i.key&&N(!1)};e.addEventListener("click",(i=>{i.target===e&&N(!1)})),M.addEventListener("click",(()=>N(!1))),g.addEventListener("click",(()=>N(!0))),document.addEventListener("keydown",d),l.append(M,g),t.append(r,s,l),e.append(t),document.body.append(e),g.focus()}))}_isLockSwitch(i,e){return"lock"===String(i||"").toLowerCase()||!!(null==e?void 0:e.startsWith("lock."))}_buildDefaultSwitchTapAction(i,e,t){var a,n,o;if(i){if(this._isLockSwitch(e,i)){return{action:"perform-action",perform_action:"unlocked"===((null===(o=null===(n=null===(a=this.hass)||void 0===a?void 0:a.states)||void 0===n?void 0:n[i])||void 0===o?void 0:o.state)||"").toLowerCase()?"lock.lock":"lock.unlock",target:{entity_id:i},confirmation:t}}return{action:"toggle",confirmation:t}}}_applySwitchTapConfirmation(i,e){if(void 0===e||!i.tap_action)return i;return void 0!==Hi(i.tap_action.confirmation)?i:Object.assign(Object.assign({},i),{tap_action:Object.assign(Object.assign({},i.tap_action),{confirmation:e})})}_entityState(i){var e,t,a;const n=null===(a=null===(t=null===(e=this.hass)||void 0===e?void 0:e.states)||void 0===t?void 0:t[i])||void 0===a?void 0:a.state;return null==n?"":String(n)}_targetContainsEntity(i,e){if(!i||"object"!=typeof i)return!1;const t=i.entity_id;return Array.isArray(t)?t.includes(e):t===e}_actionCanChangeSwitchEntity(i,e,t){if(!e||"hold"===i)return!1;const a=this._selectedAction(i,t);return!!a&&("toggle"===a.action?t.entity===e:"perform-action"===a.action&&(this._targetContainsEntity(a.target,e)||this._targetContainsEntity(a.data,e)))}_setPendingSwitchVisible(i,e){if(this._visiblePendingSwitches.has(i)===e)return;const t=new Set(this._visiblePendingSwitches);e?t.add(i):t.delete(i),this._visiblePendingSwitches=t}_clearPendingSwitch(i){const e=this._pendingSwitches.get(i);e?(void 0!==e.showTimer&&window.clearTimeout(e.showTimer),void 0!==e.timeoutTimer&&window.clearTimeout(e.timeoutTimer),this._pendingSwitches.delete(i),this._setPendingSwitchVisible(i,!1)):this._setPendingSwitchVisible(i,!1)}_clearAllPendingSwitches(){[...this._pendingSwitches.keys()].forEach((i=>this._clearPendingSwitch(i)))}_trackPendingSwitch(i,e,t){if(!i||!this.hass||!this._actionCanChangeSwitchEntity(e,i,t))return;this._clearPendingSwitch(i);const a=this._entityState(i),n={initialState:a};n.showTimer=window.setTimeout((()=>{this._entityState(i)===a?this._setPendingSwitchVisible(i,!0):this._clearPendingSwitch(i)}),this._switchPendingDelayMs),n.timeoutTimer=window.setTimeout((()=>{this._clearPendingSwitch(i)}),this._switchPendingTimeoutMs),this._pendingSwitches.set(i,n)}_syncPendingSwitches(){this._pendingSwitches.forEach(((i,e)=>{this._entityState(e)!==i.initialState&&this._clearPendingSwitch(e)}))}_onMainAction(i,e,t,a,n){i.stopPropagation();const o=i.detail&&i.detail.action||"tap",c=n||t,r=a||t||n,s={entity:c,tap_action:c?{action:"toggle"}:void 0,hold_action:r?{action:"more-info",entity:r}:void 0},l=Bi(e)?e:Bi(this._config)?this._config:void 0;this._dispatchActionEnvelope(o,this._withActionOverrides(s,l))}_onWeatherAction(i,e){i.stopPropagation();const t=i.detail&&i.detail.action||"tap",a=(null==e?void 0:e.entity)||(null==e?void 0:e.temp_sensor)||(null==e?void 0:e.humidity_sensor),n={entity:a,tap_action:a?{action:"more-info",entity:a}:void 0,hold_action:a?{action:"more-info",entity:a}:void 0};this._dispatchActionEnvelope(t,this._withActionOverrides(n,e))}_onACAction(i,e){var t,a,n;i.stopPropagation();const o=i.detail&&i.detail.action||"tap",c=null==e?void 0:e.entity;if(!c)return;const r=((null===(n=null===(a=null===(t=this.hass)||void 0===t?void 0:t.states)||void 0===a?void 0:a[c])||void 0===n?void 0:n.state)||"").toLowerCase(),s={entity:c,tap_action:{action:"perform-action",perform_action:!!r&&"off"!==r?"climate.turn_off":"climate.turn_on",target:{entity_id:c}},hold_action:{action:"more-info",entity:c}};this._dispatchActionEnvelope(o,this._withActionOverrides(s,e))}_onThermostatAction(i,e){var t,a,n;i.stopPropagation();const o=i.detail&&i.detail.action||"tap",c=null==e?void 0:e.entity;if(!c)return;const r={entity:c,tap_action:{action:"perform-action",perform_action:"climate.set_hvac_mode",target:{entity_id:c},data:{hvac_mode:"off"===((null===(n=null===(a=null===(t=this.hass)||void 0===t?void 0:t.states)||void 0===a?void 0:a[c])||void 0===n?void 0:n.state)||"").toLowerCase()?"heat":"off"}},hold_action:{action:"more-info",entity:c}};this._dispatchActionEnvelope(o,this._withActionOverrides(r,e))}async _onSwitchAction(i,e){i.stopPropagation();const t=i.detail&&i.detail.action||"tap",a="string"==typeof(null==e?void 0:e.entity)?e.entity:void 0,n="string"==typeof(null==e?void 0:e.hold_entity)?e.hold_entity:a,o=Hi(null==e?void 0:e.confirmation),c={entity:a,tap_action:this._buildDefaultSwitchTapAction(a,null==e?void 0:e.type,o),hold_action:n?{action:"more-info",entity:n}:void 0,double_tap_action:a?{action:"toggle"}:void 0},r=this._withActionOverrides(c,e);let s=this._applySwitchTapConfirmation(r,o);const l=this._selectedAction(t,s);if(!l)return;const M=Hi(l.confirmation);if(void 0!==M){if(!await this._confirmSwitchAction(M,l))return;s=this._withoutSelectedActionConfirmation(t,s)}this._trackPendingSwitch(a,t,s),this._dispatchActionEnvelope(t,s)}_resolveSwitchTemplates(i){const e=this._extractTemplatesFromSwitch(i);return e.length?e.map((i=>({template:i,value:this._getTemplateDisplayValue(i)}))):[]}_extractTemplatesFromSwitch(i){if(!i||"object"!=typeof i)return[];const e=i,t=((...i)=>{for(const t of i)if(t in e)return e[t]})("info_templates","infoTemplates","info-templates","info_template","infoTemplate","info-template","top_right_templates","topRightTemplates","top-right-templates","top_right_template","topRightTemplate","top-right-template");if(null==t)return[];const a=Array.isArray(t)?t:[t],n=[];return a.some((i=>{let e;"string"==typeof i?e=i:i&&"object"==typeof i&&(e=i.template||i.value||i.value_template||i.text);const t="string"==typeof e?e.trim():"";return t&&n.push(t),n.length>=2})),n.slice(0,2)}_syncTemplateEntries(i){const e=this._collectTemplatesFromRows(i);if(!e.size&&!this._switchTemplateValues.size)return;const t=[];this._switchTemplateValues.forEach(((i,a)=>{e.has(a)||t.push(a)})),t.forEach((i=>{const e=this._switchTemplateValues.get(i);e&&this._disposeTemplateEntry(e),this._switchTemplateValues.delete(i)})),e.forEach((i=>this._ensureTemplateEntry(i)))}_collectTemplatesFromRows(i){const e=new Set;return Array.isArray(i)?(i.forEach((i=>{const t=Array.isArray(i)?i:Array.isArray(null==i?void 0:i.row)?i.row:[];Array.isArray(t)&&t.forEach((i=>{this._extractTemplatesFromSwitch(i).forEach((i=>e.add(i)))}))})),e):e}_ensureTemplateEntry(i){const e=(i||"").trim();if(!e)return;let t=this._switchTemplateValues.get(e);return t||(t={value:"",ready:!1},this._switchTemplateValues.set(e,t)),this._startTemplateSubscription(e,t),t}_getTemplateDisplayValue(i){var e;const t=this._ensureTemplateEntry(i);return t?t.error?"!":t.ready?null!==(e=t.value)&&void 0!==e?e:"":"…":""}_startTemplateSubscription(i,e){var t;!(null===(t=this.hass)||void 0===t?void 0:t.connection)||e.unsub||e.pending||(e.pending=!0,this.hass.connection.subscribeMessage((i=>{e.ready=!0,e.error=void 0;const t=i&&"object"==typeof i&&"result"in i?i.result:i;e.value=null!=t?String(t):"",this.requestUpdate()}),{type:"render_template",template:i},{resubscribe:!0}).then((i=>{e.unsub=i})).catch((t=>{e.ready=!0,e.error=(null==t?void 0:t.message)||"error",e.unsub=void 0,console.warn(`[space-hub-card] Template subscription failed for "${i}":`,t),this.requestUpdate()})).finally((()=>{e.pending=!1})))}_disposeTemplateEntry(i){if(i.unsub){try{i.unsub()}catch(i){}i.unsub=void 0}i.pending=!1}_resumeTemplateSubscriptions(){this.hass&&this._switchTemplateValues.forEach(((i,e)=>this._startTemplateSubscription(e,i)))}_normalizeForecastType(i){const e=String(i||"hourly");return["hourly","daily","twice_daily"].includes(e)?e:"hourly"}_weatherForecastKey(i,e){const t="string"==typeof i?i.trim():"";return t?`${t}|${this._normalizeForecastType(e)}`:""}_collectWeatherForecastKeys(i){const e=new Set;return Array.isArray(i)?(i.forEach((i=>{const t=null==i?void 0:i.weather;if(!t||!1===t.show_forecast)return;const a=this._weatherForecastKey(t.entity,t.forecast_type);a&&e.add(a);const n=this._weatherForecastKey(t.entity,"daily");n&&e.add(n)})),e):e}_syncWeatherForecastEntries(i){const e=this._collectWeatherForecastKeys(i),t=[];this._weatherForecastValues.forEach(((i,a)=>{e.has(a)||t.push(a)})),t.forEach((i=>{const e=this._weatherForecastValues.get(i);e&&this._disposeWeatherForecastEntry(e),this._weatherForecastValues.delete(i)})),e.forEach((i=>this._ensureWeatherForecastEntry(i)))}_ensureWeatherForecastEntry(i){const e=(i||"").trim();if(!e)return;let t=this._weatherForecastValues.get(e);return t||(t={forecast:[],ready:!1},this._weatherForecastValues.set(e,t)),this._startWeatherForecastSubscription(e,t),t}_getWeatherForecast(i,e){const t=this._weatherForecastKey(i,e);if(!t)return[];const a=this._ensureWeatherForecastEntry(t);return a&&Array.isArray(a.forecast)?a.forecast:[]}_extractForecast(i){var e,t;if(!i||"object"!=typeof i)return[];const a=i;return Array.isArray(a.forecast)?a.forecast:Array.isArray(null===(e=a.event)||void 0===e?void 0:e.forecast)?a.event.forecast:Array.isArray(null===(t=a.result)||void 0===t?void 0:t.forecast)?a.result.forecast:[]}_startWeatherForecastSubscription(i,e){var t;if(!(null===(t=this.hass)||void 0===t?void 0:t.connection)||e.unsub||e.pending)return;const[a,n]=i.split("|"),o=this._normalizeForecastType(n);a&&(e.pending=!0,this.hass.connection.subscribeMessage((i=>{e.ready=!0,e.error=void 0,e.forecast=this._extractForecast(i),this.requestUpdate()}),{type:"weather/subscribe_forecast",entity_id:a,forecast_type:o},{resubscribe:!0}).then((i=>{e.unsub=i})).catch((t=>{e.ready=!0,e.error=(null==t?void 0:t.message)||"error",e.unsub=void 0,console.warn(`[space-hub-card] Weather forecast subscription failed for "${i}":`,t),this.requestUpdate()})).finally((()=>{e.pending=!1})))}_disposeWeatherForecastEntry(i){if(i.unsub)try{i.unsub()}catch(i){}i.unsub=void 0,i.pending=!1}_resumeWeatherForecastSubscriptions(){this.hass&&this._weatherForecastValues.forEach(((i,e)=>this._startWeatherForecastSubscription(e,i)))}_fmt2(i,e,t){if(!i||!this.hass)return"—"+(t||"");const a=this.hass.states[i];if(!a||""===a.state||"unknown"===a.state||"unavailable"===a.state)return"—"+(t||"");const n=Number(a.state);return Number.isFinite(n)?n.toFixed(e)+(t||""):String(a.state)+(t||"")}_fmtNumber(i,e){if(null==i||""===i||"unknown"===i||"unavailable"===i)return"—";const t=Number(i);return Number.isFinite(t)?t.toFixed(e):String(i)}_acChip(i){return i&&"off"!==i?i.includes("cool")?{icon:"mdi:snowflake"}:i.includes("heat")?{icon:"mdi:fire"}:i.includes("dry")?{icon:"mdi:water-percent"}:i.includes("fan")?{icon:"mdi:fan"}:i.includes("auto")?{icon:"mdi:autorenew"}:{icon:"mdi:air-conditioner"}:{icon:"mdi:power"}}_openMoreInfo(i){i&&this.dispatchEvent(new CustomEvent("hass-more-info",{detail:{entityId:i},bubbles:!0,composed:!0}))}_acToggle(i){if(!i||!this.hass)return;const e=this.hass.states[i],t=((null==e?void 0:e.state)||"").toLowerCase(),a=!!t&&"off"!==t;this.hass.callService("climate",a?"turn_off":"turn_on",{entity_id:i})}_thermostatToggle(i){if(!i||!this.hass)return;const e=this.hass.states[i],t="off"===((null==e?void 0:e.state)||"").toLowerCase()?"heat":"off";this.hass.callService("climate","set_hvac_mode",{entity_id:i,hvac_mode:t})}_toggleGeneric(i){if(!i||!this.hass)return;const e=i.split(".")[0],t="switch"===e||"light"===e?`${e}.toggle`:"homeassistant.toggle",[a,n]=t.split(".");this.hass.callService(a,n,{entity_id:i})}_isOn(i){if(!i||!this.hass)return!1;const e=this.hass.states[i];return"on"===((null==e?void 0:e.state)||"").toLowerCase()}_isSwitchActive(i,e){if(!i||!this.hass)return!1;const t=this.hass.states[i];return this._isLockSwitch(e,i)?"unlocked"===((null==t?void 0:t.state)||"").toLowerCase():"on"===((null==t?void 0:t.state)||"").toLowerCase()}_isSwitchPending(i){return!!i&&this._visiblePendingSwitches.has(i)}_rgbaFromColor(i,e=.5){const t=Math.max(0,Math.min(1,Number(e)||0));if(!i||"string"!=typeof i)return`rgba(0,0,0,${t})`;const a=i.trim();if(a.startsWith("rgba(")||a.startsWith("rgb(")||a.startsWith("hsl(")||a.startsWith("var("))return a;const n=a.replace("#",""),o=i=>parseInt(i,16);if(3===n.length){return`rgba(${o(n[0]+n[0])},${o(n[1]+n[1])},${o(n[2]+n[2])},${t})`}if(n.length>=6){return`rgba(${o(n.slice(0,2))},${o(n.slice(2,4))},${o(n.slice(4,6))},${t})`}return`rgba(0,0,0,${t})`}_getAllCardEntities(i,e){const t=new Set,a=Array.isArray(e)?e:[e],n=new WeakSet,o=new Set(["entity","entity_id","tap_entity","hold_entity","double_tap_entity","light_group_entity","temp_sensor","temp_min_24h_sensor","temp_max_24h_sensor","humidity_sensor","feels_like_sensor","dewpoint_sensor","wind_speed_sensor","wind_gust_sensor","wind_direction_sensor","rain_state_sensor","rain_today_sensor","rain_rate_sensor","uv_sensor","solar_lux_sensor","pressure_sensor","camera_image"]),c=i=>{"string"==typeof i&&this._isValidEntityId(i)&&t.add(i)},r=i=>{"string"!=typeof i?Array.isArray(i)?i.forEach((i=>{"string"==typeof i?c(i):s(i)})):s(i):c(i)},s=i=>{if(!i||"object"!=typeof i)return;const e=i;n.has(e)||(n.add(e),Array.isArray(i)?i.forEach((i=>s(i))):Object.entries(i).forEach((([i,e])=>{o.has(i)?r(e):"target"!==i?Array.isArray(e)?e.forEach((i=>s(i))):e&&"object"==typeof e&&s(e):(i=>{if(!i||"object"!=typeof i)return;r(i.entity_id)})(e)})))};return s(a),s(i.switch_rows),s(i.cards),[...t]}_hasAnyUnavailable(i,e){if(!this.hass)return!1;const t=this._getAllCardEntities(i,e),a=new Set(["unavailable","unknown","offline"]);return t.some((i=>{var e,t;if(!i)return!1;const n=null===(t=null===(e=this.hass)||void 0===e?void 0:e.states)||void 0===t?void 0:t[i];if(!n)return!0;const o=(n.state||"").toLowerCase();return a.has(o)}))}};mt.styles=[dt,ut,Dt,ht,jt,zt,yt,pt],i([mi({attribute:!1})],mt.prototype,"hass",void 0),i([wi()],mt.prototype,"_config",void 0),i([wi()],mt.prototype,"_visiblePendingSwitches",void 0),i([wi()],mt.prototype,"_weatherForecastGraphSelections",void 0),mt=At=i([pi("space-hub-card")],mt),window.customCards=window.customCards||[],window.customCards.push({type:"space-hub-card",name:"Space Hub Card",description:"Space control hub card",preview:!1,version:"2.0.19"});try{const i=window;if(!i.__SPACE_HUB_CARD_LOGGED__){const e="background:#3f51b5;color:#fff;padding:2px 6px;border-radius:4px 0 0 4px;font-weight:700",t="background:#e0e0e0;color:#111;padding:2px 6px;border-radius:0 4px 4px 0;";console.info("%c🚀 Space hub card%c v2.0.19",e,t),i.__SPACE_HUB_CARD_LOGGED__=!0}}catch(i){}var wt=mt;export{mt as SpaceHubCard,wt as default};

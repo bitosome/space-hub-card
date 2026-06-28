@@ -687,6 +687,30 @@ export class SpaceHubCardEditor extends LitElement {
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
+              <space-hub-textfield
+                label="Temperature Size (px)"
+                type="number"
+                min="18"
+                max="56"
+                .value=${String(config.temp_size ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.temp_size`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+              <space-hub-textfield
+                label="Icon Size (px)"
+                type="number"
+                min="28"
+                max="76"
+                .value=${String(config.icon_size ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.icon_size`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+            </div>
+            <div class="side-by-side">
               <ha-formfield label="Animated icons">
                 <ha-switch
                   .checked=${config.animated_icons !== false}
@@ -720,6 +744,17 @@ export class SpaceHubCardEditor extends LitElement {
                   this._valueChanged(`${basePath}.forecast_slots`, Number.isFinite(v) && v > 0 ? v : undefined);
                 }}
               ></space-hub-textfield>
+              <space-hub-textfield
+                label="Graph Height (px)"
+                type="number"
+                min="82"
+                max="260"
+                .value=${String(config.graph_height ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.graph_height`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
             </div>
             <space-hub-textfield
               label="Forecast Fields"
@@ -739,10 +774,7 @@ export class SpaceHubCardEditor extends LitElement {
               ${this._renderEntityField('24h Min Temperature Sensor', `${basePath}.temp_min_24h_sensor`, config.temp_min_24h_sensor, { domain: 'sensor' })}
               ${this._renderEntityField('24h Max Temperature Sensor', `${basePath}.temp_max_24h_sensor`, config.temp_max_24h_sensor, { domain: 'sensor' })}
             </div>
-            <div class="side-by-side">
-              ${this._renderEntityField('Feels Like Sensor', `${basePath}.feels_like_sensor`, config.feels_like_sensor, { domain: 'sensor' })}
-              ${this._renderEntityField('Dew Point Sensor', `${basePath}.dewpoint_sensor`, config.dewpoint_sensor, { domain: 'sensor' })}
-            </div>
+            ${this._renderEntityField('Feels Like Sensor', `${basePath}.feels_like_sensor`, config.feels_like_sensor, { domain: 'sensor' })}
             <div class="side-by-side">
               ${this._renderEntityField('Wind Speed Sensor', `${basePath}.wind_speed_sensor`, config.wind_speed_sensor, { domain: 'sensor' })}
               ${this._renderEntityField('Wind Gust Sensor', `${basePath}.wind_gust_sensor`, config.wind_gust_sensor, { domain: 'sensor' })}

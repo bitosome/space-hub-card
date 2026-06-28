@@ -86,6 +86,10 @@ export interface HeaderWeather {
   name?: string;
   icon?: string;
   height?: number;
+  temp_size?: number;
+  temperature_size?: number;
+  icon_size?: number;
+  graph_height?: number;
   animated_icons?: boolean;
   show_forecast?: boolean;
   forecast_type?: string;
@@ -278,7 +282,8 @@ export class SpaceHubCard extends LitElement {
           const hasContent = !!(
             weather.name || weather.icon || weather.entity ||
             weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
-            weather.forecast_type || weather.forecast_slots || weather.forecast_fields || weather.time_format || weather.height ||
+            weather.forecast_type || weather.forecast_slots || weather.forecast_fields || weather.time_format ||
+            weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
             weather.temp_sensor || weather.temp_min_24h_sensor || weather.temp_max_24h_sensor ||
             weather.humidity_sensor ||
             weather.feels_like_sensor || weather.dewpoint_sensor ||
@@ -319,12 +324,22 @@ export class SpaceHubCard extends LitElement {
             }
           });
 
-          if (weather.height !== undefined && weather.height !== null) {
-            const height = Number(weather.height);
-            if (!Number.isFinite(height) || height < 0) {
-              errors.push(`Header ${index + 1}: Weather tile height must be a positive number, got: ${weather.height}`);
+          const positiveNumberFields = [
+            'height',
+            'temp_size',
+            'temperature_size',
+            'icon_size',
+            'graph_height',
+          ] as const;
+          positiveNumberFields.forEach((field) => {
+            const raw = weather[field as keyof typeof weather];
+            if (raw !== undefined && raw !== null) {
+              const value = Number(raw);
+              if (!Number.isFinite(value) || value <= 0) {
+                errors.push(`Header ${index + 1}: Weather tile ${field} must be a positive number, got: ${raw}`);
+              }
             }
-          }
+          });
 
           if (weather.forecast_slots !== undefined && weather.forecast_slots !== null) {
             const slots = Number(weather.forecast_slots);
@@ -598,6 +613,10 @@ export class SpaceHubCard extends LitElement {
       name: weatherRaw.name || weatherRaw.main_name,
       icon: weatherRaw.icon || weatherRaw.main_icon,
       height: weatherRaw.height,
+      temp_size: weatherRaw.temp_size,
+      temperature_size: weatherRaw.temperature_size,
+      icon_size: weatherRaw.icon_size,
+      graph_height: weatherRaw.graph_height,
       animated_icons: weatherRaw.animated_icons,
       show_forecast: weatherRaw.show_forecast,
       forecast_type: weatherRaw.forecast_type,
@@ -636,7 +655,8 @@ export class SpaceHubCard extends LitElement {
     const hasWeather = !!(weatherRaw && (
       weatherRaw.name || weatherRaw.main_name || weatherRaw.icon || weatherRaw.main_icon ||
       weatherRaw.animated_icons !== undefined || weatherRaw.show_forecast !== undefined ||
-      weatherRaw.forecast_type || weatherRaw.forecast_slots || weatherRaw.forecast_fields || weatherRaw.time_format || weatherRaw.height ||
+      weatherRaw.forecast_type || weatherRaw.forecast_slots || weatherRaw.forecast_fields || weatherRaw.time_format ||
+      weatherRaw.height || weatherRaw.temp_size || weatherRaw.temperature_size || weatherRaw.icon_size || weatherRaw.graph_height ||
       weatherRaw.entity || weatherRaw.temp_sensor || weatherRaw.temp_min_24h_sensor || weatherRaw.temp_max_24h_sensor ||
       weatherRaw.humidity_sensor ||
       weatherRaw.feels_like_sensor || weatherRaw.dewpoint_sensor ||

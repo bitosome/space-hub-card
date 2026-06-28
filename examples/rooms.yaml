@@ -14,7 +14,10 @@
     - weather:
         name: Outdoors
         entity: weather.forecast_home
-        height: 700
+        height: 850
+        temp_size: 32
+        icon_size: 46
+        graph_height: 124
         forecast_type: hourly
         time_format: 24h
         forecast_slots: 12
@@ -26,7 +29,6 @@
         temp_max_24h_sensor: sensor.outdoors_temperature_max_24h
         humidity_sensor: sensor.ecowitt_ws90_1_outdoor_humidity
         feels_like_sensor: sensor.ecowitt_ws90_1_feels_like_temperature
-        dewpoint_sensor: sensor.ecowitt_ws90_1_dewpoint
         wind_speed_sensor: sensor.ecowitt_ws90_1_wind_speed
         wind_gust_sensor: sensor.ecowitt_ws90_1_wind_gust
         wind_direction_sensor: sensor.ecowitt_ws90_1_wind_direction

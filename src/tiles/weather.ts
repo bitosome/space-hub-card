@@ -2,12 +2,18 @@
 import { html, nothing, svg, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
 import { renderInteractiveChip } from '../chips';
+import { METEOCON_ICONS } from '../assets/meteocons';
+import type { MeteoconIconKey } from '../assets/meteocons';
 
 interface WeatherTileConfig {
   entity?: string;
   name?: string;
   icon?: string;
   height?: number;
+  temp_size?: number;
+  temperature_size?: number;
+  icon_size?: number;
+  graph_height?: number;
   animated_icons?: boolean;
   show_forecast?: boolean;
   forecast_type?: string;
@@ -37,7 +43,7 @@ interface WeatherTileConfig {
 }
 
 interface MetricConfig {
-  icon: string;
+  icon: MeteoconIconKey;
   label: string;
   value: string;
   entity?: string;
@@ -116,22 +122,22 @@ const FORECAST_FIELD_ALIASES: Record<string, ForecastFieldKey> = {
   cloud_coverage: 'cloud_coverage',
 };
 
-const CONDITION_ICONS: Record<string, string> = {
-  'clear-night': 'mdi:weather-night',
-  cloudy: 'mdi:weather-cloudy',
-  exceptional: 'mdi:alert-circle-outline',
-  fog: 'mdi:weather-fog',
-  hail: 'mdi:weather-hail',
-  lightning: 'mdi:weather-lightning',
-  'lightning-rainy': 'mdi:weather-lightning-rainy',
-  partlycloudy: 'mdi:weather-partly-cloudy',
-  pouring: 'mdi:weather-pouring',
-  rainy: 'mdi:weather-rainy',
-  snowy: 'mdi:weather-snowy',
-  'snowy-rainy': 'mdi:weather-snowy-rainy',
-  sunny: 'mdi:weather-sunny',
-  windy: 'mdi:weather-windy',
-  'windy-variant': 'mdi:weather-windy-variant',
+const CONDITION_METEOCONS: Record<string, MeteoconIconKey> = {
+  'clear-night': 'clear-night',
+  cloudy: 'cloudy',
+  exceptional: 'weather-alarm',
+  fog: 'fog',
+  hail: 'hail',
+  lightning: 'thunderstorms',
+  'lightning-rainy': 'thunderstorms-rain',
+  partlycloudy: 'partly-cloudy-day',
+  pouring: 'rain',
+  rainy: 'rain',
+  snowy: 'snow',
+  'snowy-rainy': 'sleet',
+  sunny: 'clear-day',
+  windy: 'wind',
+  'windy-variant': 'wind-alert',
 };
 
 function temperatureColor(value: number): string {
@@ -187,6 +193,12 @@ function formatHumidity(host: any, entityId?: string): string {
   return value === undefined ? '—%' : `${value.toFixed(0)}%`;
 }
 
+function configNumber(raw: unknown, min: number, max: number): number | undefined {
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value <= 0) return undefined;
+  return Math.max(min, Math.min(max, value));
+}
+
 function windDirectionLabel(host: any, entityId?: string): string {
   const degrees = numericState(host, entityId);
   if (degrees === undefined) return '';
@@ -236,9 +248,24 @@ function rainStateLabel(host: any, config: WeatherTileConfig): string {
   return rate === '—' || rate === '0.0 mm/h' ? 'Raining' : `Raining ${rate}`;
 }
 
-function metric(icon: string, label: string, value: string, entity?: string, active = false): MetricConfig | undefined {
+function metric(icon: MeteoconIconKey, label: string, value: string, entity?: string, active = false): MetricConfig | undefined {
   if (!entity && value === '—') return undefined;
   return { icon, label, value, entity, active };
+}
+
+function conditionMeteocon(rawState: string): MeteoconIconKey {
+  return CONDITION_METEOCONS[rawState] || 'partly-cloudy-day';
+}
+
+function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: string): TemplateResult {
+  return html`
+    <img
+      class=${className}
+      src=${METEOCON_ICONS[icon]}
+      alt=${label}
+      draggable="false"
+    />
+  `;
 }
 
 function buildMetrics(host: any, config: WeatherTileConfig): MetricConfig[] {
@@ -247,12 +274,14 @@ function buildMetrics(host: any, config: WeatherTileConfig): MetricConfig[] {
   const rainValue = rainStateLabel(host, config) || formatEntity(host, config.rain_today_sensor, 1);
 
   return [
-    metric('mdi:weather-windy', 'Wind', formatWind(host, config.wind_speed_sensor, config.wind_direction_sensor), config.wind_speed_sensor),
-    metric('mdi:weather-tornado', 'Gust', formatEntity(host, config.wind_gust_sensor, 1), config.wind_gust_sensor),
-    metric(raining ? 'mdi:weather-pouring' : 'mdi:water-outline', 'Rain', rainValue, rainEntity, raining),
-    metric('mdi:sun-wireless-outline', 'UV', formatEntity(host, config.uv_sensor, 0), config.uv_sensor),
-    metric('mdi:white-balance-sunny', 'Solar', formatEntity(host, config.solar_lux_sensor, 1, true), config.solar_lux_sensor),
-    metric('mdi:gauge', 'Pressure', formatEntity(host, config.pressure_sensor, 0), config.pressure_sensor),
+    metric('wind', 'Wind', formatWind(host, config.wind_speed_sensor, config.wind_direction_sensor), config.wind_speed_sensor),
+    metric('wind-alert', 'Gust', formatEntity(host, config.wind_gust_sensor, 1), config.wind_gust_sensor),
+    metric('thermometer-colder', '24h Min', formatTemperature(host, config.temp_min_24h_sensor), config.temp_min_24h_sensor),
+    metric('thermometer-warmer', '24h Max', formatTemperature(host, config.temp_max_24h_sensor), config.temp_max_24h_sensor),
+    metric(raining ? 'rain' : 'raindrop', 'Rain', rainValue, rainEntity, raining),
+    metric('uv-index', 'UV', formatEntity(host, config.uv_sensor, 0), config.uv_sensor),
+    metric('sun-hot', 'Solar', formatEntity(host, config.solar_lux_sensor, 1, true), config.solar_lux_sensor),
+    metric('barometer', 'Pressure', formatEntity(host, config.pressure_sensor, 0), config.pressure_sensor),
   ].filter((item): item is MetricConfig => !!item);
 }
 
@@ -461,6 +490,10 @@ function currentTemperatureValue(host: any, config: WeatherTileConfig): number |
   return numericState(host, config.temp_sensor);
 }
 
+function conditionsGraphHeight(config: WeatherTileConfig): number {
+  return configNumber(config.graph_height, 82, 260) || 118;
+}
+
 function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: ForecastItem[], hourlyItems: ForecastItem[]): TemplateResult | typeof nothing {
   const rows = dailyItems.slice(0, 7);
   if (!rows.length) return nothing;
@@ -487,16 +520,18 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
         const width = Math.max(4, right - left);
         const condition = String(item.condition || '');
         const rainProbability = Number(item.precipitation_probability);
+        const rainProbabilityLabel = Number.isFinite(rainProbability) ? `Rain ${Math.round(rainProbability)}%` : '';
         const currentLeft = key === today && currentTemp !== undefined ? rangePercent(currentTemp, min, max) : undefined;
         return html`
           <div class="weather-daily-row">
             <div class="weather-daily-day">${dayLabel(item.datetime)}</div>
             <div class="weather-daily-condition">
-              <ha-icon
-                class=${`weather-daily-icon weather-condition-${conditionClass(condition)}${config.animated_icons === false ? '' : ' animated'}`}
-                .icon=${CONDITION_ICONS[condition] || 'mdi:weather-partly-cloudy'}
-              ></ha-icon>
-              ${Number.isFinite(rainProbability) && rainProbability > 0 ? html`<span>${Math.round(rainProbability)}%</span>` : nothing}
+              ${renderMeteoconIcon(
+                conditionMeteocon(condition),
+                `weather-daily-icon weather-condition-${conditionClass(condition)}`,
+                conditionLabel(condition),
+              )}
+              ${rainProbabilityLabel ? html`<span title="Chance of precipitation">${rainProbabilityLabel}</span>` : nothing}
             </div>
             <div class="weather-daily-low">
               <span>${low.toFixed(0)}°</span>
@@ -613,7 +648,7 @@ function renderConditionsGrid(box: ConditionsChartBox, ticks: number[], points: 
 }
 
 function renderConditionsTemperature(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: 118, left: 14, right: 42, top: 15, bottom: 24 };
+  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 14, right: 42, top: 15, bottom: 24 };
   const { points, min, max } = buildConditionsPoints(items, 'temperature', box);
   if (points.length < 2) return nothing;
 
@@ -648,56 +683,61 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
           ${icons.map((point) => {
             const condition = String(point.item.condition || '');
             return html`
-              <ha-icon
-                class=${`weather-conditions-icon weather-condition-${conditionClass(condition)}${config.animated_icons === false ? '' : ' animated'}`}
-                .icon=${CONDITION_ICONS[condition] || 'mdi:weather-partly-cloudy'}
-              ></ha-icon>
+              ${renderMeteoconIcon(
+                conditionMeteocon(condition),
+                `weather-conditions-icon weather-condition-${conditionClass(condition)}`,
+                conditionLabel(condition),
+              )}
             `;
           })}
         </div>
       ` : nothing}
 
-      <svg
-        class="weather-conditions-chart"
-        viewBox=${`0 0 ${box.width} ${box.height}`}
-        preserveAspectRatio="none"
-        role="img"
-        aria-label="Temperature forecast graph"
-        @pointerdown=${stopTileAction}
-        @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, key, points.length)}
-        @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, key, points.length)}
-      >
-        <defs>
-          <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="rgba(255, 179, 28, 0.66)"></stop>
-            <stop offset="52%" stop-color="rgba(255, 179, 28, 0.24)"></stop>
-            <stop offset="100%" stop-color="rgba(47, 185, 221, 0.38)"></stop>
-          </linearGradient>
-          <linearGradient id=${lineGradient} x1=${box.left} x2=${box.width - box.right} y1="0" y2="0" gradientUnits="userSpaceOnUse">
-            ${points.map((point, index) => svg`
-              <stop offset=${`${(index / (points.length - 1)) * 100}%`} stop-color=${temperatureColor(point.value)}></stop>
-            `)}
-          </linearGradient>
-        </defs>
-        ${renderConditionsGrid(box, ticks, points, config.time_format)}
-        <path class="weather-conditions-area" d=${fillPath} fill=${`url(#${fillGradient})`}></path>
-        <path class="weather-conditions-line-shadow" d=${path}></path>
-        <path class="weather-conditions-temp-line" d=${path} stroke=${`url(#${lineGradient})`}></path>
-        <text class="weather-conditions-extreme" x=${minPoint.x} y=${Math.max(12, minPoint.y - 9)}>L</text>
-        <text class="weather-conditions-extreme" x=${maxPoint.x} y=${Math.max(12, maxPoint.y - 9)}>H</text>
-        <line class="weather-conditions-selected-line" x1=${selected.x} x2=${selected.x} y1=${box.top} y2=${baseline}></line>
-        <circle class="weather-conditions-dot" cx=${selected.x} cy=${selected.y} r="4.2"></circle>
-        <circle class="weather-conditions-dot-ring" cx=${selected.x} cy=${selected.y} r="7.2"></circle>
-        <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + 3}>${max.toFixed(0)}°</text>
-        <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + ((baseline - box.top) / 2)}>${mid.toFixed(0)}°</text>
-        <text class="weather-conditions-axis" x=${box.width - 5} y=${baseline}>${min.toFixed(0)}°</text>
-      </svg>
+      <div class="weather-conditions-chart-frame">
+        <svg
+          class="weather-conditions-chart"
+          viewBox=${`0 0 ${box.width} ${box.height}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label="Temperature forecast graph"
+          @pointerdown=${stopTileAction}
+          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, key, points.length)}
+          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, key, points.length)}
+        >
+          <defs>
+            <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(255, 179, 28, 0.66)"></stop>
+              <stop offset="52%" stop-color="rgba(255, 179, 28, 0.24)"></stop>
+              <stop offset="100%" stop-color="rgba(47, 185, 221, 0.38)"></stop>
+            </linearGradient>
+            <linearGradient id=${lineGradient} x1=${box.left} x2=${box.width - box.right} y1="0" y2="0" gradientUnits="userSpaceOnUse">
+              ${points.map((point, index) => svg`
+                <stop offset=${`${(index / (points.length - 1)) * 100}%`} stop-color=${temperatureColor(point.value)}></stop>
+              `)}
+            </linearGradient>
+          </defs>
+          ${renderConditionsGrid(box, ticks, points, config.time_format)}
+          <path class="weather-conditions-area" d=${fillPath} fill=${`url(#${fillGradient})`}></path>
+          <path class="weather-conditions-line-shadow" d=${path}></path>
+          <path class="weather-conditions-temp-line" d=${path} stroke=${`url(#${lineGradient})`}></path>
+          <text class="weather-conditions-extreme" x=${minPoint.x} y=${Math.max(12, minPoint.y - 9)}>L</text>
+          <text class="weather-conditions-extreme" x=${maxPoint.x} y=${Math.max(12, maxPoint.y - 9)}>H</text>
+          <line class="weather-conditions-selected-line" x1=${selected.x} x2=${selected.x} y1=${box.top} y2=${baseline}></line>
+          <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + 3}>${max.toFixed(0)}°</text>
+          <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + ((baseline - box.top) / 2)}>${mid.toFixed(0)}°</text>
+          <text class="weather-conditions-axis" x=${box.width - 5} y=${baseline}>${min.toFixed(0)}°</text>
+        </svg>
+        <span
+          class="weather-conditions-selected-dot"
+          style=${`left:${((selected.x / box.width) * 100).toFixed(2)}%;top:${((selected.y / box.height) * 100).toFixed(2)}%;`}
+        ></span>
+      </div>
     </section>
   `;
 }
 
 function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: 92, left: 14, right: 42, top: 10, bottom: 22 };
+  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 14, right: 42, top: 10, bottom: 22 };
   const { points } = buildConditionsPoints(items, 'precipitation_probability', box);
   if (points.length < 2) return nothing;
 
@@ -723,33 +763,37 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
         </div>
       </div>
       <div class="weather-conditions-subtitle">Today's chance: ${Math.round(maxPoint.value)}%</div>
-      <svg
-        class="weather-conditions-chart"
-        viewBox=${`0 0 ${box.width} ${box.height}`}
-        preserveAspectRatio="none"
-        role="img"
-        aria-label="Chance of precipitation forecast graph"
-        @pointerdown=${stopTileAction}
-        @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, key, points.length)}
-        @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, key, points.length)}
-      >
-        <defs>
-          <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="rgba(56, 199, 243, 0.48)"></stop>
-            <stop offset="100%" stop-color="rgba(56, 199, 243, 0.10)"></stop>
-          </linearGradient>
-        </defs>
-        ${renderConditionsGrid(box, ticks, points, config.time_format)}
-        <path class="weather-conditions-rain-area" d=${fillPath} fill=${`url(#${fillGradient})`}></path>
-        <path class="weather-conditions-line-shadow" d=${path}></path>
-        <path class="weather-conditions-rain-line" d=${path}></path>
-        <line class="weather-conditions-selected-line" x1=${selected.x} x2=${selected.x} y1=${box.top} y2=${baseline}></line>
-        <circle class="weather-conditions-dot" cx=${selected.x} cy=${selected.y} r="4.2"></circle>
-        <circle class="weather-conditions-dot-ring" cx=${selected.x} cy=${selected.y} r="7.2"></circle>
-        <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + 4}>100%</text>
-        <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + ((baseline - box.top) / 2)}>50%</text>
-        <text class="weather-conditions-axis" x=${box.width - 5} y=${baseline}>0%</text>
-      </svg>
+      <div class="weather-conditions-chart-frame">
+        <svg
+          class="weather-conditions-chart"
+          viewBox=${`0 0 ${box.width} ${box.height}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label="Chance of precipitation forecast graph"
+          @pointerdown=${stopTileAction}
+          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, key, points.length)}
+          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, key, points.length)}
+        >
+          <defs>
+            <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(56, 199, 243, 0.48)"></stop>
+              <stop offset="100%" stop-color="rgba(56, 199, 243, 0.10)"></stop>
+            </linearGradient>
+          </defs>
+          ${renderConditionsGrid(box, ticks, points, config.time_format)}
+          <path class="weather-conditions-rain-area" d=${fillPath} fill=${`url(#${fillGradient})`}></path>
+          <path class="weather-conditions-line-shadow" d=${path}></path>
+          <path class="weather-conditions-rain-line" d=${path}></path>
+          <line class="weather-conditions-selected-line" x1=${selected.x} x2=${selected.x} y1=${box.top} y2=${baseline}></line>
+          <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + 4}>100%</text>
+          <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + ((baseline - box.top) / 2)}>50%</text>
+          <text class="weather-conditions-axis" x=${box.width - 5} y=${baseline}>0%</text>
+        </svg>
+        <span
+          class="weather-conditions-selected-dot"
+          style=${`left:${((selected.x / box.width) * 100).toFixed(2)}%;top:${((selected.y / box.height) * 100).toFixed(2)}%;`}
+        ></span>
+      </div>
     </section>
   `;
 }
@@ -775,11 +819,8 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const conditionState = cleanState(stateObj(host, config.entity)).toLowerCase();
   const name = config.name || 'Weather';
   const temp = formatTemperature(host, config.temp_sensor);
-  const tempMin24h = formatTemperature(host, config.temp_min_24h_sensor);
-  const tempMax24h = formatTemperature(host, config.temp_max_24h_sensor);
   const humidity = formatHumidity(host, config.humidity_sensor);
   const feels = formatTemperature(host, config.feels_like_sensor);
-  const dewpoint = formatTemperature(host, config.dewpoint_sensor);
   const metrics = buildMetrics(host, config);
   const forecastItems = config.show_forecast === false ? [] : normalizeForecast(config.forecast);
   const dailyForecastItems = config.show_forecast === false ? [] : normalizeForecast(config.daily_forecast);
@@ -792,8 +833,8 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const visibleForecast = forecastItems.slice(0, conditionsSlots);
   const forecastText = forecastSummary(forecastItems, config.time_format);
   const displayConditionState = String(forecastItems[0]?.condition || conditionState || '').toLowerCase();
-  const icon = config.icon || CONDITION_ICONS[displayConditionState] || CONDITION_ICONS[conditionState] || 'mdi:weather-partly-cloudy';
-  const iconClass = `weather-icon weather-condition-${conditionClass(displayConditionState || conditionState)}${config.animated_icons === false ? '' : ' animated'}`;
+  const iconCondition = displayConditionState || conditionState;
+  const iconClass = `weather-icon weather-condition-${conditionClass(iconCondition)}`;
   const weatherHeadline = forecastText || conditionLabel(displayConditionState || conditionState);
   const forecastSourceBadge = html`<span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>`;
   const conditionsKey = config.forecast_graph_key || `weather-${config.entity || name}`;
@@ -802,7 +843,16 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const chips = Array.isArray(config.chips) ? config.chips : [];
   const hasDbl = !!config.double_tap_action;
   const height = Number(config.height);
-  const heightStyle = Number.isFinite(height) && height > 0 ? `--weather-tile-h:${height}px;` : '';
+  const tempSize = configNumber(config.temp_size ?? config.temperature_size, 18, 56);
+  const iconSize = configNumber(config.icon_size, 28, 76);
+  const graphHeight = configNumber(config.graph_height, 82, 260);
+  const styleParts = [
+    Number.isFinite(height) && height > 0 ? `--weather-tile-h:${height}px;` : '',
+    tempSize ? `--weather-temp-size:${tempSize}px;` : '',
+    iconSize ? `--weather-icon-size:${iconSize}px;--weather-icon-bg-size:${iconSize + 16}px;` : '',
+    graphHeight ? `--weather-graph-height:${graphHeight}px;` : '',
+  ].filter(Boolean);
+  const heightStyle = styleParts.join('');
 
   const onAction = (ev: CustomEvent) => {
     if (typeof host?._onWeatherAction === 'function') host._onWeatherAction(ev, config);
@@ -832,74 +882,38 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 <div class="weather-name">${weatherHeadline}</div>
                 ${forecastItems.length ? forecastSourceBadge : nothing}
               </div>
-              <div class="weather-secondary">
+              <div class="weather-primary">
                 <span
-                  class="weather-clickable"
+                  class="weather-temp weather-clickable"
                   role="button"
                   tabindex="0"
-                  aria-label="Open feels like temperature details"
+                  aria-label="Open outdoor temperature details"
                   @pointerdown=${stopTileAction}
                   @pointerup=${stopTileAction}
-                  @click=${(ev: Event) => openMoreInfo(host, ev, config.feels_like_sensor)}
-                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.feels_like_sensor)}
-                >Feels ${feels}</span>
+                  @click=${(ev: Event) => openMoreInfo(host, ev, config.temp_sensor)}
+                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.temp_sensor)}
+                >${temp}</span>
                 <span
-                  class="weather-clickable"
+                  class="weather-humidity weather-clickable"
                   role="button"
                   tabindex="0"
-                  aria-label="Open dew point details"
+                  aria-label="Open outdoor humidity details"
                   @pointerdown=${stopTileAction}
                   @pointerup=${stopTileAction}
-                  @click=${(ev: Event) => openMoreInfo(host, ev, config.dewpoint_sensor)}
-                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.dewpoint_sensor)}
-                >Dew ${dewpoint}</span>
-                ${config.temp_min_24h_sensor ? html`
-                  <span
-                    class="weather-clickable"
-                    role="button"
-                    tabindex="0"
-                    aria-label="Open 24 hour minimum temperature details"
-                    @pointerdown=${stopTileAction}
-                    @pointerup=${stopTileAction}
-                    @click=${(ev: Event) => openMoreInfo(host, ev, config.temp_min_24h_sensor)}
-                    @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.temp_min_24h_sensor)}
-                  >24h Min ${tempMin24h}</span>
-                ` : nothing}
-                ${config.temp_max_24h_sensor ? html`
-                  <span
-                    class="weather-clickable"
-                    role="button"
-                    tabindex="0"
-                    aria-label="Open 24 hour maximum temperature details"
-                    @pointerdown=${stopTileAction}
-                    @pointerup=${stopTileAction}
-                    @click=${(ev: Event) => openMoreInfo(host, ev, config.temp_max_24h_sensor)}
-                    @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.temp_max_24h_sensor)}
-                  >24h Max ${tempMax24h}</span>
-                ` : nothing}
+                  @click=${(ev: Event) => openMoreInfo(host, ev, config.humidity_sensor)}
+                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.humidity_sensor)}
+                >${humidity}</span>
               </div>
-            </div>
-            <div class="weather-primary">
-              <span
-                class="weather-temp weather-clickable"
+              <div
+                class="weather-feels weather-clickable"
                 role="button"
                 tabindex="0"
-                aria-label="Open outdoor temperature details"
+                aria-label="Open feels like temperature details"
                 @pointerdown=${stopTileAction}
                 @pointerup=${stopTileAction}
-                @click=${(ev: Event) => openMoreInfo(host, ev, config.temp_sensor)}
-                @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.temp_sensor)}
-              >${temp}</span>
-              <span
-                class="weather-humidity weather-clickable"
-                role="button"
-                tabindex="0"
-                aria-label="Open outdoor humidity details"
-                @pointerdown=${stopTileAction}
-                @pointerup=${stopTileAction}
-                @click=${(ev: Event) => openMoreInfo(host, ev, config.humidity_sensor)}
-                @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.humidity_sensor)}
-              >${humidity}</span>
+                @click=${(ev: Event) => openMoreInfo(host, ev, config.feels_like_sensor)}
+                @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.feels_like_sensor)}
+              >Feels like ${feels}</div>
             </div>
             <div class="weather-icon-wrap weather-clickable"
               role="button"
@@ -910,7 +924,9 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
               @click=${(ev: Event) => openMoreInfo(host, ev, config.entity)}
               @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.entity)}
             >
-              <ha-icon class=${iconClass} .icon=${icon}></ha-icon>
+              ${config.icon
+                ? html`<ha-icon class=${iconClass} .icon=${config.icon}></ha-icon>`
+                : renderMeteoconIcon(conditionMeteocon(iconCondition), iconClass, conditionLabel(iconCondition))}
             </div>
           </div>
 
@@ -927,7 +943,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 @click=${(ev: Event) => openMoreInfo(host, ev, item.entity)}
                 @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, item.entity)}
               >
-                <ha-icon .icon=${item.icon}></ha-icon>
+                ${renderMeteoconIcon(item.icon, 'weather-metric-icon', item.label)}
                 <span class="weather-metric-label">${item.label}</span>
                 <span class="weather-metric-value">${item.value}</span>
               </div>
