@@ -3,7 +3,7 @@ import { LitElement, html, css, CSSResultGroup, TemplateResult, nothing } from '
 import { customElement, property, state } from 'lit/decorators';
 import { fireEvent } from 'custom-card-helpers';
 import type { HomeAssistant } from 'custom-card-helpers';
-import type { SpaceHubConfig, SpaceHubHeader, HeaderMain, HeaderAC, HeaderThermostat } from './space-hub';
+import type { SpaceHubConfig, SpaceHubHeader, HeaderMain, HeaderWeather, HeaderAC, HeaderThermostat } from './space-hub';
 import { normalizeActionConfig, normalizeConfirmation } from './action-config';
 import { clone } from './const';
 
@@ -13,6 +13,9 @@ const CHIP_TYPES = ['lock', 'door', 'presence', 'illuminance', 'gate', 'sliding_
 const SWITCH_TYPES = ['switch', 'smart_plug', 'lock'] as const;
 // Glow modes
 const GLOW_MODES = ['static', 'pulse', 'none'] as const;
+// Weather forecast types supported by Home Assistant weather entities
+const WEATHER_FORECAST_TYPES = ['hourly', 'daily', 'twice_daily'] as const;
+const WEATHER_TIME_FORMATS = ['24h', '12h'] as const;
 // Action types supported by HA
 const ACTION_TYPES = ['more-info', 'toggle', 'perform-action', 'navigate', 'url', 'assist', 'none'] as const;
 const ARROW_UP_ICON_PATH = 'M4,12L5.41,13.41L11,7.83V20H13V7.83L18.59,13.42L20,12L12,4L4,12Z';
@@ -638,9 +641,135 @@ export class SpaceHubCardEditor extends LitElement {
   private _renderHeader(header: SpaceHubHeader, idx: number): TemplateResult {
     const base = `headers.${idx}`;
     return html`
+      ${this._renderWeatherConfig(header.weather, `${base}.weather`)}
       ${this._renderMainTileConfig(header.main, `${base}.main`)}
       ${this._renderACConfig(header.ac, `${base}.ac`)}
       ${this._renderThermostatConfig(header.thermostat, `${base}.thermostat`)}
+    `;
+  }
+
+  // ── Weather Tile Config ──────────────────────────────────────
+
+  private _renderWeatherConfig(weather: HeaderWeather | undefined, basePath: string): TemplateResult {
+    const has = !!weather;
+    const config = weather || {};
+    return html`
+      <ha-expansion-panel outlined .header=${'Weather Tile'}>
+        <div class="section-content">
+          ${!has ? html`
+            <button class="editor-btn" @click=${() => { this._valueChanged(basePath, { name: 'Weather' }); }}>
+              <ha-icon icon="mdi:plus"></ha-icon> Add Weather Tile
+            </button>
+          ` : html`
+            <div class="side-by-side">
+              <space-hub-textfield
+                label="Name"
+                .value=${config.name || ''}
+                @input=${(ev: Event) => this._valueChanged(`${basePath}.name`, (ev.target as HTMLInputElement).value)}
+              ></space-hub-textfield>
+              <ha-icon-picker
+                .hass=${this.hass}
+                label="Icon"
+                .value=${config.icon || ''}
+                @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.icon`, ev.detail.value)}
+              ></ha-icon-picker>
+            </div>
+            <div class="side-by-side">
+              ${this._renderEntityField('Weather Entity', `${basePath}.entity`, config.entity, { domain: 'weather' })}
+              <space-hub-textfield
+                label="Tile Height (px)"
+                type="number"
+                .value=${String(config.height ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.height`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+            </div>
+            <div class="side-by-side">
+              <ha-formfield label="Animated icons">
+                <ha-switch
+                  .checked=${config.animated_icons !== false}
+                  @change=${(ev: Event) => {
+                    this._valueChanged(`${basePath}.animated_icons`, this._checkedFromEvent(ev) ? undefined : false);
+                  }}
+                ></ha-switch>
+              </ha-formfield>
+              <ha-formfield label="Show forecast">
+                <ha-switch
+                  .checked=${config.show_forecast !== false}
+                  @change=${(ev: Event) => {
+                    this._valueChanged(`${basePath}.show_forecast`, this._checkedFromEvent(ev) ? undefined : false);
+                  }}
+                ></ha-switch>
+              </ha-formfield>
+            </div>
+            <div class="side-by-side">
+              ${this._renderSelectField('Forecast Type', `${basePath}.forecast_type`, config.forecast_type, WEATHER_FORECAST_TYPES)}
+              ${this._renderSelectField('Time Format', `${basePath}.time_format`, config.time_format, WEATHER_TIME_FORMATS)}
+            </div>
+            <div class="side-by-side">
+              <space-hub-textfield
+                label="Forecast Slots"
+                type="number"
+                min="1"
+                max="24"
+                .value=${String(config.forecast_slots ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.forecast_slots`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+            </div>
+            <space-hub-textfield
+              label="Forecast Fields"
+              placeholder="temperature, precipitation_probability"
+              .value=${Array.isArray(config.forecast_fields) ? config.forecast_fields.join(', ') : (config.forecast_fields || '')}
+              @input=${(ev: Event) => {
+                const raw = (ev.target as HTMLInputElement).value;
+                const fields = raw.split(',').map((item) => item.trim()).filter((item) => item);
+                this._valueChanged(`${basePath}.forecast_fields`, fields.length ? fields : undefined);
+              }}
+            ></space-hub-textfield>
+            <div class="side-by-side">
+              ${this._renderEntityField('Temperature Sensor', `${basePath}.temp_sensor`, config.temp_sensor, { domain: 'sensor' })}
+              ${this._renderEntityField('Humidity Sensor', `${basePath}.humidity_sensor`, config.humidity_sensor, { domain: 'sensor' })}
+            </div>
+            <div class="side-by-side">
+              ${this._renderEntityField('24h Min Temperature Sensor', `${basePath}.temp_min_24h_sensor`, config.temp_min_24h_sensor, { domain: 'sensor' })}
+              ${this._renderEntityField('24h Max Temperature Sensor', `${basePath}.temp_max_24h_sensor`, config.temp_max_24h_sensor, { domain: 'sensor' })}
+            </div>
+            <div class="side-by-side">
+              ${this._renderEntityField('Feels Like Sensor', `${basePath}.feels_like_sensor`, config.feels_like_sensor, { domain: 'sensor' })}
+              ${this._renderEntityField('Dew Point Sensor', `${basePath}.dewpoint_sensor`, config.dewpoint_sensor, { domain: 'sensor' })}
+            </div>
+            <div class="side-by-side">
+              ${this._renderEntityField('Wind Speed Sensor', `${basePath}.wind_speed_sensor`, config.wind_speed_sensor, { domain: 'sensor' })}
+              ${this._renderEntityField('Wind Gust Sensor', `${basePath}.wind_gust_sensor`, config.wind_gust_sensor, { domain: 'sensor' })}
+            </div>
+            <div class="side-by-side">
+              ${this._renderEntityField('Wind Direction Sensor', `${basePath}.wind_direction_sensor`, config.wind_direction_sensor, { domain: 'sensor' })}
+              ${this._renderEntityField('Rain State Sensor', `${basePath}.rain_state_sensor`, config.rain_state_sensor, { domain: 'binary_sensor' })}
+            </div>
+            <div class="side-by-side">
+              ${this._renderEntityField('Rain Today Sensor', `${basePath}.rain_today_sensor`, config.rain_today_sensor, { domain: 'sensor' })}
+              ${this._renderEntityField('Rain Rate Sensor', `${basePath}.rain_rate_sensor`, config.rain_rate_sensor, { domain: 'sensor' })}
+            </div>
+            <div class="side-by-side">
+              ${this._renderEntityField('UV Sensor', `${basePath}.uv_sensor`, config.uv_sensor, { domain: 'sensor' })}
+              ${this._renderEntityField('Solar Lux Sensor', `${basePath}.solar_lux_sensor`, config.solar_lux_sensor, { domain: 'sensor' })}
+            </div>
+            ${this._renderEntityField('Pressure Sensor', `${basePath}.pressure_sensor`, config.pressure_sensor, { domain: 'sensor' })}
+            ${this._renderChipsConfig(config.chips as any[] || [], basePath)}
+            ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, config.tap_action)}
+            ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, config.hold_action)}
+            ${this._renderActionConfig('Double Tap Action', `${basePath}.double_tap_action`, config.double_tap_action)}
+            <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
+              <ha-icon icon="mdi:delete"></ha-icon> Remove Weather Tile
+            </button>
+          `}
+        </div>
+      </ha-expansion-panel>
     `;
   }
 

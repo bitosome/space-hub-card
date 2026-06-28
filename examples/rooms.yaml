@@ -1,5 +1,42 @@
 # Examples for space-hub-card
 
+# Weather station tile example
+- type: custom:space-hub-card
+  title: Outdoors weather
+  tile_height: 80
+  main_icon_size: 40
+  chip_icon_size: 14
+  chip_font_size: 12
+  card_shadow_color: '#000000'
+  card_shadow_intensity: 0.1
+  unavailable_pulse_color: '#ff3b30'
+  headers:
+    - weather:
+        name: Outdoors
+        entity: weather.forecast_home
+        height: 700
+        forecast_type: hourly
+        time_format: 24h
+        forecast_slots: 12
+        forecast_fields:
+          - temperature
+          - precipitation_probability
+        temp_sensor: sensor.ecowitt_ws90_1_outdoor_temperature
+        temp_min_24h_sensor: sensor.outdoors_temperature_min_24h
+        temp_max_24h_sensor: sensor.outdoors_temperature_max_24h
+        humidity_sensor: sensor.ecowitt_ws90_1_outdoor_humidity
+        feels_like_sensor: sensor.ecowitt_ws90_1_feels_like_temperature
+        dewpoint_sensor: sensor.ecowitt_ws90_1_dewpoint
+        wind_speed_sensor: sensor.ecowitt_ws90_1_wind_speed
+        wind_gust_sensor: sensor.ecowitt_ws90_1_wind_gust
+        wind_direction_sensor: sensor.ecowitt_ws90_1_wind_direction
+        rain_state_sensor: binary_sensor.ecowitt_ws90_1_rain_state_piezo
+        rain_today_sensor: sensor.ecowitt_ws90_1_daily_rain_piezo
+        rain_rate_sensor: sensor.ecowitt_ws90_1_rain_rate_piezo
+        uv_sensor: sensor.ecowitt_ws90_1_uv_index
+        solar_lux_sensor: sensor.ecowitt_ws90_1_solar_lux
+        pressure_sensor: sensor.ecowitt_ws90_1_relative_pressure
+
 # Minimal single-header example
 - type: custom:space-hub-card
   title: Entrance

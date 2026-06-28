@@ -130,6 +130,7 @@ export const baseStyles: CSSResultGroup = css`
 
   /* Ensure all tile containers share the same rounding & clipping */
   .main-tile,
+  .weather-tile,
   .switch-tile,
   .switch-tile-btn,
   .thermostat-tile,
@@ -182,6 +183,8 @@ export const baseStyles: CSSResultGroup = css`
   .header-row.only-main { grid-template-columns: 1fr; }
   .header-row.main-plus-one { grid-template-columns: 1fr auto; }
   .header-row > * { height: var(--tile-h); }
+  .header-row.weather-row { grid-template-columns: 1fr; }
+  .header-row.weather-row > * { height: var(--weather-tile-h, calc(var(--tile-h) * 1.85)); }
 
   .clickable { cursor: pointer; }
 `;

@@ -13,6 +13,7 @@ import { hasActionOverride, normalizeActionConfig, normalizeConfirmation } from 
 import './editor';
 // glow utilities used by tiles
 import { renderMainTile } from './tiles/main';
+import { renderWeatherTile } from './tiles/weather';
 import { renderACTile } from './tiles/ac';
 import { renderThermostatTile } from './tiles/thermostat';
 import { renderSwitchRows } from './tiles/switch';
@@ -20,6 +21,7 @@ import { baseStyles } from './styles/base.styles';
 import { chipStyles } from './styles/chip.styles';
 import { animationStyles } from './styles/animation.styles';
 import { mainTileStyles } from './styles/main-tile.styles';
+import { weatherTileStyles } from './styles/weather-tile.styles';
 import { acTileStyles } from './styles/ac-tile.styles';
 import { thermostatTileStyles } from './styles/thermostat-tile.styles';
 import { switchTileStyles } from './styles/switch-tile.styles';
@@ -36,6 +38,14 @@ interface SwitchPendingEntry {
   initialState: string;
   showTimer?: number;
   timeoutTimer?: number;
+}
+
+interface WeatherForecastEntry {
+  forecast: unknown[];
+  ready?: boolean;
+  error?: string;
+  unsub?: UnsubscribeFunc;
+  pending?: boolean;
 }
 
 export interface HeaderMain {
@@ -71,9 +81,42 @@ export interface HeaderThermostat {
   double_tap_action?: SpaceHubActionConfig;
 }
 
+export interface HeaderWeather {
+  entity?: string;
+  name?: string;
+  icon?: string;
+  height?: number;
+  animated_icons?: boolean;
+  show_forecast?: boolean;
+  forecast_type?: string;
+  forecast_slots?: number;
+  forecast_fields?: string[] | string;
+  time_format?: string;
+  temp_sensor?: string;
+  temp_min_24h_sensor?: string;
+  temp_max_24h_sensor?: string;
+  humidity_sensor?: string;
+  feels_like_sensor?: string;
+  dewpoint_sensor?: string;
+  wind_speed_sensor?: string;
+  wind_gust_sensor?: string;
+  wind_direction_sensor?: string;
+  rain_state_sensor?: string;
+  rain_today_sensor?: string;
+  rain_rate_sensor?: string;
+  uv_sensor?: string;
+  solar_lux_sensor?: string;
+  pressure_sensor?: string;
+  chips?: unknown[];
+  tap_action?: SpaceHubActionConfig;
+  hold_action?: SpaceHubActionConfig;
+  double_tap_action?: SpaceHubActionConfig;
+}
+
 export interface SpaceHubHeader {
   // New structured format
   main?: HeaderMain;
+  weather?: HeaderWeather;
   ac?: HeaderAC;
   thermostat?: HeaderThermostat;
   // No legacy fields
@@ -114,12 +157,14 @@ export class SpaceHubCard extends LitElement {
 
   @state() private _config!: SpaceHubConfig;
   @state() private _visiblePendingSwitches = new Set<string>();
+  @state() private _weatherForecastGraphSelections = new Map<string, number>();
 
   private _helpersPromise?: Promise<any>;
   private _rowCardElements = new Map<string, LovelaceCard>();
   private _rowCardConfigs = new Map<string, LovelaceCardConfig>();
   private _rowCardPromises = new Map<string, Promise<LovelaceCard>>();
   private _switchTemplateValues = new Map<string, SwitchTemplateEntry>();
+  private _weatherForecastValues = new Map<string, WeatherForecastEntry>();
   private _pendingSwitches = new Map<string, SwitchPendingEntry>();
   private readonly _switchPendingDelayMs = 300;
   private readonly _switchPendingTimeoutMs = 10000;
@@ -161,6 +206,7 @@ export class SpaceHubCard extends LitElement {
     this._clearRowCardCache();
     this._config = c;
     this._syncTemplateEntries(c.switch_rows);
+    this._syncWeatherForecastEntries(c.headers);
   }
 
   private _isValidEntityId(value: unknown): value is string {
@@ -224,6 +270,117 @@ export class SpaceHubCard extends LitElement {
               errors.push(`Header ${index + 1}: Main tile ${field} '${value}' must be a valid entity ID`);
             }
           });
+        }
+
+        // Validate Weather configuration
+        if (header.weather) {
+          const weather = header.weather;
+          const hasContent = !!(
+            weather.name || weather.icon || weather.entity ||
+            weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
+            weather.forecast_type || weather.forecast_slots || weather.forecast_fields || weather.time_format || weather.height ||
+            weather.temp_sensor || weather.temp_min_24h_sensor || weather.temp_max_24h_sensor ||
+            weather.humidity_sensor ||
+            weather.feels_like_sensor || weather.dewpoint_sensor ||
+            weather.wind_speed_sensor || weather.wind_gust_sensor ||
+            weather.wind_direction_sensor || weather.rain_state_sensor ||
+            weather.rain_today_sensor || weather.rain_rate_sensor ||
+            weather.uv_sensor || weather.solar_lux_sensor ||
+            weather.pressure_sensor ||
+            (Array.isArray(weather.chips) && weather.chips.length > 0)
+          );
+
+          if (!hasContent && !allowIncomplete) {
+            errors.push(`Header ${index + 1}: Weather tile must have at least one weather entity, sensor, name, icon, or chip`);
+          }
+
+          const entityFields = [
+            'entity',
+            'temp_sensor',
+            'temp_min_24h_sensor',
+            'temp_max_24h_sensor',
+            'humidity_sensor',
+            'feels_like_sensor',
+            'dewpoint_sensor',
+            'wind_speed_sensor',
+            'wind_gust_sensor',
+            'wind_direction_sensor',
+            'rain_state_sensor',
+            'rain_today_sensor',
+            'rain_rate_sensor',
+            'uv_sensor',
+            'solar_lux_sensor',
+            'pressure_sensor',
+          ] as const;
+          entityFields.forEach((field) => {
+            const value = weather[field as keyof typeof weather];
+            if (value && !this._isValidEntityId(value)) {
+              errors.push(`Header ${index + 1}: Weather tile ${field} '${value}' must be a valid entity ID`);
+            }
+          });
+
+          if (weather.height !== undefined && weather.height !== null) {
+            const height = Number(weather.height);
+            if (!Number.isFinite(height) || height < 0) {
+              errors.push(`Header ${index + 1}: Weather tile height must be a positive number, got: ${weather.height}`);
+            }
+          }
+
+          if (weather.forecast_slots !== undefined && weather.forecast_slots !== null) {
+            const slots = Number(weather.forecast_slots);
+            if (!Number.isFinite(slots) || slots < 0) {
+              errors.push(`Header ${index + 1}: Weather tile forecast_slots must be a positive number, got: ${weather.forecast_slots}`);
+            }
+          }
+
+          if (
+            weather.forecast_type &&
+            !['hourly', 'daily', 'twice_daily'].includes(String(weather.forecast_type))
+          ) {
+            errors.push(`Header ${index + 1}: Weather tile forecast_type must be one of: hourly, daily, twice_daily`);
+          }
+
+          if (
+            weather.time_format &&
+            !['12h', '24h'].includes(String(weather.time_format).toLowerCase())
+          ) {
+            errors.push(`Header ${index + 1}: Weather tile time_format must be one of: 12h, 24h`);
+          }
+
+          if (weather.forecast_fields !== undefined && weather.forecast_fields !== null) {
+            const fields = Array.isArray(weather.forecast_fields)
+              ? weather.forecast_fields
+              : String(weather.forecast_fields).split(',');
+            const allowedFields = new Set([
+              'temp',
+              'temperature',
+              'rain_chance',
+              'precipitation_probability',
+              'precip_probability',
+              'probability',
+              'pop',
+              'rain',
+              'precipitation',
+              'hum',
+              'humidity',
+              'wind',
+              'wind_speed',
+              'gust',
+              'wind_gust',
+              'wind_gust_speed',
+              'uv',
+              'uv_index',
+              'cloud',
+              'clouds',
+              'cloud_coverage',
+            ]);
+            fields.forEach((field) => {
+              const normalized = String(field || '').trim().toLowerCase().replace(/[-\s]/g, '_');
+              if (normalized && !allowedFields.has(normalized)) {
+                errors.push(`Header ${index + 1}: Weather tile forecast field '${field}' is not supported`);
+              }
+            });
+          }
         }
 
         // The visual editor allows users to add AC/Thermostat before the main tile exists.
@@ -318,6 +475,7 @@ export class SpaceHubCard extends LitElement {
     chipStyles,
     animationStyles,
     mainTileStyles,
+    weatherTileStyles,
     acTileStyles,
     thermostatTileStyles,
     switchTileStyles,
@@ -376,7 +534,7 @@ export class SpaceHubCard extends LitElement {
                style=${`--panel-shadow-color:${hasUnavail ? unavailWeak : panelShadowColor}; --unavail-weak:${unavailWeak}; --unavail-strong:${unavailStrong}`}>
         <div class="metrics" style=${`--tile-h:${tileH}px; --chip-size:${chipSize}px; --chip-icon-size:${chipIconSize}px; --main-icon-size:${mainIcon}px; --chip-font-size:${chipFont}px; --ac-thermostat-icon:${acThermostatIcon}px;`}>
           <div class="root">
-            ${headers.map((h) => this._renderHeaderRow(h))}
+            ${headers.map((h, index) => this._renderHeaderRow(h, index))}
             ${renderSwitchRows(this, c.switch_rows as any[])}
             ${Array.isArray(c.cards) && c.cards.length
               ? html`
@@ -400,6 +558,7 @@ export class SpaceHubCard extends LitElement {
         if (card) card.hass = this.hass;
       });
       this._resumeTemplateSubscriptions();
+      this._resumeWeatherForecastSubscriptions();
       this._syncPendingSwitches();
     }
   }
@@ -407,16 +566,19 @@ export class SpaceHubCard extends LitElement {
   public connectedCallback(): void {
     super.connectedCallback();
     this._resumeTemplateSubscriptions();
+    this._resumeWeatherForecastSubscriptions();
   }
 
   public disconnectedCallback(): void {
     super.disconnectedCallback();
     this._switchTemplateValues.forEach((entry) => this._disposeTemplateEntry(entry));
+    this._weatherForecastValues.forEach((entry) => this._disposeWeatherForecastEntry(entry));
     this._clearAllPendingSwitches();
   }
 
-  private _renderHeaderRow(h: SpaceHubHeader): TemplateResult {
+  private _renderHeaderRow(h: SpaceHubHeader, index: number): TemplateResult {
     const mainRaw: any = h.main || {};
+    const weatherRaw: any = h.weather || {};
     const main: any = {
       tap_entity: mainRaw.tap_entity,
       hold_entity: mainRaw.hold_entity || mainRaw.tap_entity,
@@ -431,12 +593,60 @@ export class SpaceHubCard extends LitElement {
       hold_action: mainRaw.hold_action,
       double_tap_action: mainRaw.double_tap_action,
     };
-  const ac = h.ac || {} as any;
-  const thermostat = h.thermostat || {} as any;
-  const initialShowAC = !!ac?.entity;
-  const initialShowThermostat = !!thermostat?.entity;
+    const weather: any = {
+      entity: weatherRaw.entity,
+      name: weatherRaw.name || weatherRaw.main_name,
+      icon: weatherRaw.icon || weatherRaw.main_icon,
+      height: weatherRaw.height,
+      animated_icons: weatherRaw.animated_icons,
+      show_forecast: weatherRaw.show_forecast,
+      forecast_type: weatherRaw.forecast_type,
+      forecast_slots: weatherRaw.forecast_slots,
+      forecast_fields: weatherRaw.forecast_fields,
+      time_format: weatherRaw.time_format,
+      forecast_graph_key: `weather-${index}`,
+      temp_sensor: weatherRaw.temp_sensor,
+      temp_min_24h_sensor: weatherRaw.temp_min_24h_sensor,
+      temp_max_24h_sensor: weatherRaw.temp_max_24h_sensor,
+      humidity_sensor: weatherRaw.humidity_sensor,
+      feels_like_sensor: weatherRaw.feels_like_sensor,
+      dewpoint_sensor: weatherRaw.dewpoint_sensor,
+      wind_speed_sensor: weatherRaw.wind_speed_sensor,
+      wind_gust_sensor: weatherRaw.wind_gust_sensor,
+      wind_direction_sensor: weatherRaw.wind_direction_sensor,
+      rain_state_sensor: weatherRaw.rain_state_sensor,
+      rain_today_sensor: weatherRaw.rain_today_sensor,
+      rain_rate_sensor: weatherRaw.rain_rate_sensor,
+      uv_sensor: weatherRaw.uv_sensor,
+      solar_lux_sensor: weatherRaw.solar_lux_sensor,
+      pressure_sensor: weatherRaw.pressure_sensor,
+      chips: Array.isArray(weatherRaw.chips) ? weatherRaw.chips : [],
+      tap_action: weatherRaw.tap_action,
+      hold_action: weatherRaw.hold_action,
+      double_tap_action: weatherRaw.double_tap_action,
+      forecast: weatherRaw.show_forecast === false ? [] : this._getWeatherForecast(weatherRaw.entity, weatherRaw.forecast_type),
+      daily_forecast: weatherRaw.show_forecast === false ? [] : this._getWeatherForecast(weatherRaw.entity, 'daily'),
+    };
+    const ac = h.ac || {} as any;
+    const thermostat = h.thermostat || {} as any;
+    const initialShowAC = !!ac?.entity;
+    const initialShowThermostat = !!thermostat?.entity;
     // Determine whether a main is explicitly defined (avoid injecting defaults)
     const hasMain = !!(mainRaw && (mainRaw.main_name || mainRaw.name || mainRaw.light_group_entity || mainRaw.entity || mainRaw.main_icon || mainRaw.icon || mainRaw.temp_sensor || mainRaw.humidity_sensor || (Array.isArray(mainRaw.chips) && mainRaw.chips.length)));
+    const hasWeather = !!(weatherRaw && (
+      weatherRaw.name || weatherRaw.main_name || weatherRaw.icon || weatherRaw.main_icon ||
+      weatherRaw.animated_icons !== undefined || weatherRaw.show_forecast !== undefined ||
+      weatherRaw.forecast_type || weatherRaw.forecast_slots || weatherRaw.forecast_fields || weatherRaw.time_format || weatherRaw.height ||
+      weatherRaw.entity || weatherRaw.temp_sensor || weatherRaw.temp_min_24h_sensor || weatherRaw.temp_max_24h_sensor ||
+      weatherRaw.humidity_sensor ||
+      weatherRaw.feels_like_sensor || weatherRaw.dewpoint_sensor ||
+      weatherRaw.wind_speed_sensor || weatherRaw.wind_gust_sensor ||
+      weatherRaw.wind_direction_sensor || weatherRaw.rain_state_sensor ||
+      weatherRaw.rain_today_sensor || weatherRaw.rain_rate_sensor ||
+      weatherRaw.uv_sensor || weatherRaw.solar_lux_sensor ||
+      weatherRaw.pressure_sensor ||
+      (Array.isArray(weatherRaw.chips) && weatherRaw.chips.length)
+    ));
 
     // AC/Thermostat must be defined only inside a `main` block. If they exist
     // outside of main, ignore them and warn the user in the console.
@@ -452,14 +662,30 @@ export class SpaceHubCard extends LitElement {
       ? 'header-row only-main'
       : (showAC && showThermostat ? 'header-row' : 'header-row main-plus-one');
 
-    const tpl = html`
-      <div class=${cls}>
+    return html`
+      ${hasWeather ? html`
+        <div class="header-row weather-row">
+          ${renderWeatherTile(this, weather as any)}
+        </div>
+      ` : nothing}
+      ${hasMain ? html`<div class=${cls}>
         ${hasMain ? renderMainTile(this, main as any) : nothing}
         ${showAC ? renderACTile(this, ac as any) : nothing}
         ${showThermostat ? renderThermostatTile(this, thermostat as any) : nothing}
-      </div>
+      </div>` : nothing}
     `;
-    return tpl;
+  }
+
+  public _getWeatherForecastGraphSelection(key?: string): number | undefined {
+    return key ? this._weatherForecastGraphSelections.get(key) : undefined;
+  }
+
+  public _setWeatherForecastGraphSelection(key: string | undefined, index: number): void {
+    if (!key || !Number.isFinite(index)) return;
+    if (this._weatherForecastGraphSelections.get(key) === index) return;
+    const next = new Map(this._weatherForecastGraphSelections);
+    next.set(key, index);
+    this._weatherForecastGraphSelections = next;
   }
 
   // Renders an arbitrary Lovelace card beneath a switch row, reusing helpers for creation.
@@ -872,6 +1098,19 @@ export class SpaceHubCard extends LitElement {
     this._dispatchActionEnvelope(action, this._withActionOverrides(baseConfig, overrides));
   }
 
+  private _onWeatherAction(ev: CustomEvent, weather?: any): void {
+    ev.stopPropagation();
+
+    const action = (ev.detail && (ev.detail as any).action) || 'tap';
+    const defaultEntity = weather?.entity || weather?.temp_sensor || weather?.humidity_sensor;
+    const baseConfig: SpaceHubActionEnvelope = {
+      entity: defaultEntity,
+      tap_action: defaultEntity ? { action: 'more-info', entity: defaultEntity } : undefined,
+      hold_action: defaultEntity ? { action: 'more-info', entity: defaultEntity } : undefined,
+    };
+    this._dispatchActionEnvelope(action, this._withActionOverrides(baseConfig, weather as Record<string, unknown>));
+  }
+
   private _onACAction(ev: CustomEvent, ac?: any): void {
     ev.stopPropagation();
 
@@ -1075,6 +1314,121 @@ export class SpaceHubCard extends LitElement {
     this._switchTemplateValues.forEach((entry, template) => this._startTemplateSubscription(template, entry));
   }
 
+  private _normalizeForecastType(value: unknown): string {
+    const type = String(value || 'hourly');
+    return ['hourly', 'daily', 'twice_daily'].includes(type) ? type : 'hourly';
+  }
+
+  private _weatherForecastKey(entityId: string | undefined, forecastType?: unknown): string {
+    const entity = typeof entityId === 'string' ? entityId.trim() : '';
+    if (!entity) return '';
+    return `${entity}|${this._normalizeForecastType(forecastType)}`;
+  }
+
+  private _collectWeatherForecastKeys(headers?: unknown[]): Set<string> {
+    const keys = new Set<string>();
+    if (!Array.isArray(headers)) return keys;
+    headers.forEach((header: any) => {
+      const weather = header?.weather;
+      if (!weather || weather.show_forecast === false) return;
+      const key = this._weatherForecastKey(weather.entity, weather.forecast_type);
+      if (key) keys.add(key);
+      const dailyKey = this._weatherForecastKey(weather.entity, 'daily');
+      if (dailyKey) keys.add(dailyKey);
+    });
+    return keys;
+  }
+
+  private _syncWeatherForecastEntries(headers?: unknown[]): void {
+    const needed = this._collectWeatherForecastKeys(headers);
+    const remove: string[] = [];
+    this._weatherForecastValues.forEach((_entry, key) => {
+      if (!needed.has(key)) remove.push(key);
+    });
+    remove.forEach((key) => {
+      const entry = this._weatherForecastValues.get(key);
+      if (entry) this._disposeWeatherForecastEntry(entry);
+      this._weatherForecastValues.delete(key);
+    });
+    needed.forEach((key) => this._ensureWeatherForecastEntry(key));
+  }
+
+  private _ensureWeatherForecastEntry(key: string): WeatherForecastEntry | undefined {
+    const normalized = (key || '').trim();
+    if (!normalized) return undefined;
+    let entry = this._weatherForecastValues.get(normalized);
+    if (!entry) {
+      entry = { forecast: [], ready: false };
+      this._weatherForecastValues.set(normalized, entry);
+    }
+    this._startWeatherForecastSubscription(normalized, entry);
+    return entry;
+  }
+
+  private _getWeatherForecast(entityId: string | undefined, forecastType?: unknown): unknown[] {
+    const key = this._weatherForecastKey(entityId, forecastType);
+    if (!key) return [];
+    const entry = this._ensureWeatherForecastEntry(key);
+    if (!entry || !Array.isArray(entry.forecast)) return [];
+    return entry.forecast;
+  }
+
+  private _extractForecast(payload: unknown): unknown[] {
+    if (!payload || typeof payload !== 'object') return [];
+    const record = payload as any;
+    if (Array.isArray(record.forecast)) return record.forecast;
+    if (Array.isArray(record.event?.forecast)) return record.event.forecast;
+    if (Array.isArray(record.result?.forecast)) return record.result.forecast;
+    return [];
+  }
+
+  private _startWeatherForecastSubscription(key: string, entry: WeatherForecastEntry): void {
+    if (!this.hass?.connection || entry.unsub || entry.pending) return;
+    const [entityId, forecastTypeRaw] = key.split('|');
+    const forecastType = this._normalizeForecastType(forecastTypeRaw);
+    if (!entityId) return;
+
+    entry.pending = true;
+    this.hass.connection.subscribeMessage<unknown>(
+      (payload) => {
+        entry.ready = true;
+        entry.error = undefined;
+        entry.forecast = this._extractForecast(payload);
+        this.requestUpdate();
+      },
+      {
+        type: 'weather/subscribe_forecast',
+        entity_id: entityId,
+        forecast_type: forecastType,
+      },
+      { resubscribe: true },
+    ).then((unsub) => {
+      entry.unsub = unsub;
+    }).catch((err) => {
+      entry.ready = true;
+      entry.error = err?.message || 'error';
+      entry.unsub = undefined;
+      // eslint-disable-next-line no-console
+      console.warn(`[space-hub-card] Weather forecast subscription failed for "${key}":`, err);
+      this.requestUpdate();
+    }).finally(() => {
+      entry.pending = false;
+    });
+  }
+
+  private _disposeWeatherForecastEntry(entry: WeatherForecastEntry): void {
+    if (entry.unsub) {
+      try { entry.unsub(); } catch (_err) { /* noop */ }
+    }
+    entry.unsub = undefined;
+    entry.pending = false;
+  }
+
+  private _resumeWeatherForecastSubscriptions(): void {
+    if (!this.hass) return;
+    this._weatherForecastValues.forEach((entry, key) => this._startWeatherForecastSubscription(key, entry));
+  }
+
   private _fmt2(entityId: string | undefined, digits: number, suffix: string): string {
     if (!entityId || !this.hass) return '—' + (suffix || '');
     const st = this.hass.states[entityId];
@@ -1179,7 +1533,20 @@ export class SpaceHubCard extends LitElement {
       'double_tap_entity',
       'light_group_entity',
       'temp_sensor',
+      'temp_min_24h_sensor',
+      'temp_max_24h_sensor',
       'humidity_sensor',
+      'feels_like_sensor',
+      'dewpoint_sensor',
+      'wind_speed_sensor',
+      'wind_gust_sensor',
+      'wind_direction_sensor',
+      'rain_state_sensor',
+      'rain_today_sensor',
+      'rain_rate_sensor',
+      'uv_sensor',
+      'solar_lux_sensor',
+      'pressure_sensor',
       'camera_image',
     ]);
 
