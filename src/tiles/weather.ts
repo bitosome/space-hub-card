@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, svg, TemplateResult } from 'lit';
-import { actionHandler } from '../action-handler-directive';
 import { renderInteractiveChip } from '../chips';
 import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
@@ -41,12 +40,15 @@ interface WeatherTileConfig {
   uv_sensor?: string;
   solar_lux_sensor?: string;
   pressure_sensor?: string;
+  metrics?: Array<{ entity?: string; name?: string; icon?: string }>;
   chips?: unknown[];
   double_tap_action?: unknown;
 }
 
 interface MetricConfig {
-  icon: MeteoconIconKey;
+  icon?: MeteoconIconKey;
+  mdi?: string;
+  stateEntity?: string;
   label: string;
   value: string;
   entity?: string;
@@ -200,6 +202,18 @@ function formatEntity(host: any, entityId: string | undefined, digits: number, c
   return unit ? `${formatted} ${unit}` : formatted;
 }
 
+function formatEntityAuto(host: any, entityId: string | undefined): string {
+  const st = stateObj(host, entityId);
+  const value = cleanState(st);
+  if (!value) return '—';
+  const unit = st?.attributes?.unit_of_measurement || '';
+  const num = Number(value);
+  if (!Number.isFinite(num)) return unit ? `${value} ${unit}` : value;
+  const digits = Number.isInteger(num) ? 0 : 1;
+  const formatted = formatNumber(num, digits);
+  return unit ? `${formatted} ${unit}` : formatted;
+}
+
 function formatTemperature(host: any, entityId?: string): string {
   const value = numericState(host, entityId);
   return value === undefined ? '—°' : `${value.toFixed(1)}°`;
@@ -296,6 +310,21 @@ function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: str
 }
 
 function buildMetrics(host: any, config: WeatherTileConfig): MetricConfig[] {
+  if (Array.isArray(config.metrics) && config.metrics.length) {
+    return config.metrics
+      .filter((m) => m && m.entity)
+      .map((m) => {
+        const st = stateObj(host, m.entity);
+        const label = m.name || st?.attributes?.friendly_name || m.entity || '';
+        return {
+          label,
+          value: formatEntityAuto(host, m.entity),
+          entity: m.entity,
+          mdi: m.icon || undefined,
+          stateEntity: m.entity,
+        } as MetricConfig;
+      });
+  }
   const raining = isRainActive(host, config);
   const kind = precipitationKind(host, config);
   const rainEntity = config.rain_state_sensor || config.rain_rate_sensor || config.rain_today_sensor;
@@ -470,7 +499,14 @@ function dayLabel(value?: string): string {
   const key = dayKey(value);
   if (key === today) return 'Today';
   if (key === dayKey(tomorrowDate.toISOString())) return 'Tomorrow';
-  return new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date);
+  return new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(date);
+}
+
+function dateLabel(value?: string): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' }).format(date);
 }
 
 function hourlyTemperatureStats(items: ForecastItem[]): Map<string, DayTemperatureStats> {
@@ -554,7 +590,10 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
         const currentLeft = key === today && currentTemp !== undefined ? rangePercent(currentTemp, min, max) : undefined;
         return html`
           <div class="weather-daily-row">
-            <div class="weather-daily-day">${dayLabel(item.datetime)}</div>
+            <div class="weather-daily-day">
+              <span class="weather-daily-day-name">${dayLabel(item.datetime)}</span>
+              <span class="weather-daily-date">${dateLabel(item.datetime)}</span>
+            </div>
             <div class="weather-daily-condition">
               ${renderMeteoconIcon(
                 conditionMeteocon(condition),
@@ -634,12 +673,17 @@ function openMoreInfoFromKeyboard(host: any, ev: KeyboardEvent, entityId?: strin
   openMoreInfo(host, ev, entityId);
 }
 
-function selectConditionsPoint(host: any, ev: PointerEvent | MouseEvent, keys: string[], count: number): void {
+function selectConditionsPoint(host: any, ev: PointerEvent | MouseEvent, keys: string[], count: number, box: ConditionsChartBox): void {
   ev.stopPropagation();
   if (!count || typeof host?._setWeatherForecastGraphSelection !== 'function') return;
   const rect = (ev.currentTarget as HTMLElement).getBoundingClientRect();
-  const ratio = rect.width ? Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width)) : 0;
-  const index = Math.round(ratio * (count - 1));
+  if (!rect.width) return;
+  // Cursor fraction across the full SVG element, then remap to the inset plot area
+  const elementRatio = (ev.clientX - rect.left) / rect.width;
+  const leftFrac = box.left / box.width;
+  const rightFrac = (box.width - box.right) / box.width;
+  const plotRatio = Math.max(0, Math.min(1, (elementRatio - leftFrac) / (rightFrac - leftFrac)));
+  const index = Math.round(plotRatio * (count - 1));
   keys.forEach((k) => host._setWeatherForecastGraphSelection(k, index));
 }
 
@@ -739,8 +783,8 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
           role="img"
           aria-label="Temperature forecast graph"
           @pointerdown=${stopTileAction}
-          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points.length)}
-          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points.length)}
+          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points.length, box)}
+          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points.length, box)}
         >
           <defs>
             <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
@@ -809,8 +853,8 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
           role="img"
           aria-label="Chance of precipitation forecast graph"
           @pointerdown=${stopTileAction}
-          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points.length)}
-          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points.length)}
+          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points.length, box)}
+          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points.length, box)}
         >
           <defs>
             <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
@@ -882,32 +926,20 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const conditionsPanel = renderWeatherConditionsPanel(host, config, visibleForecast, forecastFields, conditionsKey, syncGraphs);
   const dailyForecast = renderDailyForecast(host, config, dailyForecastItems, forecastItems);
   const chips = Array.isArray(config.chips) ? config.chips : [];
-  const hasDbl = !!config.double_tap_action;
-  const height = Number(config.height);
   const tempSize = configNumber(config.temp_size ?? config.temperature_size, 18, 56);
   const iconSize = configNumber(config.icon_size, 28, 160);
   const graphHeight = configNumber(config.graph_height, 82, 260);
   const stale = isWeatherStale(host, config);
   const styleParts = [
-    Number.isFinite(height) && height > 0 ? `--weather-tile-h:${height}px;` : '',
     tempSize ? `--weather-temp-size:${tempSize}px;` : '',
     iconSize ? `--weather-icon-size:${iconSize}px;--weather-icon-bg-size:${iconSize + 16}px;` : '',
     graphHeight ? `--weather-graph-height:${graphHeight}px;` : '',
   ].filter(Boolean);
   const heightStyle = styleParts.join('');
 
-  const onAction = (ev: CustomEvent) => {
-    if (typeof host?._onWeatherAction === 'function') host._onWeatherAction(ev, config);
-  };
-
   return html`
     <div class="tile-wrap weather-tile-wrap" style=${heightStyle}>
-      <ha-control-button
-        class=${`weather-tile${stale ? ' weather-tile-stale' : ''}`}
-        @hass-action=${onAction}
-        .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: hasDbl })}
-        role="button" tabindex="0"
-      >
+      <div class=${`weather-tile${stale ? ' weather-tile-stale' : ''}`}>
         <div class="weather-content">
           <div class="weather-top">
             <div class="weather-heading">
@@ -976,7 +1008,11 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 @click=${(ev: Event) => openMoreInfo(host, ev, item.entity)}
                 @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, item.entity)}
               >
-                ${renderMeteoconIcon(item.icon, 'weather-metric-icon', item.label)}
+                ${item.mdi
+                  ? html`<ha-icon class="weather-metric-icon" .icon=${item.mdi}></ha-icon>`
+                  : item.icon
+                    ? renderMeteoconIcon(item.icon, 'weather-metric-icon', item.label)
+                    : html`<ha-state-icon class="weather-metric-icon" .hass=${host.hass} .stateObj=${stateObj(host, item.stateEntity)}></ha-state-icon>`}
                 <span class="weather-metric-label">${item.label}</span>
                 <span class="weather-metric-value">${item.value}</span>
               </div>
@@ -1005,7 +1041,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
               `)}
             </div>`
           : nothing}
-      </ha-control-button>
+      </div>
     </div>
   `;
 }

@@ -2,6 +2,7 @@ import { css, CSSResultGroup } from 'lit';
 
 export const weatherTileStyles: CSSResultGroup = css`
   .weather-tile-wrap {
+    height: auto;
     --weather-tile-h: calc(var(--tile-h) * 10.5);
     --weather-temp-size: 31px;
     --weather-icon-size: 42px;
@@ -18,8 +19,18 @@ export const weatherTileStyles: CSSResultGroup = css`
     box-shadow: var(--tile-shadow-default);
     background: var(--ha-card-background, var(--card-background-color));
     overflow: visible;
+    border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color));
+    --control-button-background-color: transparent;
     --control-button-background-opacity: 0;
+    --ha-ripple-color: transparent;
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  }
+
+  .weather-tile:hover,
+  .weather-tile::part(button):hover {
+    background: var(--ha-card-background, var(--card-background-color));
+    transform: none;
+    filter: none;
   }
 
   .weather-tile.weather-tile-stale {
@@ -38,11 +49,12 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-content {
     position: relative;
-    padding: 8px;
+    padding: var(--tile-padding-large);
     z-index: 2;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    width: 100%;
     min-width: 0;
     box-sizing: border-box;
     color: var(--primary-text-color);
@@ -194,7 +206,7 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 5px;
     min-width: 0;
   }
@@ -323,9 +335,17 @@ export const weatherTileStyles: CSSResultGroup = css`
     height: 100%;
     min-width: 0;
     display: block;
-    cursor: crosshair;
+    cursor: pointer;
     touch-action: none;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .weather-conditions-chart text {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .weather-conditions-temp .weather-conditions-chart {
@@ -458,13 +478,37 @@ export const weatherTileStyles: CSSResultGroup = css`
     min-width: 0;
     min-height: 30px;
     display: grid;
-    grid-template-columns: minmax(54px, 0.7fr) 52px 40px minmax(84px, 1fr) 40px;
+    grid-template-columns: minmax(86px, 1fr) 52px 40px minmax(84px, 1fr) 40px;
     align-items: center;
     gap: 5px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  .weather-daily-day,
+  .weather-daily-day {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    text-align: left;
+    gap: 1px;
+  }
+
+  .weather-daily-day-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  .weather-daily-date {
+    color: var(--secondary-text-color);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .weather-daily-day-name,
   .weather-daily-low span,
   .weather-daily-high span {
     color: var(--primary-text-color);
@@ -563,9 +607,9 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-metric ha-icon,
   .weather-metric .weather-metric-icon {
     grid-row: 1 / span 2;
-    width: 16px;
-    height: 16px;
-    --mdc-icon-size: 16px;
+    width: 22px;
+    height: 22px;
+    --mdc-icon-size: 22px;
     color: currentColor;
   }
 

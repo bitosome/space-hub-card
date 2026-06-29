@@ -114,6 +114,7 @@ export interface HeaderWeather {
   uv_sensor?: string;
   solar_lux_sensor?: string;
   pressure_sensor?: string;
+  metrics?: Array<{ entity?: string; name?: string; icon?: string }>;
   chips?: unknown[];
   tap_action?: SpaceHubActionConfig;
   hold_action?: SpaceHubActionConfig;
@@ -645,6 +646,7 @@ export class SpaceHubCard extends LitElement {
       uv_sensor: weatherRaw.uv_sensor,
       solar_lux_sensor: weatherRaw.solar_lux_sensor,
       pressure_sensor: weatherRaw.pressure_sensor,
+      metrics: Array.isArray(weatherRaw.metrics) ? weatherRaw.metrics : undefined,
       chips: Array.isArray(weatherRaw.chips) ? weatherRaw.chips : [],
       tap_action: weatherRaw.tap_action,
       hold_action: weatherRaw.hold_action,

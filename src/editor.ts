@@ -662,29 +662,7 @@ export class SpaceHubCardEditor extends LitElement {
             </button>
           ` : html`
             <div class="side-by-side">
-              <space-hub-textfield
-                label="Name"
-                .value=${config.name || ''}
-                @input=${(ev: Event) => this._valueChanged(`${basePath}.name`, (ev.target as HTMLInputElement).value)}
-              ></space-hub-textfield>
-              <ha-icon-picker
-                .hass=${this.hass}
-                label="Icon"
-                .value=${config.icon || ''}
-                @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.icon`, ev.detail.value)}
-              ></ha-icon-picker>
-            </div>
-            <div class="side-by-side">
               ${this._renderEntityField('Weather Entity', `${basePath}.entity`, config.entity, { domain: 'weather' })}
-              <space-hub-textfield
-                label="Tile Height (px)"
-                type="number"
-                .value=${String(config.height ?? '')}
-                @input=${(ev: Event) => {
-                  const v = Number((ev.target as HTMLInputElement).value);
-                  this._valueChanged(`${basePath}.height`, Number.isFinite(v) && v > 0 ? v : undefined);
-                }}
-              ></space-hub-textfield>
             </div>
             <div class="side-by-side">
               <space-hub-textfield
@@ -711,14 +689,6 @@ export class SpaceHubCardEditor extends LitElement {
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
-              <ha-formfield label="Animated icons">
-                <ha-switch
-                  .checked=${config.animated_icons !== false}
-                  @change=${(ev: Event) => {
-                    this._valueChanged(`${basePath}.animated_icons`, this._checkedFromEvent(ev) ? undefined : false);
-                  }}
-                ></ha-switch>
-              </ha-formfield>
               <ha-formfield label="Show forecast">
                 <ha-switch
                   .checked=${config.show_forecast !== false}
@@ -825,10 +795,8 @@ export class SpaceHubCardEditor extends LitElement {
               ${this._renderEntityField('Solar Lux Sensor', `${basePath}.solar_lux_sensor`, config.solar_lux_sensor, { domain: 'sensor' })}
             </div>
             ${this._renderEntityField('Pressure Sensor', `${basePath}.pressure_sensor`, config.pressure_sensor, { domain: 'sensor' })}
+            ${this._renderMetricsConfig(config.metrics as any[] || [], basePath)}
             ${this._renderChipsConfig(config.chips as any[] || [], basePath)}
-            ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, config.tap_action)}
-            ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, config.hold_action)}
-            ${this._renderActionConfig('Double Tap Action', `${basePath}.double_tap_action`, config.double_tap_action)}
             <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove Weather Tile
             </button>
@@ -974,6 +942,75 @@ export class SpaceHubCardEditor extends LitElement {
           @input=${(ev: Event) => this._valueChanged(`${path}.icon_color_unavailable`, (ev.target as HTMLInputElement).value)}
         ></space-hub-textfield>
       </div>
+    `;
+  }
+
+  private _renderMetricsConfig(metrics: any[], mainPath: string): TemplateResult {
+    const metricsPath = `${mainPath}.metrics`;
+    const move = (index: number, delta: number) => {
+      const arr = [...((this._getNestedValue(metricsPath) || []) as any[])];
+      const target = index + delta;
+      if (target < 0 || target >= arr.length) return;
+      [arr[index], arr[target]] = [arr[target], arr[index]];
+      this._valueChanged(metricsPath, arr);
+    };
+    return html`
+      <ha-expansion-panel outlined .header=${`Grid Metrics (${metrics.length})`}>
+        <div class="section-content">
+          <div class="empty-hint">Leave empty to use the default weather metrics. Add entities to build your own grid.</div>
+          ${metrics.map((item, i) => html`
+            <div class="sub-item">
+              <div class="sub-item-header">
+                <div class="sub-item-heading">
+                  <span class="sub-item-title">Metric ${i + 1}</span>
+                  <span class="sub-item-meta">${this._entitySummary(item.entity)}</span>
+                </div>
+                <div class="action-row">
+                  <ha-icon-button
+                    .path=${'M7,15L12,10L17,15H7Z'}
+                    .disabled=${i <= 0}
+                    @click=${() => move(i, -1)}
+                  ></ha-icon-button>
+                  <ha-icon-button
+                    .path=${'M7,10L12,15L17,10H7Z'}
+                    .disabled=${i >= metrics.length - 1}
+                    @click=${() => move(i, 1)}
+                  ></ha-icon-button>
+                  <ha-icon-button
+                    .path=${'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'}
+                    @click=${() => {
+                      const arr = (this._getNestedValue(metricsPath) || []) as any[];
+                      arr.splice(i, 1);
+                      this._valueChanged(metricsPath, [...arr]);
+                    }}
+                  ></ha-icon-button>
+                </div>
+              </div>
+              ${this._renderEntityField('Entity', `${metricsPath}.${i}.entity`, item.entity, { domain: 'sensor' })}
+              <div class="side-by-side">
+                <space-hub-textfield
+                  label="Label (optional)"
+                  .value=${item.name || ''}
+                  @input=${(ev: Event) => this._valueChanged(`${metricsPath}.${i}.name`, (ev.target as HTMLInputElement).value || undefined)}
+                ></space-hub-textfield>
+                <ha-icon-picker
+                  .hass=${this.hass}
+                  label="Icon (optional)"
+                  .value=${item.icon || ''}
+                  @value-changed=${(ev: CustomEvent) => this._valueChanged(`${metricsPath}.${i}.icon`, ev.detail.value || undefined)}
+                ></ha-icon-picker>
+              </div>
+            </div>
+          `)}
+          <button class="editor-btn" @click=${() => {
+            const current = (this._getNestedValue(metricsPath) || []) as any[];
+            current.push({ entity: '' });
+            this._valueChanged(metricsPath, current);
+          }}>
+            <ha-icon icon="mdi:plus"></ha-icon> Add Metric
+          </button>
+        </div>
+      </ha-expansion-panel>
     `;
   }
 
