@@ -18,6 +18,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     box-shadow: var(--tile-shadow-default);
     background: var(--ha-card-background, var(--card-background-color));
     overflow: visible;
+    --control-button-background-opacity: 0;
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
   }
 
@@ -37,7 +38,7 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-content {
     position: relative;
-    padding: 10px 12px 9px;
+    padding: 8px;
     z-index: 2;
     display: flex;
     flex-direction: column;

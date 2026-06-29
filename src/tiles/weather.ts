@@ -916,10 +916,37 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 ${forecastItems.length ? forecastSourceBadge : nothing}
               </div>
               <div class="weather-primary">
-                <span class="weather-temp">${temp}</span>
-                <span class="weather-humidity">${humidity}</span>
+                <span
+                  class="weather-temp weather-clickable"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Open outdoor temperature details"
+                  @pointerdown=${stopTileAction}
+                  @pointerup=${stopTileAction}
+                  @click=${(ev: Event) => openMoreInfo(host, ev, config.temp_sensor)}
+                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.temp_sensor)}
+                >${temp}</span>
+                <span
+                  class="weather-humidity weather-clickable"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Open outdoor humidity details"
+                  @pointerdown=${stopTileAction}
+                  @pointerup=${stopTileAction}
+                  @click=${(ev: Event) => openMoreInfo(host, ev, config.humidity_sensor)}
+                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.humidity_sensor)}
+                >${humidity}</span>
               </div>
-              <div class="weather-feels">Feels like ${feels}</div>
+              <div
+                class="weather-feels weather-clickable"
+                role="button"
+                tabindex="0"
+                aria-label="Open feels like temperature details"
+                @pointerdown=${stopTileAction}
+                @pointerup=${stopTileAction}
+                @click=${(ev: Event) => openMoreInfo(host, ev, config.feels_like_sensor)}
+                @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.feels_like_sensor)}
+              >Feels like ${feels}</div>
             </div>
             <div class="weather-icon-wrap weather-clickable"
               role="button"
