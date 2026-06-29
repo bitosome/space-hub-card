@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Weather Tile Preview</title>
+    <style>
+      :root {
+        --primary-text-color: #e8e8e8;
+        --secondary-text-color: #a7a7a7;
+        --card-background-color: #202020;
+        --ha-card-background: #202020;
+        --ha-card-border-radius: 16px;
+        --primary-color: #29b6f6;
+        --state-weather-sunny-color: #ffc72c;
+        color-scheme: dark;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: start center;
+        padding: 32px 16px;
+        box-sizing: border-box;
+        background: #111;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      space-hub-card {
+        width: min(100%, 520px);
+      }
+    </style>
+  </head>
+  <body>
+    <space-hub-card></space-hub-card>
+
+    <script type="module">
+      class HaCard extends HTMLElement {
+        connectedCallback() {
+          this.style.display = 'block';
+        }
+      }
+
+      class HaControlButton extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: 'open' });
+          this.shadowRoot.innerHTML = `
+            <style>
+              :host { display: block; position: relative; width: 100%; height: 100%; }
+              button {
+                all: unset;
+                display: block;
+                position: relative;
+                width: 100%;
+                height: 100%;
+                cursor: default;
+              }
+            </style>
+            <button part="button"><slot></slot></button>
+          `;
+        }
+      }
+
+      class HaIcon extends HTMLElement {
+        set icon(value) {
+          this._icon = value;
+          this.render();
+        }
+
+        get icon() {
+          return this._icon;
+        }
+
+        connectedCallback() {
+          this.render();
+        }
+
+        render() {
+          const icon = String(this._icon || '');
+          const text = icon.includes('sunny') ? '☀' :
+            icon.includes('night') ? '☾' :
+            icon.includes('rain') || icon.includes('pouring') ? '☔' :
+            icon.includes('wind') ? '≋' :
+            icon.includes('gauge') ? '◷' :
+            icon.includes('water') ? '♢' :
+            icon.includes('calendar') ? '▦' :
+            icon.includes('tornado') ? '≡' :
+            icon.includes('sun') ? '☼' :
+            '☁';
+          this.textContent = text;
+          this.setAttribute('aria-hidden', 'true');
+        }
+      }
+
+      customElements.define('ha-card', HaCard);
+      customElements.define('ha-control-button', HaControlButton);
+      customElements.define('ha-icon', HaIcon);
+
+      const start = new Date();
+      start.setMinutes(0, 0, 0);
+      const atHour = (offset) => new Date(start.getTime() + offset * 60 * 60 * 1000).toISOString();
+      const conditionAt = (hour) => {
+        if (hour < 6) return 'clear-night';
+        if (hour < 10) return 'partlycloudy';
+        if (hour < 16) return 'sunny';
+        if (hour < 21) return 'rainy';
+        return 'cloudy';
+      };
+
+      const hourly = Array.from({ length: 48 }, (_, index) => {
+        const hour = (start.getHours() + index) % 24;
+        const dayOffset = Math.floor((start.getHours() + index) / 24);
+        const daylightCurve = Math.sin(((hour - 7) / 24) * Math.PI * 2);
+        const temperature = 20 + daylightCurve * 6 + dayOffset * 0.6 + Math.sin(index / 3) * 0.9;
+        const rainWindow = hour >= 17 && hour <= 23;
+        const precipitation_probability = rainWindow
+          ? Math.max(28, 62 - Math.abs(hour - 19) * 10)
+          : Math.max(2, 22 - Math.abs(hour - 13));
+        return {
+          datetime: atHour(index),
+          condition: conditionAt(hour),
+          temperature: Number(temperature.toFixed(1)),
+          precipitation_probability,
+          precipitation: rainWindow ? Number((precipitation_probability / 80).toFixed(1)) : 0,
+          humidity: Math.round(54 + Math.cos(index / 5) * 12),
+          wind_speed: Number((1.5 + Math.sin(index / 4) * 0.8).toFixed(1)),
+          wind_gust_speed: Number((3.1 + Math.cos(index / 5) * 1.2).toFixed(1)),
+          uv_index: Math.max(0, Math.round(daylightCurve * 5)),
+          cloud_coverage: Math.round(35 + precipitation_probability / 2),
+        };
+      });
+
+      const daily = Array.from({ length: 7 }, (_, index) => {
+        const dayItems = hourly.slice(index * 24, index * 24 + 24);
+        const temps = dayItems.map((item) => Number(item.temperature)).filter(Number.isFinite);
+        const rain = Math.max(...dayItems.map((item) => Number(item.precipitation_probability) || 0));
+        const condition = rain > 45 ? 'rainy' : index % 3 === 1 ? 'partlycloudy' : 'sunny';
+        return {
+          datetime: atHour(index * 24),
+          condition,
+          templow: Math.min(...temps),
+          temperature: Math.max(...temps),
+          precipitation_probability: rain,
+        };
+      });
+
+      const entity = (state, attributes = {}) => ({ state: String(state), attributes });
+      const states = {
+        'weather.forecast_home': entity('cloudy', {
+          temperature_unit: '°C',
+          precipitation_unit: 'mm',
+          wind_speed_unit: 'm/s',
+        }),
+        'sensor.ecowitt_ws90_1_outdoor_temperature': entity('24.9', { unit_of_measurement: '°C' }),
+        'sensor.outdoors_temperature_min_24h': entity('14.8', { unit_of_measurement: '°C' }),
+        'sensor.outdoors_temperature_max_24h': entity('29.6', { unit_of_measurement: '°C' }),
+        'sensor.ecowitt_ws90_1_outdoor_humidity': entity('59', { unit_of_measurement: '%' }),
+        'sensor.ecowitt_ws90_1_feels_like_temperature': entity('24.9', { unit_of_measurement: '°C' }),
+        'sensor.ecowitt_ws90_1_dewpoint': entity('16.3', { unit_of_measurement: '°C' }),
+        'sensor.ecowitt_ws90_1_wind_speed': entity('1.2', { unit_of_measurement: 'm/s' }),
+        'sensor.ecowitt_ws90_1_wind_gust': entity('2.6', { unit_of_measurement: 'm/s' }),
+        'sensor.ecowitt_ws90_1_wind_direction': entity('112', { unit_of_measurement: '°' }),
+        'binary_sensor.ecowitt_ws90_1_rain_state_piezo': entity('off'),
+        'sensor.ecowitt_ws90_1_daily_rain_piezo': entity('0.0', { unit_of_measurement: 'mm' }),
+        'sensor.ecowitt_ws90_1_rain_rate_piezo': entity('0.0', { unit_of_measurement: 'mm/h' }),
+        'sensor.ecowitt_ws90_1_uv_index': entity('1', { unit_of_measurement: 'UV index' }),
+        'sensor.ecowitt_ws90_1_solar_lux': entity('26800', { unit_of_measurement: 'lx' }),
+        'sensor.ecowitt_ws90_1_relative_pressure': entity('1009', { unit_of_measurement: 'hPa' }),
+      };
+
+      const hass = {
+        states,
+        locale: { language: 'en' },
+        config: { unit_system: { temperature: '°C' } },
+        connection: {
+          subscribeMessage(callback, message) {
+            const forecast = message.forecast_type === 'daily' ? daily : hourly;
+            window.setTimeout(() => callback({ forecast }), 0);
+            return Promise.resolve(() => undefined);
+          },
+        },
+      };
+
+      await import('./dist/space-hub-card.js');
+
+      const card = document.querySelector('space-hub-card');
+      card.hass = hass;
+      card.setConfig({
+        tile_height: 80,
+        card_shadow_color: '#000000',
+        card_shadow_intensity: 0.1,
+        headers: [{
+          weather: {
+            name: 'Outdoors',
+            entity: 'weather.forecast_home',
+            height: 700,
+            forecast_type: 'hourly',
+            forecast_slots: 24,
+            forecast_fields: ['temperature', 'precipitation_probability'],
+            time_format: '24h',
+            temp_sensor: 'sensor.ecowitt_ws90_1_outdoor_temperature',
+            temp_min_24h_sensor: 'sensor.outdoors_temperature_min_24h',
+            temp_max_24h_sensor: 'sensor.outdoors_temperature_max_24h',
+            humidity_sensor: 'sensor.ecowitt_ws90_1_outdoor_humidity',
+            feels_like_sensor: 'sensor.ecowitt_ws90_1_feels_like_temperature',
+            dewpoint_sensor: 'sensor.ecowitt_ws90_1_dewpoint',
+            wind_speed_sensor: 'sensor.ecowitt_ws90_1_wind_speed',
+            wind_gust_sensor: 'sensor.ecowitt_ws90_1_wind_gust',
+            wind_direction_sensor: 'sensor.ecowitt_ws90_1_wind_direction',
+            rain_state_sensor: 'binary_sensor.ecowitt_ws90_1_rain_state_piezo',
+            rain_today_sensor: 'sensor.ecowitt_ws90_1_daily_rain_piezo',
+            rain_rate_sensor: 'sensor.ecowitt_ws90_1_rain_rate_piezo',
+            uv_sensor: 'sensor.ecowitt_ws90_1_uv_index',
+            solar_lux_sensor: 'sensor.ecowitt_ws90_1_solar_lux',
+            pressure_sensor: 'sensor.ecowitt_ws90_1_relative_pressure',
+          },
+        }],
+      });
+    </script>
+  </body>
+</html>

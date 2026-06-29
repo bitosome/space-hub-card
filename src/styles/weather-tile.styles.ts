@@ -12,17 +12,22 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-tile {
     position: relative;
     width: 100%;
-    height: var(--weather-tile-h);
+    min-height: var(--weather-tile-h);
+    height: auto;
     border-radius: var(--tile-border-radius);
     box-shadow: var(--tile-shadow-default);
     background: var(--ha-card-background, var(--card-background-color));
-    overflow: hidden;
+    overflow: visible;
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  }
+
+  .weather-tile.weather-tile-stale {
+    box-shadow: var(--tile-shadow-default), 0 0 22px 4px rgba(244, 67, 54, 0.55);
   }
 
   .weather-tile::part(button) {
     width: 100%;
-    height: 100%;
+    height: auto;
     display: block;
     padding: 0;
     margin: 0;
@@ -31,15 +36,14 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-content {
-    position: absolute;
-    inset: 10px 12px 9px;
+    position: relative;
+    padding: 10px 12px 9px;
     z-index: 2;
     display: flex;
     flex-direction: column;
     gap: 6px;
     min-width: 0;
-    overflow-x: hidden;
-    overflow-y: hidden;
+    box-sizing: border-box;
     color: var(--primary-text-color);
     pointer-events: auto;
   }
@@ -61,20 +65,20 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-top {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px;
-    align-items: start;
+    position: relative;
+    display: block;
     min-width: 0;
   }
 
   .weather-icon-wrap {
+    position: absolute;
+    top: 0;
+    right: 0;
     display: grid;
     place-items: center;
     width: var(--weather-icon-bg-size);
     height: var(--weather-icon-bg-size);
     color: var(--state-weather-sunny-color, #f6a000);
-    margin-top: -2px;
   }
 
   .weather-icon {
@@ -108,6 +112,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     display: flex;
     align-items: center;
     gap: 6px;
+    padding-right: calc(var(--weather-icon-bg-size) + 8px);
   }
 
   .weather-name {

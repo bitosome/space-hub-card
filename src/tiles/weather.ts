@@ -35,6 +35,9 @@ interface WeatherTileConfig {
   rain_state_sensor?: string;
   rain_today_sensor?: string;
   rain_rate_sensor?: string;
+  rain_rate_threshold?: number;
+  stale_minutes?: number;
+  sync_graphs?: boolean;
   uv_sensor?: string;
   solar_lux_sensor?: string;
   pressure_sensor?: string;
@@ -154,6 +157,20 @@ function stateObj(host: any, entityId?: string): any | undefined {
   return host.hass.states?.[entityId];
 }
 
+function isWeatherStale(host: any, config: WeatherTileConfig): boolean {
+  const minutes = Number(config.stale_minutes);
+  if (!Number.isFinite(minutes) || minutes <= 0) return false;
+  const ids = [config.entity, config.temp_sensor, config.humidity_sensor, config.feels_like_sensor].filter(Boolean);
+  let newest = 0;
+  ids.forEach((id) => {
+    const st = stateObj(host, id);
+    const t = st?.last_updated ? Date.parse(st.last_updated) : NaN;
+    if (Number.isFinite(t)) newest = Math.max(newest, t);
+  });
+  if (!newest) return false;
+  return Date.now() - newest > minutes * 60000;
+}
+
 function cleanState(st: any | undefined): string {
   const value = st?.state === undefined || st?.state === null ? '' : String(st.state);
   return BAD_STATES.has(value.toLowerCase()) ? '' : value;
@@ -234,18 +251,28 @@ function conditionClass(rawState: string): string {
 }
 
 function isRainActive(host: any, config: WeatherTileConfig): boolean {
-  const rainState = cleanState(stateObj(host, config.rain_state_sensor)).toLowerCase();
-  if (rainState === 'on' || rainState === 'wet') return true;
+  const threshold = Number.isFinite(Number(config.rain_rate_threshold)) ? Number(config.rain_rate_threshold) : 0;
   const rainRate = numericState(host, config.rain_rate_sensor);
-  return rainRate !== undefined && rainRate > 0;
+  // Active precipitation requires a measurable rate above the threshold.
+  if (rainRate !== undefined) return rainRate > threshold;
+  // Fall back to a binary rain state only when there is no rate sensor.
+  const rainState = cleanState(stateObj(host, config.rain_state_sensor)).toLowerCase();
+  return rainState === 'on';
+}
+
+function precipitationKind(host: any, config: WeatherTileConfig): 'snow' | 'rain' {
+  const condition = cleanState(stateObj(host, config.entity)).toLowerCase();
+  return condition.includes('snow') || condition.includes('hail') ? 'snow' : 'rain';
 }
 
 function rainStateLabel(host: any, config: WeatherTileConfig): string {
-  const raining = isRainActive(host, config);
+  const active = isRainActive(host, config);
   if (!config.rain_state_sensor && !config.rain_rate_sensor) return '';
-  if (!raining) return 'No rain';
+  const kind = precipitationKind(host, config);
+  if (!active) return kind === 'snow' ? 'No snow' : 'No rain';
   const rate = formatEntity(host, config.rain_rate_sensor, 1);
-  return rate === '—' || rate === '0.0 mm/h' ? 'Raining' : `Raining ${rate}`;
+  const verb = kind === 'snow' ? 'Snowing' : 'Raining';
+  return rate === '—' || rate === '0.0 mm/h' ? verb : `${verb} ${rate}`;
 }
 
 function metric(icon: MeteoconIconKey, label: string, value: string, entity?: string, active = false): MetricConfig | undefined {
@@ -270,15 +297,18 @@ function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: str
 
 function buildMetrics(host: any, config: WeatherTileConfig): MetricConfig[] {
   const raining = isRainActive(host, config);
+  const kind = precipitationKind(host, config);
   const rainEntity = config.rain_state_sensor || config.rain_rate_sensor || config.rain_today_sensor;
   const rainValue = rainStateLabel(host, config) || formatEntity(host, config.rain_today_sensor, 1);
+  const rainLabel = kind === 'snow' ? 'Snow' : 'Rain';
+  const rainIcon: MeteoconIconKey = raining ? (kind === 'snow' ? 'snow' : 'rain') : 'raindrop';
 
   return [
     metric('wind', 'Wind', formatWind(host, config.wind_speed_sensor, config.wind_direction_sensor), config.wind_speed_sensor),
     metric('wind-alert', 'Gust', formatEntity(host, config.wind_gust_sensor, 1), config.wind_gust_sensor),
     metric('thermometer-colder', '24h Min', formatTemperature(host, config.temp_min_24h_sensor), config.temp_min_24h_sensor),
     metric('thermometer-warmer', '24h Max', formatTemperature(host, config.temp_max_24h_sensor), config.temp_max_24h_sensor),
-    metric(raining ? 'rain' : 'raindrop', 'Rain', rainValue, rainEntity, raining),
+    metric(rainIcon, rainLabel, rainValue, rainEntity, raining),
     metric('uv-index', 'UV', formatEntity(host, config.uv_sensor, 0), config.uv_sensor),
     metric('sun-hot', 'Solar', formatEntity(host, config.solar_lux_sensor, 0), config.solar_lux_sensor),
     metric('barometer', 'Pressure', formatEntity(host, config.pressure_sensor, 0), config.pressure_sensor),
@@ -604,12 +634,13 @@ function openMoreInfoFromKeyboard(host: any, ev: KeyboardEvent, entityId?: strin
   openMoreInfo(host, ev, entityId);
 }
 
-function selectConditionsPoint(host: any, ev: PointerEvent | MouseEvent, key: string, count: number): void {
+function selectConditionsPoint(host: any, ev: PointerEvent | MouseEvent, keys: string[], count: number): void {
   ev.stopPropagation();
   if (!count || typeof host?._setWeatherForecastGraphSelection !== 'function') return;
   const rect = (ev.currentTarget as HTMLElement).getBoundingClientRect();
   const ratio = rect.width ? Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width)) : 0;
-  host._setWeatherForecastGraphSelection(key, Math.round(ratio * (count - 1)));
+  const index = Math.round(ratio * (count - 1));
+  keys.forEach((k) => host._setWeatherForecastGraphSelection(k, index));
 }
 
 function nearestConditionsPointIndex(points: ForecastGraphPoint[]): number {
@@ -654,7 +685,7 @@ function renderConditionsGrid(box: ConditionsChartBox, ticks: number[], points: 
   ];
 }
 
-function renderConditionsTemperature(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string): TemplateResult | typeof nothing {
+function renderConditionsTemperature(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string, syncKeys: string[]): TemplateResult | typeof nothing {
   const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 14, right: 42, top: 15, bottom: 24 };
   const { points, min, max } = buildConditionsPoints(items, 'temperature', box);
   if (points.length < 2) return nothing;
@@ -708,8 +739,8 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
           role="img"
           aria-label="Temperature forecast graph"
           @pointerdown=${stopTileAction}
-          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, key, points.length)}
-          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, key, points.length)}
+          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points.length)}
+          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points.length)}
         >
           <defs>
             <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
@@ -743,7 +774,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
   `;
 }
 
-function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string): TemplateResult | typeof nothing {
+function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string, syncKeys: string[]): TemplateResult | typeof nothing {
   const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 14, right: 42, top: 10, bottom: 22 };
   const { points } = buildConditionsPoints(items, 'precipitation_probability', box);
   if (points.length < 2) return nothing;
@@ -778,8 +809,8 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
           role="img"
           aria-label="Chance of precipitation forecast graph"
           @pointerdown=${stopTileAction}
-          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, key, points.length)}
-          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, key, points.length)}
+          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points.length)}
+          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points.length)}
         >
           <defs>
             <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
@@ -805,13 +836,16 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
   `;
 }
 
-function renderWeatherConditionsPanel(host: any, config: WeatherTileConfig, items: ForecastItem[], fields: ForecastFieldKey[], key: string): TemplateResult | typeof nothing {
+function renderWeatherConditionsPanel(host: any, config: WeatherTileConfig, items: ForecastItem[], fields: ForecastFieldKey[], key: string, syncGraphs: boolean): TemplateResult | typeof nothing {
   if (items.length < 2) return nothing;
+  const tempKey = `${key}-temperature`;
+  const precipKey = `${key}-precipitation`;
+  const syncKeys = syncGraphs ? [tempKey, precipKey] : null;
   const temperature = fields.includes('temperature')
-    ? renderConditionsTemperature(host, config, items, `${key}-temperature`)
+    ? renderConditionsTemperature(host, config, items, tempKey, syncKeys || [tempKey])
     : nothing;
   const precipitation = fields.includes('precipitation_probability')
-    ? renderConditionsPrecipitation(host, config, items, `${key}-precipitation`)
+    ? renderConditionsPrecipitation(host, config, items, precipKey, syncKeys || [precipKey])
     : nothing;
   if (temperature === nothing && precipitation === nothing) return nothing;
   return html`
@@ -844,14 +878,16 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const weatherHeadline = forecastText || conditionLabel(displayConditionState || conditionState);
   const forecastSourceBadge = html`<span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>`;
   const conditionsKey = config.forecast_graph_key || `weather-${config.entity || name}`;
-  const conditionsPanel = renderWeatherConditionsPanel(host, config, visibleForecast, forecastFields, conditionsKey);
+  const syncGraphs = config.sync_graphs !== false;
+  const conditionsPanel = renderWeatherConditionsPanel(host, config, visibleForecast, forecastFields, conditionsKey, syncGraphs);
   const dailyForecast = renderDailyForecast(host, config, dailyForecastItems, forecastItems);
   const chips = Array.isArray(config.chips) ? config.chips : [];
   const hasDbl = !!config.double_tap_action;
   const height = Number(config.height);
   const tempSize = configNumber(config.temp_size ?? config.temperature_size, 18, 56);
-  const iconSize = configNumber(config.icon_size, 28, 76);
+  const iconSize = configNumber(config.icon_size, 28, 160);
   const graphHeight = configNumber(config.graph_height, 82, 260);
+  const stale = isWeatherStale(host, config);
   const styleParts = [
     Number.isFinite(height) && height > 0 ? `--weather-tile-h:${height}px;` : '',
     tempSize ? `--weather-temp-size:${tempSize}px;` : '',
@@ -867,7 +903,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   return html`
     <div class="tile-wrap weather-tile-wrap" style=${heightStyle}>
       <ha-control-button
-        class="weather-tile"
+        class=${`weather-tile${stale ? ' weather-tile-stale' : ''}`}
         @hass-action=${onAction}
         .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: hasDbl })}
         role="button" tabindex="0"
@@ -876,50 +912,14 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
           <div class="weather-top">
             <div class="weather-heading">
               <div class="weather-headline-row">
-                <div
-                  class="weather-name weather-clickable"
-                  role="button"
-                  tabindex="0"
-                  aria-label=${`Open ${name} weather details`}
-                  @pointerdown=${stopTileAction}
-                  @pointerup=${stopTileAction}
-                  @click=${(ev: Event) => openMoreInfo(host, ev, config.entity)}
-                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.entity)}
-                >${weatherHeadline}</div>
+                <div class="weather-name">${weatherHeadline}</div>
                 ${forecastItems.length ? forecastSourceBadge : nothing}
               </div>
               <div class="weather-primary">
-                <span
-                  class="weather-temp weather-clickable"
-                  role="button"
-                  tabindex="0"
-                  aria-label="Open outdoor temperature details"
-                  @pointerdown=${stopTileAction}
-                  @pointerup=${stopTileAction}
-                  @click=${(ev: Event) => openMoreInfo(host, ev, config.temp_sensor)}
-                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.temp_sensor)}
-                >${temp}</span>
-                <span
-                  class="weather-humidity weather-clickable"
-                  role="button"
-                  tabindex="0"
-                  aria-label="Open outdoor humidity details"
-                  @pointerdown=${stopTileAction}
-                  @pointerup=${stopTileAction}
-                  @click=${(ev: Event) => openMoreInfo(host, ev, config.humidity_sensor)}
-                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.humidity_sensor)}
-                >${humidity}</span>
+                <span class="weather-temp">${temp}</span>
+                <span class="weather-humidity">${humidity}</span>
               </div>
-              <div
-                class="weather-feels weather-clickable"
-                role="button"
-                tabindex="0"
-                aria-label="Open feels like temperature details"
-                @pointerdown=${stopTileAction}
-                @pointerup=${stopTileAction}
-                @click=${(ev: Event) => openMoreInfo(host, ev, config.feels_like_sensor)}
-                @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.feels_like_sensor)}
-              >Feels like ${feels}</div>
+              <div class="weather-feels">Feels like ${feels}</div>
             </div>
             <div class="weather-icon-wrap weather-clickable"
               role="button"

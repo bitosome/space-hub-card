@@ -92,6 +92,9 @@ export interface HeaderWeather {
   graph_height?: number;
   animated_icons?: boolean;
   show_forecast?: boolean;
+  sync_graphs?: boolean;
+  stale_minutes?: number;
+  rain_rate_threshold?: number;
   forecast_type?: string;
   forecast_slots?: number;
   forecast_fields?: string[] | string;
@@ -619,6 +622,9 @@ export class SpaceHubCard extends LitElement {
       graph_height: weatherRaw.graph_height,
       animated_icons: weatherRaw.animated_icons,
       show_forecast: weatherRaw.show_forecast,
+      sync_graphs: weatherRaw.sync_graphs,
+      stale_minutes: weatherRaw.stale_minutes,
+      rain_rate_threshold: weatherRaw.rain_rate_threshold,
       forecast_type: weatherRaw.forecast_type,
       forecast_slots: weatherRaw.forecast_slots,
       forecast_fields: weatherRaw.forecast_fields,

@@ -702,7 +702,7 @@ export class SpaceHubCardEditor extends LitElement {
                 label="Icon Size (px)"
                 type="number"
                 min="28"
-                max="76"
+                max="160"
                 .value=${String(config.icon_size ?? '')}
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
@@ -729,6 +729,39 @@ export class SpaceHubCardEditor extends LitElement {
               </ha-formfield>
             </div>
             <div class="side-by-side">
+              <ha-formfield label="Sync forecast graphs">
+                <ha-switch
+                  .checked=${config.sync_graphs !== false}
+                  @change=${(ev: Event) => {
+                    this._valueChanged(`${basePath}.sync_graphs`, this._checkedFromEvent(ev) ? undefined : false);
+                  }}
+                ></ha-switch>
+              </ha-formfield>
+            </div>
+            <div class="side-by-side">
+              <space-hub-textfield
+                label="Stale Glow After (min)"
+                type="number"
+                min="0"
+                .value=${String(config.stale_minutes ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.stale_minutes`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+              <space-hub-textfield
+                label="Rain Rate Threshold"
+                type="number"
+                min="0"
+                step="0.1"
+                .value=${String(config.rain_rate_threshold ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.rain_rate_threshold`, Number.isFinite(v) && v >= 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+            </div>
+            <div class="side-by-side">
               ${this._renderSelectField('Forecast Type', `${basePath}.forecast_type`, config.forecast_type, WEATHER_FORECAST_TYPES)}
               ${this._renderSelectField('Time Format', `${basePath}.time_format`, config.time_format, WEATHER_TIME_FORMATS)}
             </div>
@@ -737,7 +770,7 @@ export class SpaceHubCardEditor extends LitElement {
                 label="Forecast Slots"
                 type="number"
                 min="1"
-                max="48"
+                max="72"
                 .value=${String(config.forecast_slots ?? '')}
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
