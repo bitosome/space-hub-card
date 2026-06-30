@@ -100,6 +100,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     width: var(--weather-icon-bg-size);
     height: var(--weather-icon-bg-size);
     color: var(--state-weather-sunny-color, #f6a000);
+    background: transparent;
     transform: translate(var(--weather-icon-x, 0px), var(--weather-icon-y, 0px));
   }
 
@@ -137,6 +138,17 @@ export const weatherTileStyles: CSSResultGroup = css`
     object-fit: contain;
     user-select: none;
     pointer-events: none;
+  }
+
+  .weather-icon > svg,
+  .weather-conditions-icon > svg,
+  .weather-daily-icon > svg,
+  .weather-metric-icon > svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    background: transparent;
   }
 
   .weather-heading {
@@ -233,7 +245,7 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--weather-metric-columns, 2), minmax(0, 1fr));
     gap: 5px;
     min-width: 0;
   }

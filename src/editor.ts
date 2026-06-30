@@ -742,6 +742,19 @@ export class SpaceHubCardEditor extends LitElement {
                 }}
               ></space-hub-textfield>
               <space-hub-textfield
+                label="Temperature Icon Count"
+                type="number"
+                min="0"
+                max="72"
+                .value=${String(config.temperature_icon_count ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.temperature_icon_count`, Number.isFinite(v) && v >= 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+            </div>
+            <div class="side-by-side">
+              <space-hub-textfield
                 label="Daily Forecast Icon Size (px)"
                 type="number"
                 min="8"
@@ -750,6 +763,17 @@ export class SpaceHubCardEditor extends LitElement {
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
                   this._valueChanged(`${basePath}.daily_icon_size`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+              <space-hub-textfield
+                label="Sensor Grid Columns"
+                type="number"
+                min="1"
+                max="4"
+                .value=${String(config.metric_columns ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.metric_columns`, Number.isFinite(v) && v > 0 ? v : undefined);
                 }}
               ></space-hub-textfield>
             </div>

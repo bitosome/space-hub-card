@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, svg, TemplateResult } from 'lit';
+import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { renderInteractiveChip } from '../chips';
 import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
@@ -15,8 +16,10 @@ interface WeatherTileConfig {
   icon_offset_x?: number;
   icon_offset_y?: number;
   conditions_icon_size?: number;
+  temperature_icon_count?: number;
   daily_icon_size?: number;
   graph_height?: number;
+  metric_columns?: number;
   animated_icons?: boolean;
   show_forecast?: boolean;
   forecast_slots?: number;
@@ -117,6 +120,8 @@ interface ConditionsChartBox {
 
 const BAD_STATES = new Set(['', 'unknown', 'unavailable']);
 const DEFAULT_FORECAST_FIELDS: ForecastFieldKey[] = ['temperature', 'precipitation_probability'];
+const DEFAULT_TEMPERATURE_ICON_COUNT = 8;
+const DEFAULT_METRIC_COLUMNS = 3;
 const FORECAST_FIELD_ALIASES: Record<string, ForecastFieldKey> = {
   temp: 'temperature',
   temperature: 'temperature',
@@ -158,6 +163,8 @@ const CONDITION_METEOCONS: Record<string, MeteoconIconKey> = {
   windy: 'wind',
   'windy-variant': 'wind-alert',
 };
+
+const METEOCON_SVG_CACHE = new Map<MeteoconIconKey, string>();
 
 function temperatureColor(value: number): string {
   if (value <= 0) return '#3aa7ff';
@@ -312,16 +319,39 @@ function conditionMeteocon(rawState: string): MeteoconIconKey {
   return CONDITION_METEOCONS[rawState] || 'partly-cloudy-day';
 }
 
-function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: string, mode: 'img' | 'object' = 'img'): TemplateResult {
-  if (mode === 'object') {
+function meteoconSvg(icon: MeteoconIconKey): string {
+  const cached = METEOCON_SVG_CACHE.get(icon);
+  if (cached !== undefined) return cached;
+  const [, encoded] = String(METEOCON_ICONS[icon] || '').split('base64,');
+  let decoded = '';
+  if (encoded && typeof atob === 'function') {
+    try {
+      decoded = atob(encoded);
+    } catch (_err) {
+      decoded = '';
+    }
+  }
+  METEOCON_SVG_CACHE.set(icon, decoded);
+  return decoded;
+}
+
+function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: string, mode: 'img' | 'inline' = 'img'): TemplateResult {
+  if (mode === 'inline') {
+    const decoded = meteoconSvg(icon);
+    if (decoded) {
+      return html`
+        <span class=${className} role="img" aria-label=${label}>
+          ${unsafeSVG(decoded)}
+        </span>
+      `;
+    }
     return html`
-      <object
+      <img
         class=${className}
-        data=${METEOCON_ICONS[icon]}
-        type="image/svg+xml"
-        aria-label=${label}
-        tabindex="-1"
-      ></object>
+        src=${METEOCON_ICONS[icon]}
+        alt=${label}
+        draggable="false"
+      />
     `;
   }
   return html`
@@ -523,8 +553,25 @@ function conditionsTickIndexes(length: number): number[] {
   ])).filter((index) => index >= 0 && index < length);
 }
 
-function conditionsIconPoints(points: ForecastGraphPoint[]): ForecastGraphPoint[] {
-  return points;
+function temperatureIconCount(config: WeatherTileConfig): number {
+  const raw = Number(config.temperature_icon_count);
+  if (!Number.isFinite(raw)) return DEFAULT_TEMPERATURE_ICON_COUNT;
+  return Math.max(0, Math.min(72, Math.floor(raw)));
+}
+
+function conditionsIconPoints(points: ForecastGraphPoint[], maxIcons: number): ForecastGraphPoint[] {
+  if (maxIcons <= 0) return [];
+  if (points.length <= maxIcons) return points;
+  if (maxIcons === 1) return [points[0]];
+  const result: ForecastGraphPoint[] = [];
+  let lastIndex = -1;
+  for (let i = 0; i < maxIcons; i += 1) {
+    const index = Math.round((i / (maxIcons - 1)) * (points.length - 1));
+    if (index === lastIndex) continue;
+    result.push(points[index]);
+    lastIndex = index;
+  }
+  return result;
 }
 
 function safeIdPart(value: string): string {
@@ -816,7 +863,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
   const minPoint = points.reduce((best, point) => point.value < best.value ? point : best, points[0]);
   const maxPoint = points.reduce((best, point) => point.value > best.value ? point : best, points[0]);
   const ticks = conditionsTickIndexes(points.length);
-  const icons = conditionsIconPoints(points);
+  const icons = conditionsIconPoints(points, temperatureIconCount(config));
   const path = smoothPath(points);
   const fillPath = areaPath(points, baseline);
   const safeKey = safeIdPart(key);
@@ -1013,6 +1060,10 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const iconOffsetY = Number(config.icon_offset_y);
   const conditionsIconSize = configNumber(config.conditions_icon_size, 8, 48);
   const dailyIconSize = configNumber(config.daily_icon_size, 8, 48);
+  const metricColumnsRaw = Number(config.metric_columns);
+  const metricColumns = Number.isFinite(metricColumnsRaw) && metricColumnsRaw > 0
+    ? Math.max(1, Math.min(4, Math.round(metricColumnsRaw)))
+    : DEFAULT_METRIC_COLUMNS;
   const stale = isWeatherStale(host, config);
   const styleParts = [
     tempSize ? `--weather-temp-size:${tempSize}px;` : '',
@@ -1022,6 +1073,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     conditionsIconSize ? `--weather-conditions-icon-size:${conditionsIconSize}px;` : '',
     dailyIconSize ? `--weather-daily-icon-size:${dailyIconSize}px;` : '',
     graphHeight ? `--weather-graph-height:${graphHeight}px;` : '',
+    `--weather-metric-columns:${metricColumns};`,
   ].filter(Boolean);
   const heightStyle = styleParts.join('');
 
@@ -1079,7 +1131,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             >
               ${config.icon
                 ? html`<ha-icon class=${iconClass} .icon=${config.icon}></ha-icon>`
-                : renderMeteoconIcon(conditionMeteocon(iconCondition), iconClass, conditionLabel(iconCondition), 'object')}
+                : renderMeteoconIcon(conditionMeteocon(iconCondition), iconClass, conditionLabel(iconCondition), 'inline')}
             </div>
           </div>
 
