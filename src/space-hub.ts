@@ -551,7 +551,6 @@ export class SpaceHubCard extends LitElement {
   }
 
   private _weatherHeightForCardSize(weather: HeaderWeather, tileHeight: number): number {
-    const configuredHeight = this._positiveNumber(weather.height) || 0;
     const graphHeight = Math.max(82, Math.min(260, this._positiveNumber(weather.graph_height) || 118));
     const metricColumns = Math.max(1, Math.min(4, Math.round(this._positiveNumber(weather.metric_columns) || 3)));
     const metricCount = this._weatherMetricCountForCardSize(weather);
@@ -571,7 +570,7 @@ export class SpaceHubCard extends LitElement {
       dailyForecastHeight +
       32;
 
-    return Math.max(configuredHeight, contentHeightEstimate, tileHeight * 10.5);
+    return Math.max(contentHeightEstimate, tileHeight);
   }
 
   private _weatherMetricCountForCardSize(weather: HeaderWeather): number {

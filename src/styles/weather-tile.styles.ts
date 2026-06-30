@@ -3,9 +3,7 @@ import { css, CSSResultGroup } from 'lit';
 export const weatherTileStyles: CSSResultGroup = css`
   .weather-tile-wrap {
     height: auto;
-    min-height: var(--weather-tile-h);
     align-self: start;
-    --weather-tile-h: calc(var(--tile-h) * 10.5);
     --weather-temp-size: 31px;
     --weather-icon-size: 42px;
     --weather-icon-bg-size: 58px;
@@ -15,30 +13,13 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-tile {
     position: relative;
     width: 100%;
-    min-height: var(--weather-tile-h);
     height: auto;
     border-radius: var(--tile-border-radius);
     box-shadow: var(--tile-shadow-default);
     background: var(--ha-card-background, var(--card-background-color));
-    overflow: visible;
-    border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color));
-    --control-button-background-color: transparent;
-    --control-button-background-opacity: 0;
+    overflow: hidden;
     --ha-ripple-color: transparent;
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
-  }
-
-  /* Replicate ha-control-button's surface overlay so the weather tile
-     matches the other (control-button based) tiles exactly. */
-  .weather-tile::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background-color: var(--control-button-background-color, var(--disabled-color));
-    opacity: var(--control-button-background-opacity, 0.2);
-    pointer-events: none;
-    z-index: 0;
   }
 
   .weather-tile:hover,
@@ -156,11 +137,15 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-headline-row {
+    justify-self: start;
     min-width: 0;
-    display: flex;
+    width: fit-content;
+    max-width: calc(100% - var(--weather-icon-bg-size) - 8px);
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding-right: calc(var(--weather-icon-bg-size) + 8px);
+    padding: 2px 3px;
+    margin: -2px -3px;
   }
 
   .weather-name {

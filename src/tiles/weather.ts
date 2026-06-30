@@ -102,6 +102,7 @@ interface ForecastGraphPoint {
   x: number;
   y: number;
   index: number;
+  timestamp?: number;
 }
 
 interface DayTemperatureStats {
@@ -116,6 +117,13 @@ interface ConditionsChartBox {
   right: number;
   top: number;
   bottom: number;
+}
+
+interface ConditionsRawPoint {
+  item: ForecastItem;
+  index: number;
+  value: number;
+  timestamp?: number;
 }
 
 const BAD_STATES = new Set(['', 'unknown', 'unavailable']);
@@ -510,6 +518,12 @@ function forecastGraphValue(item: ForecastItem, field: ForecastFieldKey): number
   return Number.isFinite(value) ? value : undefined;
 }
 
+function forecastTimestamp(item: ForecastItem): number | undefined {
+  if (!item.datetime) return undefined;
+  const time = new Date(item.datetime).getTime();
+  return Number.isFinite(time) ? time : undefined;
+}
+
 function conditionsScale(field: ForecastFieldKey, values: number[]): { min: number; max: number } {
   if (field === 'precipitation_probability') return { min: 0, max: 100 };
   let min = Math.min(...values);
@@ -527,16 +541,31 @@ function conditionsScale(field: ForecastFieldKey, values: number[]): { min: numb
 }
 
 function buildConditionsPoints(items: ForecastItem[], field: ForecastFieldKey, box: ConditionsChartBox): { points: ForecastGraphPoint[]; min: number; max: number } {
-  const raw = items
-    .map((item, index) => ({ item, index, value: forecastGraphValue(item, field) }))
-    .filter((point): point is { item: ForecastItem; index: number; value: number } => point.value !== undefined);
+  const raw = items.reduce<ConditionsRawPoint[]>((acc, item, index) => {
+    const value = forecastGraphValue(item, field);
+    if (value === undefined) return acc;
+    const timestamp = forecastTimestamp(item);
+    const point: ConditionsRawPoint = { item, index, value };
+    if (timestamp !== undefined) point.timestamp = timestamp;
+    acc.push(point);
+    return acc;
+  }, []);
   if (!raw.length) return { points: [], min: 0, max: 1 };
+  const hasTimeScale = raw.every((point) => Number.isFinite(point.timestamp));
+  const ordered = hasTimeScale
+    ? [...raw].sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
+    : raw;
+  const firstTime = hasTimeScale ? Number(ordered[0].timestamp) : 0;
+  const lastTime = hasTimeScale ? Number(ordered[ordered.length - 1].timestamp) : 0;
+  const timeRange = lastTime - firstTime;
   const values = raw.map((point) => point.value);
   const { min, max } = conditionsScale(field, values);
   const chartWidth = box.width - box.left - box.right;
   const chartHeight = box.height - box.top - box.bottom;
-  const points = raw.map((point, pointIndex) => {
-    const x = raw.length === 1 ? box.left + chartWidth / 2 : box.left + (pointIndex / (raw.length - 1)) * chartWidth;
+  const points = ordered.map((point, pointIndex) => {
+    const x = hasTimeScale && timeRange > 0
+      ? box.left + ((Number(point.timestamp) - firstTime) / timeRange) * chartWidth
+      : (ordered.length === 1 ? box.left + chartWidth / 2 : box.left + (pointIndex / (ordered.length - 1)) * chartWidth);
     const y = box.top + ((max - point.value) / (max - min)) * chartHeight;
     return { ...point, x, y };
   });
@@ -563,18 +592,25 @@ function conditionsIconPoints(points: ForecastGraphPoint[], maxIcons: number): F
   if (maxIcons <= 0) return [];
   if (points.length <= maxIcons) return points;
   if (maxIcons === 1) return [points[0]];
-  const firstX = points[0].x;
-  const lastX = points[points.length - 1].x;
+  const hasTimeScale = points.every((point) => Number.isFinite(point.timestamp));
+  const firstTime = hasTimeScale ? Number(points[0].timestamp) : 0;
+  const lastTime = hasTimeScale ? Number(points[points.length - 1].timestamp) : 0;
+  const timeRange = lastTime - firstTime;
   const result: ForecastGraphPoint[] = [];
   let lastIndex = -1;
   for (let i = 0; i < maxIcons; i += 1) {
     const ratio = i / (maxIcons - 1);
-    const index = Math.round(ratio * (points.length - 1));
+    const targetTime = firstTime + timeRange * ratio;
+    const index = hasTimeScale && timeRange > 0
+      ? points.reduce((bestIndex, point, pointIndex) => {
+        const best = points[bestIndex];
+        return Math.abs(Number(point.timestamp) - targetTime) < Math.abs(Number(best.timestamp) - targetTime)
+          ? pointIndex
+          : bestIndex;
+      }, 0)
+      : Math.round(ratio * (points.length - 1));
     if (index === lastIndex) continue;
-    result.push({
-      ...points[index],
-      x: firstX + (lastX - firstX) * ratio,
-    });
+    result.push(points[index]);
     lastIndex = index;
   }
   return result;
@@ -803,17 +839,17 @@ function openMoreInfoFromKeyboard(host: any, ev: KeyboardEvent, entityId?: strin
   openMoreInfo(host, ev, entityId);
 }
 
-function selectConditionsPoint(host: any, ev: PointerEvent | MouseEvent, keys: string[], count: number, box: ConditionsChartBox): void {
+function selectConditionsPoint(host: any, ev: PointerEvent | MouseEvent, keys: string[], points: ForecastGraphPoint[], box: ConditionsChartBox): void {
   ev.stopPropagation();
-  if (!count || typeof host?._setWeatherForecastGraphSelection !== 'function') return;
+  if (!points.length || typeof host?._setWeatherForecastGraphSelection !== 'function') return;
   const rect = (ev.currentTarget as HTMLElement).getBoundingClientRect();
   if (!rect.width) return;
-  // Cursor fraction across the full SVG element, then remap to the inset plot area
   const elementRatio = (ev.clientX - rect.left) / rect.width;
-  const leftFrac = box.left / box.width;
-  const rightFrac = (box.width - box.right) / box.width;
-  const plotRatio = Math.max(0, Math.min(1, (elementRatio - leftFrac) / (rightFrac - leftFrac)));
-  const index = Math.round(plotRatio * (count - 1));
+  const targetX = Math.max(0, Math.min(box.width, elementRatio * box.width));
+  const index = points.reduce((bestIndex, point, pointIndex) => {
+    const best = points[bestIndex];
+    return Math.abs(point.x - targetX) < Math.abs(best.x - targetX) ? pointIndex : bestIndex;
+  }, 0);
   keys.forEach((k) => host._setWeatherForecastGraphSelection(k, index));
 }
 
@@ -916,8 +952,8 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
           role="img"
           aria-label="Temperature forecast graph"
           @pointerdown=${stopTileAction}
-          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points.length, box)}
-          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points.length, box)}
+          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
+          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
         >
           <defs>
             <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
@@ -986,8 +1022,8 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
           role="img"
           aria-label="Chance of precipitation forecast graph"
           @pointerdown=${stopTileAction}
-          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points.length, box)}
-          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points.length, box)}
+          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
+          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
         >
           <defs>
             <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
@@ -1062,10 +1098,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const tempSize = configNumber(config.temp_size ?? config.temperature_size, 18, 56);
   const iconSize = configNumber(config.icon_size, 28, 160);
   const graphHeight = configNumber(config.graph_height, 82, 260);
-  const tileHeightRaw = Number(config.height);
-  const tileHeight = Number.isFinite(tileHeightRaw) && tileHeightRaw > 0
-    ? Math.round(tileHeightRaw)
-    : undefined;
   const iconOffsetX = Number(config.icon_offset_x);
   const iconOffsetY = Number(config.icon_offset_y);
   const conditionsIconSize = configNumber(config.conditions_icon_size, 8, 48);
@@ -1076,7 +1108,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     : DEFAULT_METRIC_COLUMNS;
   const stale = isWeatherStale(host, config);
   const styleParts = [
-    tileHeight ? `--weather-tile-h:${tileHeight}px;` : '',
     tempSize ? `--weather-temp-size:${tempSize}px;` : '',
     iconSize ? `--weather-icon-size:${iconSize}px;--weather-icon-bg-size:${iconSize + 16}px;` : '',
     Number.isFinite(iconOffsetX) ? `--weather-icon-x:${iconOffsetX}px;` : '',
