@@ -1,28 +1,52 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/Home%20Assistant-Custom%20Card-41BDF5?style=for-the-badge&logo=home-assistant&logoColor=white" alt="Home Assistant Custom Card">
-  <img src="https://img.shields.io/badge/HACS-Ready-41BDF5?style=for-the-badge" alt="HACS Ready">
-  <img src="https://img.shields.io/badge/Lit-2.x-324fff?style=for-the-badge" alt="Lit 2">
-</p>
-
 # Space Hub Card
 
-`space-hub-card` is a Home Assistant Lovelace card for compact room dashboards. It combines a large main tile, optional AC and thermostat companion tiles, switch rows, switch-level template indicators, and embedded cards in one card container.
+`space-hub-card` is a custom Home Assistant Lovelace card for dense room dashboards. It combines room tiles, switch rows, optional climate controls, embedded Home Assistant cards, and a full weather station tile in one consistent visual system.
 
-The card is built around Home Assistant components and the native action model. It also ships with a visual editor, so most configuration can be done directly in the dashboard UI.
+The card is designed for dashboards where the first screen should show useful state immediately: temperatures, humidity, lights, locks, doors, sensors, switch controls, weather station readings, and forecast trends.
 
-## Features
+## Highlights
 
-- Multiple header rows in a single card
-- Main tile with room name, icon, temperature, humidity, and status chips
-- Optional AC and thermostat tiles per header row
-- Switch rows with `switch`, `smart_plug`, and `lock` visual styles
-- Home Assistant native actions: `more-info`, `toggle`, `perform-action`, `navigate`, `url`, `assist`, and `none`
-- Native confirmation support for switch actions
-- Per-switch template indicators with live `render_template` subscriptions
-- Embedded cards below switch rows or at the bottom of the card
-- Unavailable pulse detection across configured entities and nested embedded-card configs
-- Visual editor with native HA entity/select selectors and YAML mode
-- Per-tile glow control: `static`, `pulse`, or `none`
+- Multiple header rows in one card.
+- Main room tile with room name, icon, temperature, humidity, status chips, and light-group control.
+- Optional weather tile per header row.
+- Optional AC and thermostat companion tiles.
+- Switch rows with `switch`, `smart_plug`, and `lock` styles.
+- Native Home Assistant action support for tap, hold, and double tap.
+- Switch confirmation dialogs.
+- Live switch info overlays from Home Assistant templates.
+- Embedded standard Home Assistant cards below switch rows or at the bottom of the card.
+- Unavailable-state pulse detection across configured entities.
+- Visual editor with entity selectors, icon pickers, YAML mode, reordering, and embedded-card editing.
+- HACS-ready release artifact.
+
+## Weather Tile
+
+The weather tile can combine two data sources:
+
+- Local sensor data from a weather station integration such as Ecowitt.
+- Forecast data from a Home Assistant `weather` entity.
+
+Local sensor values are used for the current readings and metric grid. Forecast values are used for the headline, animated condition icon, temperature graph, precipitation graph, and daily forecast. Forecast-derived labels are marked with a small blue dot.
+
+Current weather tile features:
+
+- Current temperature and humidity.
+- Feels-like temperature.
+- Animated weather icons from local bundled `basmilius/meteocons` assets.
+- Sensor metric grid with configurable column count.
+- Configurable custom metrics.
+- Special rain metric with configurable raining and no-rain MDI icons.
+- Weather forecast headline that opens weather entity more-info.
+- Clickable local sensor values and grid metrics that open the related entity more-info.
+- Apple Weather-style temperature graph.
+- Apple Weather-style precipitation probability graph.
+- Synced graph selectors.
+- Full date and time labels on graphs.
+- Configurable forecast graph hours.
+- Configurable graph height.
+- Configurable temperature graph icon count.
+- Daily forecast rows with min/max temperatures, min/max times where hourly data is available, rain probability, current-temperature marker, and temperature-color range bars.
+- Optional stale-data glow based on entity `last_updated`.
 
 ## Installation
 
@@ -34,23 +58,43 @@ The card is built around Home Assistant components and the native action model. 
 4. Download the card.
 5. Refresh the browser.
 
-### Manual
+If the repository is not available in your HACS list, add it as a custom repository:
 
-1. Copy `dist/space-hub-card.js` to `/config/www/space-hub-card.js`.
-2. Add the resource in Home Assistant:
+```text
+https://github.com/bitosome/space-hub-card
+```
+
+Use category `Lovelace`.
+
+HACS installs the resource as:
 
 ```yaml
-url: /local/space-hub-card.js
+url: /hacsfiles/space-hub-card/space-hub-card.js
 type: module
 ```
 
-3. Refresh the browser.
+### Manual
 
-## Quick Start
+1. Download `space-hub-card.js` from the latest GitHub release.
+2. Copy it to Home Assistant, for example:
+
+```text
+/config/www/space-hub-card/space-hub-card.js
+```
+
+3. Add the Lovelace resource:
+
+```yaml
+url: /local/space-hub-card/space-hub-card.js
+type: module
+```
+
+4. Refresh the browser.
+
+## Minimal Example
 
 ```yaml
 type: custom:space-hub-card
-tile_height: 88
 headers:
   - main:
       main_name: Living Room
@@ -58,15 +102,6 @@ headers:
       light_group_entity: light.living_room
       temp_sensor: sensor.living_room_temperature
       humidity_sensor: sensor.living_room_humidity
-      chips:
-        - type: presence
-          entity: binary_sensor.living_room_presence
-        - type: door
-          entity: binary_sensor.front_door
-    ac:
-      entity: climate.living_room_ac
-    thermostat:
-      entity: climate.living_room_thermostat
 switch_rows:
   - row:
       - entity: switch.floor_lamp
@@ -75,50 +110,109 @@ switch_rows:
       - entity: switch.media_corner
         name: Media
         icon: mdi:television-speaker
+```
+
+## Weather Example
+
+```yaml
+type: custom:space-hub-card
+tile_height: 88
+headers:
+  - weather:
+      entity: weather.home
+      temp_sensor: sensor.ecowitt_outdoor_temperature
+      humidity_sensor: sensor.ecowitt_outdoor_humidity
+      feels_like_sensor: sensor.ecowitt_feels_like_temperature
+      wind_speed_sensor: sensor.ecowitt_wind_speed
+      wind_gust_sensor: sensor.ecowitt_wind_gust
+      wind_direction_sensor: sensor.ecowitt_wind_direction
+      rain_rate_sensor: sensor.ecowitt_rain_rate
+      rain_state_sensor: binary_sensor.ecowitt_raining
+      rain_rate_threshold: 0
+      uv_sensor: sensor.ecowitt_uv_index
+      solar_lux_sensor: sensor.ecowitt_solar_lux
+      pressure_sensor: sensor.ecowitt_relative_pressure
+      temp_min_24h_sensor: sensor.outdoor_temperature_24h_min
+      temp_max_24h_sensor: sensor.outdoor_temperature_24h_max
+      metric_columns: 3
+      forecast_slots: 48
+      graph_height: 140
+      temperature_icon_count: 12
+      forecast_fields:
+        - temperature
+        - precipitation_probability
+```
+
+## Full Room Example
+
+```yaml
+type: custom:space-hub-card
+tile_height: 88
+chip_icon_size: 14
+main_icon_size: 48
+chip_font_size: 12
+headers:
+  - weather:
+      entity: weather.home
+      temp_sensor: sensor.ecowitt_outdoor_temperature
+      humidity_sensor: sensor.ecowitt_outdoor_humidity
+      feels_like_sensor: sensor.ecowitt_feels_like_temperature
+      wind_speed_sensor: sensor.ecowitt_wind_speed
+      wind_gust_sensor: sensor.ecowitt_wind_gust
+      rain_rate_sensor: sensor.ecowitt_rain_rate
+      uv_sensor: sensor.ecowitt_uv_index
+      solar_lux_sensor: sensor.ecowitt_solar_lux
+      pressure_sensor: sensor.ecowitt_relative_pressure
+      metric_columns: 3
+      forecast_slots: 48
+  - main:
+      main_name: Outdoors
+      main_icon: mdi:tree-outline
+      temp_sensor: sensor.ecowitt_outdoor_temperature
+      humidity_sensor: sensor.ecowitt_outdoor_humidity
+      chips:
+        - type: gate
+          entity: binary_sensor.garden_gate
+        - type: smart_plug
+          entity: switch.garden_lights
+    ac:
+      entity: climate.living_room_ac
+    thermostat:
+      entity: climate.living_room_thermostat
+switch_rows:
+  - row:
+      - entity: switch.entrance_light
+        name: Entrance
+        icon: mdi:lightbulb-outline
+        type: switch
+      - entity: lock.front_door
+        name: Door
+        type: lock
+        icon_active: mdi:lock
+        icon_inactive: mdi:lock-open-variant
+      - entity: switch.hallway_plug
+        name: Plug
+        type: smart_plug
         info_templates:
-          - "{{ states('sensor.media_corner_power') }} W"
+          - "{{ states('sensor.hallway_plug_power') }} W"
 cards:
   - type: tile
     entity: alarm_control_panel.home
 ```
 
-## Visual Editor
-
-The built-in editor supports:
-
-- Visual mode and YAML mode
-- Native HA entity selectors for main, chip, AC, thermostat, and switch entities
-- Native HA selector-based dropdowns for types, glow modes, and actions
-- Action editing for `more-info`, `toggle`, `perform-action`, `navigate`, `url`, `assist`, and `none`
-- Switch confirmation configuration
-- Reordering for switch rows, switches, and embedded cards
-- Embedded-card YAML editing
-
-The editor tolerates incomplete in-progress items while you are building a layout, so placeholder rows and tiles no longer break the preview.
-
 ## Layout Model
 
-The card layout is structured like this:
+The top-level layout has three sections:
 
 ```yaml
 type: custom:space-hub-card
-tile_height: 80
-chip_icon_size: 14
-main_icon_size: 48
-chip_font_size: 12
-card_shadow_color: "#000000"
-card_shadow_intensity: 0.5
-unavailable_pulse_color: "#ff3b30"
-tap_action: ...                # optional YAML-only fallback for main tiles
-hold_action: ...
-double_tap_action: ...
 headers:
+  - weather: ...
   - main: ...
     ac: ...
     thermostat: ...
 switch_rows:
   - row:
-      - ...
       - ...
     cards:
       - ...
@@ -126,63 +220,310 @@ cards:
   - ...
 ```
 
-## Configuration
+`headers` can contain any combination of:
 
-### Card Options
-
-| Option | Type | Default | Notes |
-| --- | --- | --- | --- |
-| `type` | string | required | Must be `custom:space-hub-card` |
-| `tile_height` | number | `80` | Shared tile height |
-| `chip_icon_size` | number | `14` | Chip icon size |
-| `main_icon_size` | number | `48` | Main tile icon size |
-| `chip_font_size` | number | `12` | Chip text size |
-| `card_shadow_color` | string | `#000000` | Base card shadow color |
-| `card_shadow_intensity` | number | `0.5` | Base shadow opacity, `0..1` |
-| `unavailable_pulse_color` | string | `#ff3b30` | Pulse color when an entity is unavailable |
-| `headers` | array | `[]` | Header rows |
-| `switch_rows` | array | `[]` | Switch rows |
-| `cards` | array | `[]` | Extra cards rendered after all switch rows |
-| `tap_action` | object | optional | YAML-only fallback action for main tiles |
-| `hold_action` | object | optional | YAML-only fallback action for main tiles |
-| `double_tap_action` | object | optional | YAML-only fallback action for main tiles |
-
-### Header Rows
-
-Each item in `headers` may contain:
-
+- `weather`
 - `main`
 - `ac`
 - `thermostat`
 
-AC and thermostat tiles are only rendered when they are paired with a `main` block in the same header row.
+`ac` and `thermostat` are companion tiles for a main tile row. Weather is rendered as its own full-width row.
 
-### `headers[].main`
+`switch_rows` renders repeated control tiles. A row can also contain embedded cards below that row.
 
-| Option | Type | Notes |
+`cards` renders standard Home Assistant cards after all switch rows.
+
+## Top-Level Options
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `type` | string | required | Must be `custom:space-hub-card`. |
+| `tile_height` | number | `80` | Shared height for normal room/switch tiles. |
+| `chip_icon_size` | number | `14` | Icon size for chips. |
+| `main_icon_size` | number | `48` | Default main tile icon size. |
+| `chip_font_size` | number | `12` | Chip text size. |
+| `card_shadow_color` | string | `#000000` | Base card shadow color. |
+| `card_shadow_intensity` | number | `0.5` | Base card shadow opacity. |
+| `unavailable_pulse_color` | string | `#ff3b30` | Pulse color when an entity is unavailable. |
+| `headers` | array | `[]` | Header rows. |
+| `switch_rows` | array | `[]` | Switch rows. |
+| `cards` | array | `[]` | Embedded cards after switch rows. |
+| `tap_action` | object | optional | Root fallback for main tile tap action. |
+| `hold_action` | object | optional | Root fallback for main tile hold action. |
+| `double_tap_action` | object | optional | Root fallback for main tile double tap action. |
+
+## Weather Configuration
+
+Weather is configured at `headers[].weather`.
+
+### Weather Sources
+
+| Option | Type | Description |
 | --- | --- | --- |
-| `main_name` | string | Visible room name |
-| `main_icon` | string | Main tile icon |
-| `light_group_entity` | string | Used for the light status chip and default tap toggle |
-| `tap_entity` | string | Default tap target when no custom action is configured |
-| `hold_entity` | string | Default hold `more-info` target |
-| `temp_sensor` | string | Temperature source |
-| `humidity_sensor` | string | Humidity source |
-| `glow_mode` | string | `static`, `pulse`, or `none` |
-| `chips` | array | Status chips |
-| `tap_action` | object | Overrides default tap behavior |
-| `hold_action` | object | Overrides default hold behavior |
-| `double_tap_action` | object | Enables and handles double tap |
+| `entity` | entity ID | Home Assistant `weather` entity. Used for forecast subscription and weather more-info. |
+| `temp_sensor` | entity ID | Current local temperature sensor. |
+| `humidity_sensor` | entity ID | Current local humidity sensor. |
+| `feels_like_sensor` | entity ID | Local feels-like temperature sensor. |
+| `temp_min_24h_sensor` | entity ID | Local 24-hour minimum temperature sensor. |
+| `temp_max_24h_sensor` | entity ID | Local 24-hour maximum temperature sensor. |
+| `wind_speed_sensor` | entity ID | Local wind speed sensor. |
+| `wind_gust_sensor` | entity ID | Local wind gust sensor. |
+| `wind_direction_sensor` | entity ID | Wind direction in degrees. Displayed as compass text with wind speed. |
+| `rain_state_sensor` | entity ID | Binary rain state fallback. |
+| `rain_rate_sensor` | entity ID | Rain rate sensor. Preferred for current raining state. |
+| `rain_rate_threshold` | number | Minimum rain rate that counts as raining. Default is `0`. |
+| `uv_sensor` | entity ID | UV index sensor. |
+| `solar_lux_sensor` | entity ID | Solar/lux sensor. Displayed in the sensor unit, for example `lx`. |
+| `pressure_sensor` | entity ID | Pressure sensor. |
 
-Default main-tile behavior:
+If `rain_rate_sensor` is configured, current rain state is based on rain rate being greater than `rain_rate_threshold`. The binary `rain_state_sensor` is only used as a fallback when no rate sensor is available.
 
-- Tap: toggles `light_group_entity` or `tap_entity`
-- Hold: opens `more-info` for `hold_entity` or `tap_entity`
-- Double tap: only active when `double_tap_action` is defined on the tile or at card root
+### Weather Forecast
 
-### Main Chips
+The card subscribes to Home Assistant weather forecasts from `entity`:
 
-Supported chip `type` values:
+- Hourly forecast for graphs and headline.
+- Daily forecast for the daily forecast rows.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `show_forecast` | boolean | `true` | Set to `false` to hide forecast graphs and daily forecast. |
+| `forecast_slots` | number | `8` | Number of hourly forecast entries used by graphs, clamped to `72`. |
+| `forecast_fields` | array or comma string | `temperature, precipitation_probability` | Visible graph sections to render. |
+| `sync_graphs` | boolean | `true` | Keep graph selectors synchronized. |
+| `graph_height` | number | `118` | Forecast graph height in pixels, clamped to `82..260`. |
+| `conditions_icon_size` | number | default CSS value | Weather icon size above the temperature graph. |
+| `temperature_icon_count` | number | `8` | Maximum number of condition icons above the temperature graph. Use `0` to hide them. |
+| `daily_icon_size` | number | default CSS value | Icon size in the daily forecast rows. |
+
+Currently rendered graph fields:
+
+- `temperature`
+- `precipitation_probability`
+
+Accepted aliases:
+
+- Temperature: `temp`, `temperature`
+- Precipitation probability: `rain_chance`, `precipitation_probability`, `precip_probability`, `probability`, `pop`
+
+The graph labels use the Home Assistant locale and time format. If Home Assistant is set to 24-hour time, graph labels use 24-hour time. If Home Assistant is set to 12-hour time, graph labels use 12-hour time.
+
+### Weather Display Options
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `name` | string | `Weather` | Weather tile accessible name. The visible headline comes from forecast data when available. |
+| `icon` | icon | automatic | Optional MDI icon override for the main weather icon. |
+| `temp_size` | number | `31` | Current temperature font size, clamped to `18..56`. |
+| `temperature_size` | number | alias | Alias for `temp_size`. |
+| `icon_size` | number | `42` | Main weather icon size, clamped to `28..160`. |
+| `icon_offset_x` | number | `0` | Main icon horizontal offset in pixels. |
+| `icon_offset_y` | number | `0` | Main icon vertical offset in pixels. |
+| `metric_columns` | number | `3` | Sensor grid columns, clamped to `1..4`. |
+| `stale_minutes` | number | disabled | Add stale glow when weather/current sensor data is older than this many minutes. |
+| `metrics` | array | automatic | Custom metric grid. If omitted, metrics are built from known weather sensors. |
+| `chips` | array | `[]` | Optional compact chips in the lower-right corner of the weather tile. |
+
+### Weather Metrics
+
+If `metrics` is omitted, the card builds a metric grid from these configured sensors:
+
+- `wind_speed_sensor`
+- `wind_gust_sensor`
+- `temp_min_24h_sensor`
+- `temp_max_24h_sensor`
+- `rain_state_sensor` or `rain_rate_sensor`
+- `uv_sensor`
+- `solar_lux_sensor`
+- `pressure_sensor`
+
+Custom metric:
+
+```yaml
+metrics:
+  - entity: sensor.ecowitt_solar_lux
+    name: Solar
+    icon: mdi:white-balance-sunny
+```
+
+Rain metric:
+
+```yaml
+metrics:
+  - type: rain
+    name: Rain
+    rain_rate_sensor: sensor.ecowitt_rain_rate
+    rain_state_sensor: binary_sensor.ecowitt_raining
+    rain_rate_threshold: 0
+    icon_active: mdi:weather-rainy
+    icon_inactive: mdi:water-off-outline
+```
+
+Rain metrics intentionally use configured MDI icons, not animated Meteocons.
+
+### Weather More-Info Behavior
+
+Clickable weather elements open Home Assistant more-info:
+
+| Element | Opens |
+| --- | --- |
+| Forecast headline | `weather.entity` |
+| Current temperature | `temp_sensor` |
+| Humidity | `humidity_sensor` |
+| Feels-like line | `feels_like_sensor` |
+| Metric grid item | that metric entity |
+| Weather chips | chip entity |
+
+The large animated weather icon is display-only.
+
+## Main Tile Configuration
+
+Main tiles are configured at `headers[].main`.
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `main_name` | string | Visible room name. |
+| `main_icon` | icon | Main room icon. |
+| `light_group_entity` | entity ID | Used for light status and default tap toggle. |
+| `tap_entity` | entity ID | Default tap target when no custom tap action is set. |
+| `hold_entity` | entity ID | Default hold more-info target. Falls back to `tap_entity`. |
+| `temp_sensor` | entity ID | Temperature shown in the tile chip. |
+| `humidity_sensor` | entity ID | Humidity shown in the tile chip. |
+| `glow_mode` | string | `static`, `pulse`, or `none`. |
+| `chips` | array | Status chips. |
+| `tap_action` | object | Optional action override. |
+| `hold_action` | object | Optional action override. |
+| `double_tap_action` | object | Optional action override. |
+
+Default main tile behavior:
+
+- Tap toggles `light_group_entity` or `tap_entity`.
+- Hold opens more-info for `hold_entity` or `tap_entity`.
+- Double tap is active only when configured.
+
+## AC and Thermostat Tiles
+
+AC and thermostat tiles are configured beside a main tile in the same header row.
+
+```yaml
+headers:
+  - main:
+      main_name: Living Room
+    ac:
+      entity: climate.living_room_ac
+      glow_mode: static
+    thermostat:
+      entity: climate.living_room_thermostat
+      glow_mode: pulse
+```
+
+Supported options:
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `entity` | entity ID | Climate entity. |
+| `glow_mode` | string | `static`, `pulse`, or `none`. |
+| `tap_action` | object | Optional action override. |
+| `hold_action` | object | Optional action override. |
+| `double_tap_action` | object | Optional action override. |
+
+Default AC behavior:
+
+- Tap calls `climate.turn_on` or `climate.turn_off`.
+- Hold opens more-info.
+
+Default thermostat behavior:
+
+- Tap calls `climate.set_hvac_mode`.
+- Hold opens more-info.
+
+## Switch Rows
+
+Switch rows are configured at `switch_rows`.
+
+```yaml
+switch_rows:
+  - row:
+      - entity: switch.floor_lamp
+        name: Floor Lamp
+        icon: mdi:floor-lamp
+      - entity: lock.front_door
+        name: Door
+        type: lock
+```
+
+Each row can be either:
+
+```yaml
+switch_rows:
+  - row:
+      - entity: switch.example
+```
+
+or the shorter raw-array form:
+
+```yaml
+switch_rows:
+  - - entity: switch.example
+```
+
+### Switch Item Options
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `entity` | entity ID | Controlled entity. |
+| `name` | string | Display name. |
+| `type` | string | `switch`, `smart_plug`, or `lock`. |
+| `icon` | icon | Base icon. |
+| `icon_active` | icon | Active-state icon. |
+| `icon_inactive` | icon | Inactive-state icon. |
+| `icon_on` | icon | Alias for active/inactive migration support. |
+| `icon_off` | icon | Alias for active/inactive migration support. |
+| `icon_size` | string or number | Icon size. Numeric values are treated as pixels. |
+| `font_size` | string or number | Label font size. |
+| `font_weight` | string or number | Label font weight. |
+| `glow_mode` | string | `static`, `pulse`, or `none`. |
+| `hold_entity` | entity ID | Entity opened by default hold more-info. |
+| `confirmation` | boolean or object | Confirmation for default tap action. |
+| `tap_action` | object | Optional action override. |
+| `hold_action` | object | Optional action override. |
+| `double_tap_action` | object | Optional action override. |
+| `info_templates` | array | Up to two Home Assistant templates shown on the tile. |
+
+### Switch Confirmation
+
+```yaml
+switch_rows:
+  - row:
+      - entity: lock.front_door
+        name: Front Door
+        type: lock
+        confirmation:
+          title: Confirm door action
+          text: Are you sure?
+          confirm_text: Unlock
+          dismiss_text: Cancel
+```
+
+### Switch Template Indicators
+
+Switch templates are subscribed with Home Assistant `render_template` and update live.
+
+```yaml
+switch_rows:
+  - row:
+      - entity: switch.desk
+        name: Desk
+        info_templates:
+          - "{{ states('sensor.desk_power') }} W"
+          - "{{ states('sensor.desk_daily_energy') }} kWh"
+```
+
+## Chips
+
+Chips can be used on main tiles and weather tiles.
+
+Supported `type` values:
 
 - `lock`
 - `door`
@@ -193,123 +534,40 @@ Supported chip `type` values:
 - `smart_plug`
 - `custom`
 
-Supported chip fields:
+Chip options:
 
-| Option | Type | Notes |
+| Option | Type | Description |
 | --- | --- | --- |
-| `type` | string | Chip variant |
-| `entity` | string | Entity to read |
-| `icon` | string | Base icon override |
-| `icon_active` | string | Active-state icon |
-| `icon_inactive` | string | Inactive-state icon |
-| `icon_unavailable` | string | Unavailable-state icon |
-| `background` | string | Base background override |
-| `background_active` | string | Active-state background |
-| `background_inactive` | string | Inactive-state background |
-| `background_unavailable` | string | Unavailable-state background |
-| `icon_color` | string | Base icon color override |
-| `icon_color_active` | string | Active-state icon color |
-| `icon_color_inactive` | string | Inactive-state icon color |
-| `icon_color_unavailable` | string | Unavailable-state icon color |
+| `type` | string | Chip type. |
+| `entity` | entity ID | Entity to read. |
+| `icon` | icon | Base icon override. |
+| `icon_active` | icon | Active-state icon. |
+| `icon_inactive` | icon | Inactive-state icon. |
+| `icon_unavailable` | icon | Unavailable-state icon. |
+| `background` | CSS color | Base background override. |
+| `background_active` | CSS color | Active background. |
+| `background_inactive` | CSS color | Inactive background. |
+| `background_unavailable` | CSS color | Unavailable background. |
+| `icon_color` | CSS color | Base icon color. |
+| `icon_color_active` | CSS color | Active icon color. |
+| `icon_color_inactive` | CSS color | Inactive icon color. |
+| `icon_color_unavailable` | CSS color | Unavailable icon color. |
 
-Notes:
-
-- Chips are currently visual status indicators. They do not dispatch actions.
-- The `illuminance` chip renders as a text/value chip.
-- Other chip types render compact state indicators in the main tile corner.
-
-### `headers[].ac`
-
-| Option | Type | Notes |
-| --- | --- | --- |
-| `entity` | string | Climate entity |
-| `glow_mode` | string | `static`, `pulse`, or `none` |
-| `tap_action` | object | Optional action override |
-| `hold_action` | object | Optional action override |
-
-Default AC behavior:
-
-- Tap: `perform-action` calling `climate.turn_on` or `climate.turn_off`
-- Hold: `more-info`
-
-### `headers[].thermostat`
-
-| Option | Type | Notes |
-| --- | --- | --- |
-| `entity` | string | Climate entity |
-| `glow_mode` | string | `static`, `pulse`, or `none` |
-| `tap_action` | object | Optional action override |
-| `hold_action` | object | Optional action override |
-
-Default thermostat behavior:
-
-- Tap: `perform-action` calling `climate.set_hvac_mode`
-- Hold: `more-info`
-
-### Switch Rows
-
-Each entry in `switch_rows` can be either:
-
-- A raw array of switch items
-- An object with `row: [...]`
-
-If you use the object form, you can also attach extra cards to that row.
-
-### Switch Items
-
-| Option | Type | Notes |
-| --- | --- | --- |
-| `entity` | string | Controlled entity |
-| `name` | string | Visible label, otherwise friendly name is used |
-| `icon` | string | Default/inactive tile icon |
-| `icon_active` | string | Active-state icon (`on` for switches, `unlocked` for locks) |
-| `icon_inactive` | string | YAML alias for inactive-state icon; the visual editor writes this as `icon` |
-| `type` | string | `switch`, `smart_plug`, or `lock` |
-| `glow_mode` | string | `static`, `pulse`, or `none` |
-| `hold_entity` | string | `more-info` target for hold |
-| `icon_size` | string/number | Custom icon size |
-| `font_size` / `font-size` | string/number | Custom label size |
-| `font_weight` / `font-weight` | string/number | Custom label weight |
-| `confirmation` | boolean/string/object | Uses HA native confirmation on tap |
-| `tap_action` | object | Optional action override |
-| `hold_action` | object | Optional action override |
-| `double_tap_action` | object | Optional action override |
-| `info_templates` | string/object/array | Up to 2 live template values |
-
-Default switch behavior:
-
-- Tap: `toggle`
-- Hold: `more-info` for `hold_entity` or `entity`
-- Double tap: only active when `double_tap_action` is configured
-
-For `type: lock` or `lock.*` entities, tap calls `lock.unlock` when locked and `lock.lock` when unlocked. The tile glows red while the lock state is `unlocked`; `locked` uses the normal inactive switch appearance. If `icon_active` and `icon_inactive` are not configured, both states use `icon`.
-
-After a switch tap, the tile shows a small pending spinner only if the controlled entity has not reported a state change shortly after the action. The spinner starts only after any configured confirmation is accepted, clears when the entity state changes, and also has a timeout so it cannot spin indefinitely if the related service is offline.
-
-### Switch Row Embedded Cards
-
-For a switch row object, these keys are supported:
-
-- `cards`
-- `extra_cards`
-- `card`
-- `extra_card`
-
-These cards render directly below that specific switch row.
-
-### Root Embedded Cards
-
-Use the top-level `cards:` array to render extra Lovelace cards after all switch rows.
-
-Embedded cards participate in unavailable-entity scanning, including nested object-form configs such as:
-
-- `entities:`
-- nested `cards:`
-- `target.entity_id`
+Main-tile chips are compact status indicators. Weather-tile chips are also clickable and open the chip entity more-info.
 
 ## Actions
 
-Supported action types:
+The card accepts Home Assistant-style action objects in:
+
+- `headers[].main.tap_action`
+- `headers[].main.hold_action`
+- `headers[].main.double_tap_action`
+- `headers[].ac.*_action`
+- `headers[].thermostat.*_action`
+- `switch_rows[].row[].*_action`
+- root fallback `tap_action`, `hold_action`, and `double_tap_action` for main tiles
+
+Supported action values:
 
 - `more-info`
 - `toggle`
@@ -318,172 +576,172 @@ Supported action types:
 - `url`
 - `assist`
 - `none`
+- `fire-dom-event`
+- `call-service` as a legacy alias normalized to `perform-action`
 
-The editor writes the current Home Assistant action model. Legacy YAML using `call-service` is still accepted and normalized to `perform-action`.
-
-Typical action fields:
-
-| Action | Fields |
-| --- | --- |
-| `more-info` | `entity` |
-| `toggle` | `confirmation` |
-| `perform-action` | `perform_action`, `target`, `data`, `confirmation` |
-| `navigate` | `navigation_path`, `navigation_replace`, `confirmation` |
-| `url` | `url_path`, `confirmation` |
-| `assist` | `pipeline_id`, `start_listening`, `confirmation` |
-
-Confirmation can be `true`, a message string, or an object with `title`, `text`, `confirm_text`, and `dismiss_text`.
-
-## Templates and Availability
-
-### Info Templates
-
-`info_templates` and these aliases are supported on switch items:
-
-- `info_template`
-- `top_right_templates`
-- `top_right_template`
-
-Each template is subscribed through Home Assistant's `render_template` API and rendered on the tile as up to two compact lines.
-
-### Unavailable Pulse
-
-The card pulses with `unavailable_pulse_color` when any tracked entity is:
-
-- missing
-- `unknown`
-- `unavailable`
-- `offline`
-
-This includes entities found in:
-
-- main tiles
-- AC and thermostat tiles
-- chips
-- switch rows
-- row-level embedded cards
-- root-level embedded cards
-
-## Examples
-
-### Main + AC + Thermostat
+Examples:
 
 ```yaml
-type: custom:space-hub-card
-tile_height: 96
-chip_icon_size: 16
-headers:
-  - main:
-      main_name: Living Room
-      main_icon: mdi:sofa-outline
-      light_group_entity: light.living_room
-      glow_mode: pulse
-      temp_sensor: sensor.living_room_temperature
-      humidity_sensor: sensor.living_room_humidity
-      chips:
-        - type: presence
-          entity: binary_sensor.living_room_presence
-        - type: gate
-          entity: binary_sensor.garden_gate
-          icon_active: mdi:gate-open
-          icon_inactive: mdi:gate
-    ac:
-      entity: climate.living_room_ac
-      glow_mode: pulse
-    thermostat:
-      entity: climate.living_room_thermostat
-      glow_mode: static
+tap_action:
+  action: more-info
+  entity: light.living_room
 ```
 
-### Switch Row with Templates and Confirmation
+```yaml
+tap_action:
+  action: perform-action
+  perform_action: light.turn_on
+  target:
+    entity_id: light.living_room
+  data:
+    brightness_pct: 70
+```
 
 ```yaml
-type: custom:space-hub-card
-headers:
-  - main:
-      main_name: Utility
-      main_icon: mdi:tools
+tap_action:
+  action: navigate
+  navigation_path: /lovelace/living-room
+```
+
+## Embedded Cards
+
+Embedded cards are normal Home Assistant card configs.
+
+At the bottom of the card:
+
+```yaml
+cards:
+  - type: tile
+    entity: alarm_control_panel.home
+```
+
+Below a switch row:
+
+```yaml
 switch_rows:
   - row:
-      - entity: switch.main_breaker
-        name: Main Power
-        icon: mdi:power
-        confirmation:
-          title: Confirm power change
-          text: Cut power to the whole circuit?
-          confirm_text: Toggle
-          dismiss_text: Cancel
-        hold_entity: sensor.main_breaker_power
-        info_templates:
-          - "{{ states('sensor.main_breaker_power') }} W"
-          - "{{ states('sensor.main_breaker_energy_today') }} kWh"
-      - entity: switch.3d_printer
-        name: Printer
-        type: smart_plug
-        icon: mdi:printer-3d
-      - entity: lock.front_door
-        name: Front Door
-        type: lock
-        icon: mdi:lock
-        icon_active: mdi:lock-open-variant
+      - entity: switch.example
     cards:
-      - type: tile
-        entity: sensor.main_breaker_power
+      - type: entities
+        entities:
+          - sensor.example
 ```
 
-### Custom Action Example
+## Styling Hooks
+
+The card follows Home Assistant theme variables where possible. Useful overrides:
+
+| CSS variable | Description |
+| --- | --- |
+| `--ha-card-background` | Base card background inherited from the Home Assistant theme. |
+| `--card-background-color` | Fallback base background. |
+| `--space-hub-tile-background` | Explicit weather tile surface background. |
+| `--tile-border-radius` | Tile radius. Defaults to `--ha-card-border-radius`. |
+| `--chip-background-color` | Default chip background. |
+| `--switch-on-yellow` | Active switch color. |
+| `--switch-on-green` | Smart plug active color. |
+| `--switch-unlocked-red` | Unlocked lock color. |
+
+Example card-mod override:
 
 ```yaml
-type: custom:space-hub-card
-headers:
-  - main:
-      main_name: Entrance
-      main_icon: mdi:door
-      tap_action:
-        action: navigate
-        navigation_path: /lovelace/entrance
-      hold_action:
-        action: perform-action
-        perform_action: homeassistant.turn_off
-        target:
-          entity_id: light.entrance_group
-switch_rows:
-  - row:
-      - entity: switch.doorbell_chime
-        name: Chime
-        tap_action:
-          action: assist
-          start_listening: true
+card_mod:
+  style: |
+    space-hub-card {
+      --space-hub-tile-background: #242424;
+      --tile-border-radius: 18px;
+    }
 ```
 
-## Notes
+## Visual Editor
 
-- `title` is not rendered by the card. Use `main.main_name` for visible room labels.
-- Header-level `main_icon_size` is not documented because the supported configurable main icon size is the card-level `main_icon_size`.
-- Chips are status-only right now.
-- AC and thermostat tiles are companion tiles for a header row and only show when that row also has `main`.
-- The card reports a dynamic `getCardSize()` estimate based on weather content, graph settings, header rows, switch rows, and embedded cards.
+The visual editor supports:
 
-## Validation
+- Header row creation and reordering.
+- Weather tile configuration.
+- Main tile configuration.
+- AC and thermostat tile configuration.
+- Chip editing.
+- Weather metric editing and reordering.
+- Switch row and switch tile editing.
+- Switch action editing.
+- Switch confirmation editing.
+- Switch template indicators.
+- Embedded-card YAML editing.
+- YAML mode for direct configuration.
 
-The card validates malformed final configs such as:
+The editor tolerates incomplete in-progress items while you are building a dashboard.
 
-- invalid entity IDs
-- invalid numeric values
-- invalid shadow intensity values
-- invalid color strings
+## Troubleshooting
 
-The visual editor is intentionally more permissive while you are editing, so incomplete placeholder entries do not break the live preview.
+### The card did not update after installing a new release
+
+Refresh the browser cache. In many browsers a hard reload is enough. In the Home Assistant mobile app, close and reopen the app if the old JavaScript is still cached.
+
+For HACS installs, confirm the resource points to:
+
+```yaml
+/hacsfiles/space-hub-card/space-hub-card.js
+```
+
+### Forecast graphs do not show
+
+Check:
+
+- `headers[].weather.entity` is a valid `weather` entity.
+- `show_forecast` is not `false`.
+- The weather integration supports Home Assistant forecast subscriptions.
+- `forecast_slots` is greater than `1`.
+- `forecast_fields` includes `temperature` or `precipitation_probability`.
+
+### Local readings show dashes
+
+The card shows a dash when an entity is missing, `unknown`, `unavailable`, or not numeric where a numeric value is required. Verify each configured sensor exists and has a valid state.
+
+### Rain says "No rain" while a wet sensor is on
+
+If `rain_rate_sensor` is configured, rain is active only when the numeric rate is greater than `rain_rate_threshold`. This avoids treating a wet sensor with zero rain rate as current rain. Remove `rain_rate_sensor` if you want to rely only on `rain_state_sensor`.
+
+### Weather tile surface blends into the parent card
+
+Set `--space-hub-tile-background` to a tile color that contrasts with the parent card:
+
+```yaml
+card_mod:
+  style: |
+    space-hub-card {
+      --space-hub-tile-background: #242424;
+    }
+```
 
 ## Development
 
+Install dependencies:
+
 ```bash
 npm install
+```
+
+Build:
+
+```bash
 npm run build
 ```
 
-For local watch mode:
+Run lint:
 
 ```bash
-npm run start
+npm run lint
 ```
+
+The distributable file is written to:
+
+```text
+dist/space-hub-card.js
+```
+
+## Credits
+
+- Built with Lit and Home Assistant custom-card helpers.
+- Animated weather icons are bundled locally from `basmilius/meteocons`.
+- Third-party notices are listed in `THIRD_PARTY_NOTICES.md`.
