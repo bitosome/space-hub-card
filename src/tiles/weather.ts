@@ -745,7 +745,6 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
   return html`
     <section class="weather-daily-forecast">
       <div class="weather-daily-forecast-heading">
-        <ha-icon icon="mdi:calendar-range-outline"></ha-icon>
         <span>Daily Forecast</span>
         <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
       </div>

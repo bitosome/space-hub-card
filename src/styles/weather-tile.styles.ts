@@ -504,23 +504,16 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-daily-forecast-heading {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     min-width: 0;
-    height: 17px;
-    color: var(--secondary-text-color);
-    font-size: 10px;
-    line-height: 1;
-    font-weight: 800;
-    text-transform: uppercase;
+    min-height: 18px;
+    color: var(--primary-text-color);
+    font-size: 12px;
+    line-height: 1.15;
+    font-weight: 850;
     letter-spacing: 0;
-  }
-
-  .weather-daily-forecast-heading ha-icon {
-    width: 13px;
-    height: 13px;
-    --mdc-icon-size: 13px;
   }
 
   .weather-daily-row {
