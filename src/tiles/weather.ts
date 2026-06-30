@@ -1132,8 +1132,8 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const heightStyle = styleParts.join('');
 
   return html`
-    <div class="tile-wrap weather-tile-wrap" style=${heightStyle}>
-      <div class=${`weather-tile${stale ? ' weather-tile-stale' : ''}`}>
+    <div class=${`tile-wrap weather-tile-wrap${stale ? ' weather-tile-stale' : ''}`} style=${heightStyle}>
+      <div class="weather-tile">
         <div class="weather-content">
           <div class="weather-top">
             <div class="weather-heading">

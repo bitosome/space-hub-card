@@ -4,36 +4,46 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-tile-wrap {
     height: auto;
     align-self: start;
+    border-radius: var(--tile-border-radius);
+    background: var(--ha-card-background, var(--card-background-color));
+    backdrop-filter: blur(10px);
+    box-shadow: var(--tile-shadow-default);
+    overflow: hidden;
+    clip-path: inset(0 round var(--tile-border-radius));
+    background-clip: padding-box;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    mask-image: radial-gradient(circle, white 99%, transparent 100%);
     --weather-temp-size: 31px;
     --weather-icon-size: 42px;
     --weather-icon-bg-size: 58px;
     --weather-graph-height: 118px;
+    --control-button-border-radius: var(--tile-border-radius);
   }
 
   .weather-tile {
     position: relative;
     width: 100%;
     height: auto;
-    border-radius: var(--tile-border-radius);
-    box-shadow: var(--tile-shadow-default);
-    background: var(--ha-card-background, var(--card-background-color));
-    backdrop-filter: blur(10px);
-    overflow: hidden;
-    clip-path: inset(0 round var(--tile-border-radius));
-    background-clip: padding-box;
+    border-radius: inherit;
+    box-shadow: none;
+    background: transparent;
+    backdrop-filter: none;
+    overflow: visible;
+    clip-path: none;
+    background-clip: border-box;
     --ha-ripple-color: transparent;
-    --control-button-border-radius: var(--tile-border-radius);
+    --control-button-border-radius: inherit;
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
   }
 
   .weather-tile:hover,
   .weather-tile::part(button):hover {
-    background: var(--ha-card-background, var(--card-background-color));
+    background: transparent;
     transform: none;
     filter: none;
   }
 
-  .weather-tile.weather-tile-stale {
+  .weather-tile-wrap.weather-tile-stale {
     box-shadow: var(--tile-shadow-default), 0 0 22px 4px rgba(244, 67, 54, 0.55);
   }
 
