@@ -184,7 +184,8 @@ export const baseStyles: CSSResultGroup = css`
   .header-row.main-plus-one { grid-template-columns: 1fr auto; }
   .header-row > * { height: var(--tile-h); }
   .header-row.weather-row { grid-template-columns: 1fr; }
-  .header-row.weather-row > * { height: var(--weather-tile-h, calc(var(--tile-h) * 1.85)); }
+  .header-row.weather-row > * { height: auto; }
+  .header-row.weather-row { align-items: start; }
 
   .clickable { cursor: pointer; }
 `;
