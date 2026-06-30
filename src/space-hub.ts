@@ -491,7 +491,132 @@ export class SpaceHubCard extends LitElement {
   }
 
   public getCardSize(): number {
-    return 6;
+    const config = (this._config || {}) as SpaceHubConfig;
+    const defaults = SpaceHubCard.getStubConfig();
+    const tileHeight = this._positiveNumber(config.tile_height) || this._positiveNumber(defaults.tile_height) || 80;
+    const rowGap = 12;
+    let pixelHeight = 24;
+
+    const headers = Array.isArray(config.headers) ? config.headers : [];
+    headers.forEach((header) => {
+      if (!header || typeof header !== 'object') return;
+      if (this._hasWeatherForCardSize(header.weather)) {
+        pixelHeight += this._weatherHeightForCardSize(header.weather || {}, tileHeight) + rowGap;
+      }
+      if (this._hasMainForCardSize(header)) {
+        pixelHeight += tileHeight + rowGap;
+      }
+    });
+
+    const switchRows = Array.isArray(config.switch_rows) ? config.switch_rows.length : 0;
+    pixelHeight += switchRows * (tileHeight + rowGap);
+
+    const extraCards = Array.isArray(config.cards) ? config.cards.length : 0;
+    pixelHeight += extraCards * 120;
+
+    return Math.max(6, Math.ceil(pixelHeight / 50));
+  }
+
+  private _positiveNumber(value: unknown): number | undefined {
+    const numberValue = Number(value);
+    return Number.isFinite(numberValue) && numberValue > 0 ? numberValue : undefined;
+  }
+
+  private _hasMainForCardSize(header: SpaceHubHeader): boolean {
+    const main = header.main || {};
+    return !!(main && (
+      main.main_name || (main as any).name || main.light_group_entity || (main as any).entity ||
+      main.main_icon || (main as any).icon || main.temp_sensor || main.humidity_sensor ||
+      (Array.isArray(main.chips) && main.chips.length)
+    ));
+  }
+
+  private _hasWeatherForCardSize(weather?: HeaderWeather): boolean {
+    return !!(weather && (
+      weather.name || (weather as any).main_name || weather.icon || (weather as any).main_icon ||
+      weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
+      weather.forecast_slots || weather.forecast_fields ||
+      weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
+      weather.temperature_icon_count || weather.metric_columns ||
+      weather.entity || weather.temp_sensor || weather.temp_min_24h_sensor || weather.temp_max_24h_sensor ||
+      weather.humidity_sensor ||
+      weather.feels_like_sensor || weather.dewpoint_sensor ||
+      weather.wind_speed_sensor || weather.wind_gust_sensor ||
+      weather.wind_direction_sensor || weather.rain_state_sensor ||
+      weather.rain_today_sensor || weather.rain_rate_sensor ||
+      weather.uv_sensor || weather.solar_lux_sensor ||
+      weather.pressure_sensor ||
+      (Array.isArray(weather.chips) && weather.chips.length)
+    ));
+  }
+
+  private _weatherHeightForCardSize(weather: HeaderWeather, tileHeight: number): number {
+    const configuredHeight = this._positiveNumber(weather.height) || 0;
+    const graphHeight = Math.max(82, Math.min(260, this._positiveNumber(weather.graph_height) || 118));
+    const metricColumns = Math.max(1, Math.min(4, Math.round(this._positiveNumber(weather.metric_columns) || 3)));
+    const metricCount = this._weatherMetricCountForCardSize(weather);
+    const metricRows = metricCount > 0 ? Math.ceil(metricCount / metricColumns) : 0;
+    const graphCount = weather.show_forecast === false || !weather.entity
+      ? 0
+      : this._weatherForecastFieldCountForCardSize(weather);
+    const graphHeightEstimate = graphCount > 0
+      ? (graphCount * (graphHeight + 64)) + ((graphCount - 1) * 8)
+      : 0;
+    const dailyForecastHeight = graphCount > 0 ? 250 : 0;
+    const contentHeightEstimate =
+      78 +
+      (metricRows * 40) +
+      (metricRows > 1 ? (metricRows - 1) * 5 : 0) +
+      graphHeightEstimate +
+      dailyForecastHeight +
+      32;
+
+    return Math.max(configuredHeight, contentHeightEstimate, tileHeight * 10.5);
+  }
+
+  private _weatherMetricCountForCardSize(weather: HeaderWeather): number {
+    if (Array.isArray(weather.metrics) && weather.metrics.length) {
+      return weather.metrics.filter((metric) => {
+        if (!metric) return false;
+        return metric.type === 'rain'
+          ? !!(metric.rain_state_sensor || metric.rain_rate_sensor)
+          : !!metric.entity;
+      }).length;
+    }
+
+    let count = [
+      weather.wind_speed_sensor,
+      weather.wind_gust_sensor,
+      weather.temp_min_24h_sensor,
+      weather.temp_max_24h_sensor,
+      weather.uv_sensor,
+      weather.solar_lux_sensor,
+      weather.pressure_sensor,
+    ].filter(Boolean).length;
+
+    if (weather.rain_state_sensor || weather.rain_rate_sensor) count += 1;
+    return count;
+  }
+
+  private _weatherForecastFieldCountForCardSize(weather: HeaderWeather): number {
+    const aliases: Record<string, string> = {
+      temp: 'temperature',
+      temperature: 'temperature',
+      rain_chance: 'precipitation_probability',
+      precipitation_probability: 'precipitation_probability',
+      precip_probability: 'precipitation_probability',
+      probability: 'precipitation_probability',
+      pop: 'precipitation_probability',
+    };
+    const rawValues = Array.isArray(weather.forecast_fields)
+      ? weather.forecast_fields
+      : (typeof weather.forecast_fields === 'string' ? weather.forecast_fields.split(',') : ['temperature', 'precipitation_probability']);
+    const fields = new Set<string>();
+    rawValues.forEach((value) => {
+      const field = aliases[String(value || '').trim().toLowerCase().replace(/[-\s]/g, '_')];
+      if (field) fields.add(field);
+    });
+    return fields.size || 2;
   }
 
   static styles: CSSResultGroup = [

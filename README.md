@@ -462,7 +462,7 @@ switch_rows:
 - Header-level `main_icon_size` is not documented because the supported configurable main icon size is the card-level `main_icon_size`.
 - Chips are status-only right now.
 - AC and thermostat tiles are companion tiles for a header row and only show when that row also has `main`.
-- The card returns `getCardSize() = 6`.
+- The card reports a dynamic `getCardSize()` estimate based on configured weather height, graph settings, header rows, switch rows, and embedded cards.
 
 ## Validation
 

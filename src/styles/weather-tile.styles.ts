@@ -3,6 +3,8 @@ import { css, CSSResultGroup } from 'lit';
 export const weatherTileStyles: CSSResultGroup = css`
   .weather-tile-wrap {
     height: auto;
+    min-height: var(--weather-tile-h);
+    align-self: start;
     --weather-tile-h: calc(var(--tile-h) * 10.5);
     --weather-temp-size: 31px;
     --weather-icon-size: 42px;
@@ -13,10 +15,15 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-tile {
     position: relative;
     width: 100%;
+    min-height: var(--weather-tile-h);
     height: auto;
     border-radius: var(--tile-border-radius);
     box-shadow: var(--tile-shadow-default);
     background: var(--ha-card-background, var(--card-background-color));
+    overflow: visible;
+    border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color));
+    --control-button-background-color: transparent;
+    --control-button-background-opacity: 0;
     --ha-ripple-color: transparent;
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
   }

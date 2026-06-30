@@ -1056,6 +1056,10 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const tempSize = configNumber(config.temp_size ?? config.temperature_size, 18, 56);
   const iconSize = configNumber(config.icon_size, 28, 160);
   const graphHeight = configNumber(config.graph_height, 82, 260);
+  const tileHeightRaw = Number(config.height);
+  const tileHeight = Number.isFinite(tileHeightRaw) && tileHeightRaw > 0
+    ? Math.round(tileHeightRaw)
+    : undefined;
   const iconOffsetX = Number(config.icon_offset_x);
   const iconOffsetY = Number(config.icon_offset_y);
   const conditionsIconSize = configNumber(config.conditions_icon_size, 8, 48);
@@ -1066,6 +1070,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     : DEFAULT_METRIC_COLUMNS;
   const stale = isWeatherStale(host, config);
   const styleParts = [
+    tileHeight ? `--weather-tile-h:${tileHeight}px;` : '',
     tempSize ? `--weather-temp-size:${tempSize}px;` : '',
     iconSize ? `--weather-icon-size:${iconSize}px;--weather-icon-bg-size:${iconSize + 16}px;` : '',
     Number.isFinite(iconOffsetX) ? `--weather-icon-x:${iconOffsetX}px;` : '',
