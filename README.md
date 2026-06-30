@@ -32,7 +32,7 @@ Current weather tile features:
 
 - Current temperature and humidity.
 - Feels-like temperature.
-- Animated weather icons from local bundled `basmilius/meteocons` assets.
+- Locally bundled animated weather icons with selectable `meteocons` and `realistic` sets.
 - Sensor metric grid with configurable column count.
 - Configurable custom metrics.
 - Special rain metric with configurable raining and no-rain MDI icons.
@@ -120,6 +120,7 @@ tile_height: 88
 headers:
   - weather:
       entity: weather.home
+      icon_set: realistic
       temp_sensor: sensor.ecowitt_outdoor_temperature
       humidity_sensor: sensor.ecowitt_outdoor_humidity
       feels_like_sensor: sensor.ecowitt_feels_like_temperature
@@ -154,6 +155,7 @@ chip_font_size: 12
 headers:
   - weather:
       entity: weather.home
+      icon_set: realistic
       temp_sensor: sensor.ecowitt_outdoor_temperature
       humidity_sensor: sensor.ecowitt_outdoor_humidity
       feels_like_sensor: sensor.ecowitt_feels_like_temperature
@@ -314,6 +316,7 @@ The graph labels use the Home Assistant locale and time format. If Home Assistan
 | --- | --- | --- | --- |
 | `name` | string | `Weather` | Weather tile accessible name. The visible headline comes from forecast data when available. |
 | `icon` | icon | automatic | Optional MDI icon override for the main weather icon. |
+| `icon_set` | `meteocons` or `realistic` | `meteocons` | Animated weather icon set used by the main weather icon, temperature graph icons, and daily forecast icons. Both sets are bundled locally. |
 | `temp_size` | number | `31` | Current temperature font size, clamped to `18..56`. |
 | `temperature_size` | number | alias | Alias for `temp_size`. |
 | `icon_size` | number | `42` | Main weather icon size, clamped to `28..160`. |
@@ -743,5 +746,5 @@ dist/space-hub-card.js
 ## Credits
 
 - Built with Lit and Home Assistant custom-card helpers.
-- Animated weather icons are bundled locally from `basmilius/meteocons`.
+- Animated weather icons are bundled locally from `basmilius/meteocons` and `Makin-Things/weather-icons`.
 - Third-party notices are listed in `THIRD_PARTY_NOTICES.md`.

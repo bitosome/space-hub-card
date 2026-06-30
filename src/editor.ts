@@ -662,6 +662,9 @@ export class SpaceHubCardEditor extends LitElement {
               ${this._renderEntityField('Weather Entity', `${basePath}.entity`, config.entity, { domain: 'weather' })}
             </div>
             <div class="side-by-side">
+              ${this._renderSelectField('Weather Icon Set', `${basePath}.icon_set`, config.icon_set, ['meteocons', 'realistic'])}
+            </div>
+            <div class="side-by-side">
               <space-hub-textfield
                 label="Temperature Size (px)"
                 type="number"

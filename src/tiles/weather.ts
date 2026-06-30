@@ -4,6 +4,7 @@ import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { renderInteractiveChip } from '../chips';
 import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
+import { REALISTIC_WEATHER_ICONS } from '../assets/realistic-weather-icons';
 
 interface WeatherTileConfig {
   entity?: string;
@@ -20,6 +21,7 @@ interface WeatherTileConfig {
   daily_icon_size?: number;
   graph_height?: number;
   metric_columns?: number;
+  icon_set?: string;
   animated_icons?: boolean;
   show_forecast?: boolean;
   forecast_slots?: number;
@@ -49,6 +51,8 @@ interface WeatherTileConfig {
   chips?: unknown[];
   double_tap_action?: unknown;
 }
+
+type WeatherIconSet = 'meteocons' | 'realistic';
 
 interface MetricSource {
   type?: string;
@@ -130,6 +134,7 @@ const BAD_STATES = new Set(['', 'unknown', 'unavailable']);
 const DEFAULT_FORECAST_FIELDS: ForecastFieldKey[] = ['temperature', 'precipitation_probability'];
 const DEFAULT_TEMPERATURE_ICON_COUNT = 8;
 const DEFAULT_METRIC_COLUMNS = 3;
+const WEATHER_ICON_SETS = new Set<WeatherIconSet>(['meteocons', 'realistic']);
 const FORECAST_FIELD_ALIASES: Record<string, ForecastFieldKey> = {
   temp: 'temperature',
   temperature: 'temperature',
@@ -173,6 +178,7 @@ const CONDITION_METEOCONS: Record<string, MeteoconIconKey> = {
 };
 
 const METEOCON_SVG_CACHE = new Map<MeteoconIconKey, string>();
+const REALISTIC_SVG_CACHE = new Map<MeteoconIconKey, string>();
 
 function temperatureColor(value: number): string {
   if (value <= 0) return '#3aa7ff';
@@ -327,10 +333,23 @@ function conditionMeteocon(rawState: string): MeteoconIconKey {
   return CONDITION_METEOCONS[rawState] || 'partly-cloudy-day';
 }
 
-function meteoconSvg(icon: MeteoconIconKey): string {
-  const cached = METEOCON_SVG_CACHE.get(icon);
+function weatherIconSet(config: WeatherTileConfig): WeatherIconSet {
+  const raw = String(config.icon_set || '').trim().toLowerCase();
+  return WEATHER_ICON_SETS.has(raw as WeatherIconSet) ? raw as WeatherIconSet : 'meteocons';
+}
+
+function weatherIconData(iconSet: WeatherIconSet, icon: MeteoconIconKey): string {
+  if (iconSet === 'realistic') {
+    return REALISTIC_WEATHER_ICONS[icon as keyof typeof REALISTIC_WEATHER_ICONS] || REALISTIC_WEATHER_ICONS['partly-cloudy-day'];
+  }
+  return METEOCON_ICONS[icon];
+}
+
+function weatherIconSvg(iconSet: WeatherIconSet, icon: MeteoconIconKey): string {
+  const cache = iconSet === 'realistic' ? REALISTIC_SVG_CACHE : METEOCON_SVG_CACHE;
+  const cached = cache.get(icon);
   if (cached !== undefined) return cached;
-  const [, encoded] = String(METEOCON_ICONS[icon] || '').split('base64,');
+  const [, encoded] = String(weatherIconData(iconSet, icon) || '').split('base64,');
   let decoded = '';
   if (encoded && typeof atob === 'function') {
     try {
@@ -339,13 +358,14 @@ function meteoconSvg(icon: MeteoconIconKey): string {
       decoded = '';
     }
   }
-  METEOCON_SVG_CACHE.set(icon, decoded);
+  cache.set(icon, decoded);
   return decoded;
 }
 
-function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: string, mode: 'img' | 'inline' = 'img'): TemplateResult {
+function renderWeatherIcon(iconSet: WeatherIconSet, icon: MeteoconIconKey, className: string, label: string, mode: 'img' | 'inline' = 'img'): TemplateResult {
+  const iconData = weatherIconData(iconSet, icon);
   if (mode === 'inline') {
-    const decoded = meteoconSvg(icon);
+    const decoded = weatherIconSvg(iconSet, icon);
     if (decoded) {
       return html`
         <span class=${className} role="img" aria-label=${label}>
@@ -356,7 +376,7 @@ function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: str
     return html`
       <img
         class=${className}
-        src=${METEOCON_ICONS[icon]}
+        src=${iconData}
         alt=${label}
         draggable="false"
       />
@@ -365,7 +385,7 @@ function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: str
   return html`
     <img
       class=${className}
-      src=${METEOCON_ICONS[icon]}
+      src=${iconData}
       alt=${label}
       draggable="false"
     />
@@ -734,7 +754,7 @@ function conditionsGraphHeight(config: WeatherTileConfig): number {
   return configNumber(config.graph_height, 82, 260) || 118;
 }
 
-function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: ForecastItem[], hourlyItems: ForecastItem[]): TemplateResult | typeof nothing {
+function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: ForecastItem[], hourlyItems: ForecastItem[], iconSet: WeatherIconSet): TemplateResult | typeof nothing {
   const rows = dailyItems.slice(0, 7);
   if (!rows.length) return nothing;
   const hourlyStats = hourlyTemperatureStats(hourlyItems);
@@ -768,7 +788,8 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
               <span class="weather-daily-date">${dateLabel(host, item.datetime)}</span>
             </div>
             <div class="weather-daily-condition">
-              ${renderMeteoconIcon(
+              ${renderWeatherIcon(
+                iconSet,
                 conditionMeteocon(condition),
                 `weather-daily-icon weather-condition-${conditionClass(condition)}`,
                 conditionLabel(condition),
@@ -924,6 +945,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
   const lineGradient = `weather-conditions-temp-line-${safeKey}`;
   const fillGradient = `weather-conditions-temp-fill-${safeKey}`;
   const mid = (min + max) / 2;
+  const iconSet = weatherIconSet(config);
 
   return html`
     <section class="weather-conditions-card weather-conditions-temp">
@@ -945,7 +967,8 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
             const leftPct = (point.x / box.width) * 100;
             return html`
               <span class="weather-conditions-icon-slot" style=${`left:${leftPct.toFixed(2)}%;`}>
-                ${renderMeteoconIcon(
+                ${renderWeatherIcon(
+                  iconSet,
                   conditionMeteocon(condition),
                   `weather-conditions-icon weather-condition-${conditionClass(condition)}`,
                   conditionLabel(condition),
@@ -1095,6 +1118,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     ? Math.min(Math.floor(forecastSlotsRaw), 72)
     : 8;
   const forecastFields = normalizeForecastFields(config.forecast_fields);
+  const iconSet = weatherIconSet(config);
   const visibleForecast = forecastItems.slice(0, forecastSlots);
   const forecastText = forecastSummary(host, forecastItems);
   const displayConditionState = String(forecastItems[0]?.condition || conditionState || '').toLowerCase();
@@ -1105,7 +1129,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const conditionsKey = config.forecast_graph_key || `weather-${config.entity || name}`;
   const syncGraphs = config.sync_graphs !== false;
   const conditionsPanel = renderWeatherConditionsPanel(host, config, visibleForecast, forecastFields, conditionsKey, syncGraphs);
-  const dailyForecast = renderDailyForecast(host, config, dailyForecastItems, forecastItems);
+  const dailyForecast = renderDailyForecast(host, config, dailyForecastItems, forecastItems, iconSet);
   const chips = Array.isArray(config.chips) ? config.chips : [];
   const tempSize = configNumber(config.temp_size ?? config.temperature_size, 18, 56);
   const iconSize = configNumber(config.icon_size, 28, 160);
@@ -1186,7 +1210,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             <div class="weather-icon-wrap" aria-hidden="true">
               ${config.icon
                 ? html`<ha-icon class=${iconClass} .icon=${config.icon}></ha-icon>`
-                : renderMeteoconIcon(conditionMeteocon(iconCondition), iconClass, conditionLabel(iconCondition), 'inline')}
+                : renderWeatherIcon(iconSet, conditionMeteocon(iconCondition), iconClass, conditionLabel(iconCondition), 'inline')}
             </div>
           </div>
 
@@ -1206,7 +1230,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 ${item.mdi
                   ? html`<ha-icon class="weather-metric-icon" .icon=${item.mdi}></ha-icon>`
                   : item.icon
-                    ? renderMeteoconIcon(item.icon, 'weather-metric-icon', item.label)
+                    ? renderWeatherIcon('meteocons', item.icon, 'weather-metric-icon', item.label)
                     : renderMetricStateIcon(host, item)}
                 <span class="weather-metric-label">${item.label}</span>
                 <span class="weather-metric-value">${item.value}</span>
