@@ -17,8 +17,12 @@ export const weatherTileStyles: CSSResultGroup = css`
     border-radius: var(--tile-border-radius);
     box-shadow: var(--tile-shadow-default);
     background: var(--ha-card-background, var(--card-background-color));
+    backdrop-filter: blur(10px);
     overflow: hidden;
+    clip-path: inset(0 round var(--tile-border-radius));
+    background-clip: padding-box;
     --ha-ripple-color: transparent;
+    --control-button-border-radius: var(--tile-border-radius);
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
   }
 
@@ -41,6 +45,9 @@ export const weatherTileStyles: CSSResultGroup = css`
     margin: 0;
     box-sizing: border-box;
     border-radius: var(--tile-border-radius);
+    overflow: hidden;
+    clip-path: inset(0 round var(--tile-border-radius));
+    background-clip: padding-box;
   }
 
   .weather-content {
@@ -299,7 +306,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     align-items: baseline;
     justify-content: end;
     gap: 5px;
-    max-width: 112px;
+    max-width: min(58%, 172px);
     color: var(--secondary-text-color);
     font-size: 9px;
     line-height: 1;
@@ -464,6 +471,18 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-conditions-axis {
+    text-anchor: end;
+  }
+
+  .weather-conditions-time-label {
+    font-size: 7.6px;
+  }
+
+  .weather-conditions-time-label-start {
+    text-anchor: start;
+  }
+
+  .weather-conditions-time-label-end {
     text-anchor: end;
   }
 

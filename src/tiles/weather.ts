@@ -497,6 +497,14 @@ function forecastTime(host: any, item: ForecastItem): string {
   return new Intl.DateTimeFormat(locale, options).format(date);
 }
 
+function forecastDateTime(host: any, item: ForecastItem): string {
+  const date = dateLabel(host, item.datetime);
+  const time = forecastTime(host, item);
+  if (!date) return time;
+  if (!time) return date;
+  return `${date} ${time}`;
+}
+
 function forecastTemp(item: ForecastItem): string {
   return `${formatNumber(item.temperature, 0)}°`;
 }
@@ -672,7 +680,7 @@ function dateLabel(host: any, value?: string): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat(host?.hass?.locale?.language, { day: 'numeric', month: 'short' }).format(date);
+  return new Intl.DateTimeFormat(host?.hass?.locale?.language, { day: 'numeric', month: 'long' }).format(date);
 }
 
 function hourlyTemperatureStats(items: ForecastItem[]): Map<string, DayTemperatureStats> {
@@ -887,9 +895,14 @@ function renderConditionsGrid(host: any, box: ConditionsChartBox, ticks: number[
     }),
     ...ticks.map((index) => {
       const point = points[index];
+      const edgeClass = index === 0
+        ? ' weather-conditions-time-label-start'
+        : index === points.length - 1
+          ? ' weather-conditions-time-label-end'
+          : '';
       return svg`
         <line class="weather-conditions-time-line" x1=${point.x} x2=${point.x} y1=${box.top} y2=${baseline}></line>
-        <text class="weather-conditions-time-label" x=${point.x} y=${box.height - 6}>${forecastTime(host, point.item)}</text>
+        <text class=${`weather-conditions-time-label${edgeClass}`} x=${point.x} y=${box.height - 6}>${forecastDateTime(host, point.item)}</text>
       `;
     }),
   ];
@@ -921,7 +934,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
           <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
         </div>
         <div class="weather-conditions-selected">
-          <span>${forecastTime(host, selected.item)}</span>
+          <span>${forecastDateTime(host, selected.item)}</span>
           <strong>${selected.value.toFixed(0)}°</strong>
         </div>
       </div>
@@ -1009,7 +1022,7 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
           <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
         </div>
         <div class="weather-conditions-selected">
-          <span>${forecastTime(host, selected.item)}</span>
+          <span>${forecastDateTime(host, selected.item)}</span>
           <strong>${Math.round(selected.value)}%</strong>
         </div>
       </div>
