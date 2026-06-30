@@ -102,28 +102,15 @@ export const weatherTileStyles: CSSResultGroup = css`
     position: absolute;
     top: 0;
     right: 0;
+    z-index: 1;
     display: grid;
     place-items: center;
     width: var(--weather-icon-bg-size);
     height: var(--weather-icon-bg-size);
     color: var(--state-weather-sunny-color, #f6a000);
     background: transparent;
+    pointer-events: none;
     transform: translate(var(--weather-icon-x, 0px), var(--weather-icon-y, 0px));
-  }
-
-  .weather-icon-hit {
-    pointer-events: auto;
-    cursor: pointer;
-    outline: none;
-  }
-
-  .weather-icon-hit:hover,
-  .weather-icon-hit:active,
-  .weather-icon-hit:focus,
-  .weather-icon-hit:focus-visible {
-    background: transparent;
-    box-shadow: none;
-    outline: none;
   }
 
   .weather-icon {
@@ -159,6 +146,8 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-heading {
+    position: relative;
+    z-index: 3;
     min-width: 0;
     display: grid;
     gap: 3px;
@@ -251,6 +240,8 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-grid {
+    position: relative;
+    z-index: 4;
     display: grid;
     grid-template-columns: repeat(var(--weather-metric-columns, 2), minmax(0, 1fr));
     gap: 5px;

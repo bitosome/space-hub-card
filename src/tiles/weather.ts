@@ -1094,7 +1094,16 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
         <div class="weather-content">
           <div class="weather-top">
             <div class="weather-heading">
-              <div class="weather-headline-row">
+              <div
+                class="weather-headline-row weather-clickable"
+                role="button"
+                tabindex="0"
+                aria-label=${`Open ${name} weather forecast details`}
+                @pointerdown=${stopTileAction}
+                @pointerup=${stopTileAction}
+                @click=${(ev: Event) => openMoreInfo(host, ev, config.entity)}
+                @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.entity)}
+              >
                 <div class="weather-name">${weatherHeadline}</div>
                 ${forecastItems.length ? forecastSourceBadge : nothing}
               </div>
@@ -1131,15 +1140,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.feels_like_sensor)}
               >Feels like ${feels}</div>
             </div>
-            <div class="weather-icon-wrap weather-icon-hit"
-              role="button"
-              tabindex="0"
-              aria-label=${`Open ${name} weather details`}
-              @pointerdown=${stopTileAction}
-              @pointerup=${stopTileAction}
-              @click=${(ev: Event) => openMoreInfo(host, ev, config.entity)}
-              @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.entity)}
-            >
+            <div class="weather-icon-wrap" aria-hidden="true">
               ${config.icon
                 ? html`<ha-icon class=${iconClass} .icon=${config.icon}></ha-icon>`
                 : renderMeteoconIcon(conditionMeteocon(iconCondition), iconClass, conditionLabel(iconCondition), 'inline')}
