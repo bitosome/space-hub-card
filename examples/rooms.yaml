@@ -18,8 +18,6 @@
         temp_size: 32
         icon_size: 46
         graph_height: 124
-        forecast_type: hourly
-        time_format: 24h
         forecast_slots: 12
         forecast_fields:
           - temperature

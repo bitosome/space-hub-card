@@ -89,16 +89,18 @@ export interface HeaderWeather {
   temp_size?: number;
   temperature_size?: number;
   icon_size?: number;
+  icon_offset_x?: number;
+  icon_offset_y?: number;
+  conditions_icon_size?: number;
+  daily_icon_size?: number;
   graph_height?: number;
   animated_icons?: boolean;
   show_forecast?: boolean;
   sync_graphs?: boolean;
   stale_minutes?: number;
   rain_rate_threshold?: number;
-  forecast_type?: string;
   forecast_slots?: number;
   forecast_fields?: string[] | string;
-  time_format?: string;
   temp_sensor?: string;
   temp_min_24h_sensor?: string;
   temp_max_24h_sensor?: string;
@@ -114,7 +116,7 @@ export interface HeaderWeather {
   uv_sensor?: string;
   solar_lux_sensor?: string;
   pressure_sensor?: string;
-  metrics?: Array<{ entity?: string; name?: string; icon?: string }>;
+  metrics?: Array<{ type?: string; entity?: string; name?: string; icon?: string; icon_active?: string; icon_inactive?: string; rain_state_sensor?: string; rain_rate_sensor?: string; rain_rate_threshold?: number }>;
   chips?: unknown[];
   tap_action?: SpaceHubActionConfig;
   hold_action?: SpaceHubActionConfig;
@@ -286,7 +288,7 @@ export class SpaceHubCard extends LitElement {
           const hasContent = !!(
             weather.name || weather.icon || weather.entity ||
             weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
-            weather.forecast_type || weather.forecast_slots || weather.forecast_fields || weather.time_format ||
+            weather.forecast_slots || weather.forecast_fields ||
             weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
             weather.temp_sensor || weather.temp_min_24h_sensor || weather.temp_max_24h_sensor ||
             weather.humidity_sensor ||
@@ -347,23 +349,9 @@ export class SpaceHubCard extends LitElement {
 
           if (weather.forecast_slots !== undefined && weather.forecast_slots !== null) {
             const slots = Number(weather.forecast_slots);
-            if (!Number.isFinite(slots) || slots < 0) {
-              errors.push(`Header ${index + 1}: Weather tile forecast_slots must be a positive number, got: ${weather.forecast_slots}`);
+            if (!Number.isFinite(slots) || slots <= 0) {
+              errors.push(`Header ${index + 1}: Weather tile forecast graph hours must be a positive number, got: ${weather.forecast_slots}`);
             }
-          }
-
-          if (
-            weather.forecast_type &&
-            !['hourly', 'daily', 'twice_daily'].includes(String(weather.forecast_type))
-          ) {
-            errors.push(`Header ${index + 1}: Weather tile forecast_type must be one of: hourly, daily, twice_daily`);
-          }
-
-          if (
-            weather.time_format &&
-            !['12h', '24h'].includes(String(weather.time_format).toLowerCase())
-          ) {
-            errors.push(`Header ${index + 1}: Weather tile time_format must be one of: 12h, 24h`);
           }
 
           if (weather.forecast_fields !== undefined && weather.forecast_fields !== null) {
@@ -620,16 +608,18 @@ export class SpaceHubCard extends LitElement {
       temp_size: weatherRaw.temp_size,
       temperature_size: weatherRaw.temperature_size,
       icon_size: weatherRaw.icon_size,
+      icon_offset_x: weatherRaw.icon_offset_x,
+      icon_offset_y: weatherRaw.icon_offset_y,
+      conditions_icon_size: weatherRaw.conditions_icon_size,
+      daily_icon_size: weatherRaw.daily_icon_size,
       graph_height: weatherRaw.graph_height,
       animated_icons: weatherRaw.animated_icons,
       show_forecast: weatherRaw.show_forecast,
       sync_graphs: weatherRaw.sync_graphs,
       stale_minutes: weatherRaw.stale_minutes,
       rain_rate_threshold: weatherRaw.rain_rate_threshold,
-      forecast_type: weatherRaw.forecast_type,
       forecast_slots: weatherRaw.forecast_slots,
       forecast_fields: weatherRaw.forecast_fields,
-      time_format: weatherRaw.time_format,
       forecast_graph_key: `weather-${index}`,
       temp_sensor: weatherRaw.temp_sensor,
       temp_min_24h_sensor: weatherRaw.temp_min_24h_sensor,
@@ -651,7 +641,7 @@ export class SpaceHubCard extends LitElement {
       tap_action: weatherRaw.tap_action,
       hold_action: weatherRaw.hold_action,
       double_tap_action: weatherRaw.double_tap_action,
-      forecast: weatherRaw.show_forecast === false ? [] : this._getWeatherForecast(weatherRaw.entity, weatherRaw.forecast_type),
+      forecast: weatherRaw.show_forecast === false ? [] : this._getWeatherForecast(weatherRaw.entity, 'hourly'),
       daily_forecast: weatherRaw.show_forecast === false ? [] : this._getWeatherForecast(weatherRaw.entity, 'daily'),
     };
     const ac = h.ac || {} as any;
@@ -663,7 +653,7 @@ export class SpaceHubCard extends LitElement {
     const hasWeather = !!(weatherRaw && (
       weatherRaw.name || weatherRaw.main_name || weatherRaw.icon || weatherRaw.main_icon ||
       weatherRaw.animated_icons !== undefined || weatherRaw.show_forecast !== undefined ||
-      weatherRaw.forecast_type || weatherRaw.forecast_slots || weatherRaw.forecast_fields || weatherRaw.time_format ||
+      weatherRaw.forecast_slots || weatherRaw.forecast_fields ||
       weatherRaw.height || weatherRaw.temp_size || weatherRaw.temperature_size || weatherRaw.icon_size || weatherRaw.graph_height ||
       weatherRaw.entity || weatherRaw.temp_sensor || weatherRaw.temp_min_24h_sensor || weatherRaw.temp_max_24h_sensor ||
       weatherRaw.humidity_sensor ||
@@ -1344,7 +1334,7 @@ export class SpaceHubCard extends LitElement {
 
   private _normalizeForecastType(value: unknown): string {
     const type = String(value || 'hourly');
-    return ['hourly', 'daily', 'twice_daily'].includes(type) ? type : 'hourly';
+    return type === 'daily' ? 'daily' : 'hourly';
   }
 
   private _weatherForecastKey(entityId: string | undefined, forecastType?: unknown): string {
@@ -1359,7 +1349,7 @@ export class SpaceHubCard extends LitElement {
     headers.forEach((header: any) => {
       const weather = header?.weather;
       if (!weather || weather.show_forecast === false) return;
-      const key = this._weatherForecastKey(weather.entity, weather.forecast_type);
+      const key = this._weatherForecastKey(weather.entity, 'hourly');
       if (key) keys.add(key);
       const dailyKey = this._weatherForecastKey(weather.entity, 'daily');
       if (dailyKey) keys.add(dailyKey);

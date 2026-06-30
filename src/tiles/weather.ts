@@ -12,13 +12,15 @@ interface WeatherTileConfig {
   temp_size?: number;
   temperature_size?: number;
   icon_size?: number;
+  icon_offset_x?: number;
+  icon_offset_y?: number;
+  conditions_icon_size?: number;
+  daily_icon_size?: number;
   graph_height?: number;
   animated_icons?: boolean;
   show_forecast?: boolean;
-  forecast_type?: string;
   forecast_slots?: number;
   forecast_fields?: string[] | string;
-  time_format?: string;
   forecast_graph_key?: string;
   forecast?: unknown[];
   daily_forecast?: unknown[];
@@ -40,9 +42,21 @@ interface WeatherTileConfig {
   uv_sensor?: string;
   solar_lux_sensor?: string;
   pressure_sensor?: string;
-  metrics?: Array<{ entity?: string; name?: string; icon?: string }>;
+  metrics?: MetricSource[];
   chips?: unknown[];
   double_tap_action?: unknown;
+}
+
+interface MetricSource {
+  type?: string;
+  entity?: string;
+  name?: string;
+  icon?: string;
+  icon_active?: string;
+  icon_inactive?: string;
+  rain_state_sensor?: string;
+  rain_rate_sensor?: string;
+  rain_rate_threshold?: number;
 }
 
 interface MetricConfig {
@@ -298,7 +312,18 @@ function conditionMeteocon(rawState: string): MeteoconIconKey {
   return CONDITION_METEOCONS[rawState] || 'partly-cloudy-day';
 }
 
-function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: string): TemplateResult {
+function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: string, mode: 'img' | 'object' = 'img'): TemplateResult {
+  if (mode === 'object') {
+    return html`
+      <object
+        class=${className}
+        data=${METEOCON_ICONS[icon]}
+        type="image/svg+xml"
+        aria-label=${label}
+        tabindex="-1"
+      ></object>
+    `;
+  }
   return html`
     <img
       class=${className}
@@ -309,39 +334,93 @@ function renderMeteoconIcon(icon: MeteoconIconKey, className: string, label: str
   `;
 }
 
-function buildMetrics(host: any, config: WeatherTileConfig): MetricConfig[] {
-  if (Array.isArray(config.metrics) && config.metrics.length) {
-    return config.metrics
-      .filter((m) => m && m.entity)
-      .map((m) => {
-        const st = stateObj(host, m.entity);
-        const label = m.name || st?.attributes?.friendly_name || m.entity || '';
-        return {
-          label,
-          value: formatEntityAuto(host, m.entity),
-          entity: m.entity,
-          mdi: m.icon || undefined,
-          stateEntity: m.entity,
-        } as MetricConfig;
-      });
+function renderMetricStateIcon(host: any, item: MetricConfig): TemplateResult {
+  const so = stateObj(host, item.stateEntity);
+  if (host?.hass && so) {
+    return html`<ha-state-icon class="weather-metric-icon" .hass=${host.hass} .stateObj=${so}></ha-state-icon>`;
   }
-  const raining = isRainActive(host, config);
-  const kind = precipitationKind(host, config);
-  const rainEntity = config.rain_state_sensor || config.rain_rate_sensor || config.rain_today_sensor;
-  const rainValue = rainStateLabel(host, config) || formatEntity(host, config.rain_today_sensor, 1);
-  const rainLabel = kind === 'snow' ? 'Snow' : 'Rain';
-  const rainIcon: MeteoconIconKey = raining ? (kind === 'snow' ? 'snow' : 'rain') : 'raindrop';
+  return html`<ha-icon class="weather-metric-icon" icon="mdi:gauge"></ha-icon>`;
+}
 
-  return [
-    metric('wind', 'Wind', formatWind(host, config.wind_speed_sensor, config.wind_direction_sensor), config.wind_speed_sensor),
-    metric('wind-alert', 'Gust', formatEntity(host, config.wind_gust_sensor, 1), config.wind_gust_sensor),
-    metric('thermometer-colder', '24h Min', formatTemperature(host, config.temp_min_24h_sensor), config.temp_min_24h_sensor),
-    metric('thermometer-warmer', '24h Max', formatTemperature(host, config.temp_max_24h_sensor), config.temp_max_24h_sensor),
-    metric(rainIcon, rainLabel, rainValue, rainEntity, raining),
-    metric('uv-index', 'UV', formatEntity(host, config.uv_sensor, 0), config.uv_sensor),
-    metric('sun-hot', 'Solar', formatEntity(host, config.solar_lux_sensor, 0), config.solar_lux_sensor),
-    metric('barometer', 'Pressure', formatEntity(host, config.pressure_sensor, 0), config.pressure_sensor),
-  ].filter((item): item is MetricConfig => !!item);
+function rainActiveForMetric(host: any, m: MetricSource): boolean {
+  const threshold = Number.isFinite(Number(m.rain_rate_threshold)) ? Number(m.rain_rate_threshold) : 0;
+  const rate = numericState(host, m.rain_rate_sensor);
+  // Active precipitation requires a measurable rate above the threshold.
+  // A surface that is merely wet (binary on, rate 0) must NOT count as raining.
+  if (rate !== undefined) return rate > threshold;
+  // Fall back to a binary rain state only when there is no rate sensor.
+  const rainState = cleanState(stateObj(host, m.rain_state_sensor)).toLowerCase();
+  return rainState === 'on';
+}
+
+function staticMdiIcon(raw: string | undefined, fallback: string): string {
+  return raw && raw.includes(':') ? raw : fallback;
+}
+
+function buildRainMetric(host: any, m: MetricSource): MetricConfig {
+  const active = rainActiveForMetric(host, m);
+  const label = m.name || 'Rain';
+  const entity = m.rain_state_sensor || m.rain_rate_sensor;
+  const mdi = active
+    ? staticMdiIcon(m.icon_active || m.icon, 'mdi:weather-rainy')
+    : staticMdiIcon(m.icon_inactive || m.icon, 'mdi:water-off-outline');
+  let value: string;
+  if (!active) {
+    value = 'No rain';
+  } else {
+    const rate = formatEntity(host, m.rain_rate_sensor, 1);
+    value = rate === '—' ? 'Raining' : rate;
+  }
+  return {
+    label,
+    value,
+    entity,
+    stateEntity: entity,
+    active,
+    mdi,
+  };
+}
+
+function buildMetrics(host: any, config: WeatherTileConfig): MetricConfig[] {
+  const source = Array.isArray(config.metrics) && config.metrics.length
+    ? config.metrics
+    : defaultMetricList(config);
+  return source
+    .filter((m) => m && (m.type === 'rain' ? (m.rain_state_sensor || m.rain_rate_sensor) : m.entity))
+    .map((m) => {
+      if (m.type === 'rain') return buildRainMetric(host, m);
+      const st = stateObj(host, m.entity);
+      const label = m.name || st?.attributes?.friendly_name || m.entity || '';
+      return {
+        label,
+        value: formatEntityAuto(host, m.entity),
+        entity: m.entity,
+        mdi: m.icon || undefined,
+        stateEntity: m.entity,
+      } as MetricConfig;
+    });
+}
+
+function defaultMetricList(config: WeatherTileConfig): MetricSource[] {
+  const metrics: MetricSource[] = [
+    { entity: config.wind_speed_sensor, name: 'Wind' },
+    { entity: config.wind_gust_sensor, name: 'Gust' },
+    { entity: config.temp_min_24h_sensor, name: '24h Min' },
+    { entity: config.temp_max_24h_sensor, name: '24h Max' },
+    { entity: config.uv_sensor, name: 'UV' },
+    { entity: config.solar_lux_sensor, name: 'Solar' },
+    { entity: config.pressure_sensor, name: 'Pressure' },
+  ].filter((m) => m.entity);
+  if (config.rain_state_sensor || config.rain_rate_sensor) {
+    metrics.splice(4, 0, {
+      type: 'rain',
+      name: 'Rain',
+      rain_state_sensor: config.rain_state_sensor,
+      rain_rate_sensor: config.rain_rate_sensor,
+      rain_rate_threshold: config.rain_rate_threshold,
+    });
+  }
+  return metrics;
 }
 
 function normalizeForecast(forecast: unknown): ForecastItem[] {
@@ -363,21 +442,21 @@ function normalizeForecast(forecast: unknown): ForecastItem[] {
     }));
 }
 
-function normalizeTimeFormat(raw: unknown): '12h' | '24h' | undefined {
-  const value = String(raw || '').trim().toLowerCase().replace(/[-_\s]/g, '');
-  if (['12', '12h', '12hour', '12hours', 'ampm'].includes(value)) return '12h';
-  if (['24', '24h', '24hour', '24hours'].includes(value)) return '24h';
-  return undefined;
+function homeAssistantTimeOptions(host: any): { locale: string | undefined; options: Intl.DateTimeFormatOptions } {
+  const locale = host?.hass?.locale;
+  const timeFormat = String(locale?.time_format || '').toLowerCase();
+  const options: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
+  if (timeFormat === '12') options.hour12 = true;
+  if (timeFormat === '24') options.hour12 = false;
+  return { locale: locale?.language, options };
 }
 
-function forecastTime(item: ForecastItem, timeFormat?: unknown): string {
+function forecastTime(host: any, item: ForecastItem): string {
   if (!item.datetime) return '';
   const date = new Date(item.datetime);
   if (Number.isNaN(date.getTime())) return '';
-  const normalized = normalizeTimeFormat(timeFormat);
-  const options: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
-  if (normalized) options.hour12 = normalized === '12h';
-  return new Intl.DateTimeFormat(undefined, options).format(date);
+  const { locale, options } = homeAssistantTimeOptions(host);
+  return new Intl.DateTimeFormat(locale, options).format(date);
 }
 
 function forecastTemp(item: ForecastItem): string {
@@ -445,9 +524,7 @@ function conditionsTickIndexes(length: number): number[] {
 }
 
 function conditionsIconPoints(points: ForecastGraphPoint[]): ForecastGraphPoint[] {
-  if (points.length <= 7) return points;
-  const step = Math.max(1, Math.ceil(points.length / 7));
-  return points.filter((_, index) => index % step === 0).slice(0, 7);
+  return points;
 }
 
 function safeIdPart(value: string): string {
@@ -489,7 +566,7 @@ function dayKey(value?: string): string {
   return `${year}-${month}-${day}`;
 }
 
-function dayLabel(value?: string): string {
+function dayLabel(host: any, value?: string): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
@@ -499,14 +576,14 @@ function dayLabel(value?: string): string {
   const key = dayKey(value);
   if (key === today) return 'Today';
   if (key === dayKey(tomorrowDate.toISOString())) return 'Tomorrow';
-  return new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(date);
+  return new Intl.DateTimeFormat(host?.hass?.locale?.language, { weekday: 'long' }).format(date);
 }
 
-function dateLabel(value?: string): string {
+function dateLabel(host: any, value?: string): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' }).format(date);
+  return new Intl.DateTimeFormat(host?.hass?.locale?.language, { day: 'numeric', month: 'short' }).format(date);
 }
 
 function hourlyTemperatureStats(items: ForecastItem[]): Map<string, DayTemperatureStats> {
@@ -591,8 +668,8 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
         return html`
           <div class="weather-daily-row">
             <div class="weather-daily-day">
-              <span class="weather-daily-day-name">${dayLabel(item.datetime)}</span>
-              <span class="weather-daily-date">${dateLabel(item.datetime)}</span>
+              <span class="weather-daily-day-name">${dayLabel(host, item.datetime)}</span>
+              <span class="weather-daily-date">${dateLabel(host, item.datetime)}</span>
             </div>
             <div class="weather-daily-condition">
               ${renderMeteoconIcon(
@@ -604,7 +681,7 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
             </div>
             <div class="weather-daily-low">
               <span>${low.toFixed(0)}°</span>
-              ${stats?.low ? html`<small>${forecastTime(stats.low.item, config.time_format)}</small>` : nothing}
+              ${stats?.low ? html`<small>${forecastTime(host, stats.low.item)}</small>` : nothing}
             </div>
             <div class="weather-daily-range">
               <div class="weather-daily-track"></div>
@@ -618,7 +695,7 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
             </div>
             <div class="weather-daily-high">
               <span>${high.toFixed(0)}°</span>
-              ${stats?.high ? html`<small>${forecastTime(stats.high.item, config.time_format)}</small>` : nothing}
+              ${stats?.high ? html`<small>${forecastTime(host, stats.high.item)}</small>` : nothing}
             </div>
           </div>
         `;
@@ -627,7 +704,7 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
   `;
 }
 
-function forecastSummary(items: ForecastItem[], timeFormat?: unknown): string {
+function forecastSummary(host: any, items: ForecastItem[]): string {
   if (!items.length) return '';
   const next = items[0];
   const upcoming = items.slice(0, 12);
@@ -644,7 +721,7 @@ function forecastSummary(items: ForecastItem[], timeFormat?: unknown): string {
   const rainAmount = Number(wettest.precipitation) || 0;
   if (rainProbability >= 25 || rainAmount > 0) {
     const isImminent = wettest === next;
-    const time = forecastTime(wettest, timeFormat);
+    const time = forecastTime(host, wettest);
     let intensity: string;
     if (rainProbability >= 80 || rainAmount >= 2) intensity = 'Rain likely';
     else if (rainProbability >= 50 || rainAmount >= 0.5) intensity = 'Showers possible';
@@ -712,7 +789,7 @@ function conditionsSelectedPoint(host: any, key: string, points: ForecastGraphPo
   return points[selectedIndex] || points[0];
 }
 
-function renderConditionsGrid(box: ConditionsChartBox, ticks: number[], points: ForecastGraphPoint[], timeFormat?: unknown): TemplateResult[] {
+function renderConditionsGrid(host: any, box: ConditionsChartBox, ticks: number[], points: ForecastGraphPoint[]): TemplateResult[] {
   const baseline = box.height - box.bottom;
   return [
     ...[0, 1, 2].map((tick) => {
@@ -723,14 +800,14 @@ function renderConditionsGrid(box: ConditionsChartBox, ticks: number[], points: 
       const point = points[index];
       return svg`
         <line class="weather-conditions-time-line" x1=${point.x} x2=${point.x} y1=${box.top} y2=${baseline}></line>
-        <text class="weather-conditions-time-label" x=${point.x} y=${box.height - 6}>${forecastTime(point.item, timeFormat)}</text>
+        <text class="weather-conditions-time-label" x=${point.x} y=${box.height - 6}>${forecastTime(host, point.item)}</text>
       `;
     }),
   ];
 }
 
 function renderConditionsTemperature(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string, syncKeys: string[]): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 14, right: 42, top: 15, bottom: 24 };
+  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 14, right: 30, top: 15, bottom: 24 };
   const { points, min, max } = buildConditionsPoints(items, 'temperature', box);
   if (points.length < 2) return nothing;
 
@@ -755,7 +832,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
           <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
         </div>
         <div class="weather-conditions-selected">
-          <span>${forecastTime(selected.item, config.time_format)}</span>
+          <span>${forecastTime(host, selected.item)}</span>
           <strong>${selected.value.toFixed(0)}°</strong>
         </div>
       </div>
@@ -764,12 +841,15 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
         <div class="weather-conditions-icons">
           ${icons.map((point) => {
             const condition = String(point.item.condition || '');
+            const leftPct = (point.x / box.width) * 100;
             return html`
-              ${renderMeteoconIcon(
-                conditionMeteocon(condition),
-                `weather-conditions-icon weather-condition-${conditionClass(condition)}`,
-                conditionLabel(condition),
-              )}
+              <span class="weather-conditions-icon-slot" style=${`left:${leftPct.toFixed(2)}%;`}>
+                ${renderMeteoconIcon(
+                  conditionMeteocon(condition),
+                  `weather-conditions-icon weather-condition-${conditionClass(condition)}`,
+                  conditionLabel(condition),
+                )}
+              </span>
             `;
           })}
         </div>
@@ -798,7 +878,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
               `)}
             </linearGradient>
           </defs>
-          ${renderConditionsGrid(box, ticks, points, config.time_format)}
+          ${renderConditionsGrid(host, box, ticks, points)}
           <path class="weather-conditions-area" d=${fillPath} fill=${`url(#${fillGradient})`}></path>
           <path class="weather-conditions-line-shadow" d=${path}></path>
           <path class="weather-conditions-temp-line" d=${path} stroke=${`url(#${lineGradient})`}></path>
@@ -819,7 +899,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
 }
 
 function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string, syncKeys: string[]): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 14, right: 42, top: 10, bottom: 22 };
+  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 14, right: 30, top: 10, bottom: 22 };
   const { points } = buildConditionsPoints(items, 'precipitation_probability', box);
   if (points.length < 2) return nothing;
 
@@ -840,7 +920,7 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
           <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
         </div>
         <div class="weather-conditions-selected">
-          <span>${forecastTime(selected.item, config.time_format)}</span>
+          <span>${forecastTime(host, selected.item)}</span>
           <strong>${Math.round(selected.value)}%</strong>
         </div>
       </div>
@@ -862,7 +942,7 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
               <stop offset="100%" stop-color="rgba(56, 199, 243, 0.10)"></stop>
             </linearGradient>
           </defs>
-          ${renderConditionsGrid(box, ticks, points, config.time_format)}
+          ${renderConditionsGrid(host, box, ticks, points)}
           <path class="weather-conditions-rain-area" d=${fillPath} fill=${`url(#${fillGradient})`}></path>
           <path class="weather-conditions-line-shadow" d=${path}></path>
           <path class="weather-conditions-rain-line" d=${path}></path>
@@ -915,7 +995,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     : 8;
   const forecastFields = normalizeForecastFields(config.forecast_fields);
   const visibleForecast = forecastItems.slice(0, forecastSlots);
-  const forecastText = forecastSummary(forecastItems, config.time_format);
+  const forecastText = forecastSummary(host, forecastItems);
   const displayConditionState = String(forecastItems[0]?.condition || conditionState || '').toLowerCase();
   const iconCondition = displayConditionState || conditionState;
   const iconClass = `weather-icon weather-condition-${conditionClass(iconCondition)}`;
@@ -929,10 +1009,18 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const tempSize = configNumber(config.temp_size ?? config.temperature_size, 18, 56);
   const iconSize = configNumber(config.icon_size, 28, 160);
   const graphHeight = configNumber(config.graph_height, 82, 260);
+  const iconOffsetX = Number(config.icon_offset_x);
+  const iconOffsetY = Number(config.icon_offset_y);
+  const conditionsIconSize = configNumber(config.conditions_icon_size, 8, 48);
+  const dailyIconSize = configNumber(config.daily_icon_size, 8, 48);
   const stale = isWeatherStale(host, config);
   const styleParts = [
     tempSize ? `--weather-temp-size:${tempSize}px;` : '',
     iconSize ? `--weather-icon-size:${iconSize}px;--weather-icon-bg-size:${iconSize + 16}px;` : '',
+    Number.isFinite(iconOffsetX) ? `--weather-icon-x:${iconOffsetX}px;` : '',
+    Number.isFinite(iconOffsetY) ? `--weather-icon-y:${iconOffsetY}px;` : '',
+    conditionsIconSize ? `--weather-conditions-icon-size:${conditionsIconSize}px;` : '',
+    dailyIconSize ? `--weather-daily-icon-size:${dailyIconSize}px;` : '',
     graphHeight ? `--weather-graph-height:${graphHeight}px;` : '',
   ].filter(Boolean);
   const heightStyle = styleParts.join('');
@@ -980,7 +1068,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.feels_like_sensor)}
               >Feels like ${feels}</div>
             </div>
-            <div class="weather-icon-wrap weather-clickable"
+            <div class="weather-icon-wrap weather-icon-hit"
               role="button"
               tabindex="0"
               aria-label=${`Open ${name} weather details`}
@@ -991,7 +1079,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             >
               ${config.icon
                 ? html`<ha-icon class=${iconClass} .icon=${config.icon}></ha-icon>`
-                : renderMeteoconIcon(conditionMeteocon(iconCondition), iconClass, conditionLabel(iconCondition))}
+                : renderMeteoconIcon(conditionMeteocon(iconCondition), iconClass, conditionLabel(iconCondition), 'object')}
             </div>
           </div>
 
@@ -1012,7 +1100,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                   ? html`<ha-icon class="weather-metric-icon" .icon=${item.mdi}></ha-icon>`
                   : item.icon
                     ? renderMeteoconIcon(item.icon, 'weather-metric-icon', item.label)
-                    : html`<ha-state-icon class="weather-metric-icon" .hass=${host.hass} .stateObj=${stateObj(host, item.stateEntity)}></ha-state-icon>`}
+                    : renderMetricStateIcon(host, item)}
                 <span class="weather-metric-label">${item.label}</span>
                 <span class="weather-metric-value">${item.value}</span>
               </div>

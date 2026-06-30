@@ -13,17 +13,25 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-tile {
     position: relative;
     width: 100%;
-    min-height: var(--weather-tile-h);
     height: auto;
     border-radius: var(--tile-border-radius);
     box-shadow: var(--tile-shadow-default);
     background: var(--ha-card-background, var(--card-background-color));
-    overflow: visible;
-    border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color));
-    --control-button-background-color: transparent;
-    --control-button-background-opacity: 0;
     --ha-ripple-color: transparent;
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  }
+
+  /* Replicate ha-control-button's surface overlay so the weather tile
+     matches the other (control-button based) tiles exactly. */
+  .weather-tile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--control-button-background-color, var(--disabled-color));
+    opacity: var(--control-button-background-opacity, 0.2);
+    pointer-events: none;
+    z-index: 0;
   }
 
   .weather-tile:hover,
@@ -92,6 +100,22 @@ export const weatherTileStyles: CSSResultGroup = css`
     width: var(--weather-icon-bg-size);
     height: var(--weather-icon-bg-size);
     color: var(--state-weather-sunny-color, #f6a000);
+    transform: translate(var(--weather-icon-x, 0px), var(--weather-icon-y, 0px));
+  }
+
+  .weather-icon-hit {
+    pointer-events: auto;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .weather-icon-hit:hover,
+  .weather-icon-hit:active,
+  .weather-icon-hit:focus,
+  .weather-icon-hit:focus-visible {
+    background: transparent;
+    box-shadow: none;
+    outline: none;
   }
 
   .weather-icon {
@@ -100,6 +124,9 @@ export const weatherTileStyles: CSSResultGroup = css`
     --mdc-icon-size: var(--weather-icon-size);
     color: inherit;
     transform-origin: 50% 50%;
+    overflow: visible;
+    border: 0;
+    will-change: transform;
   }
 
   .weather-icon,
@@ -206,7 +233,7 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 5px;
     min-width: 0;
   }
@@ -300,24 +327,28 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-conditions-icons {
+    position: relative;
     width: 100%;
     min-width: 0;
-    height: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    padding: 0 6px;
+    height: var(--weather-conditions-icon-size, 15px);
     box-sizing: border-box;
     color: var(--state-weather-sunny-color, #f6a000);
-    overflow: hidden;
+  }
+
+  .weather-conditions-icon-slot {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .weather-conditions-icon {
     flex: 0 0 auto;
-    width: 15px;
-    height: 15px;
-    --mdc-icon-size: 15px;
+    width: var(--weather-conditions-icon-size, 15px);
+    height: var(--weather-conditions-icon-size, 15px);
+    --mdc-icon-size: var(--weather-conditions-icon-size, 15px);
     color: inherit;
     transform-origin: 50% 50%;
   }
@@ -405,6 +436,10 @@ export const weatherTileStyles: CSSResultGroup = css`
     z-index: 3;
     width: 15px;
     height: 15px;
+    min-width: 15px;
+    min-height: 15px;
+    box-sizing: border-box;
+    aspect-ratio: 1 / 1;
     border: 1px solid rgba(255, 255, 255, 0.54);
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.28);
@@ -478,7 +513,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     min-width: 0;
     min-height: 30px;
     display: grid;
-    grid-template-columns: minmax(86px, 1fr) 52px 40px minmax(84px, 1fr) 40px;
+    grid-template-columns: 88px 52px 40px minmax(84px, 1fr) 40px;
     align-items: center;
     gap: 5px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -539,9 +574,9 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-daily-icon {
-    width: 16px;
-    height: 16px;
-    --mdc-icon-size: 16px;
+    width: var(--weather-daily-icon-size, 16px);
+    height: var(--weather-daily-icon-size, 16px);
+    --mdc-icon-size: var(--weather-daily-icon-size, 16px);
     color: var(--state-weather-sunny-color, #f6a000);
   }
 
@@ -600,8 +635,17 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-metric.active {
-    background: rgba(33, 150, 243, 0.18);
+    background: rgba(33, 150, 243, 0.28);
     color: var(--primary-text-color);
+    box-shadow: inset 0 0 0 1px rgba(56, 199, 243, 0.6), 0 0 10px rgba(56, 199, 243, 0.28);
+  }
+
+  .weather-metric.active .weather-metric-icon {
+    color: #38c7f3;
+  }
+
+  .weather-metric.active .weather-metric-value {
+    color: #d6f3ff;
   }
 
   .weather-metric ha-icon,

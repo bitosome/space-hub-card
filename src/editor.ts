@@ -13,9 +13,6 @@ const CHIP_TYPES = ['lock', 'door', 'presence', 'illuminance', 'gate', 'sliding_
 const SWITCH_TYPES = ['switch', 'smart_plug', 'lock'] as const;
 // Glow modes
 const GLOW_MODES = ['static', 'pulse', 'none'] as const;
-// Weather forecast types supported by Home Assistant weather entities
-const WEATHER_FORECAST_TYPES = ['hourly', 'daily', 'twice_daily'] as const;
-const WEATHER_TIME_FORMATS = ['24h', '12h'] as const;
 // Action types supported by HA
 const ACTION_TYPES = ['more-info', 'toggle', 'perform-action', 'navigate', 'url', 'assist', 'none'] as const;
 const ARROW_UP_ICON_PATH = 'M4,12L5.41,13.41L11,7.83V20H13V7.83L18.59,13.42L20,12L12,4L4,12Z';
@@ -689,14 +686,26 @@ export class SpaceHubCardEditor extends LitElement {
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
-              <ha-formfield label="Show forecast">
-                <ha-switch
-                  .checked=${config.show_forecast !== false}
-                  @change=${(ev: Event) => {
-                    this._valueChanged(`${basePath}.show_forecast`, this._checkedFromEvent(ev) ? undefined : false);
-                  }}
-                ></ha-switch>
-              </ha-formfield>
+              <space-hub-textfield
+                label="Icon Offset X (px)"
+                type="number"
+                .value=${String(config.icon_offset_x ?? '')}
+                @input=${(ev: Event) => {
+                  const raw = (ev.target as HTMLInputElement).value;
+                  const v = Number(raw);
+                  this._valueChanged(`${basePath}.icon_offset_x`, raw !== '' && Number.isFinite(v) ? v : undefined);
+                }}
+              ></space-hub-textfield>
+              <space-hub-textfield
+                label="Icon Offset Y (px)"
+                type="number"
+                .value=${String(config.icon_offset_y ?? '')}
+                @input=${(ev: Event) => {
+                  const raw = (ev.target as HTMLInputElement).value;
+                  const v = Number(raw);
+                  this._valueChanged(`${basePath}.icon_offset_y`, raw !== '' && Number.isFinite(v) ? v : undefined);
+                }}
+              ></space-hub-textfield>
             </div>
             <div class="side-by-side">
               <ha-formfield label="Sync forecast graphs">
@@ -719,25 +728,34 @@ export class SpaceHubCardEditor extends LitElement {
                   this._valueChanged(`${basePath}.stale_minutes`, Number.isFinite(v) && v > 0 ? v : undefined);
                 }}
               ></space-hub-textfield>
+            </div>
+            <div class="side-by-side">
               <space-hub-textfield
-                label="Rain Rate Threshold"
+                label="Graph Icon Size (px)"
                 type="number"
-                min="0"
-                step="0.1"
-                .value=${String(config.rain_rate_threshold ?? '')}
+                min="8"
+                max="48"
+                .value=${String(config.conditions_icon_size ?? '')}
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
-                  this._valueChanged(`${basePath}.rain_rate_threshold`, Number.isFinite(v) && v >= 0 ? v : undefined);
+                  this._valueChanged(`${basePath}.conditions_icon_size`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+              <space-hub-textfield
+                label="Daily Forecast Icon Size (px)"
+                type="number"
+                min="8"
+                max="48"
+                .value=${String(config.daily_icon_size ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.daily_icon_size`, Number.isFinite(v) && v > 0 ? v : undefined);
                 }}
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
-              ${this._renderSelectField('Forecast Type', `${basePath}.forecast_type`, config.forecast_type, WEATHER_FORECAST_TYPES)}
-              ${this._renderSelectField('Time Format', `${basePath}.time_format`, config.time_format, WEATHER_TIME_FORMATS)}
-            </div>
-            <div class="side-by-side">
               <space-hub-textfield
-                label="Forecast Slots"
+                label="Forecast Graph Hours"
                 type="number"
                 min="1"
                 max="72"
@@ -759,43 +777,15 @@ export class SpaceHubCardEditor extends LitElement {
                 }}
               ></space-hub-textfield>
             </div>
-            <space-hub-textfield
-              label="Forecast Fields"
-              placeholder="temperature, precipitation_probability"
-              .value=${Array.isArray(config.forecast_fields) ? config.forecast_fields.join(', ') : (config.forecast_fields || '')}
-              @input=${(ev: Event) => {
-                const raw = (ev.target as HTMLInputElement).value;
-                const fields = raw.split(',').map((item) => item.trim()).filter((item) => item);
-                this._valueChanged(`${basePath}.forecast_fields`, fields.length ? fields : undefined);
-              }}
-            ></space-hub-textfield>
             <div class="side-by-side">
               ${this._renderEntityField('Temperature Sensor', `${basePath}.temp_sensor`, config.temp_sensor, { domain: 'sensor' })}
               ${this._renderEntityField('Humidity Sensor', `${basePath}.humidity_sensor`, config.humidity_sensor, { domain: 'sensor' })}
             </div>
-            <div class="side-by-side">
-              ${this._renderEntityField('24h Min Temperature Sensor', `${basePath}.temp_min_24h_sensor`, config.temp_min_24h_sensor, { domain: 'sensor' })}
-              ${this._renderEntityField('24h Max Temperature Sensor', `${basePath}.temp_max_24h_sensor`, config.temp_max_24h_sensor, { domain: 'sensor' })}
-            </div>
             ${this._renderEntityField('Feels Like Sensor', `${basePath}.feels_like_sensor`, config.feels_like_sensor, { domain: 'sensor' })}
-            <div class="side-by-side">
-              ${this._renderEntityField('Wind Speed Sensor', `${basePath}.wind_speed_sensor`, config.wind_speed_sensor, { domain: 'sensor' })}
-              ${this._renderEntityField('Wind Gust Sensor', `${basePath}.wind_gust_sensor`, config.wind_gust_sensor, { domain: 'sensor' })}
-            </div>
-            <div class="side-by-side">
-              ${this._renderEntityField('Wind Direction Sensor', `${basePath}.wind_direction_sensor`, config.wind_direction_sensor, { domain: 'sensor' })}
-              ${this._renderEntityField('Rain State Sensor', `${basePath}.rain_state_sensor`, config.rain_state_sensor, { domain: 'binary_sensor' })}
-            </div>
-            <div class="side-by-side">
-              ${this._renderEntityField('Rain Today Sensor', `${basePath}.rain_today_sensor`, config.rain_today_sensor, { domain: 'sensor' })}
-              ${this._renderEntityField('Rain Rate Sensor', `${basePath}.rain_rate_sensor`, config.rain_rate_sensor, { domain: 'sensor' })}
-            </div>
-            <div class="side-by-side">
-              ${this._renderEntityField('UV Sensor', `${basePath}.uv_sensor`, config.uv_sensor, { domain: 'sensor' })}
-              ${this._renderEntityField('Solar Lux Sensor', `${basePath}.solar_lux_sensor`, config.solar_lux_sensor, { domain: 'sensor' })}
-            </div>
-            ${this._renderEntityField('Pressure Sensor', `${basePath}.pressure_sensor`, config.pressure_sensor, { domain: 'sensor' })}
-            ${this._renderMetricsConfig(config.metrics as any[] || [], basePath)}
+            ${this._renderMetricsConfig(
+              (config.metrics && config.metrics.length ? config.metrics : this._defaultWeatherMetrics(config)) as any[],
+              basePath,
+            )}
             ${this._renderChipsConfig(config.chips as any[] || [], basePath)}
             <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
               <ha-icon icon="mdi:delete"></ha-icon> Remove Weather Tile
@@ -945,72 +935,157 @@ export class SpaceHubCardEditor extends LitElement {
     `;
   }
 
+  private _defaultWeatherMetrics(config: any): any[] {
+    const metrics: any[] = [
+      { entity: config.wind_speed_sensor, name: 'Wind' },
+      { entity: config.wind_gust_sensor, name: 'Gust' },
+      { entity: config.temp_min_24h_sensor, name: '24h Min' },
+      { entity: config.temp_max_24h_sensor, name: '24h Max' },
+      { entity: config.uv_sensor, name: 'UV' },
+      { entity: config.solar_lux_sensor, name: 'Solar' },
+      { entity: config.pressure_sensor, name: 'Pressure' },
+    ].filter((m) => m.entity);
+    if (config.rain_state_sensor || config.rain_rate_sensor) {
+      metrics.splice(4, 0, {
+        type: 'rain',
+        name: 'Rain',
+        rain_state_sensor: config.rain_state_sensor,
+        rain_rate_sensor: config.rain_rate_sensor,
+        rain_rate_threshold: config.rain_rate_threshold,
+      });
+    }
+    return metrics;
+  }
+
+  private _renderMetricItem(item: any, metricsPath: string, metrics: any[], i: number): TemplateResult {
+    const update = (patch: any) => {
+      const arr = [...((this._getNestedValue(metricsPath) || metrics) as any[])];
+      arr[i] = { ...arr[i], ...patch };
+      this._valueChanged(metricsPath, arr);
+    };
+    const isRain = item.type === 'rain';
+    const summary = isRain
+      ? this._entitySummary(item.rain_state_sensor || item.rain_rate_sensor)
+      : this._entitySummary(item.entity);
+    return html`
+      <div class="sub-item">
+        <div class="sub-item-header">
+          <div class="drag-handle" title="Drag to reorder">
+            <ha-svg-icon
+              .path=${'M7,19V17H9V19H7M11,19V17H13V19H11M15,19V17H17V19H15M7,15V13H9V15H7M11,15V13H13V15H11M15,15V13H17V15H15M7,11V9H9V11H7M11,11V9H13V11H11M15,11V9H17V11H15M7,7V5H9V7H7M11,7V5H13V7H11M15,7V5H17V7H15Z'}
+            ></ha-svg-icon>
+          </div>
+          <div class="sub-item-heading">
+            <span class="sub-item-title">${isRain ? 'Rain' : 'Metric'} ${i + 1}</span>
+            <span class="sub-item-meta">${summary}</span>
+          </div>
+          <ha-icon-button
+            .path=${'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'}
+            @click=${() => {
+              const arr = [...((this._getNestedValue(metricsPath) || metrics) as any[])];
+              arr.splice(i, 1);
+              this._valueChanged(metricsPath, arr);
+            }}
+          ></ha-icon-button>
+        </div>
+        ${isRain ? html`
+          <div class="empty-hint">Shows "No rain" / "Raining" with intensity. A wet sensor with no rate above the threshold counts as no rain.</div>
+          ${this._renderEntityField('Rain State Sensor', `${metricsPath}.${i}.rain_state_sensor`, item.rain_state_sensor, { domain: 'binary_sensor' })}
+          ${this._renderEntityField('Rain Rate Sensor', `${metricsPath}.${i}.rain_rate_sensor`, item.rain_rate_sensor, { domain: 'sensor' })}
+          <div class="side-by-side">
+            <space-hub-textfield
+              label="Rain Rate Threshold"
+              type="number"
+              min="0"
+              step="0.1"
+              .value=${String(item.rain_rate_threshold ?? 0)}
+              @input=${(ev: Event) => {
+                const v = Number((ev.target as HTMLInputElement).value);
+                update({ rain_rate_threshold: Number.isFinite(v) && v >= 0 ? v : undefined });
+              }}
+            ></space-hub-textfield>
+            <space-hub-textfield
+              label="Label (optional)"
+              .value=${item.name || ''}
+              @input=${(ev: Event) => update({ name: (ev.target as HTMLInputElement).value || undefined })}
+            ></space-hub-textfield>
+          </div>
+          <div class="side-by-side">
+            <ha-icon-picker
+              .hass=${this.hass}
+              label="Icon (Raining)"
+              .value=${item.icon_active || ''}
+              @value-changed=${(ev: CustomEvent) => update({ icon_active: ev.detail.value || undefined })}
+            ></ha-icon-picker>
+            <ha-icon-picker
+              .hass=${this.hass}
+              label="Icon (No Rain)"
+              .value=${item.icon_inactive || ''}
+              @value-changed=${(ev: CustomEvent) => update({ icon_inactive: ev.detail.value || undefined })}
+            ></ha-icon-picker>
+          </div>
+        ` : html`
+          ${this._renderEntityField('Entity', `${metricsPath}.${i}.entity`, item.entity, { domain: 'sensor' })}
+          <div class="side-by-side">
+            <space-hub-textfield
+              label="Label (optional)"
+              .value=${item.name || ''}
+              @input=${(ev: Event) => update({ name: (ev.target as HTMLInputElement).value || undefined })}
+            ></space-hub-textfield>
+            <ha-icon-picker
+              .hass=${this.hass}
+              label="Icon (optional, native if empty)"
+              .value=${item.icon || ''}
+              @value-changed=${(ev: CustomEvent) => update({ icon: ev.detail.value || undefined })}
+            ></ha-icon-picker>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
   private _renderMetricsConfig(metrics: any[], mainPath: string): TemplateResult {
     const metricsPath = `${mainPath}.metrics`;
-    const move = (index: number, delta: number) => {
-      const arr = [...((this._getNestedValue(metricsPath) || []) as any[])];
-      const target = index + delta;
-      if (target < 0 || target >= arr.length) return;
-      [arr[index], arr[target]] = [arr[target], arr[index]];
+    const moveItem = (oldIndex: number, newIndex: number) => {
+      const arr = [...((this._getNestedValue(metricsPath) || metrics) as any[])];
+      if (oldIndex < 0 || oldIndex >= arr.length || newIndex < 0 || newIndex >= arr.length) return;
+      const [moved] = arr.splice(oldIndex, 1);
+      arr.splice(newIndex, 0, moved);
       this._valueChanged(metricsPath, arr);
     };
     return html`
-      <ha-expansion-panel outlined .header=${`Grid Metrics (${metrics.length})`}>
-        <div class="section-content">
-          <div class="empty-hint">Leave empty to use the default weather metrics. Add entities to build your own grid.</div>
-          ${metrics.map((item, i) => html`
-            <div class="sub-item">
-              <div class="sub-item-header">
-                <div class="sub-item-heading">
-                  <span class="sub-item-title">Metric ${i + 1}</span>
-                  <span class="sub-item-meta">${this._entitySummary(item.entity)}</span>
-                </div>
-                <div class="action-row">
-                  <ha-icon-button
-                    .path=${'M7,15L12,10L17,15H7Z'}
-                    .disabled=${i <= 0}
-                    @click=${() => move(i, -1)}
-                  ></ha-icon-button>
-                  <ha-icon-button
-                    .path=${'M7,10L12,15L17,10H7Z'}
-                    .disabled=${i >= metrics.length - 1}
-                    @click=${() => move(i, 1)}
-                  ></ha-icon-button>
-                  <ha-icon-button
-                    .path=${'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'}
-                    @click=${() => {
-                      const arr = (this._getNestedValue(metricsPath) || []) as any[];
-                      arr.splice(i, 1);
-                      this._valueChanged(metricsPath, [...arr]);
-                    }}
-                  ></ha-icon-button>
-                </div>
-              </div>
-              ${this._renderEntityField('Entity', `${metricsPath}.${i}.entity`, item.entity, { domain: 'sensor' })}
-              <div class="side-by-side">
-                <space-hub-textfield
-                  label="Label (optional)"
-                  .value=${item.name || ''}
-                  @input=${(ev: Event) => this._valueChanged(`${metricsPath}.${i}.name`, (ev.target as HTMLInputElement).value || undefined)}
-                ></space-hub-textfield>
-                <ha-icon-picker
-                  .hass=${this.hass}
-                  label="Icon (optional)"
-                  .value=${item.icon || ''}
-                  @value-changed=${(ev: CustomEvent) => this._valueChanged(`${metricsPath}.${i}.icon`, ev.detail.value || undefined)}
-                ></ha-icon-picker>
-              </div>
-            </div>
-          `)}
+      <div class="metrics-section">
+        <div class="metrics-section-title">Grid Metrics (${metrics.length})</div>
+        <div class="empty-hint">Drag the handle to reorder. Edit, remove, or add your own entities.</div>
+        <ha-sortable
+          handle-selector=".drag-handle"
+          @item-moved=${(ev: CustomEvent) => {
+            ev.stopPropagation();
+            const { oldIndex, newIndex } = ev.detail;
+            moveItem(oldIndex, newIndex);
+          }}
+        >
+          <div class="metrics-list">
+            ${metrics.map((item, i) => this._renderMetricItem(item, metricsPath, metrics, i))}
+          </div>
+        </ha-sortable>
+        <div class="side-by-side">
           <button class="editor-btn" @click=${() => {
-            const current = (this._getNestedValue(metricsPath) || []) as any[];
+            const current = [...((this._getNestedValue(metricsPath) || metrics) as any[])];
             current.push({ entity: '' });
             this._valueChanged(metricsPath, current);
           }}>
             <ha-icon icon="mdi:plus"></ha-icon> Add Metric
           </button>
+          <button class="editor-btn" @click=${() => {
+            const current = [...((this._getNestedValue(metricsPath) || metrics) as any[])];
+            current.push({ type: 'rain', name: 'Rain', icon_active: 'mdi:weather-rainy', icon_inactive: 'mdi:water-off-outline' });
+            this._valueChanged(metricsPath, current);
+          }}>
+            <ha-icon icon="mdi:weather-rainy"></ha-icon> Add Rain
+          </button>
         </div>
-      </ha-expansion-panel>
+      </div>
     `;
   }
 
@@ -1664,11 +1739,43 @@ export class SpaceHubCardEditor extends LitElement {
       opacity: 0.35;
       pointer-events: none;
     }
+    .metrics-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .metrics-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px solid var(--divider-color, rgba(255, 255, 255, 0.12));
+    }
+    .metrics-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary-text-color);
+    }
+    .drag-handle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      color: var(--secondary-text-color);
+      touch-action: none;
+      flex-shrink: 0;
+      --mdc-icon-size: 22px;
+    }
+    .drag-handle:active {
+      cursor: grabbing;
+    }
     .sub-item-heading {
       display: flex;
       flex-direction: column;
       gap: 2px;
       min-width: 0;
+      flex: 1;
     }
     .sub-item-title {
       font-weight: 500;
