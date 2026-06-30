@@ -563,12 +563,18 @@ function conditionsIconPoints(points: ForecastGraphPoint[], maxIcons: number): F
   if (maxIcons <= 0) return [];
   if (points.length <= maxIcons) return points;
   if (maxIcons === 1) return [points[0]];
+  const firstX = points[0].x;
+  const lastX = points[points.length - 1].x;
   const result: ForecastGraphPoint[] = [];
   let lastIndex = -1;
   for (let i = 0; i < maxIcons; i += 1) {
-    const index = Math.round((i / (maxIcons - 1)) * (points.length - 1));
+    const ratio = i / (maxIcons - 1);
+    const index = Math.round(ratio * (points.length - 1));
     if (index === lastIndex) continue;
-    result.push(points[index]);
+    result.push({
+      ...points[index],
+      x: firstX + (lastX - firstX) * ratio,
+    });
     lastIndex = index;
   }
   return result;
