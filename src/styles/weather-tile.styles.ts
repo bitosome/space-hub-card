@@ -5,7 +5,11 @@ export const weatherTileStyles: CSSResultGroup = css`
     height: auto;
     align-self: start;
     border-radius: var(--tile-border-radius);
-    background: var(--ha-card-background, var(--card-background-color));
+    background: var(--space-hub-tile-background, rgba(255, 255, 255, 0.04));
+    background: var(
+      --space-hub-tile-background,
+      color-mix(in srgb, var(--ha-card-background, var(--card-background-color)) 96%, var(--primary-text-color) 4%)
+    );
     backdrop-filter: blur(10px);
     box-shadow: var(--tile-shadow-default);
     overflow: hidden;
