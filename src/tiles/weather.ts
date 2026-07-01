@@ -577,6 +577,16 @@ function forecastTemp(item: ForecastItem): string {
   return `${formatNumber(item.temperature, 0)}°`;
 }
 
+function forecastTemperatureRange(item: ForecastItem | undefined): string {
+  if (!item) return '';
+  const low = dailyTemperatureValue(item, 'templow');
+  const high = dailyTemperatureValue(item, 'temperature');
+  if (low === undefined && high === undefined) return '';
+  if (low !== undefined && high !== undefined) return `H ${high.toFixed(0)}° L ${low.toFixed(0)}°`;
+  if (high !== undefined) return `High ${high.toFixed(0)}°`;
+  return `Low ${Number(low).toFixed(0)}°`;
+}
+
 function normalizeForecastFields(raw: string[] | string | undefined): ForecastFieldKey[] {
   const values = Array.isArray(raw)
     ? raw
@@ -906,21 +916,28 @@ function firstPrecipitationForecast(items: ForecastItem[]): ForecastItem | undef
   });
 }
 
-function forecastSummary(host: any, items: ForecastItem[]): string {
+function precipitationSummary(host: any, item: ForecastItem, currentItem?: ForecastItem): string {
+  const probability = forecastNumber(item, 'precipitation_probability');
+  const amount = forecastNumber(item, 'precipitation');
+  const time = forecastTime(host, item);
+  const timeLabel = item === currentItem ? ' now' : time ? ` at ${time}` : '';
+  const label = precipitationForecastLabel(item.condition);
+  if (probability > 0) return `${label} ${Math.round(probability)}%${timeLabel}`;
+  if (amount > 0) return `${label} ${amount.toFixed(1)} mm${timeLabel}`;
+  return `${conditionLabel(String(item.condition || label))}${timeLabel}`;
+}
+
+function forecastSummary(host: any, items: ForecastItem[], dailyItems: ForecastItem[] = []): string {
   if (!items.length) return '';
   const next = items[0];
+  const parts = [
+    `${conditionLabel(String(next.condition || ''))}, ${forecastTemp(next)}`,
+  ];
+  const dailyRange = forecastTemperatureRange(dailyItems[0]);
+  if (dailyRange) parts.push(dailyRange);
   const wetForecast = firstPrecipitationForecast(upcomingForecastItems(items, 12));
-  if (wetForecast) {
-    const probability = forecastNumber(wetForecast, 'precipitation_probability');
-    const amount = forecastNumber(wetForecast, 'precipitation');
-    const time = forecastTime(host, wetForecast);
-    const timeLabel = time ? ` at ${time}` : '';
-    const label = precipitationForecastLabel(wetForecast.condition);
-    if (probability > 0) return `${label} ${Math.round(probability)}%${timeLabel}`;
-    if (amount > 0) return `${label} ${amount.toFixed(1)} mm${timeLabel}`;
-    return `${conditionLabel(String(wetForecast.condition || label))}${timeLabel}`;
-  }
-  return `${conditionLabel(String(next.condition || ''))}, ${forecastTemp(next)}`;
+  if (wetForecast) parts.push(precipitationSummary(host, wetForecast, next));
+  return parts.join(' · ');
 }
 
 function stopTileAction(ev: Event): void {
@@ -1188,7 +1205,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     : 8;
   const forecastFields = normalizeForecastFields(config.forecast_fields);
   const visibleForecast = forecastItems.slice(0, forecastSlots);
-  const forecastText = forecastSummary(host, forecastItems);
+  const forecastText = forecastSummary(host, forecastItems, dailyForecastItems);
   const displayConditionState = String(forecastItems[0]?.condition || conditionState || '').toLowerCase();
   const iconCondition = displayConditionState || conditionState;
   const iconClass = `weather-icon weather-condition-${conditionClass(iconCondition)}`;
@@ -1231,6 +1248,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             <div class="weather-heading">
               <div
                 class="weather-headline-row weather-clickable"
+                title=${weatherHeadline}
                 role="button"
                 tabindex="0"
                 aria-label=${`Open ${name} weather forecast details`}
