@@ -603,10 +603,10 @@ function forecastTemperatureRangeSentence(item: ForecastItem | undefined): strin
   const high = dailyTemperatureValue(item, 'temperature');
   if (low === undefined && high === undefined) return '';
   if (low !== undefined && high !== undefined) {
-    return `High near ${high.toFixed(0)}°, low near ${low.toFixed(0)}°.`;
+    return `High ${high.toFixed(0)}°, low ${low.toFixed(0)}°.`;
   }
-  if (high !== undefined) return `High near ${high.toFixed(0)}°.`;
-  return `Low near ${Number(low).toFixed(0)}°.`;
+  if (high !== undefined) return `High ${high.toFixed(0)}°.`;
+  return `Low ${Number(low).toFixed(0)}°.`;
 }
 
 function normalizeForecastFields(raw: string[] | string | undefined): ForecastFieldKey[] {
@@ -947,17 +947,17 @@ function precipitationForecastSentence(host: any, item: ForecastItem, currentIte
   const kind = label.toLowerCase();
   const likelihood = probability >= 65 ? 'likely' : 'possible';
   if (probability > 0) {
-    return `${label} is ${likelihood} ${timing}, about a ${Math.round(probability)}% chance.`;
+    return `${label} ${likelihood} ${timing}, ${Math.round(probability)}% chance.`;
   }
-  if (amount > 0) return `${label} is expected ${timing}, around ${amount.toFixed(1)} mm.`;
-  return `${conditionLabel(String(item.condition || kind))} is expected ${timing}.`;
+  if (amount > 0) return `${label} expected ${timing}, ${amount.toFixed(1)} mm.`;
+  return `${conditionLabel(String(item.condition || kind))} expected ${timing}.`;
 }
 
 function forecastSummary(host: any, items: ForecastItem[], dailyItems: ForecastItem[] = []): string {
   if (!items.length) return '';
   const next = items[0];
   const parts = [
-    `${conditionLabel(String(next.condition || ''))} and ${forecastTemp(next)}.`,
+    `${conditionLabel(String(next.condition || ''))}, ${forecastTemp(next)}.`,
   ];
   const dailyRange = forecastTemperatureRangeSentence(dailyItems[0]);
   if (dailyRange) parts.push(dailyRange);
