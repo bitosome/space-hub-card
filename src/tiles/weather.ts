@@ -597,14 +597,16 @@ function forecastTemp(item: ForecastItem): string {
   return `${formatNumber(item.temperature, 0)}°`;
 }
 
-function forecastTemperatureRange(item: ForecastItem | undefined): string {
+function forecastTemperatureRangeSentence(item: ForecastItem | undefined): string {
   if (!item) return '';
   const low = dailyTemperatureValue(item, 'templow');
   const high = dailyTemperatureValue(item, 'temperature');
   if (low === undefined && high === undefined) return '';
-  if (low !== undefined && high !== undefined) return `H ${high.toFixed(0)}° L ${low.toFixed(0)}°`;
-  if (high !== undefined) return `High ${high.toFixed(0)}°`;
-  return `Low ${Number(low).toFixed(0)}°`;
+  if (low !== undefined && high !== undefined) {
+    return `High near ${high.toFixed(0)}°, low near ${low.toFixed(0)}°.`;
+  }
+  if (high !== undefined) return `High near ${high.toFixed(0)}°.`;
+  return `Low near ${Number(low).toFixed(0)}°.`;
 }
 
 function normalizeForecastFields(raw: string[] | string | undefined): ForecastFieldKey[] {
@@ -936,28 +938,32 @@ function firstPrecipitationForecast(items: ForecastItem[]): ForecastItem | undef
   });
 }
 
-function precipitationSummary(host: any, item: ForecastItem, currentItem?: ForecastItem): string {
+function precipitationForecastSentence(host: any, item: ForecastItem, currentItem?: ForecastItem): string {
   const probability = forecastNumber(item, 'precipitation_probability');
   const amount = forecastNumber(item, 'precipitation');
   const time = forecastTime(host, item);
-  const timeLabel = item === currentItem ? ' now' : time ? ` at ${time}` : '';
+  const timing = item === currentItem ? 'now' : time ? `around ${time}` : 'later';
   const label = precipitationForecastLabel(item.condition);
-  if (probability > 0) return `${label} ${Math.round(probability)}%${timeLabel}`;
-  if (amount > 0) return `${label} ${amount.toFixed(1)} mm${timeLabel}`;
-  return `${conditionLabel(String(item.condition || label))}${timeLabel}`;
+  const kind = label.toLowerCase();
+  const likelihood = probability >= 65 ? 'likely' : 'possible';
+  if (probability > 0) {
+    return `${label} is ${likelihood} ${timing}, about a ${Math.round(probability)}% chance.`;
+  }
+  if (amount > 0) return `${label} is expected ${timing}, around ${amount.toFixed(1)} mm.`;
+  return `${conditionLabel(String(item.condition || kind))} is expected ${timing}.`;
 }
 
 function forecastSummary(host: any, items: ForecastItem[], dailyItems: ForecastItem[] = []): string {
   if (!items.length) return '';
   const next = items[0];
   const parts = [
-    `${conditionLabel(String(next.condition || ''))}, ${forecastTemp(next)}`,
+    `${conditionLabel(String(next.condition || ''))} and ${forecastTemp(next)}.`,
   ];
-  const dailyRange = forecastTemperatureRange(dailyItems[0]);
+  const dailyRange = forecastTemperatureRangeSentence(dailyItems[0]);
   if (dailyRange) parts.push(dailyRange);
   const wetForecast = firstPrecipitationForecast(upcomingForecastItems(items, 12));
-  if (wetForecast) parts.push(precipitationSummary(host, wetForecast, next));
-  return parts.join(' · ');
+  if (wetForecast) parts.push(precipitationForecastSentence(host, wetForecast, next));
+  return parts.join(' ');
 }
 
 function stopTileAction(ev: Event): void {
