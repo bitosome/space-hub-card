@@ -699,31 +699,33 @@ function temperatureIconCount(config: WeatherTileConfig): number {
 function conditionsIconPoints(points: ForecastGraphPoint[], maxIcons: number): ForecastGraphPoint[] {
   if (maxIcons <= 0) return [];
   if (points.length <= maxIcons) return points;
-  if (maxIcons === 1) return [points[0]];
+  if (maxIcons === 1) return [points[Math.floor(points.length / 2)]];
 
   const result: ForecastGraphPoint[] = [];
+  const iconCount = Math.min(maxIcons, points.length);
+
+  // Split the configured forecast range into equal hour buckets. This keeps
+  // 48 hours / 24 icons on an exact two-hour cadence instead of introducing
+  // an occasional larger endpoint-rounding gap.
+  const pointCount = points.length;
   let previousIndex = -1;
-  for (let i = 0; i < maxIcons; i += 1) {
-    const remaining = maxIcons - i - 1;
-    const latestAllowedIndex = points.length - 1 - remaining;
-    const idealIndex = Math.round((i * (points.length - 1)) / (maxIcons - 1));
-    const index = Math.max(previousIndex + 1, Math.min(latestAllowedIndex, idealIndex));
+  for (let i = 0; i < iconCount; i += 1) {
+    const remaining = iconCount - i - 1;
+    const latestAllowedIndex = pointCount - 1 - remaining;
+    const bucketIndex = Math.floor((i * pointCount) / iconCount);
+    const index = Math.max(previousIndex + 1, Math.min(latestAllowedIndex, bucketIndex));
     result.push(points[index]);
     previousIndex = index;
   }
   return result;
 }
 
-function conditionsIconSlots(points: ForecastGraphPoint[], maxIcons: number, box: ConditionsChartBox): ConditionsIconSlot[] {
+function conditionsIconSlots(points: ForecastGraphPoint[], maxIcons: number): ConditionsIconSlot[] {
   const iconPoints = conditionsIconPoints(points, maxIcons);
   if (!iconPoints.length) return [];
-  const chartWidth = box.width - box.left - box.right;
-  if (iconPoints.length === 1) {
-    return [{ point: iconPoints[0], x: box.left + chartWidth / 2 }];
-  }
-  return iconPoints.map((point, index) => ({
+  return iconPoints.map((point) => ({
     point,
-    x: box.left + (index / (iconPoints.length - 1)) * chartWidth,
+    x: point.x,
   }));
 }
 
@@ -1064,7 +1066,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
   const minPoint = points.reduce((best, point) => point.value < best.value ? point : best, points[0]);
   const maxPoint = points.reduce((best, point) => point.value > best.value ? point : best, points[0]);
   const ticks = conditionsTickIndexes(points.length);
-  const icons = conditionsIconSlots(points, temperatureIconCount(config), box);
+  const icons = conditionsIconSlots(points, temperatureIconCount(config));
   const path = smoothPath(points);
   const fillPath = areaPath(points, baseline);
   const safeKey = safeIdPart(key);

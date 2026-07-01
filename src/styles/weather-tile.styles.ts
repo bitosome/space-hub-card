@@ -160,7 +160,7 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-headline-row {
     justify-self: start;
     min-width: 0;
-    width: max-content;
+    width: clamp(0px, calc(100% - var(--weather-icon-bg-size) - 8px), 80%);
     max-width: 80%;
     display: inline-flex;
     align-items: flex-start;
