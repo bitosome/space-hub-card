@@ -48,6 +48,11 @@ interface WeatherForecastEntry {
   pending?: boolean;
 }
 
+interface WeatherForecastSource {
+  entity: string;
+  name?: string;
+}
+
 export interface HeaderMain {
   // Core configuration
   tap_entity?: string;
@@ -83,6 +88,7 @@ export interface HeaderThermostat {
 
 export interface HeaderWeather {
   entity?: string;
+  forecast_sources?: Array<string | { entity?: string; name?: string }>;
   name?: string;
   icon?: string;
   height?: number;
@@ -179,6 +185,7 @@ export class SpaceHubCard extends LitElement {
   @state() private _config!: SpaceHubConfig;
   @state() private _visiblePendingSwitches = new Set<string>();
   @state() private _weatherForecastGraphSelections = new Map<string, number>();
+  @state() private _weatherForecastSourceSelections = new Map<string, string>();
 
   private _helpersPromise?: Promise<any>;
   private _rowCardElements = new Map<string, LovelaceCard>();
@@ -301,6 +308,7 @@ export class SpaceHubCard extends LitElement {
             weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
             weather.icon_set || weather.icon_pack || weather.icon_base_path || weather.icon_map ||
             weather.forecast_slots || weather.forecast_fields ||
+            (Array.isArray(weather.forecast_sources) && weather.forecast_sources.length > 0) ||
             weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
             weather.temperature_icon_count || weather.metric_columns ||
             weather.temp_sensor || weather.temp_min_24h_sensor || weather.temp_max_24h_sensor ||
@@ -342,6 +350,14 @@ export class SpaceHubCard extends LitElement {
               errors.push(`Header ${index + 1}: Weather tile ${field} '${value}' must be a valid entity ID`);
             }
           });
+          if (Array.isArray(weather.forecast_sources)) {
+            weather.forecast_sources.forEach((source, sourceIndex) => {
+              const value = typeof source === 'string' ? source : source?.entity;
+              if (value && !this._isValidEntityId(value)) {
+                errors.push(`Header ${index + 1}: Weather tile forecast_sources ${sourceIndex + 1} '${value}' must be a valid weather entity ID`);
+              }
+            });
+          }
 
           const positiveNumberFields = [
             'height',
@@ -554,6 +570,7 @@ export class SpaceHubCard extends LitElement {
       weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
       weather.icon_set || weather.icon_pack || weather.icon_base_path || weather.icon_map ||
       weather.forecast_slots || weather.forecast_fields ||
+      (Array.isArray(weather.forecast_sources) && weather.forecast_sources.length > 0) ||
       weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
       weather.temperature_icon_count || weather.metric_columns ||
       weather.entity || weather.temp_sensor || weather.temp_min_24h_sensor || weather.temp_max_24h_sensor ||
@@ -759,8 +776,15 @@ export class SpaceHubCard extends LitElement {
       hold_action: mainRaw.hold_action,
       double_tap_action: mainRaw.double_tap_action,
     };
+    const forecastSources = this._weatherForecastSources(weatherRaw);
+    const forecastSourceKey = `weather-${index}-forecast-source`;
+    const selectedForecastEntity = this._getWeatherForecastSourceSelection(forecastSourceKey, forecastSources) || weatherRaw.entity;
     const weather: any = {
       entity: weatherRaw.entity,
+      forecast_entity: selectedForecastEntity,
+      selected_forecast_entity: selectedForecastEntity,
+      forecast_sources: forecastSources,
+      forecast_source_key: forecastSourceKey,
       name: weatherRaw.name || weatherRaw.main_name,
       icon: weatherRaw.icon || weatherRaw.main_icon,
       height: weatherRaw.height,
@@ -786,7 +810,7 @@ export class SpaceHubCard extends LitElement {
       rain_rate_threshold: weatherRaw.rain_rate_threshold,
       forecast_slots: weatherRaw.forecast_slots,
       forecast_fields: weatherRaw.forecast_fields,
-      forecast_graph_key: `weather-${index}`,
+      forecast_graph_key: `weather-${index}-${selectedForecastEntity || 'default'}`,
       temp_sensor: weatherRaw.temp_sensor,
       temp_min_24h_sensor: weatherRaw.temp_min_24h_sensor,
       temp_max_24h_sensor: weatherRaw.temp_max_24h_sensor,
@@ -807,8 +831,8 @@ export class SpaceHubCard extends LitElement {
       tap_action: weatherRaw.tap_action,
       hold_action: weatherRaw.hold_action,
       double_tap_action: weatherRaw.double_tap_action,
-      forecast: weatherRaw.show_forecast === false ? [] : this._getWeatherForecast(weatherRaw.entity, 'hourly'),
-      daily_forecast: weatherRaw.show_forecast === false ? [] : this._getWeatherForecast(weatherRaw.entity, 'daily'),
+      forecast: weatherRaw.show_forecast === false ? [] : this._getWeatherForecast(selectedForecastEntity, 'hourly'),
+      daily_forecast: weatherRaw.show_forecast === false ? [] : this._getWeatherForecast(selectedForecastEntity, 'daily'),
     };
     const ac = h.ac || {} as any;
     const thermostat = h.thermostat || {} as any;
@@ -821,6 +845,7 @@ export class SpaceHubCard extends LitElement {
       weatherRaw.animated_icons !== undefined || weatherRaw.show_forecast !== undefined ||
       weatherRaw.icon_set || weatherRaw.icon_pack || weatherRaw.icon_base_path || weatherRaw.icon_map ||
       weatherRaw.forecast_slots || weatherRaw.forecast_fields ||
+      (Array.isArray(weatherRaw.forecast_sources) && weatherRaw.forecast_sources.length > 0) ||
       weatherRaw.height || weatherRaw.temp_size || weatherRaw.temperature_size || weatherRaw.icon_size || weatherRaw.graph_height ||
       weatherRaw.temperature_icon_count || weatherRaw.metric_columns ||
       weatherRaw.entity || weatherRaw.temp_sensor || weatherRaw.temp_min_24h_sensor || weatherRaw.temp_max_24h_sensor ||
@@ -1505,6 +1530,46 @@ export class SpaceHubCard extends LitElement {
     return type === 'daily' ? 'daily' : 'hourly';
   }
 
+  private _weatherForecastSources(weather: any): WeatherForecastSource[] {
+    const sources: WeatherForecastSource[] = [];
+    const addSource = (raw: unknown, fallbackName?: unknown) => {
+      let entity = '';
+      let name = '';
+      if (typeof raw === 'string') {
+        entity = raw.trim();
+      } else if (raw && typeof raw === 'object') {
+        const record = raw as { entity?: unknown; name?: unknown };
+        entity = typeof record.entity === 'string' ? record.entity.trim() : '';
+        name = typeof record.name === 'string' ? record.name.trim() : '';
+      }
+      if (!entity || sources.some((source) => source.entity === entity)) return;
+      const fallback = typeof fallbackName === 'string' ? fallbackName.trim() : '';
+      sources.push({ entity, name: name || fallback || undefined });
+    };
+
+    addSource(weather?.entity, weather?.name || weather?.main_name);
+    if (Array.isArray(weather?.forecast_sources)) {
+      weather.forecast_sources.forEach((source: unknown) => addSource(source));
+    }
+    return sources;
+  }
+
+  public _getWeatherForecastSourceSelection(key: string | undefined, sources: WeatherForecastSource[]): string | undefined {
+    if (!sources.length) return undefined;
+    const selected = key ? this._weatherForecastSourceSelections.get(key) : undefined;
+    return selected && sources.some((source) => source.entity === selected)
+      ? selected
+      : sources[0].entity;
+  }
+
+  public _setWeatherForecastSourceSelection(key: string | undefined, entityId: string | undefined): void {
+    if (!key || !entityId) return;
+    if (this._weatherForecastSourceSelections.get(key) === entityId) return;
+    const next = new Map(this._weatherForecastSourceSelections);
+    next.set(key, entityId);
+    this._weatherForecastSourceSelections = next;
+  }
+
   private _weatherForecastKey(entityId: string | undefined, forecastType?: unknown): string {
     const entity = typeof entityId === 'string' ? entityId.trim() : '';
     if (!entity) return '';
@@ -1517,10 +1582,12 @@ export class SpaceHubCard extends LitElement {
     headers.forEach((header: any) => {
       const weather = header?.weather;
       if (!weather || weather.show_forecast === false) return;
-      const key = this._weatherForecastKey(weather.entity, 'hourly');
-      if (key) keys.add(key);
-      const dailyKey = this._weatherForecastKey(weather.entity, 'daily');
-      if (dailyKey) keys.add(dailyKey);
+      this._weatherForecastSources(weather).forEach((source) => {
+        const key = this._weatherForecastKey(source.entity, 'hourly');
+        if (key) keys.add(key);
+        const dailyKey = this._weatherForecastKey(source.entity, 'daily');
+        if (dailyKey) keys.add(dailyKey);
+      });
     });
     return keys;
   }

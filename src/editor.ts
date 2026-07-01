@@ -661,6 +661,7 @@ export class SpaceHubCardEditor extends LitElement {
             <div class="side-by-side">
               ${this._renderEntityField('Weather Entity', `${basePath}.entity`, config.entity, { domain: 'weather' })}
             </div>
+            ${this._renderForecastSourcesConfig(config, basePath)}
             <div class="side-by-side">
               ${this._renderSelectField('Weather Icon Set', `${basePath}.icon_set`, config.icon_set, ['meteocons', 'custom'])}
             </div>
@@ -840,6 +841,72 @@ export class SpaceHubCardEditor extends LitElement {
           `}
         </div>
       </ha-expansion-panel>
+    `;
+  }
+
+  private _renderForecastSourcesConfig(config: HeaderWeather, basePath: string): TemplateResult {
+    const path = `${basePath}.forecast_sources`;
+    const sources = Array.isArray(config.forecast_sources) ? config.forecast_sources as any[] : [];
+    const sourceLabel = (source: any, index: number) => source?.name || source?.entity || (typeof source === 'string' ? source : '') || `Source ${index + 1}`;
+    const updateSource = (index: number, patch: Record<string, unknown>) => {
+      const current = [...((this._getNestedValue(path) || sources) as any[])];
+      const raw = current[index];
+      const item = typeof raw === 'string' ? { entity: raw } : { ...(raw || {}) };
+      current[index] = { ...item, ...patch };
+      this._valueChanged(path, current);
+    };
+
+    return html`
+      <div class="metrics-section">
+        <div class="metrics-section-title">Additional Forecast Sources (${sources.length})</div>
+        <div class="empty-hint">Primary forecast comes from Weather Entity. Add other weather entities to switch the forecast location in the tile.</div>
+        <div class="metrics-list">
+          ${sources.map((source, index) => {
+            const item = typeof source === 'string' ? { entity: source } : source || {};
+            return html`
+              <div class="sub-item">
+                <div class="sub-item-header">
+                  <div class="sub-item-heading">
+                    <span class="sub-item-title">${sourceLabel(item, index)}</span>
+                    <span class="sub-item-meta">${item.entity || 'No entity selected'}</span>
+                  </div>
+                  <ha-icon-button
+                    .path=${DELETE_ICON_PATH}
+                    .label=${'Remove forecast source'}
+                    @click=${() => {
+                      const current = [...((this._getNestedValue(path) || sources) as any[])];
+                      current.splice(index, 1);
+                      this._valueChanged(path, current);
+                    }}
+                  ></ha-icon-button>
+                </div>
+                <ha-form
+                  .hass=${this.hass}
+                  .data=${{ entity: item.entity || '' }}
+                  .schema=${[{ name: 'entity', selector: { entity: { domain: 'weather' } } }]}
+                  .computeLabel=${(schema: { name: string }) => (schema.name === 'entity' ? 'Weather Entity' : undefined)}
+                  @value-changed=${(ev: CustomEvent) => {
+                    ev.stopPropagation();
+                    updateSource(index, { entity: ev.detail.value?.entity || undefined });
+                  }}
+                ></ha-form>
+                <space-hub-textfield
+                  label="Display Name (optional)"
+                  .value=${item.name || ''}
+                  @input=${(ev: Event) => updateSource(index, { name: (ev.target as HTMLInputElement).value || undefined })}
+                ></space-hub-textfield>
+              </div>
+            `;
+          })}
+        </div>
+        <button class="editor-btn" @click=${() => {
+          const current = [...((this._getNestedValue(path) || sources) as any[])];
+          current.push({ entity: '', name: '' });
+          this._valueChanged(path, current);
+        }}>
+          <ha-icon icon="mdi:plus"></ha-icon> Add Forecast Source
+        </button>
+      </div>
     `;
   }
 

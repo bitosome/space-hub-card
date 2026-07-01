@@ -204,6 +204,53 @@ export const weatherTileStyles: CSSResultGroup = css`
     color: var(--secondary-text-color);
   }
 
+  .weather-source-picker {
+    width: fit-content;
+    max-width: calc(100% - var(--weather-icon-bg-size) - 8px);
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.055);
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .weather-source-option {
+    min-width: 0;
+    max-width: 92px;
+    border: 0;
+    border-radius: 6px;
+    padding: 3px 7px;
+    background: transparent;
+    color: var(--secondary-text-color);
+    font: inherit;
+    font-size: 10px;
+    line-height: 1.1;
+    font-weight: 750;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .weather-source-option:hover {
+    background: rgba(3, 169, 244, 0.12);
+  }
+
+  .weather-source-option.active {
+    background: rgba(3, 169, 244, 0.24);
+    color: var(--primary-text-color);
+    box-shadow: inset 0 0 0 1px rgba(3, 169, 244, 0.28);
+  }
+
+  .weather-source-option:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-color, #03a9f4);
+  }
+
   .weather-primary {
     display: inline-flex;
     align-items: baseline;

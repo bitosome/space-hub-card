@@ -7,6 +7,10 @@ import type { MeteoconIconKey } from '../assets/meteocons';
 
 interface WeatherTileConfig {
   entity?: string;
+  forecast_entity?: string;
+  forecast_source_key?: string;
+  selected_forecast_entity?: string;
+  forecast_sources?: WeatherForecastSource[];
   name?: string;
   icon?: string;
   height?: number;
@@ -56,6 +60,11 @@ interface WeatherTileConfig {
 }
 
 type WeatherIconSet = 'meteocons' | 'custom';
+
+interface WeatherForecastSource {
+  entity?: string;
+  name?: string;
+}
 
 interface WeatherIconPackConfig {
   base_path?: string;
@@ -205,6 +214,17 @@ function temperatureColor(value: number): string {
 function stateObj(host: any, entityId?: string): any | undefined {
   if (!entityId || !host?.hass) return undefined;
   return host.hass.states?.[entityId];
+}
+
+function friendlyName(host: any, entityId?: string): string {
+  const st = stateObj(host, entityId);
+  const friendly = st?.attributes?.friendly_name;
+  if (typeof friendly === 'string' && friendly.trim()) return friendly.trim();
+  return String(entityId || '')
+    .split('.')
+    .pop()
+    ?.replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase()) || 'Forecast';
 }
 
 function isWeatherStale(host: any, config: WeatherTileConfig): boolean {
@@ -797,7 +817,7 @@ function dailyTemperatureRange(dailyItems: ForecastItem[], hourlyItems: Forecast
     if (value !== undefined) values.push(value);
   });
   if (!values.length) return { min: 0, max: 1 };
-  let min = Math.floor((Math.min(...values) - 2) / 5) * 5;
+  const min = Math.floor((Math.min(...values) - 2) / 5) * 5;
   let max = Math.ceil((Math.max(...values) + 2) / 5) * 5;
   if (max <= min) max = min + 1;
   return { min, max };
@@ -954,6 +974,18 @@ function openMoreInfo(host: any, ev: Event, entityId?: string): void {
 function openMoreInfoFromKeyboard(host: any, ev: KeyboardEvent, entityId?: string): void {
   if (ev.key !== 'Enter' && ev.key !== ' ') return;
   openMoreInfo(host, ev, entityId);
+}
+
+function selectForecastSource(host: any, ev: Event, key?: string, entityId?: string): void {
+  ev.preventDefault();
+  ev.stopPropagation();
+  if (!key || !entityId || typeof host?._setWeatherForecastSourceSelection !== 'function') return;
+  host._setWeatherForecastSourceSelection(key, entityId);
+}
+
+function selectForecastSourceFromKeyboard(host: any, ev: KeyboardEvent, key?: string, entityId?: string): void {
+  if (ev.key !== 'Enter' && ev.key !== ' ') return;
+  selectForecastSource(host, ev, key, entityId);
 }
 
 function selectConditionsPoint(host: any, ev: PointerEvent | MouseEvent, keys: string[], points: ForecastGraphPoint[], box: ConditionsChartBox): void {
@@ -1191,7 +1223,13 @@ function renderWeatherConditionsPanel(host: any, config: WeatherTileConfig, item
 }
 
 export function renderWeatherTile(host: any, config: WeatherTileConfig): TemplateResult {
-  const conditionState = cleanState(stateObj(host, config.entity)).toLowerCase();
+  const forecastSources = Array.isArray(config.forecast_sources)
+    ? config.forecast_sources.filter((source) => source?.entity)
+    : [];
+  const forecastEntity = config.selected_forecast_entity || config.forecast_entity || config.entity;
+  const selectedForecastSource = forecastSources.find((source) => source.entity === forecastEntity);
+  const selectedForecastLabel = selectedForecastSource?.name || friendlyName(host, forecastEntity);
+  const conditionState = cleanState(stateObj(host, forecastEntity)).toLowerCase();
   const name = config.name || 'Weather';
   const temp = formatTemperature(host, config.temp_sensor);
   const humidity = formatHumidity(host, config.humidity_sensor);
@@ -1199,6 +1237,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const metrics = buildMetrics(host, config);
   const forecastItems = config.show_forecast === false ? [] : normalizeForecast(config.forecast);
   const dailyForecastItems = config.show_forecast === false ? [] : normalizeForecast(config.daily_forecast);
+  const showForecastSourcePicker = config.show_forecast !== false && forecastSources.length > 1;
   const forecastSlotsRaw = Number(config.forecast_slots);
   const forecastSlots = Number.isFinite(forecastSlotsRaw) && forecastSlotsRaw > 0
     ? Math.min(Math.floor(forecastSlotsRaw), 72)
@@ -1210,7 +1249,10 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const iconCondition = displayConditionState || conditionState;
   const iconClass = `weather-icon weather-condition-${conditionClass(iconCondition)}`;
   const weatherHeadline = forecastText || conditionLabel(displayConditionState || conditionState);
-  const forecastSourceBadge = html`<span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>`;
+  const headlineTitle = showForecastSourcePicker
+    ? `${selectedForecastLabel}: ${weatherHeadline}`
+    : weatherHeadline;
+  const forecastSourceBadge = html`<span class="weather-source-badge" title=${`Forecast data: ${selectedForecastLabel}`} aria-label=${`Forecast data: ${selectedForecastLabel}`}></span>`;
   const conditionsKey = config.forecast_graph_key || `weather-${config.entity || name}`;
   const syncGraphs = config.sync_graphs !== false;
   const conditionsPanel = renderWeatherConditionsPanel(host, config, visibleForecast, forecastFields, conditionsKey, syncGraphs);
@@ -1248,18 +1290,38 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             <div class="weather-heading">
               <div
                 class="weather-headline-row weather-clickable"
-                title=${weatherHeadline}
+                title=${headlineTitle}
                 role="button"
                 tabindex="0"
-                aria-label=${`Open ${name} weather forecast details`}
+                aria-label=${`Open ${selectedForecastLabel} weather forecast details`}
                 @pointerdown=${stopTileAction}
                 @pointerup=${stopTileAction}
-                @click=${(ev: Event) => openMoreInfo(host, ev, config.entity)}
-                @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.entity)}
+                @click=${(ev: Event) => openMoreInfo(host, ev, forecastEntity)}
+                @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, forecastEntity)}
               >
                 <div class="weather-name">${weatherHeadline}</div>
                 ${forecastItems.length ? forecastSourceBadge : nothing}
               </div>
+              ${showForecastSourcePicker ? html`
+                <div class="weather-source-picker" role="tablist" aria-label="Weather forecast source">
+                  ${forecastSources.map((source) => {
+                    const active = source.entity === forecastEntity;
+                    const label = source.name || friendlyName(host, source.entity);
+                    return html`
+                      <button
+                        class=${`weather-source-option${active ? ' active' : ''}`}
+                        type="button"
+                        role="tab"
+                        aria-selected=${active ? 'true' : 'false'}
+                        title=${`Use ${label} forecast`}
+                        @pointerdown=${stopTileAction}
+                        @click=${(ev: Event) => selectForecastSource(host, ev, config.forecast_source_key, source.entity)}
+                        @keyup=${(ev: KeyboardEvent) => selectForecastSourceFromKeyboard(host, ev, config.forecast_source_key, source.entity)}
+                      >${label}</button>
+                    `;
+                  })}
+                </div>
+              ` : nothing}
               <div class="weather-primary">
                 <span
                   class="weather-temp weather-clickable"

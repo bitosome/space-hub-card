@@ -120,6 +120,9 @@ tile_height: 88
 headers:
   - weather:
       entity: weather.home
+      forecast_sources:
+        - entity: weather.forecast_tallinn
+          name: Tallinn
       icon_set: meteocons
       temp_sensor: sensor.ecowitt_outdoor_temperature
       humidity_sensor: sensor.ecowitt_outdoor_humidity
@@ -262,7 +265,8 @@ Weather is configured at `headers[].weather`.
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `entity` | entity ID | Home Assistant `weather` entity. Used for forecast subscription and weather more-info. |
+| `entity` | entity ID | Primary Home Assistant `weather` entity. Used as the default forecast source and weather more-info target. |
+| `forecast_sources` | array | Additional Home Assistant `weather` entities that can be selected in the weather tile. Each entry can be an entity string or an object with `entity` and optional `name`. |
 | `temp_sensor` | entity ID | Current local temperature sensor. |
 | `humidity_sensor` | entity ID | Current local humidity sensor. |
 | `feels_like_sensor` | entity ID | Local feels-like temperature sensor. |
@@ -282,10 +286,12 @@ If `rain_rate_sensor` is configured, current rain state is based on rain rate be
 
 ### Weather Forecast
 
-The card subscribes to Home Assistant weather forecasts from `entity`:
+The card subscribes to Home Assistant weather forecasts from the primary `entity` and every configured `forecast_sources` entry:
 
 - Hourly forecast for graphs and headline.
 - Daily forecast for the daily forecast rows.
+
+When more than one forecast source is available, the weather tile shows a compact source picker. Changing the source switches all forecast-derived data together: headline, large weather icon, temperature graph, precipitation graph, and daily forecast. Local station readings and sensor metrics stay unchanged.
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -297,6 +303,19 @@ The card subscribes to Home Assistant weather forecasts from `entity`:
 | `conditions_icon_size` | number | default CSS value | Weather icon size above the temperature graph. |
 | `temperature_icon_count` | number | `8` | Maximum number of condition icons above the temperature graph. Use `0` to hide them. |
 | `daily_icon_size` | number | default CSS value | Icon size in the daily forecast rows. |
+
+Additional forecast sources example:
+
+```yaml
+headers:
+  - weather:
+      entity: weather.forecast_home
+      forecast_sources:
+        - entity: weather.forecast_tallinn
+          name: Tallinn
+        - entity: weather.forecast_parnu
+          name: Parnu
+```
 
 Currently rendered graph fields:
 
