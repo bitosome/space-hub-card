@@ -696,37 +696,29 @@ function temperatureIconCount(config: WeatherTileConfig): number {
   return Math.max(0, Math.min(72, Math.floor(raw)));
 }
 
-function conditionsIconPoints(points: ForecastGraphPoint[], maxIcons: number): ForecastGraphPoint[] {
-  if (maxIcons <= 0) return [];
-  if (points.length <= maxIcons) return points;
-  if (maxIcons === 1) return [points[Math.floor(points.length / 2)]];
-
-  const result: ForecastGraphPoint[] = [];
-  const iconCount = Math.min(maxIcons, points.length);
-
-  // Split the configured forecast range into equal hour buckets. This keeps
-  // 48 hours / 24 icons on an exact two-hour cadence instead of introducing
-  // an occasional larger endpoint-rounding gap.
-  const pointCount = points.length;
-  let previousIndex = -1;
-  for (let i = 0; i < iconCount; i += 1) {
-    const remaining = iconCount - i - 1;
-    const latestAllowedIndex = pointCount - 1 - remaining;
-    const bucketIndex = Math.floor((i * pointCount) / iconCount);
-    const index = Math.max(previousIndex + 1, Math.min(latestAllowedIndex, bucketIndex));
-    result.push(points[index]);
-    previousIndex = index;
-  }
-  return result;
-}
-
 function conditionsIconSlots(points: ForecastGraphPoint[], maxIcons: number): ConditionsIconSlot[] {
-  const iconPoints = conditionsIconPoints(points, maxIcons);
-  if (!iconPoints.length) return [];
-  return iconPoints.map((point) => ({
-    point,
-    x: point.x,
-  }));
+  if (maxIcons <= 0 || !points.length) return [];
+  if (points.length <= maxIcons) return points.map((point) => ({ point, x: point.x }));
+
+  const iconCount = Math.min(maxIcons, points.length);
+  const firstX = points[0].x;
+  const lastX = points[points.length - 1].x;
+  const span = lastX - firstX;
+  if (!Number.isFinite(span) || span <= 0) return [];
+
+  const nearestPoint = (targetX: number) => points.reduce((best, point) => (
+    Math.abs(point.x - targetX) < Math.abs(best.x - targetX) ? point : best
+  ), points[0]);
+
+  if (iconCount === 1) {
+    const x = firstX + span / 2;
+    return [{ point: nearestPoint(x), x }];
+  }
+
+  return Array.from({ length: iconCount }, (_, index) => {
+    const x = firstX + (index / (iconCount - 1)) * span;
+    return { point: nearestPoint(x), x };
+  });
 }
 
 function safeIdPart(value: string): string {

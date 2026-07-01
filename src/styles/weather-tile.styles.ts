@@ -151,6 +151,8 @@ export const weatherTileStyles: CSSResultGroup = css`
     position: relative;
     z-index: 3;
     min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
     display: grid;
     gap: 3px;
     padding: 3px 4px;
@@ -160,9 +162,10 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-headline-row {
     justify-self: start;
     min-width: 0;
-    width: clamp(0px, calc(100% - var(--weather-icon-bg-size) - 8px), 80%);
+    width: 80%;
     max-width: 80%;
-    display: inline-flex;
+    box-sizing: border-box;
+    display: flex;
     align-items: flex-start;
     gap: 6px;
     padding: 2px 3px;
