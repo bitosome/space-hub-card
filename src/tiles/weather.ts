@@ -593,22 +593,6 @@ function forecastDateTime(host: any, item: ForecastItem): string {
   return `${date} ${time}`;
 }
 
-function forecastTemp(item: ForecastItem): string {
-  return `${formatNumber(item.temperature, 0)}°`;
-}
-
-function forecastTemperatureRangeSentence(item: ForecastItem | undefined): string {
-  if (!item) return '';
-  const low = dailyTemperatureValue(item, 'templow');
-  const high = dailyTemperatureValue(item, 'temperature');
-  if (low === undefined && high === undefined) return '';
-  if (low !== undefined && high !== undefined) {
-    return `High ${high.toFixed(0)}°, low ${low.toFixed(0)}°.`;
-  }
-  if (high !== undefined) return `High ${high.toFixed(0)}°.`;
-  return `Low ${Number(low).toFixed(0)}°.`;
-}
-
 function normalizeForecastFields(raw: string[] | string | undefined): ForecastFieldKey[] {
   const values = Array.isArray(raw)
     ? raw
@@ -897,70 +881,19 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
   `;
 }
 
-function forecastNumber(item: ForecastItem, key: 'precipitation_probability' | 'precipitation'): number {
-  const value = Number(item[key]);
-  return Number.isFinite(value) ? value : 0;
-}
-
-function isWetForecastCondition(condition?: string): boolean {
-  return ['pouring', 'rainy', 'lightning-rainy', 'snowy', 'snowy-rainy', 'hail'].includes(String(condition || '').toLowerCase());
-}
-
-function precipitationForecastLabel(condition?: string): string {
-  const normalized = String(condition || '').toLowerCase();
-  if (normalized.includes('snow')) return 'Snow';
-  if (normalized.includes('hail')) return 'Hail';
-  return 'Rain';
-}
-
-function upcomingForecastItems(items: ForecastItem[], hours: number): ForecastItem[] {
-  const now = Date.now();
-  const horizon = now + hours * 60 * 60 * 1000;
-  const timed = items.filter((item) => {
-    const timestamp = forecastTimestamp(item);
-    return timestamp === undefined || (timestamp >= now - 60 * 60 * 1000 && timestamp <= horizon);
-  });
-  return timed.length ? timed : items.slice(0, hours);
-}
-
-function firstPrecipitationForecast(items: ForecastItem[]): ForecastItem | undefined {
-  return items.find((item) => {
-    const probability = forecastNumber(item, 'precipitation_probability');
-    const amount = forecastNumber(item, 'precipitation');
-    return amount > 0 || probability >= 30 || isWetForecastCondition(item.condition);
-  });
-}
-
-function precipitationForecastSentence(host: any, item: ForecastItem, currentItem?: ForecastItem): string {
-  const probability = forecastNumber(item, 'precipitation_probability');
-  const amount = forecastNumber(item, 'precipitation');
-  const time = forecastTime(host, item);
-  const timing = item === currentItem ? 'now' : time ? `around ${time}` : 'later';
-  const label = precipitationForecastLabel(item.condition);
-  const kind = label.toLowerCase();
-  const likelihood = probability >= 65 ? 'likely' : 'possible';
-  if (probability > 0) {
-    return `${label} ${likelihood} ${timing}, ${Math.round(probability)}% chance.`;
-  }
-  if (amount > 0) return `${label} expected ${timing}, ${amount.toFixed(1)} mm.`;
-  return `${conditionLabel(String(item.condition || kind))} expected ${timing}.`;
-}
-
-function forecastSummary(host: any, items: ForecastItem[], dailyItems: ForecastItem[] = []): string {
-  if (!items.length) return '';
-  const next = items[0];
-  const parts = [
-    `${conditionLabel(String(next.condition || ''))}, ${forecastTemp(next)}.`,
-  ];
-  const dailyRange = forecastTemperatureRangeSentence(dailyItems[0]);
-  if (dailyRange) parts.push(dailyRange);
-  const wetForecast = firstPrecipitationForecast(upcomingForecastItems(items, 12));
-  if (wetForecast) parts.push(precipitationForecastSentence(host, wetForecast, next));
-  return parts.join(' ');
-}
-
 function stopTileAction(ev: Event): void {
   ev.stopPropagation();
+}
+
+function stopConditionsPointer(ev: PointerEvent): void {
+  ev.preventDefault();
+  ev.stopPropagation();
+  const target = ev.currentTarget as Element | null;
+  try {
+    if (target?.hasPointerCapture?.(ev.pointerId)) target.releasePointerCapture(ev.pointerId);
+  } catch {
+    // Some WebViews throw if capture has already been released.
+  }
 }
 
 function openMoreInfo(host: any, ev: Event, entityId?: string): void {
@@ -987,9 +920,19 @@ function selectForecastSourceFromKeyboard(host: any, ev: KeyboardEvent, key?: st
   selectForecastSource(host, ev, key, entityId);
 }
 
-function selectConditionsPoint(host: any, ev: PointerEvent | MouseEvent, keys: string[], points: ForecastGraphPoint[], box: ConditionsChartBox): void {
+function selectConditionsPoint(host: any, ev: PointerEvent, keys: string[], points: ForecastGraphPoint[], box: ConditionsChartBox): void {
+  ev.preventDefault();
   ev.stopPropagation();
+  if (ev.type === 'pointermove' && ev.pointerType !== 'mouse' && ev.buttons === 0) return;
   if (!points.length || typeof host?._setWeatherForecastGraphSelection !== 'function') return;
+  const target = ev.currentTarget as Element | null;
+  if (ev.type === 'pointerdown') {
+    try {
+      target?.setPointerCapture?.(ev.pointerId);
+    } catch {
+      // Pointer capture is best-effort in the Home Assistant mobile WebView.
+    }
+  }
   const rect = (ev.currentTarget as HTMLElement).getBoundingClientRect();
   if (!rect.width) return;
   const elementRatio = (ev.clientX - rect.left) / rect.width;
@@ -1104,9 +1047,10 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
           preserveAspectRatio="none"
           role="img"
           aria-label="Temperature forecast graph"
-          @pointerdown=${stopTileAction}
+          @pointerdown=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
           @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
-          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
+          @pointerup=${stopConditionsPointer}
+          @pointercancel=${stopConditionsPointer}
         >
           <defs>
             <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
@@ -1171,9 +1115,10 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
           preserveAspectRatio="none"
           role="img"
           aria-label="Chance of precipitation forecast graph"
-          @pointerdown=${stopTileAction}
+          @pointerdown=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
           @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
-          @click=${(ev: MouseEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
+          @pointerup=${stopConditionsPointer}
+          @pointercancel=${stopConditionsPointer}
         >
           <defs>
             <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
@@ -1224,8 +1169,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     ? config.forecast_sources.filter((source) => source?.entity)
     : [];
   const forecastEntity = config.selected_forecast_entity || config.forecast_entity || config.entity;
-  const selectedForecastSource = forecastSources.find((source) => source.entity === forecastEntity);
-  const selectedForecastLabel = selectedForecastSource?.name || friendlyName(host, forecastEntity);
   const conditionState = cleanState(stateObj(host, forecastEntity)).toLowerCase();
   const name = config.name || 'Weather';
   const temp = formatTemperature(host, config.temp_sensor);
@@ -1241,14 +1184,9 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     : 8;
   const forecastFields = normalizeForecastFields(config.forecast_fields);
   const visibleForecast = forecastItems.slice(0, forecastSlots);
-  const forecastText = forecastSummary(host, forecastItems, dailyForecastItems);
   const displayConditionState = String(forecastItems[0]?.condition || conditionState || '').toLowerCase();
   const iconCondition = displayConditionState || conditionState;
   const iconClass = `weather-icon weather-condition-${conditionClass(iconCondition)}`;
-  const weatherHeadline = forecastText || conditionLabel(displayConditionState || conditionState);
-  const headlineTitle = showForecastSourcePicker
-    ? `${selectedForecastLabel}: ${weatherHeadline}`
-    : weatherHeadline;
   const conditionsKey = config.forecast_graph_key || `weather-${config.entity || name}`;
   const syncGraphs = config.sync_graphs !== false;
   const conditionsPanel = renderWeatherConditionsPanel(host, config, visibleForecast, forecastFields, conditionsKey, syncGraphs);
@@ -1304,19 +1242,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
         <div class="weather-content">
           <div class="weather-top">
             <div class="weather-heading">
-              <div
-                class="weather-headline-row weather-clickable"
-                title=${headlineTitle}
-                role="button"
-                tabindex="0"
-                aria-label=${`Open ${selectedForecastLabel} weather forecast details`}
-                @pointerdown=${stopTileAction}
-                @pointerup=${stopTileAction}
-                @click=${(ev: Event) => openMoreInfo(host, ev, forecastEntity)}
-                @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, forecastEntity)}
-              >
-                <div class="weather-name">${weatherHeadline}</div>
-              </div>
               <div class="weather-primary">
                 <span
                   class="weather-temp weather-clickable"

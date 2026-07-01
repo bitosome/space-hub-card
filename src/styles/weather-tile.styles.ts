@@ -159,33 +159,6 @@ export const weatherTileStyles: CSSResultGroup = css`
     margin: -3px -4px;
   }
 
-  .weather-headline-row {
-    justify-self: start;
-    min-width: 0;
-    width: 80%;
-    max-width: 80%;
-    box-sizing: border-box;
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 2px 3px;
-    margin: -2px -3px;
-  }
-
-  .weather-name {
-    flex: 1 1 auto;
-    min-width: 0;
-    max-width: 100%;
-    overflow: visible;
-    text-overflow: clip;
-    white-space: normal;
-    overflow-wrap: normal;
-    font-weight: 600;
-    font-size: 15px;
-    line-height: 1.15;
-    color: var(--primary-text-color);
-  }
-
   .weather-condition {
     min-width: 0;
     overflow: hidden;
