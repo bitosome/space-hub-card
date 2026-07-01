@@ -26,7 +26,7 @@ The weather tile can combine two data sources:
 - Local sensor data from a weather station integration such as Ecowitt.
 - Forecast data from a Home Assistant `weather` entity.
 
-Local sensor values are used for the current readings and metric grid. Forecast values are used for the headline, animated condition icon, temperature graph, precipitation graph, and daily forecast. Forecast-derived labels are marked with a small blue dot.
+Local sensor values are used for the current readings and metric grid. Forecast values are used for the headline, animated condition icon, temperature graph, precipitation graph, and daily forecast.
 
 Current weather tile features:
 

@@ -183,19 +183,6 @@ export const weatherTileStyles: CSSResultGroup = css`
     color: var(--primary-text-color);
   }
 
-  .weather-source-badge {
-    flex: 0 0 auto;
-    margin-top: 5px;
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    box-sizing: border-box;
-    border: 1px solid rgba(255, 255, 255, 0.38);
-    border-radius: 50%;
-    background: var(--primary-color, #03a9f4);
-    box-shadow: 0 0 0 3px rgba(3, 169, 244, 0.14);
-  }
-
   .weather-condition {
     min-width: 0;
     overflow: hidden;

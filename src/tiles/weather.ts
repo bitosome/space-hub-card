@@ -849,7 +849,6 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
     <section class="weather-daily-forecast">
       <div class="weather-daily-forecast-heading">
         <span>Daily Forecast</span>
-        <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
       </div>
       ${rows.map((item) => {
         const key = dayKey(item.datetime);
@@ -1078,7 +1077,6 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
       <div class="weather-conditions-head">
         <div class="weather-conditions-title">
           <span>Temperature</span>
-          <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
         </div>
         <div class="weather-conditions-selected">
           <span>${forecastDateTime(host, selected.item)}</span>
@@ -1166,7 +1164,6 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
       <div class="weather-conditions-head">
         <div class="weather-conditions-title">
           <span>Chance of Precipitation</span>
-          <span class="weather-source-badge" title="Forecast data" aria-label="Forecast data"></span>
         </div>
         <div class="weather-conditions-selected">
           <span>${forecastDateTime(host, selected.item)}</span>
@@ -1258,7 +1255,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const headlineTitle = showForecastSourcePicker
     ? `${selectedForecastLabel}: ${weatherHeadline}`
     : weatherHeadline;
-  const forecastSourceBadge = html`<span class="weather-source-badge" title=${`Forecast data: ${selectedForecastLabel}`} aria-label=${`Forecast data: ${selectedForecastLabel}`}></span>`;
   const conditionsKey = config.forecast_graph_key || `weather-${config.entity || name}`;
   const syncGraphs = config.sync_graphs !== false;
   const conditionsPanel = renderWeatherConditionsPanel(host, config, visibleForecast, forecastFields, conditionsKey, syncGraphs);
@@ -1326,7 +1322,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, forecastEntity)}
               >
                 <div class="weather-name">${weatherHeadline}</div>
-                ${forecastItems.length ? forecastSourceBadge : nothing}
               </div>
               <div class="weather-primary">
                 <span
