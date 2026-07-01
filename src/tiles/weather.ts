@@ -118,6 +118,11 @@ interface ForecastGraphPoint {
   timestamp?: number;
 }
 
+interface ConditionsIconSlot {
+  point: ForecastGraphPoint;
+  x: number;
+}
+
 interface DayTemperatureStats {
   low?: ForecastGraphPoint;
   high?: ForecastGraphPoint;
@@ -677,6 +682,19 @@ function conditionsIconPoints(points: ForecastGraphPoint[], maxIcons: number): F
   return result;
 }
 
+function conditionsIconSlots(points: ForecastGraphPoint[], maxIcons: number, box: ConditionsChartBox): ConditionsIconSlot[] {
+  const iconPoints = conditionsIconPoints(points, maxIcons);
+  if (!iconPoints.length) return [];
+  const chartWidth = box.width - box.left - box.right;
+  if (iconPoints.length === 1) {
+    return [{ point: iconPoints[0], x: box.left + chartWidth / 2 }];
+  }
+  return iconPoints.map((point, index) => ({
+    point,
+    x: box.left + (index / (iconPoints.length - 1)) * chartWidth,
+  }));
+}
+
 function safeIdPart(value: string): string {
   return value.replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
 }
@@ -992,7 +1010,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
   const minPoint = points.reduce((best, point) => point.value < best.value ? point : best, points[0]);
   const maxPoint = points.reduce((best, point) => point.value > best.value ? point : best, points[0]);
   const ticks = conditionsTickIndexes(points.length);
-  const icons = conditionsIconPoints(points, temperatureIconCount(config));
+  const icons = conditionsIconSlots(points, temperatureIconCount(config), box);
   const path = smoothPath(points);
   const fillPath = areaPath(points, baseline);
   const safeKey = safeIdPart(key);
@@ -1015,9 +1033,9 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
 
       ${icons.length ? html`
         <div class="weather-conditions-icons">
-          ${icons.map((point) => {
-            const condition = String(point.item.condition || '');
-            const leftPct = (point.x / box.width) * 100;
+          ${icons.map((slot) => {
+            const condition = String(slot.point.item.condition || '');
+            const leftPct = (slot.x / box.width) * 100;
             return html`
               <span class="weather-conditions-icon-slot" style=${`left:${leftPct.toFixed(2)}%;`}>
                 ${renderWeatherIcon(
