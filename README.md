@@ -26,7 +26,7 @@ The weather tile can combine two data sources:
 - Local sensor data from a weather station integration such as Ecowitt.
 - Forecast data from a Home Assistant `weather` entity.
 
-Local sensor values are used for the current readings and metric grid. Forecast values are used for the headline, animated condition icon, temperature graph, precipitation graph, and daily forecast.
+Local sensor values are used for the current readings and metric grid. Forecast values are used for the animated condition icon, temperature graph, precipitation graph, and daily forecast.
 
 Current weather tile features:
 
@@ -36,7 +36,6 @@ Current weather tile features:
 - Sensor metric grid with configurable column count.
 - Configurable custom metrics.
 - Special rain metric with configurable raining and no-rain MDI icons.
-- Weather forecast headline that opens weather entity more-info.
 - Clickable local sensor values and grid metrics that open the related entity more-info.
 - Apple Weather-style temperature graph.
 - Apple Weather-style precipitation probability graph.
@@ -44,6 +43,7 @@ Current weather tile features:
 - Full date and time labels on graphs.
 - Configurable forecast graph hours.
 - Configurable graph height.
+- Configurable forecast graph horizontal grid-line count.
 - Configurable temperature graph icon count.
 - Daily forecast rows with min/max temperatures, min/max times where hourly data is available, rain probability, current-temperature marker, and temperature-color range bars.
 - Optional stale-data glow based on entity `last_updated`.
@@ -141,6 +141,7 @@ headers:
       metric_columns: 3
       forecast_slots: 48
       graph_height: 140
+      graph_horizontal_lines: 5
       temperature_icon_count: 12
       forecast_fields:
         - temperature
@@ -288,10 +289,10 @@ If `rain_rate_sensor` is configured, current rain state is based on rain rate be
 
 The card subscribes to Home Assistant weather forecasts from the primary `entity` and every configured `forecast_sources` entry:
 
-- Hourly forecast for graphs and headline.
+- Hourly forecast for graphs and animated condition icons.
 - Daily forecast for the daily forecast rows.
 
-When more than one forecast source is available, the weather tile shows a compact source picker. Changing the source switches all forecast-derived data together: headline, large weather icon, temperature graph, precipitation graph, and daily forecast. Local station readings and sensor metrics stay unchanged.
+When more than one forecast source is available, the weather tile shows a compact source picker. Changing the source switches all forecast-derived data together: large weather icon, temperature graph, precipitation graph, and daily forecast. Local station readings and sensor metrics stay unchanged.
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -300,6 +301,7 @@ When more than one forecast source is available, the weather tile shows a compac
 | `forecast_fields` | array or comma string | `temperature, precipitation_probability` | Visible graph sections to render. |
 | `sync_graphs` | boolean | `true` | Keep graph selectors synchronized. |
 | `graph_height` | number | `118` | Forecast graph height in pixels, clamped to `82..260`. |
+| `graph_horizontal_lines` | number | `5` | Horizontal grid lines in each forecast graph, clamped to `2..9`. |
 | `conditions_icon_size` | number | default CSS value | Weather icon size above the temperature graph. |
 | `temperature_icon_count` | number | `8` | Maximum number of condition icons above the temperature graph. Use `0` to hide them. |
 | `daily_icon_size` | number | default CSS value | Icon size in the daily forecast rows. |
@@ -333,7 +335,7 @@ The graph labels use the Home Assistant locale and time format. If Home Assistan
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `name` | string | `Weather` | Weather tile accessible name. The visible headline comes from forecast data when available. |
+| `name` | string | `Weather` | Weather tile accessible name. |
 | `icon` | icon | automatic | Optional MDI icon override for the main weather icon. |
 | `icon_set` | `meteocons` or `custom` | `meteocons` | Animated weather icon source used by the main weather icon, temperature graph icons, and daily forecast icons. `meteocons` is bundled locally. `custom` loads icons from your configured local path. |
 | `icon_pack.base_path` | string | none | Base path for a custom icon pack, for example `/local/weather-icons`. Used only when `icon_set: custom`. |
@@ -436,7 +438,6 @@ Clickable weather elements open Home Assistant more-info:
 
 | Element | Opens |
 | --- | --- |
-| Forecast headline | `weather.entity` |
 | Current temperature | `temp_sensor` |
 | Humidity | `humidity_sensor` |
 | Feels-like line | `feels_like_sensor` |

@@ -101,6 +101,7 @@ export interface HeaderWeather {
   temperature_icon_count?: number;
   daily_icon_size?: number;
   graph_height?: number;
+  graph_horizontal_lines?: number;
   metric_columns?: number;
   icon_set?: string;
   icon_pack?: {
@@ -307,7 +308,7 @@ export class SpaceHubCard extends LitElement {
             weather.name || weather.icon || weather.entity ||
             weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
             weather.icon_set || weather.icon_pack || weather.icon_base_path || weather.icon_map ||
-            weather.forecast_slots || weather.forecast_fields ||
+            weather.forecast_slots || weather.forecast_fields || weather.graph_horizontal_lines ||
             (Array.isArray(weather.forecast_sources) && weather.forecast_sources.length > 0) ||
             weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
             weather.temperature_icon_count || weather.metric_columns ||
@@ -380,6 +381,13 @@ export class SpaceHubCard extends LitElement {
             const value = Number(weather.temperature_icon_count);
             if (!Number.isFinite(value) || value < 0) {
               errors.push(`Header ${index + 1}: Weather tile temperature_icon_count must be zero or a positive number, got: ${weather.temperature_icon_count}`);
+            }
+          }
+
+          if (weather.graph_horizontal_lines !== undefined && weather.graph_horizontal_lines !== null) {
+            const value = Number(weather.graph_horizontal_lines);
+            if (!Number.isFinite(value) || value < 2) {
+              errors.push(`Header ${index + 1}: Weather tile graph_horizontal_lines must be 2 or greater, got: ${weather.graph_horizontal_lines}`);
             }
           }
 
@@ -569,7 +577,7 @@ export class SpaceHubCard extends LitElement {
       weather.name || (weather as any).main_name || weather.icon || (weather as any).main_icon ||
       weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
       weather.icon_set || weather.icon_pack || weather.icon_base_path || weather.icon_map ||
-      weather.forecast_slots || weather.forecast_fields ||
+      weather.forecast_slots || weather.forecast_fields || weather.graph_horizontal_lines ||
       (Array.isArray(weather.forecast_sources) && weather.forecast_sources.length > 0) ||
       weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
       weather.temperature_icon_count || weather.metric_columns ||
@@ -797,6 +805,7 @@ export class SpaceHubCard extends LitElement {
       temperature_icon_count: weatherRaw.temperature_icon_count,
       daily_icon_size: weatherRaw.daily_icon_size,
       graph_height: weatherRaw.graph_height,
+      graph_horizontal_lines: weatherRaw.graph_horizontal_lines,
       metric_columns: weatherRaw.metric_columns,
       icon_set: weatherRaw.icon_set,
       icon_pack: weatherRaw.icon_pack,
@@ -844,7 +853,7 @@ export class SpaceHubCard extends LitElement {
       weatherRaw.name || weatherRaw.main_name || weatherRaw.icon || weatherRaw.main_icon ||
       weatherRaw.animated_icons !== undefined || weatherRaw.show_forecast !== undefined ||
       weatherRaw.icon_set || weatherRaw.icon_pack || weatherRaw.icon_base_path || weatherRaw.icon_map ||
-      weatherRaw.forecast_slots || weatherRaw.forecast_fields ||
+      weatherRaw.forecast_slots || weatherRaw.forecast_fields || weatherRaw.graph_horizontal_lines ||
       (Array.isArray(weatherRaw.forecast_sources) && weatherRaw.forecast_sources.length > 0) ||
       weatherRaw.height || weatherRaw.temp_size || weatherRaw.temperature_size || weatherRaw.icon_size || weatherRaw.graph_height ||
       weatherRaw.temperature_icon_count || weatherRaw.metric_columns ||

@@ -824,6 +824,17 @@ export class SpaceHubCardEditor extends LitElement {
                   this._valueChanged(`${basePath}.graph_height`, Number.isFinite(v) && v > 0 ? v : undefined);
                 }}
               ></space-hub-textfield>
+              <space-hub-textfield
+                label="Horizontal Grid Lines"
+                type="number"
+                min="2"
+                max="9"
+                .value=${String(config.graph_horizontal_lines ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.graph_horizontal_lines`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
             </div>
             <div class="side-by-side">
               ${this._renderEntityField('Temperature Sensor', `${basePath}.temp_sensor`, config.temp_sensor, { domain: 'sensor' })}

@@ -23,6 +23,7 @@ interface WeatherTileConfig {
   temperature_icon_count?: number;
   daily_icon_size?: number;
   graph_height?: number;
+  graph_horizontal_lines?: number;
   metric_columns?: number;
   icon_set?: string;
   icon_pack?: WeatherIconPackConfig;
@@ -815,6 +816,10 @@ function conditionsGraphHeight(config: WeatherTileConfig): number {
   return configNumber(config.graph_height, 82, 260) || 118;
 }
 
+function conditionsHorizontalLineCount(config: WeatherTileConfig): number {
+  return configNumber(config.graph_horizontal_lines, 2, 9) || 5;
+}
+
 function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: ForecastItem[], hourlyItems: ForecastItem[]): TemplateResult | typeof nothing {
   const rows = dailyItems.slice(0, 7);
   if (!rows.length) return nothing;
@@ -969,11 +974,12 @@ function conditionsSelectedPoint(host: any, key: string, points: ForecastGraphPo
   return points[selectedIndex] || points[0];
 }
 
-function renderConditionsGrid(host: any, box: ConditionsChartBox, ticks: number[], points: ForecastGraphPoint[]): TemplateResult[] {
+function renderConditionsGrid(host: any, box: ConditionsChartBox, ticks: number[], points: ForecastGraphPoint[], horizontalLines: number): TemplateResult[] {
   const baseline = box.height - box.bottom;
+  const lineCount = Math.max(2, horizontalLines);
   return [
-    ...[0, 1, 2].map((tick) => {
-      const y = box.top + tick * ((baseline - box.top) / 2);
+    ...Array.from({ length: lineCount }, (_, index) => {
+      const y = box.top + (index / (lineCount - 1)) * (baseline - box.top);
       return svg`<line class="weather-conditions-grid-line" x1=${box.left} x2=${box.width - box.right} y1=${y} y2=${y}></line>`;
     }),
     ...ticks.map((index) => {
@@ -992,7 +998,7 @@ function renderConditionsGrid(host: any, box: ConditionsChartBox, ticks: number[
 }
 
 function renderConditionsTemperature(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string, syncKeys: string[]): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 14, right: 30, top: 15, bottom: 24 };
+  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 8, right: 24, top: 15, bottom: 24 };
   const { points, min, max } = buildConditionsPoints(items, 'temperature', box);
   if (points.length < 2) return nothing;
 
@@ -1002,6 +1008,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
   const maxPoint = points.reduce((best, point) => point.value > best.value ? point : best, points[0]);
   const ticks = conditionsTickIndexes(points.length);
   const icons = conditionsIconSlots(points, temperatureIconCount(config));
+  const horizontalLines = conditionsHorizontalLineCount(config);
   const path = smoothPath(points);
   const fillPath = areaPath(points, baseline);
   const safeKey = safeIdPart(key);
@@ -1064,7 +1071,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
               `)}
             </linearGradient>
           </defs>
-          ${renderConditionsGrid(host, box, ticks, points)}
+          ${renderConditionsGrid(host, box, ticks, points, horizontalLines)}
           <path class="weather-conditions-area" d=${fillPath} fill=${`url(#${fillGradient})`}></path>
           <path class="weather-conditions-line-shadow" d=${path}></path>
           <path class="weather-conditions-temp-line" d=${path} stroke=${`url(#${lineGradient})`}></path>
@@ -1085,13 +1092,14 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
 }
 
 function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string, syncKeys: string[]): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 14, right: 30, top: 10, bottom: 22 };
+  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 8, right: 24, top: 10, bottom: 22 };
   const { points } = buildConditionsPoints(items, 'precipitation_probability', box);
   if (points.length < 2) return nothing;
 
   const baseline = box.height - box.bottom;
   const selected = conditionsSelectedPoint(host, key, points);
   const ticks = conditionsTickIndexes(points.length);
+  const horizontalLines = conditionsHorizontalLineCount(config);
   const path = smoothPath(points);
   const fillPath = areaPath(points, baseline);
   const safeKey = safeIdPart(key);
@@ -1126,7 +1134,7 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
               <stop offset="100%" stop-color="rgba(56, 199, 243, 0.10)"></stop>
             </linearGradient>
           </defs>
-          ${renderConditionsGrid(host, box, ticks, points)}
+          ${renderConditionsGrid(host, box, ticks, points, horizontalLines)}
           <path class="weather-conditions-rain-area" d=${fillPath} fill=${`url(#${fillGradient})`}></path>
           <path class="weather-conditions-line-shadow" d=${path}></path>
           <path class="weather-conditions-rain-line" d=${path}></path>
