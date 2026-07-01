@@ -5,6 +5,8 @@ import { renderInteractiveChip } from '../chips';
 import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
 
+const DEFAULT_GRAPH_HORIZONTAL_LINES = 5;
+
 interface WeatherTileConfig {
   entity?: string;
   forecast_entity?: string;
@@ -817,7 +819,7 @@ function conditionsGraphHeight(config: WeatherTileConfig): number {
 }
 
 function conditionsHorizontalLineCount(config: WeatherTileConfig): number {
-  return configNumber(config.graph_horizontal_lines, 2, 9) || 5;
+  return configNumber(config.graph_horizontal_lines, 2, 9) || DEFAULT_GRAPH_HORIZONTAL_LINES;
 }
 
 function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: ForecastItem[], hourlyItems: ForecastItem[]): TemplateResult | typeof nothing {
@@ -997,6 +999,20 @@ function renderConditionsGrid(host: any, box: ConditionsChartBox, ticks: number[
   ];
 }
 
+function renderConditionsAxisLabels(
+  box: ConditionsChartBox,
+  horizontalLines: number,
+  formatValue: (ratio: number) => string,
+): TemplateResult[] {
+  const baseline = box.height - box.bottom;
+  const lineCount = Math.max(2, horizontalLines);
+  return Array.from({ length: lineCount }, (_, index) => {
+    const ratio = 1 - (index / (lineCount - 1));
+    const y = box.top + (index / (lineCount - 1)) * (baseline - box.top);
+    return svg`<text class="weather-conditions-axis" x=${box.width - 2} y=${y}>${formatValue(ratio)}</text>`;
+  });
+}
+
 function renderConditionsTemperature(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string, syncKeys: string[]): TemplateResult | typeof nothing {
   const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 8, right: 24, top: 15, bottom: 24 };
   const { points, min, max } = buildConditionsPoints(items, 'temperature', box);
@@ -1014,7 +1030,6 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
   const safeKey = safeIdPart(key);
   const lineGradient = `weather-conditions-temp-line-${safeKey}`;
   const fillGradient = `weather-conditions-temp-fill-${safeKey}`;
-  const mid = (min + max) / 2;
 
   return html`
     <section class="weather-conditions-card weather-conditions-temp">
@@ -1078,9 +1093,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
           <text class="weather-conditions-extreme" x=${minPoint.x} y=${Math.max(12, minPoint.y - 9)}>L</text>
           <text class="weather-conditions-extreme" x=${maxPoint.x} y=${Math.max(12, maxPoint.y - 9)}>H</text>
           <line class="weather-conditions-selected-line" x1=${selected.x} x2=${selected.x} y1=${box.top} y2=${baseline}></line>
-          <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + 3}>${max.toFixed(0)}°</text>
-          <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + ((baseline - box.top) / 2)}>${mid.toFixed(0)}°</text>
-          <text class="weather-conditions-axis" x=${box.width - 5} y=${baseline}>${min.toFixed(0)}°</text>
+          ${renderConditionsAxisLabels(box, horizontalLines, (ratio) => `${(min + ((max - min) * ratio)).toFixed(0)}°`)}
         </svg>
         <span
           class="weather-conditions-selected-dot"
@@ -1139,9 +1152,7 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
           <path class="weather-conditions-line-shadow" d=${path}></path>
           <path class="weather-conditions-rain-line" d=${path}></path>
           <line class="weather-conditions-selected-line" x1=${selected.x} x2=${selected.x} y1=${box.top} y2=${baseline}></line>
-          <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + 4}>100%</text>
-          <text class="weather-conditions-axis" x=${box.width - 5} y=${box.top + ((baseline - box.top) / 2)}>50%</text>
-          <text class="weather-conditions-axis" x=${box.width - 5} y=${baseline}>0%</text>
+          ${renderConditionsAxisLabels(box, horizontalLines, (ratio) => `${Math.round(100 * ratio)}%`)}
         </svg>
         <span
           class="weather-conditions-selected-dot"

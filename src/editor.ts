@@ -18,6 +18,7 @@ const ACTION_TYPES = ['more-info', 'toggle', 'perform-action', 'navigate', 'url'
 const ARROW_UP_ICON_PATH = 'M4,12L5.41,13.41L11,7.83V20H13V7.83L18.59,13.42L20,12L12,4L4,12Z';
 const ARROW_DOWN_ICON_PATH = 'M4,12L5.41,10.59L11,16.17V4H13V16.17L18.59,10.58L20,12L12,20L4,12Z';
 const DELETE_ICON_PATH = 'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z';
+const DEFAULT_GRAPH_HORIZONTAL_LINES = 5;
 
 @customElement('space-hub-textfield')
 export class SpaceHubTextfield extends LitElement {
@@ -829,7 +830,7 @@ export class SpaceHubCardEditor extends LitElement {
                 type="number"
                 min="2"
                 max="9"
-                .value=${String(config.graph_horizontal_lines ?? '')}
+                .value=${String(config.graph_horizontal_lines ?? DEFAULT_GRAPH_HORIZONTAL_LINES)}
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
                   this._valueChanged(`${basePath}.graph_horizontal_lines`, Number.isFinite(v) && v > 0 ? v : undefined);

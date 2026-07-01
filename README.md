@@ -301,7 +301,7 @@ When more than one forecast source is available, the weather tile shows a compac
 | `forecast_fields` | array or comma string | `temperature, precipitation_probability` | Visible graph sections to render. |
 | `sync_graphs` | boolean | `true` | Keep graph selectors synchronized. |
 | `graph_height` | number | `118` | Forecast graph height in pixels, clamped to `82..260`. |
-| `graph_horizontal_lines` | number | `5` | Horizontal grid lines in each forecast graph, clamped to `2..9`. |
+| `graph_horizontal_lines` | number | `5` | Horizontal grid lines in each forecast graph, with matching right-side axis labels. Clamped to `2..9`. |
 | `conditions_icon_size` | number | default CSS value | Weather icon size above the temperature graph. |
 | `temperature_icon_count` | number | `8` | Maximum number of condition icons above the temperature graph. Use `0` to hide them. |
 | `daily_icon_size` | number | default CSS value | Icon size in the daily forecast rows. |
