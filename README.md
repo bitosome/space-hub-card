@@ -32,7 +32,7 @@ Current weather tile features:
 
 - Current temperature and humidity.
 - Feels-like temperature.
-- Locally bundled animated weather icons with selectable `meteocons` and `realistic` sets.
+- Locally bundled Meteocons animated weather icons, plus configurable custom icon packs.
 - Sensor metric grid with configurable column count.
 - Configurable custom metrics.
 - Special rain metric with configurable raining and no-rain MDI icons.
@@ -120,7 +120,7 @@ tile_height: 88
 headers:
   - weather:
       entity: weather.home
-      icon_set: realistic
+      icon_set: meteocons
       temp_sensor: sensor.ecowitt_outdoor_temperature
       humidity_sensor: sensor.ecowitt_outdoor_humidity
       feels_like_sensor: sensor.ecowitt_feels_like_temperature
@@ -155,7 +155,7 @@ chip_font_size: 12
 headers:
   - weather:
       entity: weather.home
-      icon_set: realistic
+      icon_set: meteocons
       temp_sensor: sensor.ecowitt_outdoor_temperature
       humidity_sensor: sensor.ecowitt_outdoor_humidity
       feels_like_sensor: sensor.ecowitt_feels_like_temperature
@@ -316,7 +316,10 @@ The graph labels use the Home Assistant locale and time format. If Home Assistan
 | --- | --- | --- | --- |
 | `name` | string | `Weather` | Weather tile accessible name. The visible headline comes from forecast data when available. |
 | `icon` | icon | automatic | Optional MDI icon override for the main weather icon. |
-| `icon_set` | `meteocons` or `realistic` | `meteocons` | Animated weather icon set used by the main weather icon, temperature graph icons, and daily forecast icons. Both sets are bundled locally. |
+| `icon_set` | `meteocons` or `custom` | `meteocons` | Animated weather icon source used by the main weather icon, temperature graph icons, and daily forecast icons. `meteocons` is bundled locally. `custom` loads icons from your configured local path. |
+| `icon_pack.base_path` | string | none | Base path for a custom icon pack, for example `/local/weather-icons`. Used only when `icon_set: custom`. |
+| `icon_pack.extension` | string | `svg` | File extension for custom icons when no per-icon mapping is supplied. |
+| `icon_pack.icons` | map | none | Optional per-icon filename or path overrides for custom packs with different filenames. |
 | `temp_size` | number | `31` | Current temperature font size, clamped to `18..56`. |
 | `temperature_size` | number | alias | Alias for `temp_size`. |
 | `icon_size` | number | `42` | Main weather icon size, clamped to `28..160`. |
@@ -326,6 +329,50 @@ The graph labels use the Home Assistant locale and time format. If Home Assistan
 | `stale_minutes` | number | disabled | Add stale glow when weather/current sensor data is older than this many minutes. |
 | `metrics` | array | automatic | Custom metric grid. If omitted, metrics are built from known weather sensors. |
 | `chips` | array | `[]` | Optional compact chips in the lower-right corner of the weather tile. |
+
+Custom icon pack example:
+
+```yaml
+headers:
+  - weather:
+      entity: weather.home
+      icon_set: custom
+      icon_pack:
+        base_path: /local/weather-icons
+        extension: svg
+```
+
+With that configuration the card loads files such as:
+
+```text
+/local/weather-icons/clear-day.svg
+/local/weather-icons/partly-cloudy-day.svg
+/local/weather-icons/rain.svg
+```
+
+If your pack uses different filenames, add explicit mappings:
+
+```yaml
+icon_pack:
+  base_path: /local/my-weather-pack
+  extension: svg
+  icons:
+    clear-day: sunny.svg
+    clear-night: night-clear.svg
+    partly-cloudy-day: partly-cloudy.svg
+    cloudy: overcast.svg
+    rain: rainy.svg
+    thunderstorms-rain: storm-rain.svg
+    snow: snow.svg
+    sleet: sleet.svg
+    fog: fog.svg
+    hail: hail.svg
+    wind: wind.svg
+    wind-alert: wind-alert.svg
+    weather-alarm: alert.svg
+```
+
+Custom icon files should be hosted locally in Home Assistant, for example under `/config/www/weather-icons`, which is served as `/local/weather-icons`.
 
 ### Weather Metrics
 
@@ -746,5 +793,5 @@ dist/space-hub-card.js
 ## Credits
 
 - Built with Lit and Home Assistant custom-card helpers.
-- Animated weather icons are bundled locally from `basmilius/meteocons` and `Makin-Things/weather-icons`.
+- Animated Meteocons weather icons are bundled locally from `basmilius/meteocons`.
 - Third-party notices are listed in `THIRD_PARTY_NOTICES.md`.

@@ -662,8 +662,28 @@ export class SpaceHubCardEditor extends LitElement {
               ${this._renderEntityField('Weather Entity', `${basePath}.entity`, config.entity, { domain: 'weather' })}
             </div>
             <div class="side-by-side">
-              ${this._renderSelectField('Weather Icon Set', `${basePath}.icon_set`, config.icon_set, ['meteocons', 'realistic'])}
+              ${this._renderSelectField('Weather Icon Set', `${basePath}.icon_set`, config.icon_set, ['meteocons', 'custom'])}
             </div>
+            ${String(config.icon_set || '').toLowerCase() === 'custom' ? html`
+              <div class="side-by-side">
+                <space-hub-textfield
+                  label="Custom Icon Base Path"
+                  placeholder="/local/weather-icons"
+                  .value=${String(config.icon_pack?.base_path ?? (config as any).icon_base_path ?? '')}
+                  @input=${(ev: Event) => {
+                    this._valueChanged(`${basePath}.icon_pack.base_path`, (ev.target as HTMLInputElement).value);
+                  }}
+                ></space-hub-textfield>
+                <space-hub-textfield
+                  label="Custom Icon Extension"
+                  placeholder="svg"
+                  .value=${String(config.icon_pack?.extension ?? (config as any).icon_extension ?? '')}
+                  @input=${(ev: Event) => {
+                    this._valueChanged(`${basePath}.icon_pack.extension`, (ev.target as HTMLInputElement).value);
+                  }}
+                ></space-hub-textfield>
+              </div>
+            ` : nothing}
             <div class="side-by-side">
               <space-hub-textfield
                 label="Temperature Size (px)"

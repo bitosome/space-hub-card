@@ -4,7 +4,6 @@ import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { renderInteractiveChip } from '../chips';
 import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
-import { REALISTIC_WEATHER_ICONS } from '../assets/realistic-weather-icons';
 
 interface WeatherTileConfig {
   entity?: string;
@@ -22,6 +21,10 @@ interface WeatherTileConfig {
   graph_height?: number;
   metric_columns?: number;
   icon_set?: string;
+  icon_pack?: WeatherIconPackConfig;
+  icon_base_path?: string;
+  icon_extension?: string;
+  icon_map?: Record<string, string>;
   animated_icons?: boolean;
   show_forecast?: boolean;
   forecast_slots?: number;
@@ -52,7 +55,13 @@ interface WeatherTileConfig {
   double_tap_action?: unknown;
 }
 
-type WeatherIconSet = 'meteocons' | 'realistic';
+type WeatherIconSet = 'meteocons' | 'custom';
+
+interface WeatherIconPackConfig {
+  base_path?: string;
+  extension?: string;
+  icons?: Record<string, string>;
+}
 
 interface MetricSource {
   type?: string;
@@ -134,7 +143,7 @@ const BAD_STATES = new Set(['', 'unknown', 'unavailable']);
 const DEFAULT_FORECAST_FIELDS: ForecastFieldKey[] = ['temperature', 'precipitation_probability'];
 const DEFAULT_TEMPERATURE_ICON_COUNT = 8;
 const DEFAULT_METRIC_COLUMNS = 3;
-const WEATHER_ICON_SETS = new Set<WeatherIconSet>(['meteocons', 'realistic']);
+const WEATHER_ICON_SETS = new Set<WeatherIconSet>(['meteocons', 'custom']);
 const FORECAST_FIELD_ALIASES: Record<string, ForecastFieldKey> = {
   temp: 'temperature',
   temperature: 'temperature',
@@ -178,7 +187,6 @@ const CONDITION_METEOCONS: Record<string, MeteoconIconKey> = {
 };
 
 const METEOCON_SVG_CACHE = new Map<MeteoconIconKey, string>();
-const REALISTIC_SVG_CACHE = new Map<MeteoconIconKey, string>();
 
 function temperatureColor(value: number): string {
   if (value <= 0) return '#3aa7ff';
@@ -338,18 +346,14 @@ function weatherIconSet(config: WeatherTileConfig): WeatherIconSet {
   return WEATHER_ICON_SETS.has(raw as WeatherIconSet) ? raw as WeatherIconSet : 'meteocons';
 }
 
-function weatherIconData(iconSet: WeatherIconSet, icon: MeteoconIconKey): string {
-  if (iconSet === 'realistic') {
-    return REALISTIC_WEATHER_ICONS[icon as keyof typeof REALISTIC_WEATHER_ICONS] || REALISTIC_WEATHER_ICONS['partly-cloudy-day'];
-  }
+function weatherIconData(icon: MeteoconIconKey): string {
   return METEOCON_ICONS[icon];
 }
 
-function weatherIconSvg(iconSet: WeatherIconSet, icon: MeteoconIconKey): string {
-  const cache = iconSet === 'realistic' ? REALISTIC_SVG_CACHE : METEOCON_SVG_CACHE;
-  const cached = cache.get(icon);
+function weatherIconSvg(icon: MeteoconIconKey): string {
+  const cached = METEOCON_SVG_CACHE.get(icon);
   if (cached !== undefined) return cached;
-  const [, encoded] = String(weatherIconData(iconSet, icon) || '').split('base64,');
+  const [, encoded] = String(weatherIconData(icon) || '').split('base64,');
   let decoded = '';
   if (encoded && typeof atob === 'function') {
     try {
@@ -358,14 +362,53 @@ function weatherIconSvg(iconSet: WeatherIconSet, icon: MeteoconIconKey): string 
       decoded = '';
     }
   }
-  cache.set(icon, decoded);
+  METEOCON_SVG_CACHE.set(icon, decoded);
   return decoded;
 }
 
-function renderWeatherIcon(iconSet: WeatherIconSet, icon: MeteoconIconKey, className: string, label: string, mode: 'img' | 'inline' = 'img'): TemplateResult {
-  const iconData = weatherIconData(iconSet, icon);
+function directIconPath(value: string): boolean {
+  return /^(data:|https?:\/\/|\/\/|\/)/i.test(value);
+}
+
+function joinIconPath(basePath: string, fileName: string): string {
+  const base = basePath.replace(/\/+$/, '');
+  const file = fileName.replace(/^\/+/, '');
+  return base ? `${base}/${file}` : file;
+}
+
+function customWeatherIconUrl(config: WeatherTileConfig, icon: MeteoconIconKey): string {
+  const pack = config.icon_pack || {};
+  const iconMap = pack.icons || config.icon_map || {};
+  const mapped = iconMap[icon];
+  const basePath = String(pack.base_path || config.icon_base_path || '').trim();
+  if (mapped) {
+    const value = String(mapped).trim();
+    if (!value) return '';
+    return directIconPath(value) || !basePath ? value : joinIconPath(basePath, value);
+  }
+  if (!basePath) return '';
+  const extension = String(pack.extension || config.icon_extension || 'svg').trim().replace(/^\./, '') || 'svg';
+  return joinIconPath(basePath, `${icon}.${extension}`);
+}
+
+function renderWeatherIcon(configOrSet: WeatherTileConfig | WeatherIconSet, icon: MeteoconIconKey, className: string, label: string, mode: 'img' | 'inline' = 'img'): TemplateResult {
+  const config = typeof configOrSet === 'string' ? undefined : configOrSet;
+  const iconSet = config ? weatherIconSet(config) : configOrSet as WeatherIconSet;
+  const customUrl = config && iconSet === 'custom' ? customWeatherIconUrl(config, icon) : '';
+  if (customUrl) {
+    return html`
+      <img
+        class=${className}
+        src=${customUrl}
+        alt=${label}
+        draggable="false"
+      />
+    `;
+  }
+
+  const iconData = weatherIconData(icon);
   if (mode === 'inline') {
-    const decoded = weatherIconSvg(iconSet, icon);
+    const decoded = weatherIconSvg(icon);
     if (decoded) {
       return html`
         <span class=${className} role="img" aria-label=${label}>
@@ -620,26 +663,16 @@ function conditionsIconPoints(points: ForecastGraphPoint[], maxIcons: number): F
   if (maxIcons <= 0) return [];
   if (points.length <= maxIcons) return points;
   if (maxIcons === 1) return [points[0]];
-  const hasTimeScale = points.every((point) => Number.isFinite(point.timestamp));
-  const firstTime = hasTimeScale ? Number(points[0].timestamp) : 0;
-  const lastTime = hasTimeScale ? Number(points[points.length - 1].timestamp) : 0;
-  const timeRange = lastTime - firstTime;
+
   const result: ForecastGraphPoint[] = [];
-  let lastIndex = -1;
+  let previousIndex = -1;
   for (let i = 0; i < maxIcons; i += 1) {
-    const ratio = i / (maxIcons - 1);
-    const targetTime = firstTime + timeRange * ratio;
-    const index = hasTimeScale && timeRange > 0
-      ? points.reduce((bestIndex, point, pointIndex) => {
-        const best = points[bestIndex];
-        return Math.abs(Number(point.timestamp) - targetTime) < Math.abs(Number(best.timestamp) - targetTime)
-          ? pointIndex
-          : bestIndex;
-      }, 0)
-      : Math.round(ratio * (points.length - 1));
-    if (index === lastIndex) continue;
+    const remaining = maxIcons - i - 1;
+    const latestAllowedIndex = points.length - 1 - remaining;
+    const idealIndex = Math.round((i * (points.length - 1)) / (maxIcons - 1));
+    const index = Math.max(previousIndex + 1, Math.min(latestAllowedIndex, idealIndex));
     result.push(points[index]);
-    lastIndex = index;
+    previousIndex = index;
   }
   return result;
 }
@@ -754,7 +787,7 @@ function conditionsGraphHeight(config: WeatherTileConfig): number {
   return configNumber(config.graph_height, 82, 260) || 118;
 }
 
-function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: ForecastItem[], hourlyItems: ForecastItem[], iconSet: WeatherIconSet): TemplateResult | typeof nothing {
+function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: ForecastItem[], hourlyItems: ForecastItem[]): TemplateResult | typeof nothing {
   const rows = dailyItems.slice(0, 7);
   if (!rows.length) return nothing;
   const hourlyStats = hourlyTemperatureStats(hourlyItems);
@@ -789,7 +822,7 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
             </div>
             <div class="weather-daily-condition">
               ${renderWeatherIcon(
-                iconSet,
+                config,
                 conditionMeteocon(condition),
                 `weather-daily-icon weather-condition-${conditionClass(condition)}`,
                 conditionLabel(condition),
@@ -821,32 +854,53 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
   `;
 }
 
+function forecastNumber(item: ForecastItem, key: 'precipitation_probability' | 'precipitation'): number {
+  const value = Number(item[key]);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function isWetForecastCondition(condition?: string): boolean {
+  return ['pouring', 'rainy', 'lightning-rainy', 'snowy', 'snowy-rainy', 'hail'].includes(String(condition || '').toLowerCase());
+}
+
+function precipitationForecastLabel(condition?: string): string {
+  const normalized = String(condition || '').toLowerCase();
+  if (normalized.includes('snow')) return 'Snow';
+  if (normalized.includes('hail')) return 'Hail';
+  return 'Rain';
+}
+
+function upcomingForecastItems(items: ForecastItem[], hours: number): ForecastItem[] {
+  const now = Date.now();
+  const horizon = now + hours * 60 * 60 * 1000;
+  const timed = items.filter((item) => {
+    const timestamp = forecastTimestamp(item);
+    return timestamp === undefined || (timestamp >= now - 60 * 60 * 1000 && timestamp <= horizon);
+  });
+  return timed.length ? timed : items.slice(0, hours);
+}
+
+function firstPrecipitationForecast(items: ForecastItem[]): ForecastItem | undefined {
+  return items.find((item) => {
+    const probability = forecastNumber(item, 'precipitation_probability');
+    const amount = forecastNumber(item, 'precipitation');
+    return amount > 0 || probability >= 30 || isWetForecastCondition(item.condition);
+  });
+}
+
 function forecastSummary(host: any, items: ForecastItem[]): string {
   if (!items.length) return '';
   const next = items[0];
-  const upcoming = items.slice(0, 12);
-  const wettest = upcoming.reduce((best, item) => {
-    const bestProbability = Number(best.precipitation_probability) || 0;
-    const itemProbability = Number(item.precipitation_probability) || 0;
-    const bestPrecipitation = Number(best.precipitation) || 0;
-    const itemPrecipitation = Number(item.precipitation) || 0;
-    if (itemPrecipitation > bestPrecipitation) return item;
-    if (itemPrecipitation === bestPrecipitation && itemProbability > bestProbability) return item;
-    return best;
-  }, next);
-  const rainProbability = Number(wettest.precipitation_probability) || 0;
-  const rainAmount = Number(wettest.precipitation) || 0;
-  if (rainProbability >= 25 || rainAmount > 0) {
-    const isImminent = wettest === next;
-    const time = forecastTime(host, wettest);
-    let intensity: string;
-    if (rainProbability >= 80 || rainAmount >= 2) intensity = 'Rain likely';
-    else if (rainProbability >= 50 || rainAmount >= 0.5) intensity = 'Showers possible';
-    else intensity = 'Slight chance of rain';
-    const when = isImminent ? 'shortly' : time ? `around ${time}` : '';
-    const detail = rainProbability > 0 ? `${Math.round(rainProbability)}% chance` : `${rainAmount.toFixed(1)} mm`;
-    const phrase = when ? `${intensity} ${when}` : intensity;
-    return `${phrase} (${detail})`;
+  const wetForecast = firstPrecipitationForecast(upcomingForecastItems(items, 12));
+  if (wetForecast) {
+    const probability = forecastNumber(wetForecast, 'precipitation_probability');
+    const amount = forecastNumber(wetForecast, 'precipitation');
+    const time = forecastTime(host, wetForecast);
+    const timeLabel = time ? ` at ${time}` : '';
+    const label = precipitationForecastLabel(wetForecast.condition);
+    if (probability > 0) return `${label} ${Math.round(probability)}%${timeLabel}`;
+    if (amount > 0) return `${label} ${amount.toFixed(1)} mm${timeLabel}`;
+    return `${conditionLabel(String(wetForecast.condition || label))}${timeLabel}`;
   }
   return `${conditionLabel(String(next.condition || ''))}, ${forecastTemp(next)}`;
 }
@@ -945,7 +999,6 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
   const lineGradient = `weather-conditions-temp-line-${safeKey}`;
   const fillGradient = `weather-conditions-temp-fill-${safeKey}`;
   const mid = (min + max) / 2;
-  const iconSet = weatherIconSet(config);
 
   return html`
     <section class="weather-conditions-card weather-conditions-temp">
@@ -968,7 +1021,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
             return html`
               <span class="weather-conditions-icon-slot" style=${`left:${leftPct.toFixed(2)}%;`}>
                 ${renderWeatherIcon(
-                  iconSet,
+                  config,
                   conditionMeteocon(condition),
                   `weather-conditions-icon weather-condition-${conditionClass(condition)}`,
                   conditionLabel(condition),
@@ -1029,7 +1082,6 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
 
   const baseline = box.height - box.bottom;
   const selected = conditionsSelectedPoint(host, key, points);
-  const maxPoint = points.reduce((best, point) => point.value > best.value ? point : best, points[0]);
   const ticks = conditionsTickIndexes(points.length);
   const path = smoothPath(points);
   const fillPath = areaPath(points, baseline);
@@ -1048,7 +1100,6 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
           <strong>${Math.round(selected.value)}%</strong>
         </div>
       </div>
-      <div class="weather-conditions-subtitle">Today's chance: ${Math.round(maxPoint.value)}%</div>
       <div class="weather-conditions-chart-frame">
         <svg
           class="weather-conditions-chart"
@@ -1118,7 +1169,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     ? Math.min(Math.floor(forecastSlotsRaw), 72)
     : 8;
   const forecastFields = normalizeForecastFields(config.forecast_fields);
-  const iconSet = weatherIconSet(config);
   const visibleForecast = forecastItems.slice(0, forecastSlots);
   const forecastText = forecastSummary(host, forecastItems);
   const displayConditionState = String(forecastItems[0]?.condition || conditionState || '').toLowerCase();
@@ -1129,7 +1179,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const conditionsKey = config.forecast_graph_key || `weather-${config.entity || name}`;
   const syncGraphs = config.sync_graphs !== false;
   const conditionsPanel = renderWeatherConditionsPanel(host, config, visibleForecast, forecastFields, conditionsKey, syncGraphs);
-  const dailyForecast = renderDailyForecast(host, config, dailyForecastItems, forecastItems, iconSet);
+  const dailyForecast = renderDailyForecast(host, config, dailyForecastItems, forecastItems);
   const chips = Array.isArray(config.chips) ? config.chips : [];
   const tempSize = configNumber(config.temp_size ?? config.temperature_size, 18, 56);
   const iconSize = configNumber(config.icon_size, 28, 160);
@@ -1210,7 +1260,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             <div class="weather-icon-wrap" aria-hidden="true">
               ${config.icon
                 ? html`<ha-icon class=${iconClass} .icon=${config.icon}></ha-icon>`
-                : renderWeatherIcon(iconSet, conditionMeteocon(iconCondition), iconClass, conditionLabel(iconCondition), 'inline')}
+                : renderWeatherIcon(config, conditionMeteocon(iconCondition), iconClass, conditionLabel(iconCondition), 'inline')}
             </div>
           </div>
 

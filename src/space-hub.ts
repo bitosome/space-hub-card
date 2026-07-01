@@ -97,6 +97,14 @@ export interface HeaderWeather {
   graph_height?: number;
   metric_columns?: number;
   icon_set?: string;
+  icon_pack?: {
+    base_path?: string;
+    extension?: string;
+    icons?: Record<string, string>;
+  };
+  icon_base_path?: string;
+  icon_extension?: string;
+  icon_map?: Record<string, string>;
   animated_icons?: boolean;
   show_forecast?: boolean;
   sync_graphs?: boolean;
@@ -291,7 +299,7 @@ export class SpaceHubCard extends LitElement {
           const hasContent = !!(
             weather.name || weather.icon || weather.entity ||
             weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
-            weather.icon_set ||
+            weather.icon_set || weather.icon_pack || weather.icon_base_path || weather.icon_map ||
             weather.forecast_slots || weather.forecast_fields ||
             weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
             weather.temperature_icon_count || weather.metric_columns ||
@@ -368,8 +376,8 @@ export class SpaceHubCard extends LitElement {
 
           if (weather.icon_set !== undefined && weather.icon_set !== null) {
             const iconSet = String(weather.icon_set).trim().toLowerCase();
-            if (iconSet && iconSet !== 'meteocons' && iconSet !== 'realistic') {
-              errors.push(`Header ${index + 1}: Weather tile icon_set must be 'meteocons' or 'realistic', got: ${weather.icon_set}`);
+            if (iconSet && iconSet !== 'meteocons' && iconSet !== 'custom') {
+              errors.push(`Header ${index + 1}: Weather tile icon_set must be 'meteocons' or 'custom', got: ${weather.icon_set}`);
             }
           }
 
@@ -544,7 +552,7 @@ export class SpaceHubCard extends LitElement {
     return !!(weather && (
       weather.name || (weather as any).main_name || weather.icon || (weather as any).main_icon ||
       weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
-      weather.icon_set ||
+      weather.icon_set || weather.icon_pack || weather.icon_base_path || weather.icon_map ||
       weather.forecast_slots || weather.forecast_fields ||
       weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
       weather.temperature_icon_count || weather.metric_columns ||
@@ -767,6 +775,10 @@ export class SpaceHubCard extends LitElement {
       graph_height: weatherRaw.graph_height,
       metric_columns: weatherRaw.metric_columns,
       icon_set: weatherRaw.icon_set,
+      icon_pack: weatherRaw.icon_pack,
+      icon_base_path: weatherRaw.icon_base_path,
+      icon_extension: weatherRaw.icon_extension,
+      icon_map: weatherRaw.icon_map,
       animated_icons: weatherRaw.animated_icons,
       show_forecast: weatherRaw.show_forecast,
       sync_graphs: weatherRaw.sync_graphs,
@@ -807,7 +819,7 @@ export class SpaceHubCard extends LitElement {
     const hasWeather = !!(weatherRaw && (
       weatherRaw.name || weatherRaw.main_name || weatherRaw.icon || weatherRaw.main_icon ||
       weatherRaw.animated_icons !== undefined || weatherRaw.show_forecast !== undefined ||
-      weatherRaw.icon_set ||
+      weatherRaw.icon_set || weatherRaw.icon_pack || weatherRaw.icon_base_path || weatherRaw.icon_map ||
       weatherRaw.forecast_slots || weatherRaw.forecast_fields ||
       weatherRaw.height || weatherRaw.temp_size || weatherRaw.temperature_size || weatherRaw.icon_size || weatherRaw.graph_height ||
       weatherRaw.temperature_icon_count || weatherRaw.metric_columns ||
