@@ -598,7 +598,7 @@ export class SpaceHubCard extends LitElement {
       : 0;
     const dailyForecastHeight = graphCount > 0 ? 250 : 0;
     const contentHeightEstimate =
-      78 +
+      96 +
       (metricRows * 40) +
       (metricRows > 1 ? (metricRows - 1) * 5 : 0) +
       graphHeightEstimate +

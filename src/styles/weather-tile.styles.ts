@@ -160,10 +160,10 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-headline-row {
     justify-self: start;
     min-width: 0;
-    width: fit-content;
-    max-width: min(80%, calc(100% - var(--weather-icon-bg-size) - 8px));
+    width: max-content;
+    max-width: 80%;
     display: inline-flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 6px;
     padding: 2px 3px;
     margin: -2px -3px;
@@ -173,24 +173,19 @@ export const weatherTileStyles: CSSResultGroup = css`
     flex: 1 1 auto;
     min-width: 0;
     max-width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: visible;
     text-overflow: clip;
-    white-space: nowrap;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+    white-space: normal;
+    overflow-wrap: normal;
     font-weight: 600;
     font-size: 15px;
     line-height: 1.15;
     color: var(--primary-text-color);
   }
 
-  .weather-name::-webkit-scrollbar {
-    display: none;
-  }
-
   .weather-source-badge {
     flex: 0 0 auto;
+    margin-top: 5px;
     display: inline-block;
     width: 7px;
     height: 7px;
