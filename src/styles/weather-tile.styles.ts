@@ -209,7 +209,7 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-source-picker {
     width: fit-content;
-    max-width: calc(100% - var(--weather-icon-bg-size) - 8px);
+    max-width: 100%;
     min-width: 0;
     display: inline-flex;
     align-items: center;
@@ -219,6 +219,11 @@ export const weatherTileStyles: CSSResultGroup = css`
     background: rgba(255, 255, 255, 0.055);
     box-sizing: border-box;
     overflow: hidden;
+  }
+
+  .weather-forecast-source-picker {
+    margin-top: 1px;
+    margin-bottom: -1px;
   }
 
   .weather-source-option {

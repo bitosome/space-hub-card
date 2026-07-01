@@ -1287,6 +1287,26 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     `--weather-metric-columns:${metricColumns};`,
   ].filter(Boolean);
   const heightStyle = styleParts.join('');
+  const forecastSourcePicker = showForecastSourcePicker ? html`
+    <div class="weather-source-picker weather-forecast-source-picker" role="tablist" aria-label="Weather forecast source">
+      ${forecastSources.map((source) => {
+        const active = source.entity === forecastEntity;
+        const label = source.name || friendlyName(host, source.entity);
+        return html`
+          <button
+            class=${`weather-source-option${active ? ' active' : ''}`}
+            type="button"
+            role="tab"
+            aria-selected=${active ? 'true' : 'false'}
+            title=${`Use ${label} forecast`}
+            @pointerdown=${stopTileAction}
+            @click=${(ev: Event) => selectForecastSource(host, ev, config.forecast_source_key, source.entity)}
+            @keyup=${(ev: KeyboardEvent) => selectForecastSourceFromKeyboard(host, ev, config.forecast_source_key, source.entity)}
+          >${label}</button>
+        `;
+      })}
+    </div>
+  ` : nothing;
 
   return html`
     <div class=${`tile-wrap weather-tile-wrap${stale ? ' weather-tile-stale' : ''}`} style=${heightStyle}>
@@ -1308,26 +1328,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 <div class="weather-name">${weatherHeadline}</div>
                 ${forecastItems.length ? forecastSourceBadge : nothing}
               </div>
-              ${showForecastSourcePicker ? html`
-                <div class="weather-source-picker" role="tablist" aria-label="Weather forecast source">
-                  ${forecastSources.map((source) => {
-                    const active = source.entity === forecastEntity;
-                    const label = source.name || friendlyName(host, source.entity);
-                    return html`
-                      <button
-                        class=${`weather-source-option${active ? ' active' : ''}`}
-                        type="button"
-                        role="tab"
-                        aria-selected=${active ? 'true' : 'false'}
-                        title=${`Use ${label} forecast`}
-                        @pointerdown=${stopTileAction}
-                        @click=${(ev: Event) => selectForecastSource(host, ev, config.forecast_source_key, source.entity)}
-                        @keyup=${(ev: KeyboardEvent) => selectForecastSourceFromKeyboard(host, ev, config.forecast_source_key, source.entity)}
-                      >${label}</button>
-                    `;
-                  })}
-                </div>
-              ` : nothing}
               <div class="weather-primary">
                 <span
                   class="weather-temp weather-clickable"
@@ -1392,6 +1392,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             `)}
           </div>
 
+          ${forecastSourcePicker}
           ${conditionsPanel}
           ${dailyForecast}
         </div>
