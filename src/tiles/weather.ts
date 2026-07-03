@@ -751,12 +751,6 @@ function dayLabel(host: any, value?: string): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  const today = dayKey(new Date().toISOString());
-  const tomorrowDate = new Date();
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  const key = dayKey(value);
-  if (key === today) return 'Today';
-  if (key === dayKey(tomorrowDate.toISOString())) return 'Tomorrow';
   return new Intl.DateTimeFormat(host?.hass?.locale?.language, { weekday: 'long' }).format(date);
 }
 
