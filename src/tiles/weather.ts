@@ -1105,7 +1105,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
 }
 
 function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string, syncKeys: string[]): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 8, right: 24, top: 10, bottom: 22 };
+  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 8, right: 24, top: 15, bottom: 24 };
   const { points } = buildConditionsPoints(items, 'precipitation_probability', box);
   if (points.length < 2) return nothing;
 

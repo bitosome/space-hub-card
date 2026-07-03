@@ -1427,7 +1427,7 @@ class pe extends ze{}pe.directiveName="unsafeSVG",pe.resultType=2;const me=ci(pe
         ></span>
       </div>
     </section>
-  `}function jt(i,e,t,a,n,o){if(t.length<2)return G;const r=`${n}-temperature`,c=`${n}-precipitation`,s=o?[r,c]:null,l=a.includes("temperature")?Dt(i,e,t,r,s||[r]):G,M=a.includes("precipitation_probability")?function(i,e,t,a,n){const o={width:360,height:ot(e),left:8,right:24,top:10,bottom:22},{points:r}=Je(t,"precipitation_probability",o);if(r.length<2)return G;const c=o.height-o.bottom,s=It(i,a,r),l=Xe(r.length),M=rt(e),g=qe(r),d=it(r,c),N=`weather-conditions-rain-fill-${Ke(a)}`;return E`
+  `}function jt(i,e,t,a,n,o){if(t.length<2)return G;const r=`${n}-temperature`,c=`${n}-precipitation`,s=o?[r,c]:null,l=a.includes("temperature")?Dt(i,e,t,r,s||[r]):G,M=a.includes("precipitation_probability")?function(i,e,t,a,n){const o={width:360,height:ot(e),left:8,right:24,top:15,bottom:24},{points:r}=Je(t,"precipitation_probability",o);if(r.length<2)return G;const c=o.height-o.bottom,s=It(i,a,r),l=Xe(r.length),M=rt(e),g=qe(r),d=it(r,c),N=`weather-conditions-rain-fill-${Ke(a)}`;return E`
     <section class="weather-conditions-card weather-conditions-rain">
       <div class="weather-conditions-head">
         <div class="weather-conditions-title">
@@ -2472,7 +2472,7 @@ class pe extends ze{}pe.directiveName="unsafeSVG",pe.resultType=2;const me=ci(pe
   }
 
   .weather-conditions-rain {
-    min-height: calc(var(--weather-graph-height) + 50px);
+    min-height: calc(var(--weather-graph-height) + 36px);
   }
 
   .weather-conditions-head {

@@ -301,7 +301,7 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-conditions-rain {
-    min-height: calc(var(--weather-graph-height) + 50px);
+    min-height: calc(var(--weather-graph-height) + 36px);
   }
 
   .weather-conditions-head {
