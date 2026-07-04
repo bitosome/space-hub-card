@@ -354,9 +354,9 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-conditions-selected-icon {
     flex: 0 0 auto;
-    width: 15px;
-    height: 15px;
-    --mdc-icon-size: 15px;
+    width: var(--weather-conditions-selected-icon-size, 15px);
+    height: var(--weather-conditions-selected-icon-size, 15px);
+    --mdc-icon-size: var(--weather-conditions-selected-icon-size, 15px);
     color: var(--state-weather-sunny-color, #f6a000);
   }
 

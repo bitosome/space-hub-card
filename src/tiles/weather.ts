@@ -23,6 +23,7 @@ interface WeatherTileConfig {
   icon_offset_y?: number;
   conditions_icon_size?: number;
   temperature_icon_count?: number;
+  temperature_readout_icon_size?: number;
   daily_icon_size?: number;
   graph_height?: number;
   graph_horizontal_lines?: number;
@@ -1218,6 +1219,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const iconOffsetX = Number(config.icon_offset_x);
   const iconOffsetY = Number(config.icon_offset_y);
   const conditionsIconSize = configNumber(config.conditions_icon_size, 8, 48);
+  const temperatureReadoutIconSize = configNumber(config.temperature_readout_icon_size, 8, 48);
   const dailyIconSize = configNumber(config.daily_icon_size, 8, 48);
   const metricColumnsRaw = Number(config.metric_columns);
   const metricColumns = Number.isFinite(metricColumnsRaw) && metricColumnsRaw > 0
@@ -1230,6 +1232,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     Number.isFinite(iconOffsetX) ? `--weather-icon-x:${iconOffsetX}px;` : '',
     Number.isFinite(iconOffsetY) ? `--weather-icon-y:${iconOffsetY}px;` : '',
     conditionsIconSize ? `--weather-conditions-icon-size:${conditionsIconSize}px;` : '',
+    temperatureReadoutIconSize ? `--weather-conditions-selected-icon-size:${temperatureReadoutIconSize}px;` : '',
     dailyIconSize ? `--weather-daily-icon-size:${dailyIconSize}px;` : '',
     graphHeight ? `--weather-graph-height:${graphHeight}px;` : '',
     `--weather-metric-columns:${metricColumns};`,

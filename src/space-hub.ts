@@ -99,6 +99,7 @@ export interface HeaderWeather {
   icon_offset_y?: number;
   conditions_icon_size?: number;
   temperature_icon_count?: number;
+  temperature_readout_icon_size?: number;
   daily_icon_size?: number;
   graph_height?: number;
   graph_horizontal_lines?: number;
@@ -311,6 +312,7 @@ export class SpaceHubCard extends LitElement {
             weather.forecast_slots || weather.forecast_fields || weather.graph_horizontal_lines ||
             (Array.isArray(weather.forecast_sources) && weather.forecast_sources.length > 0) ||
             weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
+            weather.temperature_readout_icon_size ||
             weather.temperature_icon_count || weather.metric_columns ||
             weather.temp_sensor || weather.temp_min_24h_sensor || weather.temp_max_24h_sensor ||
             weather.humidity_sensor ||
@@ -366,6 +368,7 @@ export class SpaceHubCard extends LitElement {
             'temperature_size',
             'icon_size',
             'graph_height',
+            'temperature_readout_icon_size',
           ] as const;
           positiveNumberFields.forEach((field) => {
             const raw = weather[field as keyof typeof weather];
@@ -580,6 +583,7 @@ export class SpaceHubCard extends LitElement {
       weather.forecast_slots || weather.forecast_fields || weather.graph_horizontal_lines ||
       (Array.isArray(weather.forecast_sources) && weather.forecast_sources.length > 0) ||
       weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
+      weather.temperature_readout_icon_size ||
       weather.temperature_icon_count || weather.metric_columns ||
       weather.entity || weather.temp_sensor || weather.temp_min_24h_sensor || weather.temp_max_24h_sensor ||
       weather.humidity_sensor ||
@@ -803,6 +807,7 @@ export class SpaceHubCard extends LitElement {
       icon_offset_y: weatherRaw.icon_offset_y,
       conditions_icon_size: weatherRaw.conditions_icon_size,
       temperature_icon_count: weatherRaw.temperature_icon_count,
+      temperature_readout_icon_size: weatherRaw.temperature_readout_icon_size,
       daily_icon_size: weatherRaw.daily_icon_size,
       graph_height: weatherRaw.graph_height,
       graph_horizontal_lines: weatherRaw.graph_horizontal_lines,
@@ -856,6 +861,7 @@ export class SpaceHubCard extends LitElement {
       weatherRaw.forecast_slots || weatherRaw.forecast_fields || weatherRaw.graph_horizontal_lines ||
       (Array.isArray(weatherRaw.forecast_sources) && weatherRaw.forecast_sources.length > 0) ||
       weatherRaw.height || weatherRaw.temp_size || weatherRaw.temperature_size || weatherRaw.icon_size || weatherRaw.graph_height ||
+      weatherRaw.temperature_readout_icon_size ||
       weatherRaw.temperature_icon_count || weatherRaw.metric_columns ||
       weatherRaw.entity || weatherRaw.temp_sensor || weatherRaw.temp_min_24h_sensor || weatherRaw.temp_max_24h_sensor ||
       weatherRaw.humidity_sensor ||
