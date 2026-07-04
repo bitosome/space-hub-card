@@ -1057,6 +1057,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
             conditionMeteocon(selectedCondition),
             `weather-conditions-selected-icon weather-condition-${conditionClass(selectedCondition)}`,
             conditionLabel(selectedCondition),
+            'inline',
           )}
         </div>
       </div>

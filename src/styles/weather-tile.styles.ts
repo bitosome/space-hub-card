@@ -128,6 +128,7 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-icon,
   .weather-conditions-icon,
+  .weather-conditions-selected-icon,
   .weather-daily-icon,
   .weather-metric-icon {
     display: block;
@@ -138,6 +139,7 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-icon > svg,
   .weather-conditions-icon > svg,
+  .weather-conditions-selected-icon > svg,
   .weather-daily-icon > svg,
   .weather-metric-icon > svg {
     display: block;
