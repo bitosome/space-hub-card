@@ -19,6 +19,11 @@ const ARROW_UP_ICON_PATH = 'M4,12L5.41,13.41L11,7.83V20H13V7.83L18.59,13.42L20,1
 const ARROW_DOWN_ICON_PATH = 'M4,12L5.41,10.59L11,16.17V4H13V16.17L18.59,10.58L20,12L12,20L4,12Z';
 const DELETE_ICON_PATH = 'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z';
 const DEFAULT_GRAPH_HORIZONTAL_LINES = 5;
+const DEFAULT_GRAPH_ICON_SIZE = 15;
+const DEFAULT_GRAPH_ICON_SCALE = 1;
+const DEFAULT_TEMPERATURE_READOUT_ICON_SIZE = 15;
+const DEFAULT_TEMPERATURE_READOUT_ICON_SCALE = 1;
+const DEFAULT_DAILY_FORECAST_ICON_SIZE = 16;
 
 @customElement('space-hub-textfield')
 export class SpaceHubTextfield extends LitElement {
@@ -760,10 +765,10 @@ export class SpaceHubCardEditor extends LitElement {
                 type="number"
                 min="8"
                 max="48"
-                .value=${String(config.conditions_icon_size ?? '')}
+                .value=${String(config.conditions_icon_size ?? DEFAULT_GRAPH_ICON_SIZE)}
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
-                  this._valueChanged(`${basePath}.conditions_icon_size`, Number.isFinite(v) && v > 0 ? v : undefined);
+                  this._valueChanged(`${basePath}.conditions_icon_size`, Number.isFinite(v) && v > 0 && v !== DEFAULT_GRAPH_ICON_SIZE ? v : undefined);
                 }}
               ></space-hub-textfield>
               <space-hub-textfield
@@ -785,10 +790,10 @@ export class SpaceHubCardEditor extends LitElement {
                 min="0.5"
                 max="2.5"
                 step="0.05"
-                .value=${String(config.conditions_icon_scale ?? '')}
+                .value=${String(config.conditions_icon_scale ?? DEFAULT_GRAPH_ICON_SCALE)}
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
-                  this._valueChanged(`${basePath}.conditions_icon_scale`, Number.isFinite(v) && v > 0 ? v : undefined);
+                  this._valueChanged(`${basePath}.conditions_icon_scale`, Number.isFinite(v) && v > 0 && v !== DEFAULT_GRAPH_ICON_SCALE ? v : undefined);
                 }}
               ></space-hub-textfield>
               <space-hub-textfield
@@ -796,10 +801,10 @@ export class SpaceHubCardEditor extends LitElement {
                 type="number"
                 min="8"
                 max="48"
-                .value=${String(config.temperature_readout_icon_size ?? '')}
+                .value=${String(config.temperature_readout_icon_size ?? DEFAULT_TEMPERATURE_READOUT_ICON_SIZE)}
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
-                  this._valueChanged(`${basePath}.temperature_readout_icon_size`, Number.isFinite(v) && v > 0 ? v : undefined);
+                  this._valueChanged(`${basePath}.temperature_readout_icon_size`, Number.isFinite(v) && v > 0 && v !== DEFAULT_TEMPERATURE_READOUT_ICON_SIZE ? v : undefined);
                 }}
               ></space-hub-textfield>
             </div>
@@ -810,10 +815,10 @@ export class SpaceHubCardEditor extends LitElement {
                 min="0.5"
                 max="2.5"
                 step="0.05"
-                .value=${String(config.temperature_readout_icon_scale ?? '')}
+                .value=${String(config.temperature_readout_icon_scale ?? DEFAULT_TEMPERATURE_READOUT_ICON_SCALE)}
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
-                  this._valueChanged(`${basePath}.temperature_readout_icon_scale`, Number.isFinite(v) && v > 0 ? v : undefined);
+                  this._valueChanged(`${basePath}.temperature_readout_icon_scale`, Number.isFinite(v) && v > 0 && v !== DEFAULT_TEMPERATURE_READOUT_ICON_SCALE ? v : undefined);
                 }}
               ></space-hub-textfield>
               <space-hub-textfield
@@ -821,10 +826,10 @@ export class SpaceHubCardEditor extends LitElement {
                 type="number"
                 min="8"
                 max="48"
-                .value=${String(config.daily_icon_size ?? '')}
+                .value=${String(config.daily_icon_size ?? DEFAULT_DAILY_FORECAST_ICON_SIZE)}
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
-                  this._valueChanged(`${basePath}.daily_icon_size`, Number.isFinite(v) && v > 0 ? v : undefined);
+                  this._valueChanged(`${basePath}.daily_icon_size`, Number.isFinite(v) && v > 0 && v !== DEFAULT_DAILY_FORECAST_ICON_SIZE ? v : undefined);
                 }}
               ></space-hub-textfield>
             </div>
