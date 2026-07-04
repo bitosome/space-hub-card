@@ -1024,6 +1024,7 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
   const safeKey = safeIdPart(key);
   const lineGradient = `weather-conditions-temp-line-${safeKey}`;
   const fillGradient = `weather-conditions-temp-fill-${safeKey}`;
+  const selectedCondition = String(selected.item.condition || '');
 
   return html`
     <section class="weather-conditions-card weather-conditions-temp">
@@ -1034,6 +1035,12 @@ function renderConditionsTemperature(host: any, config: WeatherTileConfig, items
         <div class="weather-conditions-selected">
           <span>${forecastDateTime(host, selected.item)}</span>
           <strong>${selected.value.toFixed(0)}°</strong>
+          ${renderWeatherIcon(
+            config,
+            conditionMeteocon(selectedCondition),
+            `weather-conditions-selected-icon weather-condition-${conditionClass(selectedCondition)}`,
+            conditionLabel(selectedCondition),
+          )}
         </div>
       </div>
 

@@ -335,7 +335,7 @@ export const weatherTileStyles: CSSResultGroup = css`
   .weather-conditions-selected {
     flex: 0 0 auto;
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: end;
     gap: 5px;
     max-width: min(58%, 172px);
@@ -350,6 +350,14 @@ export const weatherTileStyles: CSSResultGroup = css`
     font-size: 14px;
     line-height: 1;
     font-weight: 850;
+  }
+
+  .weather-conditions-selected-icon {
+    flex: 0 0 auto;
+    width: 15px;
+    height: 15px;
+    --mdc-icon-size: 15px;
+    color: var(--state-weather-sunny-color, #f6a000);
   }
 
   .weather-conditions-subtitle {
