@@ -1210,6 +1210,9 @@ export class SpaceHubCardEditor extends LitElement {
             ></ha-icon-picker>
           </div>
         `}
+        ${this._renderActionConfig('Tap Action', `${metricsPath}.${i}.tap_action`, item.tap_action)}
+        ${this._renderActionConfig('Hold Action', `${metricsPath}.${i}.hold_action`, item.hold_action)}
+        ${this._renderActionConfig('Double Tap Action', `${metricsPath}.${i}.double_tap_action`, item.double_tap_action)}
       </div>
     `;
   }

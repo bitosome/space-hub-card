@@ -137,7 +137,20 @@ export interface HeaderWeather {
   uv_sensor?: string;
   solar_lux_sensor?: string;
   pressure_sensor?: string;
-  metrics?: Array<{ type?: string; entity?: string; name?: string; icon?: string; icon_active?: string; icon_inactive?: string; rain_state_sensor?: string; rain_rate_sensor?: string; rain_rate_threshold?: number }>;
+  metrics?: Array<{
+    type?: string;
+    entity?: string;
+    name?: string;
+    icon?: string;
+    icon_active?: string;
+    icon_inactive?: string;
+    rain_state_sensor?: string;
+    rain_rate_sensor?: string;
+    rain_rate_threshold?: number;
+    tap_action?: SpaceHubActionConfig;
+    hold_action?: SpaceHubActionConfig;
+    double_tap_action?: SpaceHubActionConfig;
+  }>;
   chips?: unknown[];
   tap_action?: SpaceHubActionConfig;
   hold_action?: SpaceHubActionConfig;
@@ -1347,6 +1360,19 @@ export class SpaceHubCard extends LitElement {
       hold_action: defaultEntity ? { action: 'more-info', entity: defaultEntity } : undefined,
     };
     this._dispatchActionEnvelope(action, this._withActionOverrides(baseConfig, weather as Record<string, unknown>));
+  }
+
+  private _onWeatherMetricAction(ev: CustomEvent, metric?: any): void {
+    ev.stopPropagation();
+
+    const action = (ev.detail && (ev.detail as any).action) || 'tap';
+    const defaultEntity = metric?.entity || metric?.stateEntity;
+    const baseConfig: SpaceHubActionEnvelope = {
+      entity: defaultEntity,
+      tap_action: defaultEntity ? { action: 'more-info', entity: defaultEntity } : undefined,
+      hold_action: defaultEntity ? { action: 'more-info', entity: defaultEntity } : undefined,
+    };
+    this._dispatchActionEnvelope(action, this._withActionOverrides(baseConfig, metric as Record<string, unknown>));
   }
 
   private _onACAction(ev: CustomEvent, ac?: any): void {

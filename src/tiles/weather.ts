@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, svg, TemplateResult } from 'lit';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
+import { actionHandler } from '../action-handler-directive';
 import { renderInteractiveChip } from '../chips';
 import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
@@ -88,6 +89,9 @@ interface MetricSource {
   rain_state_sensor?: string;
   rain_rate_sensor?: string;
   rain_rate_threshold?: number;
+  tap_action?: unknown;
+  hold_action?: unknown;
+  double_tap_action?: unknown;
 }
 
 interface MetricConfig {
@@ -98,6 +102,9 @@ interface MetricConfig {
   value: string;
   entity?: string;
   active?: boolean;
+  tap_action?: unknown;
+  hold_action?: unknown;
+  double_tap_action?: unknown;
 }
 
 interface ForecastItem {
@@ -492,7 +499,8 @@ function staticMdiIcon(raw: string | undefined, fallback: string): string {
 function buildRainMetric(host: any, m: MetricSource): MetricConfig {
   const active = rainActiveForMetric(host, m);
   const label = m.name || 'Rain';
-  const entity = m.rain_state_sensor || m.rain_rate_sensor;
+  const entity = m.rain_rate_sensor || m.rain_state_sensor;
+  const stateEntity = m.rain_state_sensor || m.rain_rate_sensor;
   const mdi = active
     ? staticMdiIcon(m.icon_active || m.icon, 'mdi:weather-rainy')
     : staticMdiIcon(m.icon_inactive || m.icon, 'mdi:water-off-outline');
@@ -507,9 +515,12 @@ function buildRainMetric(host: any, m: MetricSource): MetricConfig {
     label,
     value,
     entity,
-    stateEntity: entity,
+    stateEntity,
     active,
     mdi,
+    tap_action: m.tap_action,
+    hold_action: m.hold_action,
+    double_tap_action: m.double_tap_action,
   };
 }
 
@@ -529,6 +540,9 @@ function buildMetrics(host: any, config: WeatherTileConfig): MetricConfig[] {
         entity: m.entity,
         mdi: m.icon || undefined,
         stateEntity: m.entity,
+        tap_action: m.tap_action,
+        hold_action: m.hold_action,
+        double_tap_action: m.double_tap_action,
       } as MetricConfig;
     });
 }
@@ -1319,10 +1333,10 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 role="button"
                 tabindex="0"
                 aria-label=${`Open ${item.label} details`}
-                @pointerdown=${stopTileAction}
-                @pointerup=${stopTileAction}
-                @click=${(ev: Event) => openMoreInfo(host, ev, item.entity)}
-                @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, item.entity)}
+                @hass-action=${(ev: CustomEvent) => {
+                  if (typeof host?._onWeatherMetricAction === 'function') host._onWeatherMetricAction(ev, item);
+                }}
+                .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!item.double_tap_action })}
               >
                 ${item.mdi
                   ? html`<ha-icon class="weather-metric-icon" .icon=${item.mdi}></ha-icon>`
