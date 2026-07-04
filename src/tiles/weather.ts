@@ -641,8 +641,10 @@ function conditionsScale(field: ForecastFieldKey, values: number[]): { min: numb
   let min = Math.min(...values);
   let max = Math.max(...values);
   if (field === 'temperature') {
-    min = Math.floor((min - 2) / 5) * 5;
-    max = Math.ceil((max + 2) / 5) * 5;
+    const range = Math.max(max - min, 1);
+    const padding = Math.max(range * 0.06, 0.6);
+    min = Math.floor(min - padding);
+    max = Math.ceil(max + padding);
   } else {
     const padding = Math.max((max - min) * 0.18, 1);
     min = Math.max(0, min - padding);
