@@ -780,6 +780,18 @@ export class SpaceHubCardEditor extends LitElement {
             </div>
             <div class="side-by-side">
               <space-hub-textfield
+                label="Graph Icon Scale"
+                type="number"
+                min="0.5"
+                max="2.5"
+                step="0.05"
+                .value=${String(config.conditions_icon_scale ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.conditions_icon_scale`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+              <space-hub-textfield
                 label="Temperature Readout Icon Size (px)"
                 type="number"
                 min="8"
@@ -788,6 +800,20 @@ export class SpaceHubCardEditor extends LitElement {
                 @input=${(ev: Event) => {
                   const v = Number((ev.target as HTMLInputElement).value);
                   this._valueChanged(`${basePath}.temperature_readout_icon_size`, Number.isFinite(v) && v > 0 ? v : undefined);
+                }}
+              ></space-hub-textfield>
+            </div>
+            <div class="side-by-side">
+              <space-hub-textfield
+                label="Temperature Readout Icon Scale"
+                type="number"
+                min="0.5"
+                max="2.5"
+                step="0.05"
+                .value=${String(config.temperature_readout_icon_scale ?? '')}
+                @input=${(ev: Event) => {
+                  const v = Number((ev.target as HTMLInputElement).value);
+                  this._valueChanged(`${basePath}.temperature_readout_icon_scale`, Number.isFinite(v) && v > 0 ? v : undefined);
                 }}
               ></space-hub-textfield>
               <space-hub-textfield

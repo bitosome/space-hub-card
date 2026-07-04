@@ -358,6 +358,8 @@ export const weatherTileStyles: CSSResultGroup = css`
     height: var(--weather-conditions-selected-icon-size, 15px);
     --mdc-icon-size: var(--weather-conditions-selected-icon-size, 15px);
     color: var(--state-weather-sunny-color, #f6a000);
+    transform: scale(var(--weather-conditions-selected-icon-scale, 1));
+    transform-origin: 50% 50%;
   }
 
   .weather-conditions-subtitle {
@@ -392,6 +394,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     height: var(--weather-conditions-icon-size, 15px);
     --mdc-icon-size: var(--weather-conditions-icon-size, 15px);
     color: inherit;
+    transform: scale(var(--weather-conditions-icon-scale, 1));
     transform-origin: 50% 50%;
   }
 
