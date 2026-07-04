@@ -565,10 +565,14 @@ export const weatherTileStyles: CSSResultGroup = css`
     min-width: 0;
     min-height: 30px;
     display: grid;
-    grid-template-columns: 88px 52px 40px minmax(84px, 1fr) 40px;
+    grid-template-columns: minmax(58px, 0.9fr) minmax(34px, 0.52fr) minmax(30px, auto) minmax(56px, 1fr) minmax(30px, auto);
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .weather-daily-forecast-heading + .weather-daily-row {
+    border-top: 0;
   }
 
   .weather-daily-day {
@@ -611,6 +615,10 @@ export const weatherTileStyles: CSSResultGroup = css`
     display: grid;
     justify-items: center;
     gap: 1px;
+  }
+
+  .weather-daily-high {
+    justify-items: end;
   }
 
   .weather-daily-condition span,
