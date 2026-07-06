@@ -1245,8 +1245,8 @@ function renderConditionsCombined(host: any, config: WeatherTileConfig, items: F
         <div class="weather-conditions-selected weather-conditions-combined-selected">
           <span>${forecastDateTime(host, selectedItem)}</span>
           ${selectedTemp ? html`<strong>${selectedTemp.value.toFixed(0)}°</strong>` : nothing}
+          ${selectedRain ? html`<strong class="weather-conditions-selected-rain">${Math.round(selectedRain.value)}%</strong>` : nothing}
           ${renderWeatherIcon(config, conditionMeteocon(selectedCondition), `weather-conditions-selected-icon weather-condition-${conditionClass(selectedCondition)}`, conditionLabel(selectedCondition), 'inline')}
-          ${selectedRain ? html`<span class="weather-conditions-selected-rain">Rain ${Math.round(selectedRain.value)}%</span>` : nothing}
         </div>
       </div>
       ${icons.length ? html`

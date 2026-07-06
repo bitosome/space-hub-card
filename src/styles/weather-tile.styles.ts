@@ -362,8 +362,10 @@ export const weatherTileStyles: CSSResultGroup = css`
     max-width: min(72%, 232px);
   }
 
-  .weather-conditions-selected-rain {
+  .weather-conditions-selected .weather-conditions-selected-rain {
     color: #38c7f3;
+    font-size: 14px;
+    line-height: 1;
     font-weight: 850;
   }
 
