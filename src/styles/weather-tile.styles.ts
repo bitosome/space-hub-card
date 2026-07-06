@@ -306,6 +306,10 @@ export const weatherTileStyles: CSSResultGroup = css`
     min-height: calc(var(--weather-graph-height) + 36px);
   }
 
+  .weather-conditions-combined {
+    min-height: calc(var(--weather-graph-height) + 54px);
+  }
+
   .weather-conditions-head {
     min-width: 0;
     min-height: 18px;
@@ -351,6 +355,15 @@ export const weatherTileStyles: CSSResultGroup = css`
     color: var(--primary-text-color);
     font-size: 14px;
     line-height: 1;
+    font-weight: 850;
+  }
+
+  .weather-conditions-combined-selected {
+    max-width: min(72%, 232px);
+  }
+
+  .weather-conditions-selected-rain {
+    color: #38c7f3;
     font-weight: 850;
   }
 
@@ -472,6 +485,11 @@ export const weatherTileStyles: CSSResultGroup = css`
     stroke: #38c7f3;
   }
 
+  .weather-conditions-rain-shadow {
+    stroke-width: 5;
+    opacity: 0.78;
+  }
+
   .weather-conditions-selected-line {
     stroke: rgba(255, 255, 255, 0.36);
     stroke-width: 1;
@@ -504,6 +522,21 @@ export const weatherTileStyles: CSSResultGroup = css`
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
   }
 
+  .weather-conditions-selected-dot-rain {
+    width: 11px;
+    height: 11px;
+    min-width: 11px;
+    min-height: 11px;
+    border-color: rgba(167, 232, 255, 0.78);
+    background: rgba(0, 90, 130, 0.36);
+    box-shadow: 0 0 0 2px rgba(56, 199, 243, 0.22);
+  }
+
+  .weather-conditions-selected-dot-rain::after {
+    inset: 3px;
+    background: #38c7f3;
+  }
+
   .weather-conditions-axis,
   .weather-conditions-time-label,
   .weather-conditions-extreme {
@@ -517,6 +550,11 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-conditions-axis {
     text-anchor: end;
+  }
+
+  .weather-conditions-axis-rain {
+    fill: #38c7f3;
+    opacity: 0.9;
   }
 
   .weather-conditions-time-label {

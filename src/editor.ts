@@ -746,6 +746,7 @@ export class SpaceHubCardEditor extends LitElement {
                   }}
                 ></ha-switch>
               </ha-formfield>
+              ${this._renderSelectField('Forecast Graph Mode', `${basePath}.forecast_graph_mode`, config.forecast_graph_mode || 'separate', ['separate', 'combined'])}
             </div>
             <div class="side-by-side">
               <space-hub-textfield

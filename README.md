@@ -39,6 +39,7 @@ Current weather tile features:
 - Clickable local sensor values and grid metrics that open the related entity more-info.
 - Apple Weather-style temperature graph.
 - Apple Weather-style precipitation probability graph.
+- Optional combined temperature and precipitation graph.
 - Synced graph selectors.
 - Full date and time labels on graphs.
 - Configurable forecast graph hours.
@@ -139,6 +140,7 @@ headers:
       temp_min_24h_sensor: sensor.outdoor_temperature_24h_min
       temp_max_24h_sensor: sensor.outdoor_temperature_24h_max
       metric_columns: 3
+      forecast_graph_mode: combined
       forecast_slots: 48
       graph_height: 140
       graph_horizontal_lines: 5
@@ -299,6 +301,7 @@ When more than one forecast source is available, the weather tile shows a compac
 | `show_forecast` | boolean | `true` | Set to `false` to hide forecast graphs and daily forecast. |
 | `forecast_slots` | number | `8` | Number of hourly forecast entries used by graphs, clamped to `72`. |
 | `forecast_fields` | array or comma string | `temperature, precipitation_probability` | Visible graph sections to render. |
+| `forecast_graph_mode` | `separate` or `combined` | `separate` | `separate` renders the temperature and precipitation graphs as two cards. `combined` renders one graph card with temperature, precipitation chance, shared selection, condition icons, high/low markers, and both selected readouts. |
 | `sync_graphs` | boolean | `true` | Keep graph selectors synchronized. |
 | `graph_height` | number | `118` | Forecast graph height in pixels, clamped to `82..260`. |
 | `graph_horizontal_lines` | number | `5` | Horizontal grid lines in each forecast graph, with matching right-side axis labels. Clamped to `2..9`. |

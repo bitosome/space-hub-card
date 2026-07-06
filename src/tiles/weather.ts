@@ -30,6 +30,7 @@ interface WeatherTileConfig {
   daily_icon_size?: number;
   graph_height?: number;
   graph_horizontal_lines?: number;
+  forecast_graph_mode?: string;
   metric_columns?: number;
   icon_set?: string;
   icon_pack?: WeatherIconPackConfig;
@@ -67,6 +68,7 @@ interface WeatherTileConfig {
 }
 
 type WeatherIconSet = 'meteocons' | 'custom';
+type ForecastGraphMode = 'separate' | 'combined';
 
 interface WeatherForecastSource {
   entity?: string;
@@ -835,6 +837,10 @@ function conditionsHorizontalLineCount(config: WeatherTileConfig): number {
   return configNumber(config.graph_horizontal_lines, 2, 9) || DEFAULT_GRAPH_HORIZONTAL_LINES;
 }
 
+function forecastGraphMode(config: WeatherTileConfig): ForecastGraphMode {
+  return String(config.forecast_graph_mode || '').toLowerCase() === 'combined' ? 'combined' : 'separate';
+}
+
 function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: ForecastItem[], hourlyItems: ForecastItem[]): TemplateResult | typeof nothing {
   const rows = dailyItems.slice(0, 7);
   if (!rows.length) return nothing;
@@ -989,6 +995,20 @@ function conditionsSelectedPoint(host: any, key: string, points: ForecastGraphPo
   return points[selectedIndex] || points[0];
 }
 
+function nearestPointByTimestamp(points: ForecastGraphPoint[], timestamp?: number, fallbackIndex = 0): ForecastGraphPoint | undefined {
+  if (!points.length) return undefined;
+  if (!Number.isFinite(timestamp)) return points[Math.max(0, Math.min(points.length - 1, fallbackIndex))];
+  return points.reduce((best, point) => {
+    const bestTime = Number(best.timestamp);
+    const pointTime = Number(point.timestamp);
+    if (!Number.isFinite(pointTime)) return best;
+    if (!Number.isFinite(bestTime)) return point;
+    const bestDistance = Math.abs(bestTime - Number(timestamp));
+    const pointDistance = Math.abs(pointTime - Number(timestamp));
+    return pointDistance < bestDistance ? point : best;
+  }, points[0]);
+}
+
 function renderConditionsGrid(host: any, box: ConditionsChartBox, ticks: number[], points: ForecastGraphPoint[], horizontalLines: number): TemplateResult[] {
   const baseline = box.height - box.bottom;
   const lineCount = Math.max(2, horizontalLines);
@@ -1016,13 +1036,15 @@ function renderConditionsAxisLabels(
   box: ConditionsChartBox,
   horizontalLines: number,
   formatValue: (ratio: number) => string,
+  className = 'weather-conditions-axis',
+  x = box.width - 2,
 ): TemplateResult[] {
   const baseline = box.height - box.bottom;
   const lineCount = Math.max(2, horizontalLines);
   return Array.from({ length: lineCount }, (_, index) => {
     const ratio = 1 - (index / (lineCount - 1));
     const y = box.top + (index / (lineCount - 1)) * (baseline - box.top);
-    return svg`<text class="weather-conditions-axis" x=${box.width - 2} y=${y}>${formatValue(ratio)}</text>`;
+    return svg`<text class=${className} x=${x} y=${y}>${formatValue(ratio)}</text>`;
   });
 }
 
@@ -1184,10 +1206,146 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
   `;
 }
 
+function renderConditionsCombined(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string): TemplateResult | typeof nothing {
+  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 8, right: 38, top: 15, bottom: 24 };
+  const tempData = buildConditionsPoints(items, 'temperature', box);
+  const rainData = buildConditionsPoints(items, 'precipitation_probability', box);
+  const tempPoints = tempData.points;
+  const rainPoints = rainData.points;
+  const hasTemp = tempPoints.length >= 2;
+  const hasRain = rainPoints.length >= 2;
+  if (!hasTemp && !hasRain) return nothing;
+
+  const selectPoints = hasTemp ? tempPoints : rainPoints;
+  const selectedBase = conditionsSelectedPoint(host, key, selectPoints);
+  const selectedTemp = hasTemp ? nearestPointByTimestamp(tempPoints, selectedBase.timestamp, selectedBase.index) : undefined;
+  const selectedRain = hasRain ? nearestPointByTimestamp(rainPoints, selectedBase.timestamp, selectedBase.index) : undefined;
+  const selected = selectedTemp || selectedRain || selectedBase;
+  const selectedItem = selectedTemp?.item || selectedRain?.item || selectedBase.item;
+  const selectedCondition = String(selectedItem.condition || '');
+  const baseline = box.height - box.bottom;
+  const ticks = conditionsTickIndexes(selectPoints.length);
+  const horizontalLines = conditionsHorizontalLineCount(config);
+  const safeKey = safeIdPart(key);
+  const tempLine = `weather-conditions-combined-temp-line-${safeKey}`;
+  const tempFill = `weather-conditions-combined-temp-fill-${safeKey}`;
+  const rainFill = `weather-conditions-combined-rain-fill-${safeKey}`;
+  const tempPath = hasTemp ? smoothPath(tempPoints) : '';
+  const rainPath = hasRain ? smoothPath(rainPoints) : '';
+  const tempArea = hasTemp ? areaPath(tempPoints, baseline) : '';
+  const rainArea = hasRain ? areaPath(rainPoints, baseline) : '';
+  const minPoint = hasTemp ? tempPoints.reduce((best, point) => point.value < best.value ? point : best, tempPoints[0]) : undefined;
+  const maxPoint = hasTemp ? tempPoints.reduce((best, point) => point.value > best.value ? point : best, tempPoints[0]) : undefined;
+  const icons = hasTemp ? conditionsIconSlots(tempPoints, temperatureIconCount(config)) : [];
+
+  return html`
+    <section class="weather-conditions-card weather-conditions-combined">
+      <div class="weather-conditions-head">
+        <div class="weather-conditions-title"><span>Temperature & Precipitation</span></div>
+        <div class="weather-conditions-selected weather-conditions-combined-selected">
+          <span>${forecastDateTime(host, selectedItem)}</span>
+          ${selectedTemp ? html`<strong>${selectedTemp.value.toFixed(0)}°</strong>` : nothing}
+          ${renderWeatherIcon(config, conditionMeteocon(selectedCondition), `weather-conditions-selected-icon weather-condition-${conditionClass(selectedCondition)}`, conditionLabel(selectedCondition), 'inline')}
+          ${selectedRain ? html`<span class="weather-conditions-selected-rain">Rain ${Math.round(selectedRain.value)}%</span>` : nothing}
+        </div>
+      </div>
+      ${icons.length ? html`
+        <div class="weather-conditions-icons">
+          ${icons.map((slot) => {
+            const condition = String(slot.point.item.condition || '');
+            return html`
+              <span class="weather-conditions-icon-slot" style=${`left:${((slot.x / box.width) * 100).toFixed(2)}%;`}>
+                ${renderWeatherIcon(config, conditionMeteocon(condition), `weather-conditions-icon weather-condition-${conditionClass(condition)}`, conditionLabel(condition))}
+              </span>
+            `;
+          })}
+        </div>
+      ` : nothing}
+      <div class="weather-conditions-chart-frame">
+        <svg
+          class="weather-conditions-chart"
+          viewBox=${`0 0 ${box.width} ${box.height}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label="Temperature and precipitation forecast graph"
+          @pointerdown=${(ev: PointerEvent) => selectConditionsPoint(host, ev, [key], selectPoints, box)}
+          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, [key], selectPoints, box)}
+          @pointerup=${stopConditionsPointer}
+          @pointercancel=${stopConditionsPointer}
+        >
+          <defs>
+            ${hasTemp ? svg`
+              <linearGradient id=${tempFill} x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="rgba(255, 179, 28, 0.56)"></stop>
+                <stop offset="54%" stop-color="rgba(255, 179, 28, 0.20)"></stop>
+                <stop offset="100%" stop-color="rgba(47, 185, 221, 0.34)"></stop>
+              </linearGradient>
+              <linearGradient id=${tempLine} x1=${box.left} x2=${box.width - box.right} y1="0" y2="0" gradientUnits="userSpaceOnUse">
+                ${tempPoints.map((point, index) => svg`
+                  <stop offset=${`${(index / (tempPoints.length - 1)) * 100}%`} stop-color=${temperatureColor(point.value)}></stop>
+                `)}
+              </linearGradient>
+            ` : nothing}
+            ${hasRain ? svg`
+              <linearGradient id=${rainFill} x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="rgba(56, 199, 243, 0.44)"></stop>
+                <stop offset="100%" stop-color="rgba(56, 199, 243, 0.08)"></stop>
+              </linearGradient>
+            ` : nothing}
+          </defs>
+          ${renderConditionsGrid(host, box, ticks, selectPoints, horizontalLines)}
+          ${hasRain ? svg`<path class="weather-conditions-rain-area weather-conditions-combined-rain-area" d=${rainArea} fill=${`url(#${rainFill})`}></path>` : nothing}
+          ${hasTemp ? svg`<path class="weather-conditions-area" d=${tempArea} fill=${`url(#${tempFill})`}></path>` : nothing}
+          ${hasRain ? svg`<path class="weather-conditions-line-shadow weather-conditions-rain-shadow" d=${rainPath}></path>` : nothing}
+          ${hasRain ? svg`<path class="weather-conditions-rain-line" d=${rainPath}></path>` : nothing}
+          ${hasTemp ? svg`<path class="weather-conditions-line-shadow" d=${tempPath}></path>` : nothing}
+          ${hasTemp ? svg`<path class="weather-conditions-temp-line" d=${tempPath} stroke=${`url(#${tempLine})`}></path>` : nothing}
+          ${minPoint ? svg`<text class="weather-conditions-extreme" x=${minPoint.x} y=${Math.max(12, minPoint.y - 9)}>L</text>` : nothing}
+          ${maxPoint ? svg`<text class="weather-conditions-extreme" x=${maxPoint.x} y=${Math.max(12, maxPoint.y - 9)}>H</text>` : nothing}
+          <line class="weather-conditions-selected-line" x1=${selected.x} x2=${selected.x} y1=${box.top} y2=${baseline}></line>
+          ${hasTemp ? renderConditionsAxisLabels(
+            box,
+            horizontalLines,
+            (ratio) => `${(tempData.min + ((tempData.max - tempData.min) * ratio)).toFixed(0)}°`,
+          ) : nothing}
+          ${hasRain ? renderConditionsAxisLabels(
+            box,
+            horizontalLines,
+            (ratio) => `${Math.round(100 * ratio)}%`,
+            'weather-conditions-axis weather-conditions-axis-rain',
+            box.width - 28,
+          ) : nothing}
+        </svg>
+        ${selectedTemp ? html`
+          <span
+            class="weather-conditions-selected-dot"
+            style=${`left:${((selectedTemp.x / box.width) * 100).toFixed(2)}%;top:${((selectedTemp.y / box.height) * 100).toFixed(2)}%;`}
+          ></span>
+        ` : nothing}
+        ${selectedRain ? html`
+          <span
+            class="weather-conditions-selected-dot weather-conditions-selected-dot-rain"
+            style=${`left:${((selectedRain.x / box.width) * 100).toFixed(2)}%;top:${((selectedRain.y / box.height) * 100).toFixed(2)}%;`}
+          ></span>
+        ` : nothing}
+      </div>
+    </section>
+  `;
+}
+
 function renderWeatherConditionsPanel(host: any, config: WeatherTileConfig, items: ForecastItem[], fields: ForecastFieldKey[], key: string, syncGraphs: boolean): TemplateResult | typeof nothing {
   if (items.length < 2) return nothing;
   const tempKey = `${key}-temperature`;
   const precipKey = `${key}-precipitation`;
+  if (forecastGraphMode(config) === 'combined' && (fields.includes('temperature') || fields.includes('precipitation_probability'))) {
+    const combined = renderConditionsCombined(host, config, items, `${key}-combined`);
+    if (combined === nothing) return nothing;
+    return html`
+      <div class="weather-conditions-panel">
+        ${combined}
+      </div>
+    `;
+  }
   const syncKeys = syncGraphs ? [tempKey, precipKey] : null;
   const temperature = fields.includes('temperature')
     ? renderConditionsTemperature(host, config, items, tempKey, syncKeys || [tempKey])

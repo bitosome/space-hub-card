@@ -105,6 +105,7 @@ export interface HeaderWeather {
   daily_icon_size?: number;
   graph_height?: number;
   graph_horizontal_lines?: number;
+  forecast_graph_mode?: string;
   metric_columns?: number;
   icon_set?: string;
   icon_pack?: {
@@ -324,7 +325,7 @@ export class SpaceHubCard extends LitElement {
             weather.name || weather.icon || weather.entity ||
             weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
             weather.icon_set || weather.icon_pack || weather.icon_base_path || weather.icon_map ||
-            weather.forecast_slots || weather.forecast_fields || weather.graph_horizontal_lines ||
+            weather.forecast_slots || weather.forecast_fields || weather.forecast_graph_mode || weather.graph_horizontal_lines ||
             (Array.isArray(weather.forecast_sources) && weather.forecast_sources.length > 0) ||
             weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
             weather.conditions_icon_scale ||
@@ -431,6 +432,13 @@ export class SpaceHubCard extends LitElement {
             const slots = Number(weather.forecast_slots);
             if (!Number.isFinite(slots) || slots <= 0) {
               errors.push(`Header ${index + 1}: Weather tile forecast graph hours must be a positive number, got: ${weather.forecast_slots}`);
+            }
+          }
+
+          if (weather.forecast_graph_mode !== undefined && weather.forecast_graph_mode !== null) {
+            const mode = String(weather.forecast_graph_mode).trim().toLowerCase();
+            if (mode && mode !== 'separate' && mode !== 'combined') {
+              errors.push(`Header ${index + 1}: Weather tile forecast_graph_mode must be 'separate' or 'combined', got: ${weather.forecast_graph_mode}`);
             }
           }
 
@@ -599,7 +607,7 @@ export class SpaceHubCard extends LitElement {
       weather.name || (weather as any).main_name || weather.icon || (weather as any).main_icon ||
       weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
       weather.icon_set || weather.icon_pack || weather.icon_base_path || weather.icon_map ||
-      weather.forecast_slots || weather.forecast_fields || weather.graph_horizontal_lines ||
+      weather.forecast_slots || weather.forecast_fields || weather.forecast_graph_mode || weather.graph_horizontal_lines ||
       (Array.isArray(weather.forecast_sources) && weather.forecast_sources.length > 0) ||
       weather.height || weather.temp_size || weather.temperature_size || weather.icon_size || weather.graph_height ||
       weather.conditions_icon_scale ||
@@ -623,9 +631,10 @@ export class SpaceHubCard extends LitElement {
     const metricColumns = Math.max(1, Math.min(4, Math.round(this._positiveNumber(weather.metric_columns) || 3)));
     const metricCount = this._weatherMetricCountForCardSize(weather);
     const metricRows = metricCount > 0 ? Math.ceil(metricCount / metricColumns) : 0;
+    const fieldGraphCount = this._weatherForecastFieldCountForCardSize(weather);
     const graphCount = weather.show_forecast === false || !weather.entity
       ? 0
-      : this._weatherForecastFieldCountForCardSize(weather);
+      : (String(weather.forecast_graph_mode || '').toLowerCase() === 'combined' ? Math.min(1, fieldGraphCount) : fieldGraphCount);
     const graphHeightEstimate = graphCount > 0
       ? (graphCount * (graphHeight + 64)) + ((graphCount - 1) * 8)
       : 0;
@@ -847,6 +856,7 @@ export class SpaceHubCard extends LitElement {
       rain_rate_threshold: weatherRaw.rain_rate_threshold,
       forecast_slots: weatherRaw.forecast_slots,
       forecast_fields: weatherRaw.forecast_fields,
+      forecast_graph_mode: weatherRaw.forecast_graph_mode,
       forecast_graph_key: `weather-${index}-${selectedForecastEntity || 'default'}`,
       temp_sensor: weatherRaw.temp_sensor,
       temp_min_24h_sensor: weatherRaw.temp_min_24h_sensor,
@@ -881,7 +891,7 @@ export class SpaceHubCard extends LitElement {
       weatherRaw.name || weatherRaw.main_name || weatherRaw.icon || weatherRaw.main_icon ||
       weatherRaw.animated_icons !== undefined || weatherRaw.show_forecast !== undefined ||
       weatherRaw.icon_set || weatherRaw.icon_pack || weatherRaw.icon_base_path || weatherRaw.icon_map ||
-      weatherRaw.forecast_slots || weatherRaw.forecast_fields || weatherRaw.graph_horizontal_lines ||
+      weatherRaw.forecast_slots || weatherRaw.forecast_fields || weatherRaw.forecast_graph_mode || weatherRaw.graph_horizontal_lines ||
       (Array.isArray(weatherRaw.forecast_sources) && weatherRaw.forecast_sources.length > 0) ||
       weatherRaw.height || weatherRaw.temp_size || weatherRaw.temperature_size || weatherRaw.icon_size || weatherRaw.graph_height ||
       weatherRaw.conditions_icon_scale ||
