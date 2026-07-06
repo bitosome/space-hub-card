@@ -1207,7 +1207,7 @@ function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, ite
 }
 
 function renderConditionsCombined(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 8, right: 38, top: 15, bottom: 24 };
+  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 30, right: 24, top: 15, bottom: 24 };
   const tempData = buildConditionsPoints(items, 'temperature', box);
   const rainData = buildConditionsPoints(items, 'precipitation_probability', box);
   const tempPoints = tempData.points;
@@ -1312,8 +1312,8 @@ function renderConditionsCombined(host: any, config: WeatherTileConfig, items: F
             box,
             horizontalLines,
             (ratio) => `${Math.round(100 * ratio)}%`,
-            'weather-conditions-axis weather-conditions-axis-rain',
-            box.width - 28,
+            'weather-conditions-axis weather-conditions-axis-rain weather-conditions-axis-left',
+            2,
           ) : nothing}
         </svg>
         ${selectedTemp ? html`

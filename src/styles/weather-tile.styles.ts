@@ -559,6 +559,10 @@ export const weatherTileStyles: CSSResultGroup = css`
     opacity: 0.9;
   }
 
+  .weather-conditions-axis-left {
+    text-anchor: start;
+  }
+
   .weather-conditions-time-label {
     font-size: 7.6px;
   }
