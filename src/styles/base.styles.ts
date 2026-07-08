@@ -38,7 +38,9 @@ export const baseStyles: CSSResultGroup = css`
   }
   ha-card.unavailable { animation: cardPulse 2.8s ease-in-out infinite; }
 
-  .root { display: grid; gap: var(--large-gap); }
+  /* Single stacking context for all tiles so every glow stays strictly below
+   * every tile surface (a tile's glow can never paint over an adjacent tile). */
+  .root { display: grid; gap: var(--large-gap); isolation: isolate; }
 
   /* ==============================================
    * TILE SYSTEM
@@ -64,8 +66,11 @@ export const baseStyles: CSSResultGroup = css`
     --control-button-border-radius: var(--tile-border-radius);
   }
 
-  /* Base tile-wrap container so sibling glow-under can position reliably */
-  .tile-wrap { position: relative; width: 100%; height: var(--tile-h); display:block; isolation:isolate; }
+  /* Base tile-wrap container so sibling glow-under can position reliably.
+   * NOTE: no isolation here on purpose — tiles (z-index:1) and glows
+   * (z-index:0) resolve within the shared .root stacking context so a glow
+   * never renders on top of a neighbouring tile. */
+  .tile-wrap { position: relative; width: 100%; height: var(--tile-h); display:block; }
   
   .square::part(button) { width: 100%; height: 100%; padding: 0; margin: 0; box-sizing: border-box; border-radius: var(--tile-border-radius); overflow: hidden; clip-path: inset(0 round var(--tile-border-radius)); background-clip: padding-box; }
 
