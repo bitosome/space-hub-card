@@ -787,6 +787,60 @@ card_mod:
     }
 ```
 
+## Design System & UI Implementation
+
+Space Hub Card is the **reference implementation and single source of truth** for the shared design system used across the `bitosome` Home Assistant card family (`space-hub-card`, `real-electricity-price-card`, `smartevse-dual-charger-card`). Read this section before changing any UI so every card stays visually and structurally consistent. It is written to be followed by both humans and LLMs.
+
+### Source of truth
+
+- The canonical design tokens live in `src/shared/design-tokens.ts`:
+  - `DESIGN_TOKENS_CSS` — a framework-agnostic CSS string (a `:host { … }` block of CSS custom properties).
+  - `designTokens` — the same tokens wrapped as a Lit `CSSResult` for `static styles` composition.
+- Sibling cards **vendor a copy** of this file at their own `src/shared/design-tokens.ts`. Never edit those copies by hand — edit the tokens here and run:
+
+  ```bash
+  ./scripts/sync-design-tokens.sh
+  ```
+
+  This copies the canonical tokens into the sibling repos (the vendored files carry an `AUTO-SYNCED … DO NOT EDIT` banner). `smartevse-dual-charger-card` also keeps the tokens as a TypeScript module and injects `DESIGN_TOKENS_CSS` into its `<style>` block.
+
+### Rules for implementing UI (follow these exactly)
+
+1. **Never hardcode** colors, spacing, radii, or shadows in component code. Reference the CSS custom properties from the design tokens instead — e.g. `var(--tile-border-radius)`, `var(--tile-shadow-default)`, `var(--status-active-color)`.
+2. **Compose styles** with the shared tokens first:
+
+   ```ts
+   static styles = [designTokens, baseStyles, chipStyles, /* …tile styles */];
+   ```
+
+3. **Reuse Home Assistant primitives** — `ha-card`, `ha-control-button`, `ha-icon`. Do not reimplement buttons, ripples, or icons.
+4. **Tiles are pure render functions** in `src/tiles/*.ts` returning a Lit template, each paired with a `src/styles/*.styles.ts` module. A tile's surface uses `position: relative; z-index: 1;`.
+5. **Glow system** — use `buildGlow()` from `src/glow.ts`. A tile's glow (`.glow-under`, `z-index: 0`) must render **below every tile surface** (`z-index: 1`). To guarantee a glow never bleeds onto an adjacent tile:
+   - The tile group container establishes **one shared stacking context** (`isolation: isolate` on `.root`).
+   - Individual tile wrappers **must not** create their own stacking context (no `isolation` on `.tile-wrap`).
+6. **State interpretation** goes through `src/shared/state.ts` (`isEntityActive`, `isLockType`, `isStateUnavailable`, `normalizeAcMode`) — do not re-derive state logic locally.
+7. **Chips** are rendered via `src/chips.ts`.
+8. **Actions** (tap / hold / double-tap) use `src/action-config.ts` + `src/action-handler-directive.ts`. Do not hand-roll pointer/gesture handling for standard actions.
+9. **Semantic colors** come from the shared status palette (`--status-on-color`, `--status-active-color`, `--status-success-color`, `--status-alert-color`, `--status-warn-color`, `--status-cool-color`, `--status-heat-color`, `--status-dry-color`, `--status-fan-color`, `--status-auto-color`, …).
+
+### Token groups
+
+The `:host` design tokens cover: chip styling (`--chip-*`), main-light and switch colors (`--main-light-*`, `--switch-*`), AC/thermostat colors (`--ac-*`, `--thermostat-*`), the semantic status palette (`--status-*`), spacing/positioning (`--tile-padding*`, `--small-gap`/`--medium-gap`/`--large-gap`, z-index layers), tile shape (`--tile-border-radius`), and elevation (`--tile-shadow-default` / `--tile-shadow-hover` / `--tile-shadow-active`).
+
+### File map
+
+| Path | Responsibility |
+| --- | --- |
+| `src/shared/design-tokens.ts` | Canonical design tokens (source of truth) |
+| `src/shared/state.ts` | Shared entity-state helpers |
+| `src/styles/base.styles.ts` | Base layout + tile system CSS |
+| `src/styles/*.styles.ts` | Per-tile styles |
+| `src/tiles/*.ts` | Per-tile render functions |
+| `src/chips.ts` | Chip renderers |
+| `src/glow.ts` | Glow / pulse system |
+| `src/action-config.ts`, `src/action-handler-directive.ts` | Action config + gesture directive |
+| `scripts/sync-design-tokens.sh` | Sync tokens into sibling cards |
+
 ## Development
 
 Install dependencies:
