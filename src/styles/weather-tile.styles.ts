@@ -524,21 +524,6 @@ export const weatherTileStyles: CSSResultGroup = css`
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
   }
 
-  .weather-conditions-selected-dot-rain {
-    width: 11px;
-    height: 11px;
-    min-width: 11px;
-    min-height: 11px;
-    border-color: rgba(167, 232, 255, 0.78);
-    background: rgba(0, 90, 130, 0.36);
-    box-shadow: 0 0 0 2px rgba(56, 199, 243, 0.22);
-  }
-
-  .weather-conditions-selected-dot-rain::after {
-    inset: 3px;
-    background: #38c7f3;
-  }
-
   .weather-conditions-axis,
   .weather-conditions-time-label,
   .weather-conditions-extreme {

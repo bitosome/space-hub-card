@@ -1324,7 +1324,7 @@ function renderConditionsCombined(host: any, config: WeatherTileConfig, items: F
         ` : nothing}
         ${selectedRain ? html`
           <span
-            class="weather-conditions-selected-dot weather-conditions-selected-dot-rain"
+            class="weather-conditions-selected-dot"
             style=${`left:${((selectedRain.x / box.width) * 100).toFixed(2)}%;top:${((selectedRain.y / box.height) * 100).toFixed(2)}%;`}
           ></span>
         ` : nothing}
