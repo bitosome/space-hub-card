@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import type { HomeAssistant } from 'custom-card-helpers';
+import { isEntityActive, isLockType } from './shared/state';
 
 // ==============================================
 // CHIP SYSTEM INTERFACES
@@ -41,19 +42,6 @@ interface ChipConfig {
 // CHIP UTILITY FUNCTIONS
 // ==============================================
 
-/**
- * Determines if an entity is in an active state based on its type and current state
- */
-function isEntityActive(entity: string | undefined, state: string, type?: string): boolean {
-  if (!state) return false;
-  
-  if (type === 'lock' || (entity?.startsWith('lock.') ?? false)) {
-    return state === 'locked';
-  }
-  
-  return state === 'on' || state === 'open' || state === 'opening';
-}
-
 const DEFAULT_UNAVAILABLE_ICON = 'mdi:alert-circle-outline';
 
 type ChipAppearance = { bg: string; iconColor: string };
@@ -73,10 +61,6 @@ function getUnavailableAppearance(config?: ChipConfig): ChipAppearance {
     bg: config?.background_unavailable ?? config?.background_inactive ?? config?.background ?? fallbackBg,
     iconColor: config?.icon_color_unavailable ?? config?.icon_color_inactive ?? config?.icon_color ?? fallbackIconColor,
   };
-}
-
-function isLockType(type: string, entity?: string): boolean {
-  return type === 'lock' || (entity?.startsWith('lock.') ?? false);
 }
 
 /**

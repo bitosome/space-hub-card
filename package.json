@@ -1,6 +1,6 @@
 {
   "name": "space-hub-card",
-  "version": "2.0.66",
+  "version": "2.0.67",
   "description": "Lovelace space-hub-card",
   "keywords": [
     "home-assistant",
@@ -40,6 +40,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.24.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "happy-dom": "^20.10.6",
     "prettier": "^2.4.1",
     "rollup": "^2.58.0",
     "rollup-plugin-babel": "^4.4.0",

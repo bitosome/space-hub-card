@@ -2,18 +2,7 @@
 import { html, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
 import { acPulseColors, buildGlow, GlowMode } from '../glow';
-
-type AcModeClass = 'off' | 'cool' | 'heat' | 'dry' | 'fan' | 'auto' | 'default';
-
-function normalizeAcMode(modeRaw: string): AcModeClass {
-  if (!modeRaw || modeRaw === 'off') return 'off';
-  if (modeRaw.includes('cool')) return 'cool';
-  if (modeRaw.includes('heat')) return 'heat';
-  if (modeRaw.includes('dry')) return 'dry';
-  if (modeRaw.includes('fan')) return 'fan';
-  if (modeRaw.includes('auto')) return 'auto';
-  return 'default';
-}
+import { normalizeAcMode } from '../shared/state';
 
 export function renderACTile(host: any, config: { entity?: string; glow_mode?: GlowMode }): TemplateResult {
   const entityId = config?.entity || '';

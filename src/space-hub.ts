@@ -17,6 +17,7 @@ import { renderWeatherTile } from './tiles/weather';
 import { renderACTile } from './tiles/ac';
 import { renderThermostatTile } from './tiles/thermostat';
 import { renderSwitchRows } from './tiles/switch';
+import { designTokens } from './shared/design-tokens';
 import { baseStyles } from './styles/base.styles';
 import { chipStyles } from './styles/chip.styles';
 import { animationStyles } from './styles/animation.styles';
@@ -696,6 +697,7 @@ export class SpaceHubCard extends LitElement {
   }
 
   static styles: CSSResultGroup = [
+    designTokens,
     baseStyles,
     chipStyles,
     animationStyles,
