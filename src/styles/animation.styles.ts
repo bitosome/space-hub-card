@@ -16,12 +16,6 @@ export const animationStyles: CSSResultGroup = css`
     100% { box-shadow: 0 10px 20px var(--pulse-weak); } 
   }
   
-  @keyframes cardPulse { 
-    0% { box-shadow: 0 10px 30px var(--panel-shadow-color); } 
-    50% { box-shadow: 0 10px 30px var(--panel-shadow-color), 0 0 36px var(--unavail-strong); } 
-    100% { box-shadow: 0 10px 30px var(--panel-shadow-color); } 
-  }
-
   /* ==============================================
    * ANIMATION UTILITIES
    * ============================================== */
@@ -32,10 +26,6 @@ export const animationStyles: CSSResultGroup = css`
 
   .glow-pulse {
     animation: glowPulse 2.8s ease-in-out infinite;
-  }
-
-  .unavailable {
-    animation: cardPulse 2.8s ease-in-out infinite;
   }
 
   /* ==============================================

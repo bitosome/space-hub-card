@@ -1,4 +1,5 @@
 import { html, nothing, TemplateResult } from 'lit';
+import { hasUnavailableEntities } from './shared/availability';
 
 // Helpers for glow pulse colors used by tiles
 export interface PulseColors {
@@ -22,6 +23,13 @@ export const SMART_PLUG_GLOW: PulseColors = {
 export const LOCK_GLOW: PulseColors = {
   weak: 'rgba(229,57,53,0.16)',
   strong: 'rgba(229,57,53,0.30)',
+};
+
+// Tile-local fault glow. Values are supplied by the card so the existing
+// `unavailable_pulse_color` option remains authoritative.
+export const UNAVAILABLE_GLOW: PulseColors = {
+  weak: 'var(--unavail-weak, rgba(255,59,48,0.18))',
+  strong: 'var(--unavail-strong, rgba(255,59,48,0.36))',
 };
 
 // Map AC hvac mode to pulse colors
@@ -55,4 +63,18 @@ export function buildGlow(pulse: PulseColors | undefined, mode: GlowMode = 'stat
   const style = `${vars} ${animation} ${box}`;
   const overlay = html`<div class="glow-overlay" aria-hidden="true"></div>`;
   return { style, overlay };
+}
+
+export function buildTileGlow(
+  host: unknown,
+  config: unknown,
+  pulse: PulseColors | undefined,
+  mode: GlowMode = 'static',
+  active = false
+): { style: string; overlay: TemplateResult | typeof nothing; unavailable: boolean } {
+  const unavailable = hasUnavailableEntities(host, config);
+  const glow = unavailable
+    ? buildGlow(UNAVAILABLE_GLOW, 'pulse', true)
+    : buildGlow(pulse, mode, active);
+  return { ...glow, unavailable };
 }

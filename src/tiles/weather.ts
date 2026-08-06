@@ -3,6 +3,7 @@ import { html, nothing, svg, TemplateResult } from 'lit';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { actionHandler } from '../action-handler-directive';
 import { renderInteractiveChip } from '../chips';
+import { buildTileGlow } from '../glow';
 import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
 
@@ -107,6 +108,7 @@ interface MetricConfig {
   tap_action?: unknown;
   hold_action?: unknown;
   double_tap_action?: unknown;
+  valueColor?: string;
 }
 
 interface ForecastItem {
@@ -295,6 +297,37 @@ function formatEntityAuto(host: any, entityId: string | undefined): string {
   const digits = Number.isInteger(num) ? 0 : 1;
   const formatted = formatNumber(num, digits);
   return unit ? `${formatted} ${unit}` : formatted;
+}
+
+interface UvRisk {
+  label: 'Low' | 'Moderate' | 'High' | 'Very High' | 'Extreme';
+  color: string;
+}
+
+function uvRisk(index: number): UvRisk {
+  if (index < 3) return { label: 'Low', color: '#4caf50' };
+  if (index < 6) return { label: 'Moderate', color: '#fbc02d' };
+  if (index < 8) return { label: 'High', color: '#fb8c00' };
+  if (index < 11) return { label: 'Very High', color: '#e53935' };
+  return { label: 'Extreme', color: '#ab47bc' };
+}
+
+function isUvMetric(config: WeatherTileConfig, source: MetricSource, state: any): boolean {
+  const type = String(source.type || '').toLowerCase();
+  const unit = String(state?.attributes?.unit_of_measurement || '').toLowerCase();
+  const deviceClass = String(state?.attributes?.device_class || '').toLowerCase();
+  return type === 'uv'
+    || source.entity === config.uv_sensor
+    || unit.includes('uv index')
+    || deviceClass === 'ultraviolet_index';
+}
+
+function formatUvMetric(host: any, entityId?: string): { value: string; color?: string } {
+  const index = numericState(host, entityId);
+  if (index === undefined) return { value: '—' };
+  const risk = uvRisk(index);
+  const formatted = Number.isInteger(index) ? index.toFixed(0) : index.toFixed(1);
+  return { value: `${formatted} · ${risk.label}`, color: risk.color };
 }
 
 function formatTemperature(host: any, entityId?: string): string {
@@ -536,9 +569,11 @@ function buildMetrics(host: any, config: WeatherTileConfig): MetricConfig[] {
       if (m.type === 'rain') return buildRainMetric(host, m);
       const st = stateObj(host, m.entity);
       const label = m.name || st?.attributes?.friendly_name || m.entity || '';
+      const uv = isUvMetric(config, m, st) ? formatUvMetric(host, m.entity) : undefined;
       return {
         label,
-        value: formatEntityAuto(host, m.entity),
+        value: uv?.value ?? formatEntityAuto(host, m.entity),
+        valueColor: uv?.color,
         entity: m.entity,
         mdi: m.icon || undefined,
         stateEntity: m.entity,
@@ -555,7 +590,7 @@ function defaultMetricList(config: WeatherTileConfig): MetricSource[] {
     { entity: config.wind_gust_sensor, name: 'Gust' },
     { entity: config.temp_min_24h_sensor, name: '24h Min' },
     { entity: config.temp_max_24h_sensor, name: '24h Max' },
-    { entity: config.uv_sensor, name: 'UV' },
+    { type: 'uv', entity: config.uv_sensor, name: 'UV' },
     { entity: config.solar_lux_sensor, name: 'Solar' },
     { entity: config.pressure_sensor, name: 'Pressure' },
   ].filter((m) => m.entity);
@@ -1405,6 +1440,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     ? Math.max(1, Math.min(4, Math.round(metricColumnsRaw)))
     : DEFAULT_METRIC_COLUMNS;
   const stale = isWeatherStale(host, config);
+  const { style: glowStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, config, undefined, 'none', false);
   const styleParts = [
     tempSize ? `--weather-temp-size:${tempSize}px;` : '',
     iconSize ? `--weather-icon-size:${iconSize}px;--weather-icon-bg-size:${iconSize + 16}px;` : '',
@@ -1441,9 +1477,11 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   ` : nothing;
 
   return html`
-    <div class=${`tile-wrap weather-tile-wrap${stale ? ' weather-tile-stale' : ''}`} style=${heightStyle}>
-      <div class="weather-tile">
-        <div class="weather-content">
+    <div class=${`tile-wrap weather-tile-container${unavailable ? ' tile-unavailable' : ''}`} style=${heightStyle}>
+      <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
+      <div class=${`weather-tile-wrap${stale ? ' weather-tile-stale' : ''}`}>
+        <div class="weather-tile">
+          <div class="weather-content">
           <div class="weather-top">
             <div class="weather-heading">
               <div class="weather-primary">
@@ -1505,7 +1543,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                     ? renderWeatherIcon('meteocons', item.icon, 'weather-metric-icon', item.label)
                     : renderMetricStateIcon(host, item)}
                 <span class="weather-metric-label">${item.label}</span>
-                <span class="weather-metric-value">${item.value}</span>
+                <span class="weather-metric-value" style=${item.valueColor ? `color:${item.valueColor}` : nothing}>${item.value}</span>
               </div>
             `)}
           </div>
@@ -1513,26 +1551,27 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
           ${forecastSourcePicker}
           ${conditionsPanel}
           ${dailyForecast}
-        </div>
+          </div>
 
-        ${chips.length
-          ? html`<div class="weather-chips-bottom-right">
-              ${chips.map((chip: any) => html`
-                <div
-                  class="weather-chip-hit weather-clickable"
-                  role="button"
-                  tabindex="0"
-                  aria-label=${`Open ${chip?.entity || 'chip'} details`}
-                  @pointerdown=${stopTileAction}
-                  @pointerup=${stopTileAction}
-                  @click=${(ev: Event) => openMoreInfo(host, ev, chip?.entity || chip?.tap_entity)}
-                  @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, chip?.entity || chip?.tap_entity)}
-                >
-                  ${renderInteractiveChip(host, chip)}
-                </div>
-              `)}
-            </div>`
-          : nothing}
+          ${chips.length
+            ? html`<div class="weather-chips-bottom-right">
+                ${chips.map((chip: any) => html`
+                  <div
+                    class="weather-chip-hit weather-clickable"
+                    role="button"
+                    tabindex="0"
+                    aria-label=${`Open ${chip?.entity || 'chip'} details`}
+                    @pointerdown=${stopTileAction}
+                    @pointerup=${stopTileAction}
+                    @click=${(ev: Event) => openMoreInfo(host, ev, chip?.entity || chip?.tap_entity)}
+                    @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, chip?.entity || chip?.tap_entity)}
+                  >
+                    ${renderInteractiveChip(host, chip)}
+                  </div>
+                `)}
+              </div>`
+            : nothing}
+        </div>
       </div>
     </div>
   `;

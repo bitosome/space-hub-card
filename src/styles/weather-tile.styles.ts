@@ -1,7 +1,16 @@
 import { css, CSSResultGroup } from 'lit';
 
 export const weatherTileStyles: CSSResultGroup = css`
+  .weather-tile-container {
+    height: auto;
+    align-self: start;
+    overflow: visible;
+  }
+
   .weather-tile-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
     height: auto;
     align-self: start;
     border-radius: var(--tile-border-radius);
