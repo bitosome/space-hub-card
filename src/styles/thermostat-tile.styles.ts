@@ -11,4 +11,5 @@ export const thermostatTileStyles: CSSResultGroup = css`
   .thermostat-icon { color: var(--thermostat-idle-color); }
   .thermostat-icon.heating { color: var(--thermostat-heating-color); }
   .thermostat-icon.off { color: var(--thermostat-off-color); }
+  .thermostat-icon.unavailable { color: var(--status-alert-color); }
 `;

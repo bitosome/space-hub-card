@@ -2,7 +2,7 @@
 import { html, nothing, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
 import { renderIlluminanceChip, renderInteractiveChip } from '../chips';
-import { buildGlow, STATIC_GLOW } from '../glow';
+import { buildTileGlow, STATIC_GLOW } from '../glow';
 
 export function renderMainTile(host: any, h: any): TemplateResult {
   const icon = h?.icon || 'mdi:sofa-outline';
@@ -19,7 +19,7 @@ export function renderMainTile(host: any, h: any): TemplateResult {
   const glowMode = h?.glow_mode || 'static';
   const glowActive = !!h?.light_group_entity && isOn && glowMode !== 'none';
   const pulse = STATIC_GLOW; // main defaults to amber glow
-  const { style: wrapStyle, overlay: glowOverlay } = buildGlow(pulse, glowMode as any, glowActive);
+  const { style: wrapStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, h, pulse, glowMode as any, glowActive);
   const lightChipClass = `chip main-light-chip ${isOn ? 'on' : 'off'}`;
 
   const allChips: any[] = Array.isArray(h?.chips) ? (h.chips as any[]) : [];
@@ -34,7 +34,7 @@ export function renderMainTile(host: any, h: any): TemplateResult {
   };
 
   return html`
-    <div class="tile-wrap">
+    <div class=${`tile-wrap${unavailable ? ' tile-unavailable' : ''}`}>
       <!-- glow rendered as a sibling so it can appear under/around the tile -->
       <div class="glow-under" style=${wrapStyle}>${glowOverlay}</div>
       <ha-control-button

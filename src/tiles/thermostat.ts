@@ -1,31 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
-import { THERMOSTAT_HEAT_PULSE, buildGlow, GlowMode } from '../glow';
+import { THERMOSTAT_HEAT_PULSE, buildTileGlow, GlowMode } from '../glow';
+import { isEntityUnavailable } from '../shared/availability';
 
 export function renderThermostatTile(host: any, config: { entity?: string; glow_mode?: GlowMode }): TemplateResult {
   const entityId = config?.entity || '';
   const glowMode = config?.glow_mode;
   const st = host?.hass?.states?.[entityId];
+  const climateUnavailable = isEntityUnavailable(host, entityId);
   const fmt = typeof host?._fmtNumber === 'function' ? host._fmtNumber.bind(host) : (v: any) => (v === undefined || v === null ? '—' : String(v));
   const target = st?.attributes?.temperature ?? st?.attributes?.target_temp ?? st?.attributes?.target_temperature;
-  const tStr = fmt(target, 1) + '°';
+  const tStr = climateUnavailable ? '—°' : fmt(target, 1) + '°';
   const hvacAction = (st?.attributes?.hvac_action || '').toLowerCase();
   const state = (st?.state || '').toLowerCase();
-  const isHeating = (hvacAction === 'heating');
-  const thermostatState = state === 'off' ? 'off' : (isHeating ? 'heating' : 'idle');
+  const isHeating = !climateUnavailable && hvacAction === 'heating';
+  const thermostatState = climateUnavailable ? 'unavailable' : (state === 'off' ? 'off' : (isHeating ? 'heating' : 'idle'));
   const chipClass = `thermostat-chip ${thermostatState}`;
   const pillClass = `temperature-chip ${thermostatState}`;
   const iconClass = `thermostat-icon ${thermostatState}`;
   const hasHaChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
   const finalGlowMode = glowMode ?? 'static';
   const pulse = THERMOSTAT_HEAT_PULSE;
-  const { style: wrapStyle, overlay: glowOverlay } = buildGlow(pulse, finalGlowMode as any, isHeating);
+  const { style: wrapStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, config, pulse, finalGlowMode as any, isHeating);
   const onAction = (ev: CustomEvent) => {
     if (typeof host?._onThermostatAction === 'function') host._onThermostatAction(ev, config);
   };
   return html`
-    <div class="tile-wrap">
+    <div class=${`tile-wrap${unavailable ? ' tile-unavailable' : ''}`}>
       <div class="glow-under" style=${wrapStyle}>${glowOverlay}</div>
       <ha-control-button
         class="square thermostat-tile ${isHeating ? 'on' : ''}"
@@ -40,7 +42,7 @@ export function renderThermostatTile(host: any, config: { entity?: string; glow_
             : html`<div class=${pillClass}><span class="thermostat-target">${tStr}</span></div>`}
         </div>
         <div class="center-xy">
-          <ha-icon class=${iconClass} icon="mdi:thermostat"></ha-icon>
+          <ha-icon class=${iconClass} .icon=${climateUnavailable ? 'mdi:thermostat-alert' : 'mdi:thermostat'}></ha-icon>
         </div>
       </ha-control-button>
     </div>

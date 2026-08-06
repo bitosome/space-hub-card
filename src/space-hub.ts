@@ -752,13 +752,11 @@ export class SpaceHubCard extends LitElement {
       : (Number(c.main_icon_size) || Number(defaults.main_icon_size) || 48);
     const panelShadowColor = this._rgbaFromColor(c.card_shadow_color || defaults.card_shadow_color, c.card_shadow_intensity ?? defaults.card_shadow_intensity);
     const unavailColor = c.unavailable_pulse_color || defaults.unavailable_pulse_color || '#ff3b30';
-    const hasUnavail = this._hasAnyUnavailable(c, headers);
     const unavailWeak = this._rgbaFromColor(unavailColor, 0.18);
     const unavailStrong = this._rgbaFromColor(unavailColor, 0.36);
 
     return html`
-      <ha-card class=${hasUnavail ? 'unavailable' : ''}
-               style=${`--panel-shadow-color:${hasUnavail ? unavailWeak : panelShadowColor}; --unavail-weak:${unavailWeak}; --unavail-strong:${unavailStrong}`}>
+      <ha-card style=${`--panel-shadow-color:${panelShadowColor}; --unavail-weak:${unavailWeak}; --unavail-strong:${unavailStrong}`}>
         <div class="metrics" style=${`--tile-h:${tileH}px; --chip-size:${chipSize}px; --chip-icon-size:${chipIconSize}px; --main-icon-size:${mainIcon}px; --chip-font-size:${chipFont}px; --ac-thermostat-icon:${acThermostatIcon}px;`}>
           <div class="root">
             ${headers.map((h, index) => this._renderHeaderRow(h, index))}
@@ -807,6 +805,7 @@ export class SpaceHubCard extends LitElement {
     const mainRaw: any = h.main || {};
     const weatherRaw: any = h.weather || {};
     const main: any = {
+      entity: mainRaw.entity,
       tap_entity: mainRaw.tap_entity,
       hold_entity: mainRaw.hold_entity || mainRaw.tap_entity,
       glow_mode: mainRaw.glow_mode,
@@ -1839,116 +1838,6 @@ export class SpaceHubCard extends LitElement {
     return `rgba(0,0,0,${a})`;
   }
 
-  private _getAllCardEntities(c: SpaceHubConfig, h: SpaceHubHeader | SpaceHubHeader[]): string[] {
-    const ids = new Set<string>();
-    const headers: SpaceHubHeader[] = Array.isArray(h) ? h : [h];
-    const visited = new WeakSet<Record<string, unknown> | unknown[]>();
-    const entityKeys = new Set([
-      'entity',
-      'entity_id',
-      'tap_entity',
-      'hold_entity',
-      'double_tap_entity',
-      'light_group_entity',
-      'temp_sensor',
-      'temp_min_24h_sensor',
-      'temp_max_24h_sensor',
-      'humidity_sensor',
-      'feels_like_sensor',
-      'dewpoint_sensor',
-      'wind_speed_sensor',
-      'wind_gust_sensor',
-      'wind_direction_sensor',
-      'rain_state_sensor',
-      'rain_today_sensor',
-      'rain_rate_sensor',
-      'uv_sensor',
-      'solar_lux_sensor',
-      'pressure_sensor',
-      'camera_image',
-    ]);
-
-    const addEntity = (value: unknown): void => {
-      if (typeof value === 'string') {
-        if (this._isValidEntityId(value)) ids.add(value);
-      }
-    };
-
-    const collectEntityValue = (value: unknown): void => {
-      if (typeof value === 'string') {
-        addEntity(value);
-        return;
-      }
-      if (Array.isArray(value)) {
-        value.forEach((item) => {
-          if (typeof item === 'string') {
-            addEntity(item);
-          } else {
-            walk(item);
-          }
-        });
-        return;
-      }
-      walk(value);
-    };
-
-    const collectTarget = (value: unknown): void => {
-      if (!value || typeof value !== 'object') return;
-      const target = value as Record<string, unknown>;
-      collectEntityValue(target.entity_id);
-    };
-
-    const walk = (value: unknown): void => {
-      if (!value || typeof value !== 'object') return;
-      const visitable = value as Record<string, unknown> | unknown[];
-      if (visited.has(visitable)) return;
-      visited.add(visitable);
-
-      if (Array.isArray(value)) {
-        value.forEach((item) => walk(item));
-        return;
-      }
-
-      Object.entries(value as Record<string, unknown>).forEach(([key, entry]) => {
-        if (entityKeys.has(key)) {
-          collectEntityValue(entry);
-          return;
-        }
-        if (key === 'target') {
-          collectTarget(entry);
-          return;
-        }
-        if (Array.isArray(entry)) {
-          entry.forEach((item) => walk(item));
-          return;
-        }
-        if (entry && typeof entry === 'object') {
-          walk(entry);
-        }
-      });
-    };
-
-    walk(headers);
-    walk(c.switch_rows);
-    walk(c.cards);
-
-    return [...ids];
-  }
-
-  private _hasAnyUnavailable(c: SpaceHubConfig, h: SpaceHubHeader | SpaceHubHeader[]): boolean {
-    if (!this.hass) return false;
-    
-    const ids = this._getAllCardEntities(c, h);
-    const bad = new Set(['unavailable', 'unknown', 'offline']);
-    
-    return ids.some((id) => {
-      if (!id) return false;
-      const st = this.hass?.states?.[id];
-      if (!st) return true; // treat missing entity as unavailable
-      const s = (st.state || '').toLowerCase();
-      return bad.has(s);
-    });
-  }
 }
 
 // Card registration (HA UI shows in list)

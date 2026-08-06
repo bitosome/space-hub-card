@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import { actionHandler } from '../action-handler-directive';
-import { buildGlow, LOCK_GLOW, STATIC_GLOW, SMART_PLUG_GLOW } from '../glow';
+import { buildTileGlow, LOCK_GLOW, STATIC_GLOW, SMART_PLUG_GLOW } from '../glow';
 
 const joinClasses = (...parts: Array<string | false | null | undefined>): string => parts.filter(Boolean).join(' ');
 
@@ -108,12 +108,12 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   // Glow mode per-switch (static|pulse|none). Default to 'static'.
   const glowMode = sw?.glow_mode || 'static';
   const pulse = isLock ? LOCK_GLOW : (isSmart ? SMART_PLUG_GLOW : STATIC_GLOW);
-  const { style: glowStyle, overlay: glowOverlay } = buildGlow(pulse, glowMode as any, on && glowMode !== 'none');
+  const { style: glowStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, sw, pulse, glowMode as any, on && glowMode !== 'none');
 
   if (hasControlBtn) {
     const btnCls = joinClasses('switch-tile-btn', typeClass, on ? 'on' : 'off', pending && 'pending');
     return html`
-      <div class="tile-wrap">
+      <div class=${`tile-wrap${unavailable ? ' tile-unavailable' : ''}`}>
         <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
         ${infoOverlay}
         ${pendingSpinner}
@@ -140,7 +140,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   }
 
   return html`
-    <div class="tile-wrap ${tileClass}"
+    <div class=${`tile-wrap ${tileClass}${unavailable ? ' tile-unavailable' : ''}`}
          @hass-action=${onAction}
          .actionHandler=${actionHandler({ hasHold: true, hasDoubleClick: !!sw?.double_tap_action })}
          role="button" tabindex="0" aria-busy=${pending ? 'true' : 'false'}>

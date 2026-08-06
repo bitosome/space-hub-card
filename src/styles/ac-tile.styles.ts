@@ -20,6 +20,10 @@ export const acTileStyles: CSSResultGroup = css`
   .ac-chip.ac-mode-fan { background: var(--ac-chip-bg-fan); }
   .ac-chip.ac-mode-auto { background: var(--ac-chip-bg-auto); }
   .ac-chip.ac-mode-default { background: var(--ac-chip-bg-default); }
+  .ac-chip.ac-status-unavailable {
+    background: var(--chip-unavailable-background, rgba(0,0,0,0.12));
+    color: var(--status-alert-color);
+  }
 
   .ac-fan { color: var(--ac-fan-color-default); }
   .ac-fan.ac-mode-off { color: var(--ac-fan-color-off); }
@@ -29,4 +33,7 @@ export const acTileStyles: CSSResultGroup = css`
   .ac-fan.ac-mode-fan { color: var(--ac-fan-color-fan); }
   .ac-fan.ac-mode-auto { color: var(--ac-fan-color-auto); }
   .ac-fan.ac-mode-default { color: var(--ac-fan-color-default); }
+  .ac-tile.ac-unavailable .ac-fan {
+    color: var(--status-alert-color);
+  }
 `;

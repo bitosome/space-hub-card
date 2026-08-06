@@ -36,8 +36,6 @@ export const baseStyles: CSSResultGroup = css`
     position: relative;
     overflow: visible;
   }
-  ha-card.unavailable { animation: cardPulse 2.8s ease-in-out infinite; }
-
   /* Single stacking context for all tiles so every glow stays strictly below
    * every tile surface (a tile's glow can never paint over an adjacent tile). */
   .root { display: grid; gap: var(--large-gap); isolation: isolate; }
@@ -71,6 +69,7 @@ export const baseStyles: CSSResultGroup = css`
    * (z-index:0) resolve within the shared .root stacking context so a glow
    * never renders on top of a neighbouring tile. */
   .tile-wrap { position: relative; width: 100%; height: var(--tile-h); display:block; }
+  .tile-wrap.tile-unavailable { --tile-fault-color: var(--status-alert-color); }
   
   .square::part(button) { width: 100%; height: 100%; padding: 0; margin: 0; box-sizing: border-box; border-radius: var(--tile-border-radius); overflow: hidden; clip-path: inset(0 round var(--tile-border-radius)); background-clip: padding-box; }
 

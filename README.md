@@ -281,7 +281,7 @@ Weather is configured at `headers[].weather`.
 | `rain_state_sensor` | entity ID | Binary rain state fallback. |
 | `rain_rate_sensor` | entity ID | Rain rate sensor. Preferred for current raining state. |
 | `rain_rate_threshold` | number | Minimum rain rate that counts as raining. Default is `0`. |
-| `uv_sensor` | entity ID | UV index sensor. |
+| `uv_sensor` | entity ID | UV index sensor. Displays the numeric index with a color-coded Low, Moderate, High, Very High, or Extreme risk level. |
 | `solar_lux_sensor` | entity ID | Solar/lux sensor. Displayed in the sensor unit, for example `lx`. |
 | `pressure_sensor` | entity ID | Pressure sensor. |
 
