@@ -34,6 +34,20 @@ export const acTileStyles: CSSResultGroup = css`
   .ac-fan.ac-mode-auto { color: var(--ac-fan-color-auto); }
   .ac-fan.ac-mode-default { color: var(--ac-fan-color-default); }
   .ac-tile.ac-unavailable .ac-fan {
-    color: var(--status-alert-color);
+    color: var(--disabled-text-color, var(--secondary-text-color));
+  }
+  .ac-center-unavailable {
+    position: relative;
+  }
+  .ac-center-unavailable::after {
+    content: '';
+    position: absolute;
+    width: var(--ac-thermostat-icon);
+    height: 4px;
+    border: 2px solid var(--ha-card-background, var(--card-background-color));
+    border-radius: 999px;
+    background: var(--status-alert-color);
+    box-shadow: 0 0 5px rgba(229, 57, 53, 0.45);
+    transform: rotate(-45deg) scaleX(0.9);
   }
 `;
