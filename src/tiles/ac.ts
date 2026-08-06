@@ -18,8 +18,6 @@ export function renderACTile(host: any, config: { entity?: string; glow_mode?: G
   const modeClass = `ac-mode-${normalizeAcMode(mode)}`;
   const chipClasses = `chip chip-temperature-humidity ac-chip ${climateUnavailable ? 'ac-status-unavailable' : modeClass}`;
   const fanClasses = `ac-fan ${modeClass}${active ? ' spinning' : ''}`;
-  const centerIcon = climateUnavailable ? 'mdi:air-conditioner' : 'mdi:fan';
-  const centerClasses = `center-xy${climateUnavailable ? ' ac-center-unavailable' : ''}`;
   const pulse = acPulseColors(mode);
   const finalGlowMode = glowMode ?? 'static';
   const { style: wrapStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, config, pulse, finalGlowMode as any, active);
@@ -38,8 +36,8 @@ export function renderACTile(host: any, config: { entity?: string; glow_mode?: G
         <div class=${chipClasses}>
           <ha-icon .icon=${icon}></ha-icon>
         </div>
-        <div class=${centerClasses}>
-          <ha-icon class=${fanClasses} .icon=${centerIcon}></ha-icon>
+        <div class="center-xy">
+          <ha-icon class=${fanClasses} icon="mdi:fan"></ha-icon>
         </div>
       </ha-control-button>
     </div>
