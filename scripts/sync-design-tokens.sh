@@ -27,6 +27,7 @@ BANNER="// AUTO-SYNCED from space-hub-card/src/shared/design-tokens.ts — DO NO
 # TypeScript/Lit consumers that vendor a copy of the module.
 TS_TARGETS=(
   "$SIBLINGS_ROOT/real-electricity-price-card/src/shared/design-tokens.ts"
+  "$SIBLINGS_ROOT/smartevse-dual-charger-card/src/shared/design-tokens.ts"
 )
 
 updated=0
@@ -43,7 +44,3 @@ done
 
 echo
 echo "Synced $updated TypeScript target(s)."
-echo "NOTE: smartevse-dual-charger-card is vanilla JS and embeds the tokens inline"
-echo "      in the :host block of smartevse-dual-charger-card.js. Keep the token"
-echo "      values in that file in sync with $SOURCE manually until it is migrated"
-echo "      to the TS/Lit build (see README)."
