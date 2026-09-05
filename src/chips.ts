@@ -130,7 +130,9 @@ function getChipStyling(
   if (isLockType(type, entity)) {
     const base = isActive
       ? { bg: '#66bb6a', iconColor: '#ffffff' }
-      : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
+      : ['unlocked', 'open'].includes(state)
+        ? { bg: '#e53935', iconColor: '#ffffff' }
+        : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
     return applyStylingOverrides(base, config, isActive);
   }
   

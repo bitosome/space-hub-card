@@ -59,11 +59,16 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const type = String(sw?.type || 'switch').toLowerCase();
   const isSmart = type === 'smart_plug';
   const isLock = type === 'lock' || tap.startsWith('lock.');
+  const isGate = type === 'gate' || type === 'sliding_gate';
+  // Share lock warning colors without changing the gate's action semantics.
+  const isSecurity = isLock || isGate;
   const state = String(host?.hass?.states?.[tap]?.state || '').toLowerCase();
   const matchesStates = (states: unknown): boolean => Array.isArray(states)
     && !['', 'unknown', 'unavailable'].includes(state)
     && states.some((value) => typeof value === 'string' && value.toLowerCase() === state);
-  const on = Array.isArray(sw?.active_states) ? matchesStates(sw.active_states) : typeof host?._isSwitchActive === 'function'
+  const on = Array.isArray(sw?.active_states) ? matchesStates(sw.active_states) : isGate
+    ? ['on', 'open', 'opening', 'closing'].includes(state)
+    : typeof host?._isSwitchActive === 'function'
     ? host._isSwitchActive(tap, type)
     : (isLock
       ? (host?.hass?.states?.[tap]?.state || '').toLowerCase() === 'unlocked'
@@ -87,7 +92,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const chipStyle = `${iconDim ? `--switch-icon-size:${iconDim};` : ''}${nameWeight ? `font-weight:${nameWeight};` : ''}${nameDim ? `--chip-text-font-size:${nameDim};font-size:${nameDim};` : ''}`;
   const hasChip = typeof customElements !== 'undefined' && !!customElements.get('ha-chip');
   const hasControlBtn = typeof customElements !== 'undefined' && !!customElements.get('ha-control-button');
-  const typeClass = isSmart ? 'smart' : (isLock ? 'lock' : '');
+  const typeClass = isSmart ? 'smart' : (isSecurity ? 'lock' : '');
   const stateClass = on ? 'on' : 'off';
   const chipClass = joinClasses('switch-chip', typeClass, stateClass);
   const iconClass = joinClasses('switch-icon', typeClass, stateClass);
@@ -112,7 +117,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
 
   // Glow mode per-switch (static|pulse|none). Default to 'static'.
   const glowMode = sw?.glow_mode || 'static';
-  const pulse = isLock ? LOCK_GLOW : (isSmart ? SMART_PLUG_GLOW : STATIC_GLOW);
+  const pulse = isSecurity ? LOCK_GLOW : (isSmart ? SMART_PLUG_GLOW : STATIC_GLOW);
   const { style: glowStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, sw, pulse, glowMode as any, on && glowMode !== 'none');
 
   if (hasControlBtn) {
