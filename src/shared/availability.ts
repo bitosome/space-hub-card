@@ -75,7 +75,11 @@ export function isEntityUnavailable(host: any, entityId?: string): boolean {
   if (!entityId || !host?.hass) return false;
   const stateObj = host.hass.states?.[entityId];
   if (!stateObj) return true;
-  return UNAVAILABLE_STATES.has(String(stateObj.state ?? '').toLowerCase());
+  const state = String(stateObj.state ?? '').toLowerCase();
+  // Buttons store their last press time. Unknown is normal before the first press.
+  const domain = entityId.split('.')[0];
+  if (state === 'unknown' && (domain === 'button' || domain === 'input_button')) return false;
+  return UNAVAILABLE_STATES.has(state);
 }
 
 export function hasUnavailableEntities(host: any, config: unknown): boolean {

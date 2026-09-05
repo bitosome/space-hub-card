@@ -35,6 +35,8 @@ jobs:
         run: npm run test:locks
       - name: Test telemetry tile states
         run: npm run test:states
+      - name: Test button availability
+        run: npm run test:availability
         
       - name: Create Release
         uses: softprops/action-gh-release@v2.6.1

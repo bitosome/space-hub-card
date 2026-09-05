@@ -1,4 +1,4 @@
-export const CARD_VERSION = '2.0.77';
+export const CARD_VERSION = '2.0.78';
 
 export function clone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
