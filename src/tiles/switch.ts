@@ -59,7 +59,11 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const type = String(sw?.type || 'switch').toLowerCase();
   const isSmart = type === 'smart_plug';
   const isLock = type === 'lock' || tap.startsWith('lock.');
-  const on = typeof host?._isSwitchActive === 'function'
+  const state = String(host?.hass?.states?.[tap]?.state || '').toLowerCase();
+  const matchesStates = (states: unknown): boolean => Array.isArray(states)
+    && !['', 'unknown', 'unavailable'].includes(state)
+    && states.some((value) => typeof value === 'string' && value.toLowerCase() === state);
+  const on = Array.isArray(sw?.active_states) ? matchesStates(sw.active_states) : typeof host?._isSwitchActive === 'function'
     ? host._isSwitchActive(tap, type)
     : (isLock
       ? (host?.hass?.states?.[tap]?.state || '').toLowerCase() === 'unlocked'
@@ -95,7 +99,8 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
     ? resolvedTemplates.map((entry: any) => (entry && typeof entry === 'object' ? entry.value : entry)).slice(0, 2)
     : [];
   const infoOverlay = renderTemplateInfo(templateLines, joinClasses('switch-info', typeClass, stateClass));
-  const pending = typeof host?._isSwitchPending === 'function' ? host._isSwitchPending(tap) : false;
+  const pending = matchesStates(sw?.pending_states)
+    || (typeof host?._isSwitchPending === 'function' ? host._isSwitchPending(tap) : false);
   const pendingSpinner = pending
     ? html`<span class=${joinClasses('switch-pending-spinner', typeClass, stateClass)} aria-hidden="true"></span>`
     : nothing;

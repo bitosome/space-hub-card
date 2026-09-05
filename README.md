@@ -563,6 +563,8 @@ switch_rows:
 | `hold_action` | object | Optional action override. |
 | `double_tap_action` | object | Optional action override. |
 | `info_templates` | array | Up to two Home Assistant templates shown on the tile. |
+| `active_states` | array | Optional entity states that activate tile colour and glow, instead of the default on/unlocked rule. An empty list disables active styling. |
+| `pending_states` | array | Optional entity states that show the pending spinner, including changes started outside this dashboard. Unknown/unavailable never activate these state lists. |
 
 ### Switch Confirmation
 
