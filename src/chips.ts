@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import type { HomeAssistant } from 'custom-card-helpers';
-import { isEntityActive, isLockType } from './shared/state';
+import { isEntityActive, isLockType, isLockTransition } from './shared/state';
 
 // ==============================================
 // CHIP SYSTEM INTERFACES
@@ -13,6 +13,7 @@ interface CardHost extends HTMLElement {
   _fmt2?: (entity?: string | undefined, digits?: number, suffix?: string) => string;
   _openMoreInfo?: (entity?: string | null) => void;
   _toggleByDomain?: (entity?: string | null) => void;
+  _isSwitchPending?: (entity?: string | null) => boolean;
 }
 
 // Minimal chip config interface (only fields used by chips)
@@ -211,12 +212,16 @@ export function renderInteractiveChip(host: CardHost, c: ChipConfig): TemplateRe
   const isUnavailable = !entityState || state === 'unavailable' || state === 'unknown' || state === '';
   const isActive = !isUnavailable && isEntityActive(entity, state, type);
 
-  const icon = getChipIcon(type, entity, state, c, isActive, isUnavailable);
-  const { bg, iconColor } = getChipStyling(type, entity, state, c, isActive, isUnavailable);
+  const pending = !isUnavailable && isLockType(type, entity)
+    && (isLockTransition(state) || !!host._isSwitchPending?.(entity));
+  const icon = pending ? 'mdi:loading' : getChipIcon(type, entity, state, c, isActive, isUnavailable);
+  const { bg, iconColor } = pending
+    ? { bg: 'var(--warning-color, #ff9800)', iconColor: '#ffffff' }
+    : getChipStyling(type, entity, state, c, isActive, isUnavailable);
 
   const chipClass = `chip${isUnavailable ? ' chip-unavailable' : ''}`;
-  const iconClass = isUnavailable ? 'icon-unavailable' : '';
-  const readableState = entityState?.state ?? 'unavailable';
+  const iconClass = isUnavailable ? 'icon-unavailable' : (pending ? 'spinning' : '');
+  const readableState = pending && !isLockTransition(state) ? 'pending' : (entityState?.state ?? 'unavailable');
   const ariaLabel = type ? `${type} ${readableState}` : readableState;
 
   return html`
@@ -227,6 +232,7 @@ export function renderInteractiveChip(host: CardHost, c: ChipConfig): TemplateRe
       data-state=${state || 'unavailable'}
       role="img"
       aria-label=${ariaLabel}
+      aria-busy=${pending ? 'true' : 'false'}
     >
       <ha-icon .icon=${icon} class=${iconClass} style=${`color:${iconColor}`}></ha-icon>
     </div>

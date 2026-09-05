@@ -26,6 +26,7 @@ import { weatherTileStyles } from './styles/weather-tile.styles';
 import { acTileStyles } from './styles/ac-tile.styles';
 import { thermostatTileStyles } from './styles/thermostat-tile.styles';
 import { switchTileStyles } from './styles/switch-tile.styles';
+import { isLockTransition } from './shared/state';
 
 interface SwitchTemplateEntry {
   value: string;
@@ -1817,7 +1818,9 @@ export class SpaceHubCard extends LitElement {
   }
 
   public _isSwitchPending(entityId?: string | null): boolean {
-    return !!entityId && this._visiblePendingSwitches.has(entityId);
+    if (!entityId) return false;
+    return this._visiblePendingSwitches.has(entityId)
+      || (entityId.startsWith('lock.') && isLockTransition(this._entityState(entityId)));
   }
 
   private _rgbaFromColor(color: string | undefined, alpha = 0.5): string {

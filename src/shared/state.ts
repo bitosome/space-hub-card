@@ -20,6 +20,11 @@ export function isLockType(type?: string, entity?: string): boolean {
   return type === 'lock' || (entity?.startsWith('lock.') ?? false);
 }
 
+/** Lock movement reported by HA, including commands from other clients. */
+export function isLockTransition(state: string | undefined): boolean {
+  return ['locking', 'unlocking', 'opening'].includes((state || '').toLowerCase());
+}
+
 /** True when an entity is in an "active" state, honoring lock semantics. */
 export function isEntityActive(entity: string | undefined, state: string, type?: string): boolean {
   if (!state) return false;
