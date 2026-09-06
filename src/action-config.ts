@@ -109,7 +109,8 @@ export const hasActionOverride = (value: ActionHolder | undefined | null): boole
   !!(value?.tap_action || value?.hold_action || value?.double_tap_action);
 
 export const normalizeConfirmation = (value: unknown): boolean | SpaceHubConfirmationConfig | undefined => {
-  if (value === undefined || value === null || value === false) return undefined;
+  if (value === undefined || value === null) return undefined;
+  if (value === false) return false;
   if (value === true) return true;
   if (typeof value === 'string') {
     const text = value.trim();

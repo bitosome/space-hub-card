@@ -547,7 +547,7 @@ switch_rows:
 | --- | --- | --- |
 | `entity` | entity ID | Controlled entity. |
 | `name` | string | Display name. |
-| `type` | string | `switch`, `smart_plug`, or `lock`. |
+| `type` | string | `switch`, `smart_plug`, `lock`, `gate`, or `sliding_gate`. Gates share the lock warning colors. |
 | `icon` | icon | Base icon. |
 | `icon_active` | icon | Active-state icon. |
 | `icon_inactive` | icon | Inactive-state icon. |
@@ -558,7 +558,7 @@ switch_rows:
 | `font_weight` | string or number | Label font weight. |
 | `glow_mode` | string | `static`, `pulse`, or `none`. |
 | `hold_entity` | entity ID | Entity opened by default hold more-info. |
-| `confirmation` | boolean or object | Confirmation for default tap action. |
+| `confirmation` | boolean or object | Legacy/default tap confirmation. An explicit action-level setting, including `false`, takes precedence. |
 | `tap_action` | object | Optional action override. |
 | `hold_action` | object | Optional action override. |
 | `double_tap_action` | object | Optional action override. |
@@ -567,6 +567,12 @@ switch_rows:
 | `pending_states` | array | Optional entity states that show the pending spinner, including changes started outside this dashboard. Unknown/unavailable never activate these state lists. |
 
 ### Switch Confirmation
+
+In the visual editor, expand a tile, open **Actions**, choose the gesture, and set **Require confirmation**. There is one effective setting per gesture. All actions use Home Assistant's native confirmation dialog, including translated defaults and user exemptions; there is no card-specific dialog.
+
+Existing tile-level `confirmation` remains supported for dynamic default actions (including lock/unlock). Explicit actions use `tap_action.confirmation`, `hold_action.confirmation`, or `double_tap_action.confirmation`. An explicit `false` overrides legacy confirmation. Editing an explicit tap's confirmation removes the competing legacy setting while preserving targets, action data, and exemptions. Native action-type changes retain confirmation settings.
+
+While a confirmation is unanswered, the card does not show an optimistic command spinner. Device-reported transitions such as `unlocking` still animate, including actions initiated elsewhere.
 
 ```yaml
 switch_rows:
@@ -733,20 +739,23 @@ card_mod:
 
 The visual editor supports:
 
-- Header row creation and reordering.
+- Header row creation and native drag-and-drop reordering.
 - Weather tile configuration.
 - Main tile configuration.
 - AC and thermostat tile configuration.
-- Chip editing.
+- Chip editing and reordering.
 - Weather metric editing and reordering.
-- Switch row and switch tile editing.
-- Switch action editing.
-- Switch confirmation editing.
+- Collapsible tile settings and native drag-and-drop ordering of rows and tiles.
+- Home Assistant action/service/target selectors and native text, number, entity, and icon controls.
+- One confirmation setting per action, including legacy/default tap settings.
+- Active and pending state overrides, including intentional empty lists.
 - Switch template indicators.
-- Embedded-card YAML editing.
+- Native embedded-card visual editors with a visual/YAML toggle.
 - YAML mode for direct configuration.
 
 The editor tolerates incomplete in-progress items while you are building a dashboard.
+
+Drag the handle to reorder headers, rows, tiles, badges, weather metrics, and embedded cards. Focus a handle and use the up/down arrow keys to reorder without dragging. Selected header/row contents follow their new position; reordering retains all configuration, including advanced YAML fields. Tiles reorder within their current row, not across rows.
 
 ## Troubleshooting
 

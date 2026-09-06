@@ -10,11 +10,10 @@ import { clone } from './const';
 // Chip types supported by the card
 const CHIP_TYPES = ['lock', 'door', 'presence', 'illuminance', 'gate', 'sliding_gate', 'smart_plug', 'custom'] as const;
 // Switch tile types
-const SWITCH_TYPES = ['switch', 'smart_plug', 'lock'] as const;
+const SWITCH_TYPES = ['switch', 'smart_plug', 'lock', 'gate', 'sliding_gate'] as const;
 // Glow modes
 const GLOW_MODES = ['static', 'pulse', 'none'] as const;
-// Action types supported by HA
-const ACTION_TYPES = ['more-info', 'toggle', 'perform-action', 'navigate', 'url', 'assist', 'none'] as const;
+
 const ARROW_UP_ICON_PATH = 'M4,12L5.41,13.41L11,7.83V20H13V7.83L18.59,13.42L20,12L12,4L4,12Z';
 const ARROW_DOWN_ICON_PATH = 'M4,12L5.41,10.59L11,16.17V4H13V16.17L18.59,10.58L20,12L12,20L4,12Z';
 const DELETE_ICON_PATH = 'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z';
@@ -27,6 +26,7 @@ const DEFAULT_DAILY_FORECAST_ICON_SIZE = 16;
 
 @customElement('space-hub-textfield')
 export class SpaceHubTextfield extends LitElement {
+  @property({ attribute: false }) public hass!: HomeAssistant;
   @property() public label = '';
   @property() public value = '';
   @property() public placeholder = '';
@@ -36,84 +36,30 @@ export class SpaceHubTextfield extends LitElement {
   @property() public max?: string;
   @property({ type: Boolean, reflect: true }) public disabled = false;
 
-  private _onInput(ev: Event): void {
-    ev.stopPropagation();
-    if (this.disabled) return;
-    this.value = (ev.currentTarget as HTMLInputElement).value;
-    this.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-  }
-
   protected render(): TemplateResult {
+    const numeric = this.type === 'number';
+    const numberOptions: Record<string, unknown> = { mode: 'box' };
+    for (const key of ['min', 'max', 'step'] as const) {
+      if (this[key] !== undefined) numberOptions[key] = Number(this[key]);
+    }
     return html`
-      <label>
-        <span>${this.label}</span>
-        <input
-          type=${this.type || 'text'}
-          aria-label=${this.label}
-          .value=${this.value || ''}
-          placeholder=${this.placeholder || ''}
-          step=${this.step || nothing}
-          min=${this.min || nothing}
-          max=${this.max || nothing}
-          ?disabled=${this.disabled}
-          @input=${this._onInput}
-        />
-      </label>
+      <ha-form .hass=${this.hass}
+        .data=${{ value: numeric && this.value !== '' ? Number(this.value) : this.value }}
+        .schema=${[{ name: 'value', selector: numeric ? { number: numberOptions } : { text: {} } }]}
+        .disabled=${this.disabled}
+        .computeLabel=${() => this.label}
+        .computeHelper=${() => this.placeholder}
+        @value-changed=${(ev: CustomEvent) => {
+          ev.stopPropagation();
+          if (this.disabled) return;
+          this.value = String(ev.detail.value?.value ?? '');
+          this.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+        }}
+      ></ha-form>
     `;
   }
 
-  static get styles(): CSSResultGroup {
-    return css`
-      :host {
-        display: block;
-        width: 100%;
-      }
-      :host([disabled]) {
-        opacity: 0.64;
-      }
-      label {
-        position: relative;
-        display: block;
-        width: 100%;
-      }
-      span {
-        position: absolute;
-        top: 7px;
-        left: 12px;
-        z-index: 1;
-        color: var(--secondary-text-color);
-        font-size: 11px;
-        line-height: 1;
-        pointer-events: none;
-      }
-      input {
-        width: 100%;
-        height: 56px;
-        box-sizing: border-box;
-        border: 0;
-        border-bottom: 1px solid var(--input-idle-line-color, var(--secondary-text-color));
-        border-radius: 4px 4px 0 0;
-        outline: none;
-        background: var(--input-fill-color, var(--secondary-background-color, rgba(0,0,0,0.06)));
-        color: var(--primary-text-color);
-        font: inherit;
-        font-size: 14px;
-        padding: 22px 12px 7px;
-      }
-      input:focus {
-        border-bottom-color: var(--primary-color);
-      }
-      input:disabled {
-        cursor: not-allowed;
-        border-bottom-color: var(--disabled-text-color, var(--secondary-text-color));
-        color: var(--disabled-text-color, var(--secondary-text-color));
-      }
-      input::placeholder {
-        color: var(--secondary-text-color);
-        opacity: 0.72;
-      }
-    `;
-  }
+  static styles = css`:host { display: block; width: 100%; }`;
 }
 
 @customElement('space-hub-card-editor')
@@ -139,11 +85,22 @@ export class SpaceHubCardEditor extends LitElement {
   private async _loadHAElements(): Promise<void> {
     if (this._haElementsRequested) return;
     this._haElementsRequested = true;
+    const withTimeout = (tag: string) =>
+      Promise.race([
+        customElements.whenDefined(tag),
+        new Promise((resolve) => setTimeout(resolve, 1500)),
+      ]);
 
     try {
       const helpers = await (window as any).loadCardHelpers?.();
       if (helpers) {
-        await helpers.createCardElement?.({ type: 'entities', entities: [] });
+        for (const config of [{ type: 'entities', entities: [] }, { type: 'tile', entity: 'sun.sun' }, { type: 'vertical-stack', cards: [] }]) {
+          const card = await helpers.createCardElement?.(config);
+          if (card) card.hass = this.hass;
+          const tag = `hui-${config.type}-card`;
+          await withTimeout(tag);
+          await (customElements.get(tag) as any)?.getConfigElement?.();
+        }
       }
     } catch (_) { /* ignore */ }
 
@@ -151,17 +108,14 @@ export class SpaceHubCardEditor extends LitElement {
     const needed = [
       'ha-form',
       'ha-formfield',
-      'ha-icon-picker',
+      'ha-selector',
       'ha-switch',
-      'space-hub-textfield',
+      'ha-sortable',
+      'hui-action-editor',
+      'hui-card-element-editor',
       'ha-expansion-panel',
       'ha-yaml-editor',
     ];
-    const withTimeout = (tag: string) =>
-      Promise.race([
-        customElements.whenDefined(tag),
-        new Promise((resolve) => setTimeout(resolve, 1500)),
-      ]);
     try {
       await Promise.all(needed.map(withTimeout));
     } catch (_err) {
@@ -221,154 +175,121 @@ export class SpaceHubCardEditor extends LitElement {
     return Math.min(Math.max(index, 0), count - 1);
   }
 
-  private _moveArrayItem(path: string, index: number, delta: -1 | 1): boolean {
-    const current = this._getNestedValue(path);
-    if (!Array.isArray(current)) return false;
-    const nextIndex = index + delta;
-    if (nextIndex < 0 || nextIndex >= current.length) return false;
-
+  private _reorderArray(path: string, oldIndex: number, newIndex: number, fallback: any[] = []): boolean {
+    const current = this._getNestedValue(path) ?? fallback;
+    if (!Array.isArray(current) || !Number.isInteger(oldIndex) || !Number.isInteger(newIndex)
+      || oldIndex < 0 || newIndex < 0 || oldIndex >= current.length || newIndex >= current.length
+      || oldIndex === newIndex) return false;
+    const selectedIndex = path === 'headers' ? this._selectedHeaderIndex : this._selectedSwitchRowIndex;
+    const selected = current[this._clampIndex(selectedIndex, current.length)];
     const next = [...current];
-    const [item] = next.splice(index, 1);
-    next.splice(nextIndex, 0, item);
+    const [item] = next.splice(oldIndex, 1);
+    next.splice(newIndex, 0, item);
+    if (path === 'headers') this._selectedHeaderIndex = next.indexOf(selected);
+    if (path === 'switch_rows') this._selectedSwitchRowIndex = next.indexOf(selected);
     this._valueChanged(path, next);
     return true;
   }
 
-  private _moveSwitchRow(index: number, delta: -1 | 1): void {
-    const rows = this._config.switch_rows;
-    if (!Array.isArray(rows)) return;
-    const nextIndex = index + delta;
-    if (nextIndex < 0 || nextIndex >= rows.length) return;
+  private _moveArrayItem(path: string, index: number, delta: -1 | 1): boolean {
+    return this._reorderArray(path, index, index + delta);
+  }
 
-    const next = [...rows];
-    const [row] = next.splice(index, 1);
-    next.splice(nextIndex, 0, row);
-    this._selectedSwitchRowIndex = nextIndex;
-    this._valueChanged('switch_rows', next);
+  private _moveSwitchRow(index: number, delta: -1 | 1): void {
+    this._reorderArray('switch_rows', index, index + delta);
   }
 
   private _moveHeader(index: number, delta: -1 | 1): void {
-    const headers = this._config.headers;
-    if (!Array.isArray(headers)) return;
-    const nextIndex = index + delta;
-    if (nextIndex < 0 || nextIndex >= headers.length) return;
+    this._reorderArray('headers', index, index + delta);
+  }
 
-    const next = [...headers];
-    const [header] = next.splice(index, 1);
-    next.splice(nextIndex, 0, header);
-    this._selectedHeaderIndex = nextIndex;
-    this._valueChanged('headers', next);
+  private _renderSortable(path: string, items: any[], renderItem: (item: any, index: number) => TemplateResult): TemplateResult {
+    return html`
+      <ha-sortable data-path=${path} handle-selector=".drag-handle" draggable-selector=".sortable-item"
+        @item-moved=${(ev: CustomEvent) => {
+          ev.stopPropagation();
+          this._reorderArray(path, ev.detail.oldIndex, ev.detail.newIndex, items);
+        }}>
+        <div class="sortable-list">
+          ${items.map((item, index) => html`
+            <div class="sortable-item">
+              <ha-icon-button class="drag-handle" .label=${'Reorder item ' + (index + 1) + '. Use arrow keys to move.'}
+                .path=${'M7,19H9V17H7V19M15,17H17V19H15V17M7,13H9V11H7V13M15,11H17V13H15V11M7,7H9V5H7V7M15,5H17V7H15V5Z'}
+                @keydown=${(ev: KeyboardEvent) => {
+                  if (!['ArrowUp', 'ArrowDown'].includes(ev.key)) return;
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  const next = index + (ev.key === 'ArrowUp' ? -1 : 1);
+                  if (this._reorderArray(path, index, next, items)) {
+                    const sortable = (ev.currentTarget as HTMLElement).closest('ha-sortable');
+                    void this.updateComplete.then(() => {
+                      (sortable?.querySelectorAll<HTMLElement>(':scope > .sortable-list > .sortable-item > .drag-handle')[next])?.focus();
+                    });
+                  }
+                }}>
+              </ha-icon-button>
+              <div class="sortable-content">${renderItem(item, index)}</div>
+            </div>
+          `)}
+        </div>
+      </ha-sortable>
+    `;
   }
 
   private _handleSelectChanged(path: string, nextValue?: string): void {
-    const parts = path.split('.');
-    const lastKey = parts[parts.length - 1];
-    const parentKey = parts[parts.length - 2];
-    if (lastKey === 'action' && ['tap_action', 'hold_action', 'double_tap_action'].includes(parentKey)) {
-      this._handleActionTypeChanged(parts.slice(0, -1).join('.'), nextValue);
-      return;
-    }
     this._valueChanged(path, nextValue);
   }
 
-  private _handleActionTypeChanged(path: string, nextType?: string): void {
-    if (!nextType) {
-      this._valueChanged(path, undefined);
-      return;
-    }
+  private _actionContext(path: string): { parentPath: string; parent: any; switchTap: boolean } {
+    const parentPath = path.slice(0, path.lastIndexOf('.'));
+    return {
+      parentPath,
+      parent: this._getNestedValue(parentPath) || {},
+      switchTap: path.startsWith('switch_rows.') && path.endsWith('.tap_action'),
+    };
+  }
 
-    const current = normalizeActionConfig(this._getNestedValue(path));
-    const next: Record<string, any> = current ? { ...current } : {};
-    next.action = nextType;
+  private _effectiveConfirmation(path: string): ReturnType<typeof normalizeConfirmation> {
+    const { parent, switchTap } = this._actionContext(path);
+    const action = normalizeActionConfig(this._getNestedValue(path));
+    return normalizeConfirmation(action?.confirmation ?? (switchTap ? parent.confirmation : undefined));
+  }
 
-    if (nextType !== 'more-info') delete next.entity;
-    if (nextType !== 'navigate') {
-      delete next.navigation_path;
-      delete next.navigation_replace;
+  private _updateAction(path: string, value: unknown): void {
+    const { parentPath, parent, switchTap } = this._actionContext(path);
+    const key = path.slice(path.lastIndexOf('.') + 1);
+    const action = normalizeActionConfig(value);
+    const confirmation = action?.confirmation ?? this._effectiveConfirmation(path);
+    const next = { ...parent };
+    if (action) {
+      next[key] = { ...action, ...(confirmation !== undefined ? { confirmation } : {}) };
+      if (switchTap) delete next.confirmation;
+    } else {
+      delete next[key];
+      // Keep the dynamic default lock action rather than freezing lock/unlock.
+      if (switchTap && confirmation !== undefined) next.confirmation = confirmation;
     }
-    if (nextType !== 'url') delete next.url_path;
-    if (nextType !== 'perform-action') {
-      delete next.perform_action;
-      delete next.data;
-      delete next.target;
-      delete next.service;
-      delete next.service_data;
-    }
-    if (nextType !== 'assist') {
-      delete next.pipeline_id;
-      delete next.start_listening;
-    }
-
-    if (nextType === 'perform-action' && !next.perform_action) next.perform_action = '';
-    if (nextType === 'navigate' && !next.navigation_path) next.navigation_path = '';
-    if (nextType === 'url' && !next.url_path) next.url_path = '';
-    if (nextType === 'assist' && next.start_listening === undefined) next.start_listening = false;
-
-    this._valueChanged(path, next);
+    this._valueChanged(parentPath, next);
   }
 
   private _setActionConfirmation(path: string, enabled: boolean): void {
-    const current = normalizeActionConfig(this._getNestedValue(path));
-    if (!current) return;
-    const next: Record<string, any> = { ...current };
-    if (enabled) {
-      const confirmation = normalizeConfirmation(next.confirmation);
-      next.confirmation = confirmation && typeof confirmation === 'object'
-        ? confirmation
-        : { title: 'Please confirm', text: 'Are you sure?' };
-    } else {
-      delete next.confirmation;
-    }
-    this._valueChanged(path, next);
+    const current = this._effectiveConfirmation(path);
+    this._writeActionConfirmation(path, enabled ? (current || true) : false);
   }
 
-  private _setActionConfirmationField(path: string, field: 'title' | 'text' | 'confirm_text' | 'dismiss_text', value: string): void {
-    const current = normalizeActionConfig(this._getNestedValue(path));
-    if (!current) return;
-    const next: Record<string, any> = { ...current };
-    const confirmation = normalizeConfirmation(next.confirmation);
-    const nextConfirmation: Record<string, any> = confirmation && typeof confirmation === 'object'
-      ? { ...confirmation }
-      : {};
-
-    if (value.trim()) {
-      nextConfirmation[field] = value;
+  private _writeActionConfirmation(path: string, confirmation: ReturnType<typeof normalizeConfirmation>): void {
+    const { parentPath, parent, switchTap } = this._actionContext(path);
+    const key = path.slice(path.lastIndexOf('.') + 1);
+    const action = normalizeActionConfig(this._getNestedValue(path));
+    if (!action && !switchTap) return;
+    const next = { ...parent };
+    if (action) {
+      next[key] = { ...action, confirmation };
+      if (switchTap) delete next.confirmation;
     } else {
-      delete nextConfirmation[field];
+      next.confirmation = confirmation;
     }
-
-    next.confirmation = Object.keys(nextConfirmation).length ? nextConfirmation : true;
-    this._valueChanged(path, next);
-  }
-
-  private _setSwitchConfirmation(path: string, enabled: boolean): void {
-    if (!enabled) {
-      this._valueChanged(path, undefined);
-      return;
-    }
-
-    const current = normalizeConfirmation(this._getNestedValue(path));
-    this._valueChanged(
-      path,
-      current && typeof current === 'object'
-        ? current
-        : { title: 'Please confirm', text: 'Are you sure?' }
-    );
-  }
-
-  private _setSwitchConfirmationField(path: string, field: 'title' | 'text' | 'confirm_text' | 'dismiss_text', value: string): void {
-    const current = normalizeConfirmation(this._getNestedValue(path));
-    const next: Record<string, any> = current && typeof current === 'object'
-      ? { ...current }
-      : {};
-
-    if (value.trim()) {
-      next[field] = value;
-    } else {
-      delete next[field];
-    }
-
-    this._valueChanged(path, Object.keys(next).length ? next : true);
+    this._valueChanged(parentPath, next);
   }
 
   private _setSwitchInactiveIcon(path: string, value?: string): void {
@@ -487,7 +408,7 @@ export class SpaceHubCardEditor extends LitElement {
   private _yamlChanged(ev: CustomEvent): void {
     ev.stopPropagation();
     const yaml = ev.detail.value;
-    if (!yaml || typeof yaml !== 'object') {
+    if (ev.detail.isValid === false || !yaml || typeof yaml !== 'object' || Array.isArray(yaml)) {
       this._yamlError = 'Invalid YAML';
       return;
     }
@@ -514,7 +435,7 @@ export class SpaceHubCardEditor extends LitElement {
       <ha-expansion-panel outlined .header=${'Appearance'}>
         <div class="section-content">
           <div class="side-by-side">
-            <space-hub-textfield
+            <space-hub-textfield .hass=${this.hass}
               label="Tile Height (px)"
               type="number"
               .value=${String(this._config.tile_height ?? '')}
@@ -523,7 +444,7 @@ export class SpaceHubCardEditor extends LitElement {
                 this._valueChanged('tile_height', Number.isFinite(v) && v > 0 ? v : undefined);
               }}
             ></space-hub-textfield>
-            <space-hub-textfield
+            <space-hub-textfield .hass=${this.hass}
               label="Main Icon Size (px)"
               type="number"
               .value=${String(this._config.main_icon_size ?? '')}
@@ -534,7 +455,7 @@ export class SpaceHubCardEditor extends LitElement {
             ></space-hub-textfield>
           </div>
           <div class="side-by-side">
-            <space-hub-textfield
+            <space-hub-textfield .hass=${this.hass}
               label="Chip Icon Size (px)"
               type="number"
               .value=${String(this._config.chip_icon_size ?? '')}
@@ -543,7 +464,7 @@ export class SpaceHubCardEditor extends LitElement {
                 this._valueChanged('chip_icon_size', Number.isFinite(v) && v > 0 ? v : undefined);
               }}
             ></space-hub-textfield>
-            <space-hub-textfield
+            <space-hub-textfield .hass=${this.hass}
               label="Chip Font Size (px)"
               type="number"
               .value=${String(this._config.chip_font_size ?? '')}
@@ -554,12 +475,12 @@ export class SpaceHubCardEditor extends LitElement {
             ></space-hub-textfield>
           </div>
           <div class="side-by-side">
-            <space-hub-textfield
+            <space-hub-textfield .hass=${this.hass}
               label="Shadow Color"
               .value=${this._config.card_shadow_color || ''}
               @input=${(ev: Event) => this._valueChanged('card_shadow_color', (ev.target as HTMLInputElement).value)}
             ></space-hub-textfield>
-            <space-hub-textfield
+            <space-hub-textfield .hass=${this.hass}
               label="Shadow Intensity (0-1)"
               type="number"
               step="0.05"
@@ -572,7 +493,7 @@ export class SpaceHubCardEditor extends LitElement {
               }}
             ></space-hub-textfield>
           </div>
-          <space-hub-textfield
+          <space-hub-textfield .hass=${this.hass}
             label="Unavailable Pulse Color"
             .value=${this._config.unavailable_pulse_color || ''}
             @input=${(ev: Event) => this._valueChanged('unavailable_pulse_color', (ev.target as HTMLInputElement).value)}
@@ -590,11 +511,12 @@ export class SpaceHubCardEditor extends LitElement {
     return html`
       <ha-expansion-panel outlined .header=${`Headers (${headers.length})`}>
         <div class="section-content">
-          ${headers.length > 1 ? html`
-            <div class="tab-bar">
-              ${headers.map((_, i) => html`<button class="tab-btn${selectedIndex === i ? ' active' : ''}" @click=${() => { this._selectedHeaderIndex = i; this.requestUpdate(); }}>Header ${i + 1}</button>`)}
-            </div>
-          ` : nothing}
+          ${this._renderSortable('headers', headers, (header, i) => html`
+            <ha-button .appearance=${selectedIndex === i ? 'filled' : 'plain'}
+              @click=${() => { this._selectedHeaderIndex = i; }}>
+              ${header.main?.main_name || 'Header ' + (i + 1)}
+            </ha-button>
+          `)}
           ${headers.length ? this._renderHeader(headers[selectedIndex], selectedIndex) : html`<div class="empty-hint">No headers configured.</div>`}
           <div class="action-row">
             <button class="editor-btn" @click=${this._addHeader}>
@@ -673,7 +595,7 @@ export class SpaceHubCardEditor extends LitElement {
             </div>
             ${String(config.icon_set || '').toLowerCase() === 'custom' ? html`
               <div class="side-by-side">
-                <space-hub-textfield
+                <space-hub-textfield .hass=${this.hass}
                   label="Custom Icon Base Path"
                   placeholder="/local/weather-icons"
                   .value=${String(config.icon_pack?.base_path ?? (config as any).icon_base_path ?? '')}
@@ -681,7 +603,7 @@ export class SpaceHubCardEditor extends LitElement {
                     this._valueChanged(`${basePath}.icon_pack.base_path`, (ev.target as HTMLInputElement).value);
                   }}
                 ></space-hub-textfield>
-                <space-hub-textfield
+                <space-hub-textfield .hass=${this.hass}
                   label="Custom Icon Extension"
                   placeholder="svg"
                   .value=${String(config.icon_pack?.extension ?? (config as any).icon_extension ?? '')}
@@ -692,7 +614,7 @@ export class SpaceHubCardEditor extends LitElement {
               </div>
             ` : nothing}
             <div class="side-by-side">
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Temperature Size (px)"
                 type="number"
                 min="18"
@@ -703,7 +625,7 @@ export class SpaceHubCardEditor extends LitElement {
                   this._valueChanged(`${basePath}.temp_size`, Number.isFinite(v) && v > 0 ? v : undefined);
                 }}
               ></space-hub-textfield>
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Icon Size (px)"
                 type="number"
                 min="28"
@@ -716,7 +638,7 @@ export class SpaceHubCardEditor extends LitElement {
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Icon Offset X (px)"
                 type="number"
                 .value=${String(config.icon_offset_x ?? '')}
@@ -726,7 +648,7 @@ export class SpaceHubCardEditor extends LitElement {
                   this._valueChanged(`${basePath}.icon_offset_x`, raw !== '' && Number.isFinite(v) ? v : undefined);
                 }}
               ></space-hub-textfield>
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Icon Offset Y (px)"
                 type="number"
                 .value=${String(config.icon_offset_y ?? '')}
@@ -749,7 +671,7 @@ export class SpaceHubCardEditor extends LitElement {
               ${this._renderSelectField('Forecast Graph Mode', `${basePath}.forecast_graph_mode`, config.forecast_graph_mode || 'separate', ['separate', 'combined'])}
             </div>
             <div class="side-by-side">
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Stale Glow After (min)"
                 type="number"
                 min="0"
@@ -761,7 +683,7 @@ export class SpaceHubCardEditor extends LitElement {
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Graph Icon Size (px)"
                 type="number"
                 min="8"
@@ -772,7 +694,7 @@ export class SpaceHubCardEditor extends LitElement {
                   this._valueChanged(`${basePath}.conditions_icon_size`, Number.isFinite(v) && v > 0 && v !== DEFAULT_GRAPH_ICON_SIZE ? v : undefined);
                 }}
               ></space-hub-textfield>
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Temperature Icon Count"
                 type="number"
                 min="0"
@@ -785,7 +707,7 @@ export class SpaceHubCardEditor extends LitElement {
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Graph Icon Scale"
                 type="number"
                 min="0.5"
@@ -797,7 +719,7 @@ export class SpaceHubCardEditor extends LitElement {
                   this._valueChanged(`${basePath}.conditions_icon_scale`, Number.isFinite(v) && v > 0 && v !== DEFAULT_GRAPH_ICON_SCALE ? v : undefined);
                 }}
               ></space-hub-textfield>
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Temperature Readout Icon Size (px)"
                 type="number"
                 min="8"
@@ -810,7 +732,7 @@ export class SpaceHubCardEditor extends LitElement {
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Temperature Readout Icon Scale"
                 type="number"
                 min="0.5"
@@ -822,7 +744,7 @@ export class SpaceHubCardEditor extends LitElement {
                   this._valueChanged(`${basePath}.temperature_readout_icon_scale`, Number.isFinite(v) && v > 0 && v !== DEFAULT_TEMPERATURE_READOUT_ICON_SCALE ? v : undefined);
                 }}
               ></space-hub-textfield>
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Daily Forecast Icon Size (px)"
                 type="number"
                 min="8"
@@ -835,7 +757,7 @@ export class SpaceHubCardEditor extends LitElement {
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Sensor Grid Columns"
                 type="number"
                 min="1"
@@ -848,7 +770,7 @@ export class SpaceHubCardEditor extends LitElement {
               ></space-hub-textfield>
             </div>
             <div class="side-by-side">
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Forecast Graph Hours"
                 type="number"
                 min="1"
@@ -859,7 +781,7 @@ export class SpaceHubCardEditor extends LitElement {
                   this._valueChanged(`${basePath}.forecast_slots`, Number.isFinite(v) && v > 0 ? v : undefined);
                 }}
               ></space-hub-textfield>
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Graph Height (px)"
                 type="number"
                 min="82"
@@ -870,7 +792,7 @@ export class SpaceHubCardEditor extends LitElement {
                   this._valueChanged(`${basePath}.graph_height`, Number.isFinite(v) && v > 0 ? v : undefined);
                 }}
               ></space-hub-textfield>
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Horizontal Grid Lines"
                 type="number"
                 min="2"
@@ -947,7 +869,7 @@ export class SpaceHubCardEditor extends LitElement {
                     updateSource(index, { entity: ev.detail.value?.entity || undefined });
                   }}
                 ></ha-form>
-                <space-hub-textfield
+                <space-hub-textfield .hass=${this.hass}
                   label="Display Name (optional)"
                   .value=${item.name || ''}
                   @input=${(ev: Event) => updateSource(index, { name: (ev.target as HTMLInputElement).value || undefined })}
@@ -981,17 +903,17 @@ export class SpaceHubCardEditor extends LitElement {
             </button>
           ` : html`
             <div class="side-by-side">
-              <space-hub-textfield
+              <space-hub-textfield .hass=${this.hass}
                 label="Name"
                 .value=${m.main_name || ''}
                 @input=${(ev: Event) => this._valueChanged(`${basePath}.main_name`, (ev.target as HTMLInputElement).value)}
               ></space-hub-textfield>
-              <ha-icon-picker
+              <ha-selector .required=${false} .selector=${{ icon: {} }}
                 .hass=${this.hass}
                 label="Icon"
                 .value=${m.main_icon || ''}
                 @value-changed=${(ev: CustomEvent) => this._valueChanged(`${basePath}.main_icon`, ev.detail.value)}
-              ></ha-icon-picker>
+              ></ha-selector>
             </div>
             ${this._renderEntityField('Light Group Entity (tap toggles)', `${basePath}.light_group_entity`, m.light_group_entity)}
             <div class="side-by-side">
@@ -1023,7 +945,7 @@ export class SpaceHubCardEditor extends LitElement {
     return html`
       <ha-expansion-panel outlined .header=${`Chips (${chips.length})`}>
         <div class="section-content">
-          ${chips.map((chip, i) => this._renderSingleChip(chip, `${chipsPath}.${i}`, i, chipsPath))}
+          ${this._renderSortable(chipsPath, chips, (chip, i) => this._renderSingleChip(chip, `${chipsPath}.${i}`, i, chipsPath))}
           <button class="editor-btn" @click=${() => {
             const current = (this._getNestedValue(chipsPath) || []) as any[];
             current.push({ type: 'custom', entity: '' });
@@ -1058,46 +980,46 @@ export class SpaceHubCardEditor extends LitElement {
           ${this._renderEntityField('Entity', `${path}.entity`, chip.entity)}
         </div>
         <div class="side-by-side">
-          <ha-icon-picker
+          <ha-selector .required=${false} .selector=${{ icon: {} }}
             .hass=${this.hass}
             label="Icon"
             .value=${chip.icon || ''}
             @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon`, ev.detail.value)}
-          ></ha-icon-picker>
-          <ha-icon-picker
+          ></ha-selector>
+          <ha-selector .required=${false} .selector=${{ icon: {} }}
             .hass=${this.hass}
             label="Icon (Active)"
             .value=${chip.icon_active || ''}
             @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon_active`, ev.detail.value)}
-          ></ha-icon-picker>
+          ></ha-selector>
         </div>
         <div class="side-by-side">
-          <ha-icon-picker
+          <ha-selector .required=${false} .selector=${{ icon: {} }}
             .hass=${this.hass}
             label="Icon (Inactive)"
             .value=${chip.icon_inactive || ''}
             @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon_inactive`, ev.detail.value)}
-          ></ha-icon-picker>
-          <ha-icon-picker
+          ></ha-selector>
+          <ha-selector .required=${false} .selector=${{ icon: {} }}
             .hass=${this.hass}
             label="Icon (Unavailable)"
             .value=${chip.icon_unavailable || ''}
             @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon_unavailable`, ev.detail.value)}
-          ></ha-icon-picker>
+          ></ha-selector>
         </div>
         <div class="side-by-side">
-          <space-hub-textfield
+          <space-hub-textfield .hass=${this.hass}
             label="Background (Active)"
             .value=${chip.background_active || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.background_active`, (ev.target as HTMLInputElement).value)}
           ></space-hub-textfield>
-          <space-hub-textfield
+          <space-hub-textfield .hass=${this.hass}
             label="Background (Unavailable)"
             .value=${chip.background_unavailable || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.background_unavailable`, (ev.target as HTMLInputElement).value)}
           ></space-hub-textfield>
         </div>
-        <space-hub-textfield
+        <space-hub-textfield .hass=${this.hass}
           label="Icon Color (Unavailable)"
           .value=${chip.icon_color_unavailable || ''}
           @input=${(ev: Event) => this._valueChanged(`${path}.icon_color_unavailable`, (ev.target as HTMLInputElement).value)}
@@ -1141,11 +1063,6 @@ export class SpaceHubCardEditor extends LitElement {
     return html`
       <div class="sub-item">
         <div class="sub-item-header">
-          <div class="drag-handle" title="Drag to reorder">
-            <ha-svg-icon
-              .path=${'M7,19V17H9V19H7M11,19V17H13V19H11M15,19V17H17V19H15M7,15V13H9V15H7M11,15V13H13V15H11M15,15V13H17V15H15M7,11V9H9V11H7M11,11V9H13V11H11M15,11V9H17V11H15M7,7V5H9V7H7M11,7V5H13V7H11M15,7V5H17V7H15Z'}
-            ></ha-svg-icon>
-          </div>
           <div class="sub-item-heading">
             <span class="sub-item-title">${isRain ? 'Rain' : 'Metric'} ${i + 1}</span>
             <span class="sub-item-meta">${summary}</span>
@@ -1164,7 +1081,7 @@ export class SpaceHubCardEditor extends LitElement {
           ${this._renderEntityField('Rain State Sensor', `${metricsPath}.${i}.rain_state_sensor`, item.rain_state_sensor, { domain: 'binary_sensor' })}
           ${this._renderEntityField('Rain Rate Sensor', `${metricsPath}.${i}.rain_rate_sensor`, item.rain_rate_sensor, { domain: 'sensor' })}
           <div class="side-by-side">
-            <space-hub-textfield
+            <space-hub-textfield .hass=${this.hass}
               label="Rain Rate Threshold"
               type="number"
               min="0"
@@ -1175,40 +1092,40 @@ export class SpaceHubCardEditor extends LitElement {
                 update({ rain_rate_threshold: Number.isFinite(v) && v >= 0 ? v : undefined });
               }}
             ></space-hub-textfield>
-            <space-hub-textfield
+            <space-hub-textfield .hass=${this.hass}
               label="Label (optional)"
               .value=${item.name || ''}
               @input=${(ev: Event) => update({ name: (ev.target as HTMLInputElement).value || undefined })}
             ></space-hub-textfield>
           </div>
           <div class="side-by-side">
-            <ha-icon-picker
+            <ha-selector .required=${false} .selector=${{ icon: {} }}
               .hass=${this.hass}
               label="Icon (Raining)"
               .value=${item.icon_active || ''}
               @value-changed=${(ev: CustomEvent) => update({ icon_active: ev.detail.value || undefined })}
-            ></ha-icon-picker>
-            <ha-icon-picker
+            ></ha-selector>
+            <ha-selector .required=${false} .selector=${{ icon: {} }}
               .hass=${this.hass}
               label="Icon (No Rain)"
               .value=${item.icon_inactive || ''}
               @value-changed=${(ev: CustomEvent) => update({ icon_inactive: ev.detail.value || undefined })}
-            ></ha-icon-picker>
+            ></ha-selector>
           </div>
         ` : html`
           ${this._renderEntityField('Entity', `${metricsPath}.${i}.entity`, item.entity, { domain: 'sensor' })}
           <div class="side-by-side">
-            <space-hub-textfield
+            <space-hub-textfield .hass=${this.hass}
               label="Label (optional)"
               .value=${item.name || ''}
               @input=${(ev: Event) => update({ name: (ev.target as HTMLInputElement).value || undefined })}
             ></space-hub-textfield>
-            <ha-icon-picker
+            <ha-selector .required=${false} .selector=${{ icon: {} }}
               .hass=${this.hass}
               label="Icon (optional, native if empty)"
               .value=${item.icon || ''}
               @value-changed=${(ev: CustomEvent) => update({ icon: ev.detail.value || undefined })}
-            ></ha-icon-picker>
+            ></ha-selector>
           </div>
         `}
         ${this._renderActionConfig('Tap Action', `${metricsPath}.${i}.tap_action`, item.tap_action)}
@@ -1220,29 +1137,11 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _renderMetricsConfig(metrics: any[], mainPath: string): TemplateResult {
     const metricsPath = `${mainPath}.metrics`;
-    const moveItem = (oldIndex: number, newIndex: number) => {
-      const arr = [...((this._getNestedValue(metricsPath) || metrics) as any[])];
-      if (oldIndex < 0 || oldIndex >= arr.length || newIndex < 0 || newIndex >= arr.length) return;
-      const [moved] = arr.splice(oldIndex, 1);
-      arr.splice(newIndex, 0, moved);
-      this._valueChanged(metricsPath, arr);
-    };
     return html`
       <div class="metrics-section">
         <div class="metrics-section-title">Grid Metrics (${metrics.length})</div>
         <div class="empty-hint">Drag the handle to reorder. Edit, remove, or add your own entities.</div>
-        <ha-sortable
-          handle-selector=".drag-handle"
-          @item-moved=${(ev: CustomEvent) => {
-            ev.stopPropagation();
-            const { oldIndex, newIndex } = ev.detail;
-            moveItem(oldIndex, newIndex);
-          }}
-        >
-          <div class="metrics-list">
-            ${metrics.map((item, i) => this._renderMetricItem(item, metricsPath, metrics, i))}
-          </div>
-        </ha-sortable>
+        ${this._renderSortable(metricsPath, metrics, (item, i) => this._renderMetricItem(item, metricsPath, metrics, i))}
         <div class="side-by-side">
           <button class="editor-btn" @click=${() => {
             const current = [...((this._getNestedValue(metricsPath) || metrics) as any[])];
@@ -1323,11 +1222,13 @@ export class SpaceHubCardEditor extends LitElement {
     return html`
       <ha-expansion-panel outlined .header=${`Switch Rows (${rows.length})`}>
         <div class="section-content">
-          ${rows.length > 1 ? html`
-            <div class="tab-bar">
-              ${rows.map((_, i) => html`<button class="tab-btn${selectedIndex === i ? ' active' : ''}" @click=${() => { this._selectedSwitchRowIndex = i; this.requestUpdate(); }}>Row ${i + 1}</button>`)}
-            </div>
-          ` : nothing}
+          ${this._renderSortable('switch_rows', rows, (row, i) => html`
+            <ha-button .appearance=${selectedIndex === i ? 'filled' : 'plain'}
+              @click=${() => { this._selectedSwitchRowIndex = i; }}>
+              Row ${i + 1}: ${(Array.isArray(row) ? row : row.row || []).map((tile: any) =>
+                tile.name || this._friendlyEntityName(tile.entity) || tile.entity || 'New tile').join(', ')}
+            </ha-button>
+          `)}
           ${rows.length
             ? this._renderSwitchRow(rows[selectedIndex], selectedIndex)
             : html`<div class="empty-hint">No switch rows configured.</div>`
@@ -1380,12 +1281,12 @@ export class SpaceHubCardEditor extends LitElement {
   private _renderSwitchRow(row: any, rowIndex: number): TemplateResult {
     const items: any[] = Array.isArray(row) ? row : (Array.isArray(row?.row) ? row.row : []);
     const basePath = `switch_rows.${rowIndex}`;
-    // Normalize: always use { row: [...] } format
+    // Preserve both supported row shapes when editing.
     const itemsPath = Array.isArray(row) ? basePath : `${basePath}.row`;
 
     return html`
       <div class="section-content">
-        ${items.map((sw, i) => this._renderSwitchItem(sw, `${itemsPath}.${i}`, i, itemsPath, items.length))}
+        ${this._renderSortable(itemsPath, items, (sw, i) => this._renderSwitchItem(sw, `${itemsPath}.${i}`, i, itemsPath))}
         <button class="editor-btn" @click=${() => {
           const arr = (this._getNestedValue(itemsPath) || []) as any[];
           arr.push({ entity: '', name: '', icon: 'mdi:toggle-switch' });
@@ -1397,35 +1298,13 @@ export class SpaceHubCardEditor extends LitElement {
     `;
   }
 
-  private _renderSwitchItem(sw: any, path: string, index: number, rowPath: string, itemCount: number): TemplateResult {
-    const confirmation = normalizeConfirmation(sw?.confirmation);
-    const confirmationEnabled = confirmation !== undefined;
-    const confirmationTitle = confirmation && typeof confirmation === 'object' ? confirmation.title || '' : '';
-    const confirmationMessage = confirmation && typeof confirmation === 'object' ? confirmation.text || '' : '';
-    const confirmationConfirmText = confirmation && typeof confirmation === 'object' ? confirmation.confirm_text || '' : '';
-    const confirmationDismissText = confirmation && typeof confirmation === 'object' ? confirmation.dismiss_text || '' : '';
-    const confirmationPath = `${path}.confirmation`;
+  private _renderSwitchItem(sw: any, path: string, index: number, rowPath: string): TemplateResult {
 
     return html`
+      <ha-expansion-panel outlined .header=${sw.name || this._friendlyEntityName(sw.entity) || `Tile ${index + 1}`}>
       <div class="sub-item">
         <div class="sub-item-header">
-          <div class="sub-item-heading">
-            <span class="sub-item-title">${sw.name || this._friendlyEntityName(sw.entity) || `Switch ${index + 1}`}</span>
-            <span class="sub-item-meta">${this._entitySummary(sw.entity)}</span>
-          </div>
           <div class="header-actions">
-            <ha-icon-button
-              .path=${ARROW_UP_ICON_PATH}
-              .label=${'Move switch up'}
-              .disabled=${index <= 0}
-              @click=${() => this._moveArrayItem(rowPath, index, -1)}
-            ></ha-icon-button>
-            <ha-icon-button
-              .path=${ARROW_DOWN_ICON_PATH}
-              .label=${'Move switch down'}
-              .disabled=${index >= itemCount - 1}
-              @click=${() => this._moveArrayItem(rowPath, index, 1)}
-            ></ha-icon-button>
             <ha-icon-button
               .path=${DELETE_ICON_PATH}
               .label=${'Remove switch'}
@@ -1439,26 +1318,26 @@ export class SpaceHubCardEditor extends LitElement {
         </div>
         ${this._renderEntityField('Controlled Entity', `${path}.entity`, sw.entity)}
         <div class="side-by-side">
-          <space-hub-textfield
+          <space-hub-textfield .hass=${this.hass}
             label="Name"
             .value=${sw.name || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.name`, (ev.target as HTMLInputElement).value)}
           ></space-hub-textfield>
-          <ha-icon-picker
+          <ha-selector .required=${false} .selector=${{ icon: {} }}
             .hass=${this.hass}
             label="Inactive State Icon"
             .value=${sw.icon_inactive || sw.icon_off || sw['icon-inactive'] || sw['icon-off'] || sw.icon || ''}
             @value-changed=${(ev: CustomEvent) => this._setSwitchInactiveIcon(path, ev.detail.value)}
-          ></ha-icon-picker>
+          ></ha-selector>
         </div>
         <div class="side-by-side">
-          <ha-icon-picker
+          <ha-selector .required=${false} .selector=${{ icon: {} }}
             .hass=${this.hass}
             label="Active State Icon"
             .value=${sw.icon_active || ''}
             @value-changed=${(ev: CustomEvent) => this._valueChanged(`${path}.icon_active`, ev.detail.value)}
-          ></ha-icon-picker>
-          <space-hub-textfield
+          ></ha-selector>
+          <space-hub-textfield .hass=${this.hass}
             label="Icon Size"
             .value=${sw.icon_size || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.icon_size`, (ev.target as HTMLInputElement).value)}
@@ -1468,62 +1347,40 @@ export class SpaceHubCardEditor extends LitElement {
           ${this._renderSelectField('Type', `${path}.type`, sw.type, SWITCH_TYPES)}
           ${this._renderSelectField('Glow Mode', `${path}.glow_mode`, sw.glow_mode, GLOW_MODES)}
         </div>
+        <ha-expansion-panel outlined .header=${'State styling'}>
+          <div class="section-content">
+            ${(['active_states', 'pending_states'] as const).map((field) => html`
+              <ha-form .hass=${this.hass}
+                .data=${{ enabled: Array.isArray(sw[field]), states: sw[field] || [] }}
+                .schema=${[
+                  { name: 'enabled', selector: { boolean: {} } },
+                  ...(Array.isArray(sw[field]) ? [{ name: 'states', selector: { select: {
+                    multiple: true, custom_value: true, options: sw[field],
+                  } } }] : []),
+                ]}
+                .computeLabel=${(schema: { name: string }) => schema.name === 'enabled'
+                  ? `Customize ${field === 'active_states' ? 'active' : 'pending'} states` : 'States'}
+                @value-changed=${(ev: CustomEvent) => {
+                  ev.stopPropagation();
+                  this._valueChanged(`${path}.${field}`, ev.detail.value.enabled ? ev.detail.value.states || [] : undefined);
+                }}
+              ></ha-form>
+            `)}
+          </div>
+        </ha-expansion-panel>
         <div class="side-by-side">
-          <space-hub-textfield
+          <space-hub-textfield .hass=${this.hass}
             label="Font Size"
             .value=${sw.font_size || sw['font-size'] || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.font_size`, (ev.target as HTMLInputElement).value)}
           ></space-hub-textfield>
-          <space-hub-textfield
+          <space-hub-textfield .hass=${this.hass}
             label="Font Weight"
             .value=${sw.font_weight || sw['font-weight'] || ''}
             @input=${(ev: Event) => this._valueChanged(`${path}.font_weight`, (ev.target as HTMLInputElement).value)}
           ></space-hub-textfield>
         </div>
         ${this._renderEntityField('Hold Entity (more-info on hold)', `${path}.hold_entity`, sw.hold_entity)}
-
-        <div class="confirmation-settings">
-          <ha-formfield label="Require confirmation on tap">
-            <ha-switch
-              .checked=${confirmationEnabled}
-              @change=${(ev: Event) => {
-                this._setSwitchConfirmation(confirmationPath, this._checkedFromEvent(ev));
-              }}
-            ></ha-switch>
-          </ha-formfield>
-          <div class="confirmation-fields">
-            <space-hub-textfield
-              label="Confirmation Title"
-              .value=${confirmationTitle}
-              placeholder="Please confirm"
-              .disabled=${!confirmationEnabled}
-              @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'title', (ev.target as HTMLInputElement).value)}
-            ></space-hub-textfield>
-            <space-hub-textfield
-              label="Confirmation Message"
-              .value=${confirmationMessage}
-              placeholder="Are you sure?"
-              .disabled=${!confirmationEnabled}
-              @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'text', (ev.target as HTMLInputElement).value)}
-            ></space-hub-textfield>
-            <div class="side-by-side">
-              <space-hub-textfield
-                label="Confirm Button Text"
-                .value=${confirmationConfirmText}
-                placeholder="OK"
-                .disabled=${!confirmationEnabled}
-                @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'confirm_text', (ev.target as HTMLInputElement).value)}
-              ></space-hub-textfield>
-              <space-hub-textfield
-                label="Dismiss Button Text"
-                .value=${confirmationDismissText}
-                placeholder="Cancel"
-                .disabled=${!confirmationEnabled}
-                @input=${(ev: Event) => this._setSwitchConfirmationField(confirmationPath, 'dismiss_text', (ev.target as HTMLInputElement).value)}
-              ></space-hub-textfield>
-            </div>
-          </div>
-        </div>
 
         <ha-expansion-panel outlined .header=${'Actions'}>
           <div class="section-content">
@@ -1539,6 +1396,7 @@ export class SpaceHubCardEditor extends LitElement {
           </div>
         </ha-expansion-panel>
       </div>
+      </ha-expansion-panel>
     `;
   }
 
@@ -1552,7 +1410,7 @@ export class SpaceHubCardEditor extends LitElement {
     return html`
       ${templates.map((tpl, i) => html`
         <div class="side-by-side">
-          <space-hub-textfield
+          <space-hub-textfield .hass=${this.hass}
             label="Template ${i + 1}"
             .value=${tpl || ''}
             @input=${(ev: Event) => {
@@ -1590,9 +1448,9 @@ export class SpaceHubCardEditor extends LitElement {
       <ha-expansion-panel outlined .header=${`Embedded Cards (${cards.length})`}>
         <div class="section-content">
           <div class="empty-hint">
-            Add extra Home Assistant cards below the switch rows. Each card is a standard HA card config in YAML.
+            Add standard Home Assistant cards below the tile rows. Use their native visual editor or switch to YAML.
           </div>
-          ${cards.map((card, i) => this._renderEmbeddedCardItem(card, i, cards.length))}
+          ${this._renderSortable('cards', cards, (card, i) => this._renderEmbeddedCardItem(card, i, cards.length))}
           <button class="editor-btn" @click=${() => {
             const arr = [...cards, { type: 'tile', entity: '' }];
             this._valueChanged('cards', arr);
@@ -1635,15 +1493,21 @@ export class SpaceHubCardEditor extends LitElement {
             ></ha-icon-button>
           </div>
         </div>
-        <ha-yaml-editor
-          .defaultValue=${card}
-          @value-changed=${(ev: CustomEvent) => {
+        <hui-card-element-editor
+          .hass=${this.hass} .value=${card}
+          @config-changed=${(ev: CustomEvent) => {
             ev.stopPropagation();
+            if (ev.detail.error || !ev.detail.config || typeof ev.detail.config.type !== 'string'
+              || JSON.stringify(ev.detail.config) === JSON.stringify(card)) return;
             const arr = [...(this._config.cards || []) as any[]];
-            arr[index] = ev.detail.value;
+            arr[index] = ev.detail.config;
             this._valueChanged('cards', arr);
           }}
-        ></ha-yaml-editor>
+        ></hui-card-element-editor>
+        <ha-button @click=${(ev: Event) => {
+          const editor = (ev.currentTarget as HTMLElement).previousElementSibling as any;
+          editor?.toggleMode?.();
+        }}>Toggle visual / YAML editor</ha-button>
       </div>
     `;
   }
@@ -1652,119 +1516,75 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _renderActionConfig(label: string, path: string, action: any): TemplateResult {
     const normalized = normalizeActionConfig(action);
-    const hasAction = !!normalized;
-    const confirmation = normalizeConfirmation(normalized?.confirmation);
-    const confirmationEnabled = confirmation !== undefined;
-    const confirmationTitle = confirmation && typeof confirmation === 'object' ? confirmation.title || '' : '';
-    const confirmationMessage = confirmation && typeof confirmation === 'object' ? confirmation.text || '' : '';
-    const confirmationConfirmText = confirmation && typeof confirmation === 'object' ? confirmation.confirm_text || '' : '';
-    const confirmationDismissText = confirmation && typeof confirmation === 'object' ? confirmation.dismiss_text || '' : '';
+    const confirmation = this._effectiveConfirmation(path);
+    const { parent, switchTap } = this._actionContext(path);
+    const enabled = !!confirmation;
+    const details = typeof confirmation === 'object' ? confirmation : {};
     return html`
       <ha-expansion-panel outlined .header=${label}>
         <div class="section-content">
-          ${!hasAction ? html`
-            <button class="editor-btn" @click=${() => this._valueChanged(path, { action: 'more-info' })}>
-              <ha-icon icon="mdi:plus"></ha-icon> Configure ${label}
-            </button>
+          ${normalized?.action === 'fire-dom-event' ? html`
+            <ha-yaml-editor .defaultValue=${normalized} @value-changed=${(ev: CustomEvent) => {
+              ev.stopPropagation();
+              if (ev.detail.isValid === false || !normalizeActionConfig(ev.detail.value)) return;
+              this._updateAction(path, ev.detail.value);
+            }}></ha-yaml-editor>
           ` : html`
-            ${this._renderSelectField('Action', `${path}.action`, normalized?.action, ACTION_TYPES)}
-            ${normalized?.action === 'more-info' ? html`
-              ${this._renderEntityField('More Info Entity', `${path}.entity`, normalized.entity)}
-            ` : nothing}
-            ${normalized?.action === 'navigate' ? html`
-              <space-hub-textfield
-                label="Navigation Path"
-                .value=${normalized.navigation_path || ''}
-                @input=${(ev: Event) => this._valueChanged(`${path}.navigation_path`, (ev.target as HTMLInputElement).value)}
-              ></space-hub-textfield>
-              <ha-formfield label="Replace current path">
-                <ha-switch
-                  .checked=${!!normalized.navigation_replace}
-                  @change=${(ev: Event) => this._valueChanged(`${path}.navigation_replace`, this._checkedFromEvent(ev) || undefined)}
-                ></ha-switch>
-              </ha-formfield>
-            ` : nothing}
-            ${normalized?.action === 'url' ? html`
-              <space-hub-textfield
-                label="URL"
-                .value=${normalized.url_path || ''}
-                @input=${(ev: Event) => this._valueChanged(`${path}.url_path`, (ev.target as HTMLInputElement).value)}
-              ></space-hub-textfield>
-            ` : nothing}
-            ${normalized?.action === 'perform-action' ? html`
-              <space-hub-textfield
-                label="Action"
-                .value=${normalized.perform_action || ''}
-                @input=${(ev: Event) => this._valueChanged(`${path}.perform_action`, (ev.target as HTMLInputElement).value)}
-              ></space-hub-textfield>
-              <ha-yaml-editor
-                label="Target"
-                .defaultValue=${normalized.target || {}}
-                @value-changed=${(ev: CustomEvent) => {
-                  ev.stopPropagation();
-                  this._valueChanged(`${path}.target`, ev.detail.value);
-                }}
-              ></ha-yaml-editor>
-              <ha-yaml-editor
-                label="Data"
-                .defaultValue=${normalized.data || {}}
-                @value-changed=${(ev: CustomEvent) => {
-                  ev.stopPropagation();
-                  this._valueChanged(`${path}.data`, ev.detail.value);
-                }}
-              ></ha-yaml-editor>
-            ` : nothing}
-            ${normalized?.action === 'assist' ? html`
-              <space-hub-textfield
-                label="Pipeline ID"
-                .value=${normalized.pipeline_id || ''}
-                @input=${(ev: Event) => this._valueChanged(`${path}.pipeline_id`, (ev.target as HTMLInputElement).value)}
-              ></space-hub-textfield>
-              <ha-formfield label="Start listening immediately">
-                <ha-switch
-                  .checked=${!!normalized.start_listening}
-                  @change=${(ev: Event) => this._valueChanged(`${path}.start_listening`, this._checkedFromEvent(ev) || undefined)}
-                ></ha-switch>
-              </ha-formfield>
-            ` : nothing}
-            <ha-formfield label="Require confirmation">
-              <ha-switch
-                .checked=${confirmationEnabled}
-                @change=${(ev: Event) => this._setActionConfirmation(path, this._checkedFromEvent(ev))}
-              ></ha-switch>
-            </ha-formfield>
-            ${confirmationEnabled ? html`
-              <space-hub-textfield
-                label="Confirmation Title"
-                .value=${confirmationTitle}
-                placeholder="Please confirm"
-                @input=${(ev: Event) => this._setActionConfirmationField(path, 'title', (ev.target as HTMLInputElement).value)}
-              ></space-hub-textfield>
-              <space-hub-textfield
-                label="Confirmation Message"
-                .value=${confirmationMessage}
-                placeholder="Are you sure?"
-                @input=${(ev: Event) => this._setActionConfirmationField(path, 'text', (ev.target as HTMLInputElement).value)}
-              ></space-hub-textfield>
-              <div class="side-by-side">
-                <space-hub-textfield
-                  label="Confirm Button Text"
-                  .value=${confirmationConfirmText}
-                  placeholder="OK"
-                  @input=${(ev: Event) => this._setActionConfirmationField(path, 'confirm_text', (ev.target as HTMLInputElement).value)}
-                ></space-hub-textfield>
-                <space-hub-textfield
-                  label="Dismiss Button Text"
-                  .value=${confirmationDismissText}
-                  placeholder="Cancel"
-                  @input=${(ev: Event) => this._setActionConfirmationField(path, 'dismiss_text', (ev.target as HTMLInputElement).value)}
-                ></space-hub-textfield>
-              </div>
-            ` : nothing}
-            <button class="editor-btn danger" @click=${() => this._valueChanged(path, undefined)}>
-              <ha-icon icon="mdi:delete"></ha-icon> Remove
-            </button>
+            <ha-form
+              class="action-form" .hass=${this.hass}
+              .data=${{ action: normalized, entity: parent.entity || parent.tap_entity }}
+              .schema=${[{ name: 'action', selector: { ui_action: {} }, context: { entity_id: 'entity' } }]}
+              .computeLabel=${() => label}
+              @value-changed=${(ev: CustomEvent) => {
+                ev.stopPropagation();
+                this._updateAction(path, ev.detail.value?.action);
+              }}
+            ></ha-form>
           `}
+          ${normalized?.action === 'more-info'
+            ? this._renderEntityField('More-info entity override', `${path}.entity`, normalized.entity)
+            : nothing}
+          ${normalized?.action === 'navigate' ? html`
+            <ha-form .hass=${this.hass}
+              .data=${{ navigation_replace: !!normalized.navigation_replace }}
+              .schema=${[{ name: 'navigation_replace', selector: { boolean: {} } }]}
+              .computeLabel=${() => 'Replace current navigation history entry'}
+              @value-changed=${(ev: CustomEvent) => {
+                ev.stopPropagation();
+                this._valueChanged(`${path}.navigation_replace`, !!ev.detail.value.navigation_replace);
+              }}
+            ></ha-form>
+          ` : nothing}
+          ${normalized || switchTap ? html`
+            <ha-form class="confirmation-form" .hass=${this.hass}
+              .data=${{ enabled, ...details }}
+              .schema=${[
+                { name: 'enabled', selector: { boolean: {} } },
+                ...(enabled ? ['text', 'title', 'confirm_text', 'dismiss_text'].map((name) => ({
+                  name, selector: { text: {} },
+                })) : []),
+              ]}
+              .computeLabel=${(schema: { name: string }) => ({
+                enabled: 'Require confirmation', text: 'Confirmation message',
+                title: 'Confirmation title', confirm_text: 'Confirm button text',
+                dismiss_text: 'Cancel button text',
+              }[schema.name])}
+              @value-changed=${(ev: CustomEvent) => {
+                ev.stopPropagation();
+                const value = ev.detail.value;
+                if (!!value.enabled !== enabled) {
+                  this._setActionConfirmation(path, !!value.enabled);
+                  return;
+                }
+                const next = { ...details };
+                for (const field of ['text', 'title', 'confirm_text', 'dismiss_text'] as const) {
+                  if (value[field]?.trim()) next[field] = value[field];
+                  else delete next[field];
+                }
+                this._writeActionConfirmation(path, normalizeConfirmation(next));
+              }}
+            ></ha-form>
+          ` : nothing}
         </div>
       </ha-expansion-panel>
     `;
@@ -1773,6 +1593,11 @@ export class SpaceHubCardEditor extends LitElement {
   // ── Styles ───────────────────────────────────────────────────
 
   static styles: CSSResultGroup = css`
+    .sortable-list { display: flex; flex-direction: column; gap: 8px; }
+    .sortable-item { display: flex; align-items: flex-start; gap: 4px; min-width: 0; }
+    .sortable-content { flex: 1; min-width: 0; }
+    .sortable-content > ha-button { width: 100%; }
+    .sortable-item > .drag-handle { flex: 0 0 40px; touch-action: none; }
     .editor-container {
       display: flex;
       flex-direction: column;
@@ -1876,19 +1701,6 @@ export class SpaceHubCardEditor extends LitElement {
     .editor-btn[disabled]:hover {
       background: none;
     }
-    .confirmation-settings {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 8px 0;
-      border-top: 1px solid var(--divider-color, rgba(0,0,0,0.12));
-      border-bottom: 1px solid var(--divider-color, rgba(0,0,0,0.12));
-    }
-    .confirmation-fields {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
     .sub-item {
       border: 1px solid var(--divider-color, #e0e0e0);
       border-radius: 8px;
@@ -1965,7 +1777,7 @@ export class SpaceHubCardEditor extends LitElement {
       font-style: italic;
       padding: 8px 0;
     }
-    space-hub-textfield, ha-form, ha-icon-picker {
+    space-hub-textfield, ha-form, ha-selector {
       display: block;
       width: 100%;
     }
