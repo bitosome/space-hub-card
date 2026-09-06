@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, css, CSSResultGroup, TemplateResult, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
+import { keyed } from 'lit/directives/keyed';
 import { fireEvent } from 'custom-card-helpers';
 import type { HomeAssistant } from 'custom-card-helpers';
 import type { SpaceHubConfig, SpaceHubHeader, HeaderMain, HeaderWeather, HeaderAC, HeaderThermostat } from './space-hub';
@@ -14,8 +15,10 @@ const SWITCH_TYPES = ['switch', 'smart_plug', 'lock', 'gate', 'sliding_gate'] as
 // Glow modes
 const GLOW_MODES = ['static', 'pulse', 'none'] as const;
 
-const ARROW_UP_ICON_PATH = 'M4,12L5.41,13.41L11,7.83V20H13V7.83L18.59,13.42L20,12L12,4L4,12Z';
-const ARROW_DOWN_ICON_PATH = 'M4,12L5.41,10.59L11,16.17V4H13V16.17L18.59,10.58L20,12L12,20L4,12Z';
+const EDIT_ICON_PATH = 'M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6.02 20.71,5.63L18.37,3.29C17.98,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04Z';
+
+type EditorPageKind = 'appearance' | 'header' | 'row' | 'weather' | 'main' | 'ac' | 'thermostat' | 'switch' | 'chip' | 'metric' | 'source' | 'card' | 'card-picker';
+interface EditorPage { kind: EditorPageKind; path: string; }
 const DELETE_ICON_PATH = 'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z';
 const DEFAULT_GRAPH_HORIZONTAL_LINES = 5;
 const DEFAULT_GRAPH_ICON_SIZE = 15;
@@ -66,14 +69,19 @@ export class SpaceHubTextfield extends LitElement {
 export class SpaceHubCardEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @state() private _config!: SpaceHubConfig;
-  @state() private _selectedHeaderIndex = 0;
-  @state() private _selectedSwitchRowIndex = 0;
-  @state() private _yamlMode = false;
-  @state() private _yamlError = '';
+  @property({ attribute: false }) public lovelace?: any;
+  @state() private _pages: EditorPage[] = [];
+  @state() private _cardGuiMode = true;
+  @state() private _cardGuiAvailable = true;
   private _haElementsRequested = false;
 
   public setConfig(config: SpaceHubConfig): void {
     this._config = clone(config);
+    // HA calls setConfig after visual edits and when returning from its YAML editor.
+    // Discard routes whose item no longer exists instead of editing a stale path.
+    const invalid = this._pages.findIndex((page) => page.kind !== 'appearance' && page.kind !== 'card-picker'
+      && this._getNestedValue(page.path) === undefined);
+    if (invalid !== -1) this._pages = this._pages.slice(0, invalid);
   }
 
   public connectedCallback(): void {
@@ -113,6 +121,9 @@ export class SpaceHubCardEditor extends LitElement {
       'ha-sortable',
       'hui-action-editor',
       'hui-card-element-editor',
+      'hui-card-picker',
+      'ha-button',
+      'ha-icon-button-prev',
       'ha-expansion-panel',
       'ha-yaml-editor',
     ];
@@ -133,6 +144,12 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _valueChanged(path: string, value: any): void {
     const parts = path.split('.');
+    // Legacy weather fields generate a virtual metric list. Materialize the whole
+    // list on the first edit so changing one item cannot discard its siblings.
+    if (/^headers\.\d+\.weather\.metrics\.\d+(?:\.|$)/.test(path)) {
+      const weather = this._config.headers?.[Number(parts[1])]?.weather;
+      if (weather && !weather.metrics?.length) weather.metrics = clone(this._defaultWeatherMetrics(weather));
+    }
     let obj: any = this._config;
     for (let i = 0; i < parts.length - 1; i++) {
       const key = parts[i];
@@ -158,10 +175,15 @@ export class SpaceHubCardEditor extends LitElement {
   private _getNestedValue(path: string): any {
     const parts = path.split('.');
     let obj: any = this._config;
-    for (const p of parts) {
+    for (let i = 0; i < parts.length; i++) {
       if (obj === undefined || obj === null) return undefined;
-      const idx = Number(p);
-      obj = Number.isFinite(idx) ? obj[idx] : obj[p];
+      const p = parts[i];
+      if (i === 3 && parts[0] === 'headers' && parts[2] === 'weather' && p === 'metrics') {
+        obj = obj.metrics?.length ? obj.metrics : this._defaultWeatherMetrics(obj);
+      } else {
+        const idx = Number(p);
+        obj = Number.isFinite(idx) ? obj[idx] : obj[p];
+      }
     }
     return obj;
   }
@@ -170,37 +192,22 @@ export class SpaceHubCardEditor extends LitElement {
     return !!(ev.currentTarget as { checked?: boolean } | null)?.checked;
   }
 
-  private _clampIndex(index: number, count: number): number {
-    if (count <= 0) return 0;
-    return Math.min(Math.max(index, 0), count - 1);
-  }
-
   private _reorderArray(path: string, oldIndex: number, newIndex: number, fallback: any[] = []): boolean {
     const current = this._getNestedValue(path) ?? fallback;
     if (!Array.isArray(current) || !Number.isInteger(oldIndex) || !Number.isInteger(newIndex)
       || oldIndex < 0 || newIndex < 0 || oldIndex >= current.length || newIndex >= current.length
       || oldIndex === newIndex) return false;
-    const selectedIndex = path === 'headers' ? this._selectedHeaderIndex : this._selectedSwitchRowIndex;
-    const selected = current[this._clampIndex(selectedIndex, current.length)];
     const next = [...current];
     const [item] = next.splice(oldIndex, 1);
     next.splice(newIndex, 0, item);
-    if (path === 'headers') this._selectedHeaderIndex = next.indexOf(selected);
-    if (path === 'switch_rows') this._selectedSwitchRowIndex = next.indexOf(selected);
+    this._remapPages(path, (index) => {
+      if (index === oldIndex) return newIndex;
+      if (oldIndex < newIndex && index > oldIndex && index <= newIndex) return index - 1;
+      if (oldIndex > newIndex && index >= newIndex && index < oldIndex) return index + 1;
+      return index;
+    });
     this._valueChanged(path, next);
     return true;
-  }
-
-  private _moveArrayItem(path: string, index: number, delta: -1 | 1): boolean {
-    return this._reorderArray(path, index, index + delta);
-  }
-
-  private _moveSwitchRow(index: number, delta: -1 | 1): void {
-    this._reorderArray('switch_rows', index, index + delta);
-  }
-
-  private _moveHeader(index: number, delta: -1 | 1): void {
-    this._reorderArray('headers', index, index + delta);
   }
 
   private _renderSortable(path: string, items: any[], renderItem: (item: any, index: number) => TemplateResult): TemplateResult {
@@ -371,68 +378,142 @@ export class SpaceHubCardEditor extends LitElement {
     return friendly && friendly !== entityId ? `${friendly} • ${entityId}` : entityId;
   }
 
-  // ── Render ───────────────────────────────────────────────────
+  // Navigation is editor-only state. Config paths and stored YAML stay unchanged.
+  private _openPage(kind: EditorPageKind, path: string): void {
+    this._pages = [...this._pages, { kind, path }];
+    this._cardGuiMode = true;
+    this._cardGuiAvailable = true;
+    void this.updateComplete.then(() => this.shadowRoot?.querySelector<HTMLElement>('.detail-title')?.focus());
+  }
 
-  protected render(): TemplateResult {
-    if (!this.hass || !this._config) return html``;
+  private _goBack(): void {
+    const page = this._pages[this._pages.length - 1];
+    this._pages = this._pages.slice(0, -1);
+    void this.updateComplete.then(() => {
+      const buttons = this.shadowRoot?.querySelectorAll<HTMLElement>('[data-edit-path]');
+      Array.from(buttons || []).find((button) => button.dataset.editPath === page?.path)?.focus();
+    });
+  }
 
+  private _remapPages(arrayPath: string, mapIndex: (index: number) => number): void {
+    const prefix = `${arrayPath}.`;
+    const next: EditorPage[] = [];
+    for (const page of this._pages) {
+      if (!page.path.startsWith(prefix)) { next.push(page); continue; }
+      const [rawIndex, ...rest] = page.path.slice(prefix.length).split('.');
+      const index = mapIndex(Number(rawIndex));
+      if (index < 0) break;
+      next.push({ ...page, path: `${prefix}${[index, ...rest].join('.')}` });
+    }
+    this._pages = next;
+  }
+
+  private _removeItem(path: string, index: number): void {
+    const current = this._getNestedValue(path);
+    if (!Array.isArray(current) || index < 0 || index >= current.length) return;
+    this._remapPages(path, (i) => i === index ? -1 : i > index ? i - 1 : i);
+    this._valueChanged(path, current.filter((_, i) => i !== index));
+  }
+
+  private _addItem(path: string, value: any, kind: EditorPageKind): void {
+    const current = this._getNestedValue(path) || [];
+    if (!Array.isArray(current)) return;
+    this._valueChanged(path, [...current, value]);
+    this._openPage(kind, `${path}.${current.length}`);
+  }
+
+  private _itemTitle(item: any, fallback: string): string {
+    return item?.name || item?.main_name || item?.title || this._friendlyEntityName(item?.entity)
+      || item?.entity || (typeof item === 'string' ? item : fallback);
+  }
+
+  private _pageTitle(page: EditorPage): string {
+    const item = this._getNestedValue(page.path);
+    const index = Number(page.path.split('.').pop()) + 1;
+    switch (page.kind) {
+      case 'appearance': return 'Card appearance';
+      case 'header': return this._itemTitle(item?.main || item?.weather, `Header ${index}`);
+      case 'row': return `Tile row ${index}`;
+      case 'card-picker': return 'Add card';
+      case 'weather': return 'Weather tile';
+      case 'main': return this._itemTitle(item, 'Main tile');
+      case 'ac': return 'AC tile';
+      case 'thermostat': return 'Thermostat tile';
+      default: {
+        const labels = { switch: 'Tile', source: 'Forecast source', chip: 'Chip', metric: 'Metric', card: 'Card' };
+        return this._itemTitle(item, `${labels[page.kind]} ${index}`);
+      }
+    }
+  }
+
+  private _renderListItem(title: string, subtitle: string, kind: EditorPageKind, path: string, remove?: () => void): TemplateResult {
     return html`
-      <div class="editor-container">
-        <div class="mode-toggle">
-          <button
-            class="editor-btn${!this._yamlMode ? ' active' : ''}"
-            @click=${() => { this._yamlMode = false; this._yamlError = ''; }}
-          >Visual Editor</button>
-          <button
-            class="editor-btn${this._yamlMode ? ' active' : ''}"
-            @click=${() => { this._yamlMode = true; }}
-          >YAML</button>
-        </div>
-        ${this._yamlMode ? this._renderYamlEditor() : this._renderVisualEditor()}
+      <div class="list-item">
+        <div class="item-heading"><span>${title}</span>${subtitle ? html`<span class="item-secondary">${subtitle}</span>` : nothing}</div>
+        <ha-icon-button data-edit-path=${path} .path=${EDIT_ICON_PATH} .label=${`Edit ${title}`}
+          @click=${() => this._openPage(kind, path)}></ha-icon-button>
+        ${remove ? html`<ha-icon-button .path=${DELETE_ICON_PATH} .label=${`Remove ${title}`} @click=${remove}></ha-icon-button>` : nothing}
       </div>
     `;
   }
 
-  // ── YAML Editor ──────────────────────────────────────────────
-
-  private _renderYamlEditor(): TemplateResult {
+  protected render(): TemplateResult {
+    if (!this.hass || !this._config) return html``;
+    const page = this._pages[this._pages.length - 1];
     return html`
-      <ha-yaml-editor
-        .defaultValue=${this._config}
-        @value-changed=${this._yamlChanged}
-      ></ha-yaml-editor>
-      ${this._yamlError ? html`<div class="yaml-error">${this._yamlError}</div>` : nothing}
+      <div class="editor-container">
+        ${page ? html`
+          <div class="detail-header">
+            <ha-icon-button-prev .label=${this.hass.localize('ui.common.back') || 'Back'} @click=${this._goBack}></ha-icon-button-prev>
+            <h2 class="detail-title" tabindex="-1">${this._pageTitle(page)}</h2>
+          </div>
+        ` : nothing}
+        ${keyed(page ? `${page.kind}:${page.path}` : 'overview', page ? this._renderPage(page) : html`
+          ${this._renderHeadersSection()}
+          ${this._renderSwitchRowsSection()}
+          ${this._renderCardsSection()}
+          ${this._renderListItem('Card appearance', 'Tile sizes, icons, and shadow', 'appearance', '')}
+        `)}
+      </div>
     `;
   }
 
-  private _yamlChanged(ev: CustomEvent): void {
-    ev.stopPropagation();
-    const yaml = ev.detail.value;
-    if (ev.detail.isValid === false || !yaml || typeof yaml !== 'object' || Array.isArray(yaml)) {
-      this._yamlError = 'Invalid YAML';
-      return;
+  private _renderPage(page: EditorPage): TemplateResult {
+    const item = this._getNestedValue(page.path);
+    const parts = page.path.split('.');
+    const index = Number(parts.pop());
+    const parentPath = parts.join('.');
+    switch (page.kind) {
+      case 'appearance': return this._renderAppearanceSection();
+      case 'header': return this._renderHeader(item, index);
+      case 'row': return this._renderSwitchRow(item, index);
+      case 'weather': return this._renderWeatherConfig(item, page.path);
+      case 'main': return this._renderMainTileConfig(item, page.path);
+      case 'ac': return this._renderACConfig(item, page.path);
+      case 'thermostat': return this._renderThermostatConfig(item, page.path);
+      case 'switch': return this._renderSwitchItem(item, page.path);
+      case 'chip': return this._renderSingleChip(item, page.path);
+      case 'metric': return this._renderMetricItem(item, parentPath, this._getNestedValue(parentPath), index);
+      case 'source': return this._renderForecastSource(item, page.path);
+      case 'card': return this._renderEmbeddedCardItem(item, page.path);
+      case 'card-picker': return html`
+        <hui-card-picker .hass=${this.hass} .lovelace=${this.lovelace}
+          @config-changed=${(ev: CustomEvent) => {
+            ev.stopPropagation();
+            const active = this._pages[this._pages.length - 1];
+            if (active?.kind !== 'card-picker' || active.path !== page.path) return;
+            if (ev.detail.error || !ev.detail.config || typeof ev.detail.config.type !== 'string') return;
+            this._pages = this._pages.slice(0, -1);
+            this._addItem(page.path, clone(ev.detail.config), 'card');
+          }}></hui-card-picker>
+      `;
     }
-    this._yamlError = '';
-    this._config = clone(yaml);
-    this._fireConfigChanged();
-  }
-
-  // ── Visual Editor ────────────────────────────────────────────
-
-  private _renderVisualEditor(): TemplateResult {
-    return html`
-      ${this._renderAppearanceSection()}
-      ${this._renderHeadersSection()}
-      ${this._renderSwitchRowsSection()}
-      ${this._renderCardsSection()}
-    `;
   }
 
   // ── Appearance ───────────────────────────────────────────────
 
   private _renderAppearanceSection(): TemplateResult {
     return html`
-      <ha-expansion-panel outlined .header=${'Appearance'}>
         <div class="section-content">
           <div class="side-by-side">
             <space-hub-textfield .hass=${this.hass}
@@ -499,7 +580,6 @@ export class SpaceHubCardEditor extends LitElement {
             @input=${(ev: Event) => this._valueChanged('unavailable_pulse_color', (ev.target as HTMLInputElement).value)}
           ></space-hub-textfield>
         </div>
-      </ha-expansion-panel>
     `;
   }
 
@@ -507,89 +587,62 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _renderHeadersSection(): TemplateResult {
     const headers = this._config.headers || [];
-    const selectedIndex = this._clampIndex(this._selectedHeaderIndex, headers.length);
     return html`
-      <ha-expansion-panel outlined .header=${`Headers (${headers.length})`}>
-        <div class="section-content">
-          ${this._renderSortable('headers', headers, (header, i) => html`
-            <ha-button .appearance=${selectedIndex === i ? 'filled' : 'plain'}
-              @click=${() => { this._selectedHeaderIndex = i; }}>
-              ${header.main?.main_name || 'Header ' + (i + 1)}
-            </ha-button>
-          `)}
-          ${headers.length ? this._renderHeader(headers[selectedIndex], selectedIndex) : html`<div class="empty-hint">No headers configured.</div>`}
-          <div class="action-row">
-            <button class="editor-btn" @click=${this._addHeader}>
-              <ha-icon icon="mdi:plus"></ha-icon> Add Header
-            </button>
-            ${headers.length > 0 ? html`
-              <button
-                class="editor-btn"
-                .disabled=${selectedIndex <= 0}
-                @click=${() => this._moveHeader(selectedIndex, -1)}
-              >
-                <ha-icon icon="mdi:arrow-up"></ha-icon> Move Header Up
-              </button>
-              <button
-                class="editor-btn"
-                .disabled=${selectedIndex >= headers.length - 1}
-                @click=${() => this._moveHeader(selectedIndex, 1)}
-              >
-                <ha-icon icon="mdi:arrow-down"></ha-icon> Move Header Down
-              </button>
-              <button class="editor-btn danger" @click=${() => this._removeHeader(selectedIndex)}>
-                <ha-icon icon="mdi:delete"></ha-icon> Remove Header ${selectedIndex + 1}
-              </button>
-            ` : nothing}
-          </div>
-        </div>
-      </ha-expansion-panel>
+      <section aria-label="Headers">
+        <h3>Headers (${headers.length})</h3>
+        ${this._renderSortable('headers', headers, (header, i) => this._renderListItem(
+          this._itemTitle(header.main || header.weather, `Header ${i + 1}`),
+          [header.weather && 'Weather', header.main && 'Main', header.ac && 'AC', header.thermostat && 'Thermostat'].filter(Boolean).join(', '),
+          'header', `headers.${i}`, () => this._removeItem('headers', i)))}
+        <ha-button appearance="plain" @click=${() => this._addItem('headers', { main: { main_name: 'New Room' } }, 'header')}>Add header</ha-button>
+      </section>
     `;
   }
 
-  private _addHeader(): void {
-    if (!this._config.headers) this._config.headers = [];
-    this._config.headers.push({ main: { main_name: 'New Room' } });
-    this._selectedHeaderIndex = this._config.headers.length - 1;
-    this._fireConfigChanged();
-  }
-
-  private _removeHeader(idx: number): void {
-    if (!this._config.headers) return;
-    this._config.headers.splice(idx, 1);
-    if (this._selectedHeaderIndex >= this._config.headers.length) {
-      this._selectedHeaderIndex = Math.max(0, this._config.headers.length - 1);
-    }
-    this._fireConfigChanged();
-  }
-
   private _renderHeader(header: SpaceHubHeader, idx: number): TemplateResult {
-    const base = `headers.${idx}`;
+    const types = ['weather', 'main', 'ac', 'thermostat'] as const;
+    const labels = { weather: 'Weather tile', main: 'Main tile', ac: 'AC tile', thermostat: 'Thermostat tile' };
     return html`
-      ${this._renderWeatherConfig(header.weather, `${base}.weather`)}
-      ${this._renderMainTileConfig(header.main, `${base}.main`)}
-      ${this._renderACConfig(header.ac, `${base}.ac`)}
-      ${this._renderThermostatConfig(header.thermostat, `${base}.thermostat`)}
+      <section aria-label="Header tiles">
+        <p class="empty-hint">Header tiles use fixed positions. Drag headers on the overview to change their order.</p>
+        ${types.filter((type) => header[type]).map((type) => this._renderListItem(
+          labels[type], this._itemTitle(header[type], ''), type, `headers.${idx}.${type}`,
+          () => this._valueChanged(`headers.${idx}.${type}`, undefined)))}
+        <div class="action-row">
+          ${types.filter((type) => !header[type]).map((type) => html`
+            <ha-button appearance="plain" @click=${() => {
+              const path = `headers.${idx}.${type}`;
+              this._valueChanged(path, type === 'main' ? { main_name: 'Room' } : type === 'weather' ? { name: 'Weather' } : { entity: '' });
+              this._openPage(type, path);
+            }}>Add ${labels[type].toLowerCase()}</ha-button>
+          `)}
+        </div>
+      </section>
     `;
   }
 
   // ── Weather Tile Config ──────────────────────────────────────
 
   private _renderWeatherConfig(weather: HeaderWeather | undefined, basePath: string): TemplateResult {
-    const has = !!weather;
     const config = weather || {};
     return html`
-      <ha-expansion-panel outlined .header=${'Weather Tile'}>
         <div class="section-content">
-          ${!has ? html`
-            <button class="editor-btn" @click=${() => { this._valueChanged(basePath, { name: 'Weather' }); }}>
-              <ha-icon icon="mdi:plus"></ha-icon> Add Weather Tile
-            </button>
-          ` : html`
             <div class="side-by-side">
               ${this._renderEntityField('Weather Entity', `${basePath}.entity`, config.entity, { domain: 'weather' })}
             </div>
+            <div class="side-by-side">
+              ${this._renderEntityField('Temperature Sensor', `${basePath}.temp_sensor`, config.temp_sensor, { domain: 'sensor' })}
+              ${this._renderEntityField('Humidity Sensor', `${basePath}.humidity_sensor`, config.humidity_sensor, { domain: 'sensor' })}
+            </div>
+            ${this._renderEntityField('Feels Like Sensor', `${basePath}.feels_like_sensor`, config.feels_like_sensor, { domain: 'sensor' })}
             ${this._renderForecastSourcesConfig(config, basePath)}
+            ${this._renderMetricsConfig(
+              (config.metrics && config.metrics.length ? config.metrics : this._defaultWeatherMetrics(config)) as any[],
+              basePath,
+            )}
+            ${this._renderChipsConfig(config.chips as any[] || [], basePath)}
+          <ha-expansion-panel outlined .header=${'Appearance'}>
+            <div class="section-content">
             <div class="side-by-side">
               ${this._renderSelectField('Weather Icon Set', `${basePath}.icon_set`, config.icon_set, ['meteocons', 'custom'])}
             </div>
@@ -659,6 +712,10 @@ export class SpaceHubCardEditor extends LitElement {
                 }}
               ></space-hub-textfield>
             </div>
+            </div>
+          </ha-expansion-panel>
+          <ha-expansion-panel outlined .header=${'Forecast graphs'}>
+            <div class="section-content">
             <div class="side-by-side">
               <ha-formfield label="Sync forecast graphs">
                 <ha-switch
@@ -804,88 +861,36 @@ export class SpaceHubCardEditor extends LitElement {
                 }}
               ></space-hub-textfield>
             </div>
-            <div class="side-by-side">
-              ${this._renderEntityField('Temperature Sensor', `${basePath}.temp_sensor`, config.temp_sensor, { domain: 'sensor' })}
-              ${this._renderEntityField('Humidity Sensor', `${basePath}.humidity_sensor`, config.humidity_sensor, { domain: 'sensor' })}
             </div>
-            ${this._renderEntityField('Feels Like Sensor', `${basePath}.feels_like_sensor`, config.feels_like_sensor, { domain: 'sensor' })}
-            ${this._renderMetricsConfig(
-              (config.metrics && config.metrics.length ? config.metrics : this._defaultWeatherMetrics(config)) as any[],
-              basePath,
-            )}
-            ${this._renderChipsConfig(config.chips as any[] || [], basePath)}
-            <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
-              <ha-icon icon="mdi:delete"></ha-icon> Remove Weather Tile
-            </button>
-          `}
+          </ha-expansion-panel>
         </div>
-      </ha-expansion-panel>
     `;
   }
 
   private _renderForecastSourcesConfig(config: HeaderWeather, basePath: string): TemplateResult {
     const path = `${basePath}.forecast_sources`;
-    const sources = Array.isArray(config.forecast_sources) ? config.forecast_sources as any[] : [];
-    const sourceLabel = (source: any, index: number) => source?.name || source?.entity || (typeof source === 'string' ? source : '') || `Source ${index + 1}`;
-    const updateSource = (index: number, patch: Record<string, unknown>) => {
-      const current = [...((this._getNestedValue(path) || sources) as any[])];
-      const raw = current[index];
-      const item = typeof raw === 'string' ? { entity: raw } : { ...(raw || {}) };
-      current[index] = { ...item, ...patch };
-      this._valueChanged(path, current);
-    };
-
+    const sources = Array.isArray(config.forecast_sources) ? config.forecast_sources : [];
     return html`
-      <div class="metrics-section">
-        <div class="metrics-section-title">Additional Forecast Sources (${sources.length})</div>
-        <div class="empty-hint">Primary forecast comes from Weather Entity. Add other weather entities to switch the forecast location in the tile.</div>
-        <div class="metrics-list">
-          ${sources.map((source, index) => {
-            const item = typeof source === 'string' ? { entity: source } : source || {};
-            return html`
-              <div class="sub-item">
-                <div class="sub-item-header">
-                  <div class="sub-item-heading">
-                    <span class="sub-item-title">${sourceLabel(item, index)}</span>
-                    <span class="sub-item-meta">${item.entity || 'No entity selected'}</span>
-                  </div>
-                  <ha-icon-button
-                    .path=${DELETE_ICON_PATH}
-                    .label=${'Remove forecast source'}
-                    @click=${() => {
-                      const current = [...((this._getNestedValue(path) || sources) as any[])];
-                      current.splice(index, 1);
-                      this._valueChanged(path, current);
-                    }}
-                  ></ha-icon-button>
-                </div>
-                <ha-form
-                  .hass=${this.hass}
-                  .data=${{ entity: item.entity || '' }}
-                  .schema=${[{ name: 'entity', selector: { entity: { domain: 'weather' } } }]}
-                  .computeLabel=${(schema: { name: string }) => (schema.name === 'entity' ? 'Weather Entity' : undefined)}
-                  @value-changed=${(ev: CustomEvent) => {
-                    ev.stopPropagation();
-                    updateSource(index, { entity: ev.detail.value?.entity || undefined });
-                  }}
-                ></ha-form>
-                <space-hub-textfield .hass=${this.hass}
-                  label="Display Name (optional)"
-                  .value=${item.name || ''}
-                  @input=${(ev: Event) => updateSource(index, { name: (ev.target as HTMLInputElement).value || undefined })}
-                ></space-hub-textfield>
-              </div>
-            `;
-          })}
-        </div>
-        <button class="editor-btn" @click=${() => {
-          const current = [...((this._getNestedValue(path) || sources) as any[])];
-          current.push({ entity: '', name: '' });
-          this._valueChanged(path, current);
-        }}>
-          <ha-icon icon="mdi:plus"></ha-icon> Add Forecast Source
-        </button>
-      </div>
+      <section aria-label="Forecast sources">
+        <h3>Additional forecast sources (${sources.length})</h3>
+        <p class="empty-hint">Primary forecast comes from Weather Entity. Add other locations to switch between them in the tile.</p>
+        ${this._renderSortable(path, sources, (source, i) => this._renderListItem(
+          this._itemTitle(source, `Source ${i + 1}`), '', 'source', `${path}.${i}`, () => this._removeItem(path, i)))}
+        <ha-button appearance="plain" @click=${() => this._addItem(path, { entity: '', name: '' }, 'source')}>Add forecast source</ha-button>
+      </section>
+    `;
+  }
+
+  private _renderForecastSource(source: any, path: string): TemplateResult {
+    const item = typeof source === 'string' ? { entity: source } : source || {};
+    return html`
+      <ha-form .hass=${this.hass} .data=${item}
+        .schema=${[{ name: 'entity', selector: { entity: { domain: 'weather' } } }, { name: 'name', selector: { text: {} } }]}
+        .computeLabel=${(schema: { name: string }) => schema.name === 'entity' ? 'Weather Entity' : 'Display name (optional)'}
+        @value-changed=${(ev: CustomEvent) => {
+          ev.stopPropagation();
+          this._valueChanged(path, { ...item, ...ev.detail.value });
+        }}></ha-form>
     `;
   }
 
@@ -893,15 +898,8 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _renderMainTileConfig(main: HeaderMain | undefined, basePath: string): TemplateResult {
     const m = main || {};
-    const hasMain = !!main;
     return html`
-      <ha-expansion-panel outlined .header=${'Main Tile'}>
         <div class="section-content">
-          ${!hasMain ? html`
-            <button class="editor-btn" @click=${() => { this._valueChanged(basePath, { main_name: 'Room' }); }}>
-              <ha-icon icon="mdi:plus"></ha-icon> Add Main Tile
-            </button>
-          ` : html`
             <div class="side-by-side">
               <space-hub-textfield .hass=${this.hass}
                 label="Name"
@@ -929,56 +927,33 @@ export class SpaceHubCardEditor extends LitElement {
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, m.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, m.hold_action)}
             ${this._renderActionConfig('Double Tap Action', `${basePath}.double_tap_action`, m.double_tap_action)}
-            <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
-              <ha-icon icon="mdi:delete"></ha-icon> Remove Main Tile
-            </button>
-          `}
         </div>
-      </ha-expansion-panel>
     `;
   }
 
   // ── Chips Config ─────────────────────────────────────────────
 
   private _renderChipsConfig(chips: any[], mainPath: string): TemplateResult {
-    const chipsPath = `${mainPath}.chips`;
+    const path = `${mainPath}.chips`;
     return html`
-      <ha-expansion-panel outlined .header=${`Chips (${chips.length})`}>
-        <div class="section-content">
-          ${this._renderSortable(chipsPath, chips, (chip, i) => this._renderSingleChip(chip, `${chipsPath}.${i}`, i, chipsPath))}
-          <button class="editor-btn" @click=${() => {
-            const current = (this._getNestedValue(chipsPath) || []) as any[];
-            current.push({ type: 'custom', entity: '' });
-            this._valueChanged(chipsPath, current);
-          }}>
-            <ha-icon icon="mdi:plus"></ha-icon> Add Chip
-          </button>
-        </div>
-      </ha-expansion-panel>
+      <section aria-label="Chips">
+        <h3>Chips (${chips.length})</h3>
+        ${this._renderSortable(path, chips, (chip, i) => this._renderListItem(
+          this._itemTitle(chip, `Chip ${i + 1}`), chip.type || 'custom', 'chip', `${path}.${i}`, () => this._removeItem(path, i)))}
+        <ha-button appearance="plain" @click=${() => this._addItem(path, { type: 'custom', entity: '' }, 'chip')}>Add chip</ha-button>
+      </section>
     `;
   }
 
-  private _renderSingleChip(chip: any, path: string, index: number, chipsPath: string): TemplateResult {
+  private _renderSingleChip(chip: any, path: string): TemplateResult {
     return html`
-      <div class="sub-item">
-        <div class="sub-item-header">
-          <div class="sub-item-heading">
-            <span class="sub-item-title">Chip ${index + 1}: ${chip.type || 'custom'}</span>
-            <span class="sub-item-meta">${this._entitySummary(chip.entity)}</span>
-          </div>
-          <ha-icon-button
-            .path=${'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'}
-            @click=${() => {
-              const arr = (this._getNestedValue(chipsPath) || []) as any[];
-              arr.splice(index, 1);
-              this._valueChanged(chipsPath, [...arr]);
-            }}
-          ></ha-icon-button>
-        </div>
+      <div class="section-content">
         <div class="side-by-side">
           ${this._renderSelectField('Type', `${path}.type`, chip.type, CHIP_TYPES)}
           ${this._renderEntityField('Entity', `${path}.entity`, chip.entity)}
         </div>
+          <ha-expansion-panel outlined .header=${'Appearance'}>
+            <div class="section-content">
         <div class="side-by-side">
           <ha-selector .required=${false} .selector=${{ icon: {} }}
             .hass=${this.hass}
@@ -1024,6 +999,8 @@ export class SpaceHubCardEditor extends LitElement {
           .value=${chip.icon_color_unavailable || ''}
           @input=${(ev: Event) => this._valueChanged(`${path}.icon_color_unavailable`, (ev.target as HTMLInputElement).value)}
         ></space-hub-textfield>
+            </div>
+          </ha-expansion-panel>
       </div>
     `;
   }
@@ -1057,25 +1034,8 @@ export class SpaceHubCardEditor extends LitElement {
       this._valueChanged(metricsPath, arr);
     };
     const isRain = item.type === 'rain';
-    const summary = isRain
-      ? this._entitySummary(item.rain_state_sensor || item.rain_rate_sensor)
-      : this._entitySummary(item.entity);
     return html`
-      <div class="sub-item">
-        <div class="sub-item-header">
-          <div class="sub-item-heading">
-            <span class="sub-item-title">${isRain ? 'Rain' : 'Metric'} ${i + 1}</span>
-            <span class="sub-item-meta">${summary}</span>
-          </div>
-          <ha-icon-button
-            .path=${'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'}
-            @click=${() => {
-              const arr = [...((this._getNestedValue(metricsPath) || metrics) as any[])];
-              arr.splice(i, 1);
-              this._valueChanged(metricsPath, arr);
-            }}
-          ></ha-icon-button>
-        </div>
+      <div class="section-content">
         ${isRain ? html`
           <div class="empty-hint">Shows "No rain" / "Raining" with intensity. A wet sensor with no rate above the threshold counts as no rain.</div>
           ${this._renderEntityField('Rain State Sensor', `${metricsPath}.${i}.rain_state_sensor`, item.rain_state_sensor, { domain: 'binary_sensor' })}
@@ -1136,81 +1096,46 @@ export class SpaceHubCardEditor extends LitElement {
   }
 
   private _renderMetricsConfig(metrics: any[], mainPath: string): TemplateResult {
-    const metricsPath = `${mainPath}.metrics`;
+    const path = `${mainPath}.metrics`;
     return html`
-      <div class="metrics-section">
-        <div class="metrics-section-title">Grid Metrics (${metrics.length})</div>
-        <div class="empty-hint">Drag the handle to reorder. Edit, remove, or add your own entities.</div>
-        ${this._renderSortable(metricsPath, metrics, (item, i) => this._renderMetricItem(item, metricsPath, metrics, i))}
-        <div class="side-by-side">
-          <button class="editor-btn" @click=${() => {
-            const current = [...((this._getNestedValue(metricsPath) || metrics) as any[])];
-            current.push({ entity: '' });
-            this._valueChanged(metricsPath, current);
-          }}>
-            <ha-icon icon="mdi:plus"></ha-icon> Add Metric
-          </button>
-          <button class="editor-btn" @click=${() => {
-            const current = [...((this._getNestedValue(metricsPath) || metrics) as any[])];
-            current.push({ type: 'rain', name: 'Rain', icon_active: 'mdi:weather-rainy', icon_inactive: 'mdi:water-off-outline' });
-            this._valueChanged(metricsPath, current);
-          }}>
-            <ha-icon icon="mdi:weather-rainy"></ha-icon> Add Rain
-          </button>
+      <section aria-label="Grid metrics">
+        <h3>Grid metrics (${metrics.length})</h3>
+        ${this._renderSortable(path, metrics, (item, i) => this._renderListItem(
+          this._itemTitle(item, `Metric ${i + 1}`), this._entitySummary(item.entity || item.rain_state_sensor || item.rain_rate_sensor),
+          'metric', `${path}.${i}`, () => this._removeItem(path, i)))}
+        <div class="action-row">
+          <ha-button appearance="plain" @click=${() => this._addItem(path, { entity: '' }, 'metric')}>Add metric</ha-button>
+          <ha-button appearance="plain" @click=${() => this._addItem(path, { type: 'rain', name: 'Rain', icon_active: 'mdi:weather-rainy', icon_inactive: 'mdi:water-off-outline' }, 'metric')}>Add rain</ha-button>
         </div>
-      </div>
+      </section>
     `;
   }
 
   // ── AC Config ────────────────────────────────────────────────
 
   private _renderACConfig(ac: HeaderAC | undefined, basePath: string): TemplateResult {
-    const hasAC = !!ac;
     const config = ac || {};
     return html`
-      <ha-expansion-panel outlined .header=${'AC Tile'}>
         <div class="section-content">
-          ${!hasAC ? html`
-            <button class="editor-btn" @click=${() => { this._valueChanged(basePath, { entity: '' }); }}>
-              <ha-icon icon="mdi:plus"></ha-icon> Add AC Tile
-            </button>
-          ` : html`
             ${this._renderEntityField('Climate Entity', `${basePath}.entity`, config.entity, { domain: 'climate' })}
             ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, config.glow_mode, GLOW_MODES)}
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, config.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, config.hold_action)}
-            <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
-              <ha-icon icon="mdi:delete"></ha-icon> Remove AC Tile
-            </button>
-          `}
         </div>
-      </ha-expansion-panel>
     `;
   }
 
   // ── Thermostat Config ────────────────────────────────────────
 
   private _renderThermostatConfig(thermostat: HeaderThermostat | undefined, basePath: string): TemplateResult {
-    const has = !!thermostat;
     const config = thermostat || {};
     return html`
-      <ha-expansion-panel outlined .header=${'Thermostat Tile'}>
         <div class="section-content">
-          ${!has ? html`
-            <button class="editor-btn" @click=${() => { this._valueChanged(basePath, { entity: '' }); }}>
-              <ha-icon icon="mdi:plus"></ha-icon> Add Thermostat Tile
-            </button>
-          ` : html`
             ${this._renderEntityField('Climate Entity', `${basePath}.entity`, config.entity, { domain: 'climate' })}
             ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, config.glow_mode, GLOW_MODES)}
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, config.tap_action)}
             ${this._renderActionConfig('Hold Action', `${basePath}.hold_action`, config.hold_action)}
-            <button class="editor-btn danger" @click=${() => this._valueChanged(basePath, undefined)}>
-              <ha-icon icon="mdi:delete"></ha-icon> Remove Thermostat Tile
-            </button>
-          `}
         </div>
-      </ha-expansion-panel>
     `;
   }
 
@@ -1218,105 +1143,37 @@ export class SpaceHubCardEditor extends LitElement {
 
   private _renderSwitchRowsSection(): TemplateResult {
     const rows = (this._config.switch_rows || []) as any[];
-    const selectedIndex = this._clampIndex(this._selectedSwitchRowIndex, rows.length);
     return html`
-      <ha-expansion-panel outlined .header=${`Switch Rows (${rows.length})`}>
-        <div class="section-content">
-          ${this._renderSortable('switch_rows', rows, (row, i) => html`
-            <ha-button .appearance=${selectedIndex === i ? 'filled' : 'plain'}
-              @click=${() => { this._selectedSwitchRowIndex = i; }}>
-              Row ${i + 1}: ${(Array.isArray(row) ? row : row.row || []).map((tile: any) =>
-                tile.name || this._friendlyEntityName(tile.entity) || tile.entity || 'New tile').join(', ')}
-            </ha-button>
-          `)}
-          ${rows.length
-            ? this._renderSwitchRow(rows[selectedIndex], selectedIndex)
-            : html`<div class="empty-hint">No switch rows configured.</div>`
-          }
-          <div class="action-row">
-            <button class="editor-btn" @click=${this._addSwitchRow}>
-              <ha-icon icon="mdi:plus"></ha-icon> Add Switch Row
-            </button>
-            ${rows.length > 0 ? html`
-              <button
-                class="editor-btn"
-                .disabled=${selectedIndex <= 0}
-                @click=${() => this._moveSwitchRow(selectedIndex, -1)}
-              >
-                <ha-icon icon="mdi:arrow-up"></ha-icon> Move Row Up
-              </button>
-              <button
-                class="editor-btn"
-                .disabled=${selectedIndex >= rows.length - 1}
-                @click=${() => this._moveSwitchRow(selectedIndex, 1)}
-              >
-                <ha-icon icon="mdi:arrow-down"></ha-icon> Move Row Down
-              </button>
-              <button class="editor-btn danger" @click=${() => this._removeSwitchRow(selectedIndex)}>
-                <ha-icon icon="mdi:delete"></ha-icon> Remove Row ${selectedIndex + 1}
-              </button>
-            ` : nothing}
-          </div>
-        </div>
-      </ha-expansion-panel>
+      <section aria-label="Tile rows">
+        <h3>Tile rows (${rows.length})</h3>
+        ${this._renderSortable('switch_rows', rows, (row, i) => this._renderListItem(
+          `Row ${i + 1}`, (Array.isArray(row) ? row : row.row || []).map((tile: any) => this._itemTitle(tile, 'New tile')).join(', '),
+          'row', `switch_rows.${i}`, () => this._removeItem('switch_rows', i)))}
+        <ha-button appearance="plain" @click=${() => this._addItem('switch_rows', { row: [] }, 'row')}>Add row</ha-button>
+      </section>
     `;
-  }
-
-  private _addSwitchRow(): void {
-    if (!this._config.switch_rows) this._config.switch_rows = [];
-    (this._config.switch_rows as any[]).push({ row: [{ entity: '', name: '', icon: 'mdi:toggle-switch' }] });
-    this._selectedSwitchRowIndex = (this._config.switch_rows as any[]).length - 1;
-    this._fireConfigChanged();
-  }
-
-  private _removeSwitchRow(idx: number): void {
-    if (!this._config.switch_rows) return;
-    (this._config.switch_rows as any[]).splice(idx, 1);
-    if (this._selectedSwitchRowIndex >= (this._config.switch_rows as any[]).length) {
-      this._selectedSwitchRowIndex = Math.max(0, (this._config.switch_rows as any[]).length - 1);
-    }
-    this._fireConfigChanged();
   }
 
   private _renderSwitchRow(row: any, rowIndex: number): TemplateResult {
     const items: any[] = Array.isArray(row) ? row : (Array.isArray(row?.row) ? row.row : []);
-    const basePath = `switch_rows.${rowIndex}`;
-    // Preserve both supported row shapes when editing.
-    const itemsPath = Array.isArray(row) ? basePath : `${basePath}.row`;
-
+    const itemsPath = Array.isArray(row) ? `switch_rows.${rowIndex}` : `switch_rows.${rowIndex}.row`;
     return html`
-      <div class="section-content">
-        ${this._renderSortable(itemsPath, items, (sw, i) => this._renderSwitchItem(sw, `${itemsPath}.${i}`, i, itemsPath))}
-        <button class="editor-btn" @click=${() => {
-          const arr = (this._getNestedValue(itemsPath) || []) as any[];
-          arr.push({ entity: '', name: '', icon: 'mdi:toggle-switch' });
-          this._valueChanged(itemsPath, [...arr]);
-        }}>
-          <ha-icon icon="mdi:plus"></ha-icon> Add Switch
-        </button>
-      </div>
+      <section aria-label="Tiles">
+        <p class="empty-hint">Drag to change the order within this row.</p>
+        ${this._renderSortable(itemsPath, items, (sw, i) => this._renderListItem(
+          this._itemTitle(sw, `Tile ${i + 1}`), this._entitySummary(sw.entity),
+          'switch', `${itemsPath}.${i}`, () => this._removeItem(itemsPath, i)))}
+        <ha-button appearance="plain" @click=${() => this._addItem(itemsPath, { entity: '', name: '', icon: 'mdi:toggle-switch' }, 'switch')}>Add tile</ha-button>
+      </section>
     `;
   }
 
-  private _renderSwitchItem(sw: any, path: string, index: number, rowPath: string): TemplateResult {
+  private _renderSwitchItem(sw: any, path: string): TemplateResult {
 
     return html`
-      <ha-expansion-panel outlined .header=${sw.name || this._friendlyEntityName(sw.entity) || `Tile ${index + 1}`}>
-      <div class="sub-item">
-        <div class="sub-item-header">
-          <div class="header-actions">
-            <ha-icon-button
-              .path=${DELETE_ICON_PATH}
-              .label=${'Remove switch'}
-              @click=${() => {
-                const arr = (this._getNestedValue(rowPath) || []) as any[];
-                arr.splice(index, 1);
-                this._valueChanged(rowPath, [...arr]);
-              }}
-            ></ha-icon-button>
-          </div>
-        </div>
+      <div class="section-content">
         ${this._renderEntityField('Controlled Entity', `${path}.entity`, sw.entity)}
+        ${this._renderSelectField('Type', `${path}.type`, sw.type, SWITCH_TYPES)}
         <div class="side-by-side">
           <space-hub-textfield .hass=${this.hass}
             label="Name"
@@ -1330,6 +1187,8 @@ export class SpaceHubCardEditor extends LitElement {
             @value-changed=${(ev: CustomEvent) => this._setSwitchInactiveIcon(path, ev.detail.value)}
           ></ha-selector>
         </div>
+          <ha-expansion-panel outlined .header=${'Appearance'}>
+            <div class="section-content">
         <div class="side-by-side">
           <ha-selector .required=${false} .selector=${{ icon: {} }}
             .hass=${this.hass}
@@ -1344,9 +1203,29 @@ export class SpaceHubCardEditor extends LitElement {
           ></space-hub-textfield>
         </div>
         <div class="side-by-side">
-          ${this._renderSelectField('Type', `${path}.type`, sw.type, SWITCH_TYPES)}
           ${this._renderSelectField('Glow Mode', `${path}.glow_mode`, sw.glow_mode, GLOW_MODES)}
         </div>
+        <div class="side-by-side">
+          <space-hub-textfield .hass=${this.hass}
+            label="Font Size"
+            .value=${sw.font_size || sw['font-size'] || ''}
+            @input=${(ev: Event) => this._valueChanged(`${path}.font_size`, (ev.target as HTMLInputElement).value)}
+          ></space-hub-textfield>
+          <space-hub-textfield .hass=${this.hass}
+            label="Font Weight"
+            .value=${sw.font_weight || sw['font-weight'] || ''}
+            @input=${(ev: Event) => this._valueChanged(`${path}.font_weight`, (ev.target as HTMLInputElement).value)}
+          ></space-hub-textfield>
+        </div>
+            </div>
+          </ha-expansion-panel>
+        ${this._renderEntityField('Hold Entity (more-info on hold)', `${path}.hold_entity`, sw.hold_entity)}
+
+        <h3>Actions</h3>
+            ${this._renderActionConfig('Tap Action', `${path}.tap_action`, sw.tap_action)}
+            ${this._renderActionConfig('Hold Action', `${path}.hold_action`, sw.hold_action)}
+            ${this._renderActionConfig('Double Tap Action', `${path}.double_tap_action`, sw.double_tap_action)}
+
         <ha-expansion-panel outlined .header=${'State styling'}>
           <div class="section-content">
             ${(['active_states', 'pending_states'] as const).map((field) => html`
@@ -1368,35 +1247,12 @@ export class SpaceHubCardEditor extends LitElement {
             `)}
           </div>
         </ha-expansion-panel>
-        <div class="side-by-side">
-          <space-hub-textfield .hass=${this.hass}
-            label="Font Size"
-            .value=${sw.font_size || sw['font-size'] || ''}
-            @input=${(ev: Event) => this._valueChanged(`${path}.font_size`, (ev.target as HTMLInputElement).value)}
-          ></space-hub-textfield>
-          <space-hub-textfield .hass=${this.hass}
-            label="Font Weight"
-            .value=${sw.font_weight || sw['font-weight'] || ''}
-            @input=${(ev: Event) => this._valueChanged(`${path}.font_weight`, (ev.target as HTMLInputElement).value)}
-          ></space-hub-textfield>
-        </div>
-        ${this._renderEntityField('Hold Entity (more-info on hold)', `${path}.hold_entity`, sw.hold_entity)}
-
-        <ha-expansion-panel outlined .header=${'Actions'}>
-          <div class="section-content">
-            ${this._renderActionConfig('Tap Action', `${path}.tap_action`, sw.tap_action)}
-            ${this._renderActionConfig('Hold Action', `${path}.hold_action`, sw.hold_action)}
-            ${this._renderActionConfig('Double Tap Action', `${path}.double_tap_action`, sw.double_tap_action)}
-          </div>
-        </ha-expansion-panel>
-
         <ha-expansion-panel outlined .header=${'Info Templates'}>
           <div class="section-content">
             ${this._renderInfoTemplates(sw, path)}
           </div>
         </ha-expansion-panel>
       </div>
-      </ha-expansion-panel>
     `;
   }
 
@@ -1420,7 +1276,8 @@ export class SpaceHubCardEditor extends LitElement {
             }}
           ></space-hub-textfield>
           <ha-icon-button
-            .path=${'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'}
+            .path=${DELETE_ICON_PATH}
+            .label=${`Remove template ${i + 1}`}
             @click=${() => {
               const arr = [...templates];
               arr.splice(i, 1);
@@ -1430,12 +1287,12 @@ export class SpaceHubCardEditor extends LitElement {
         </div>
       `)}
       ${templates.length < 2 ? html`
-        <button class="editor-btn" @click=${() => {
+        <ha-button appearance="plain" @click=${() => {
           const arr = [...templates, ''];
           this._valueChanged(`${path}.info_templates`, arr);
         }}>
           <ha-icon icon="mdi:plus"></ha-icon> Add Template
-        </button>
+        </ha-button>
       ` : nothing}
     `;
   }
@@ -1445,70 +1302,36 @@ export class SpaceHubCardEditor extends LitElement {
   private _renderCardsSection(): TemplateResult {
     const cards = (this._config.cards || []) as any[];
     return html`
-      <ha-expansion-panel outlined .header=${`Embedded Cards (${cards.length})`}>
-        <div class="section-content">
-          <div class="empty-hint">
-            Add standard Home Assistant cards below the tile rows. Use their native visual editor or switch to YAML.
-          </div>
-          ${this._renderSortable('cards', cards, (card, i) => this._renderEmbeddedCardItem(card, i, cards.length))}
-          <button class="editor-btn" @click=${() => {
-            const arr = [...cards, { type: 'tile', entity: '' }];
-            this._valueChanged('cards', arr);
-          }}>
-            <ha-icon icon="mdi:plus"></ha-icon> Add Card
-          </button>
-        </div>
-      </ha-expansion-panel>
+      <section aria-label="Embedded cards">
+        <h3>Embedded cards (${cards.length})</h3>
+        ${this._renderSortable('cards', cards, (card, i) => this._renderListItem(
+          this._itemTitle(card, `Card ${i + 1}`), card.type || 'unknown', 'card', `cards.${i}`, () => this._removeItem('cards', i)))}
+        <ha-button appearance="plain" data-edit-path="cards" @click=${() => this._openPage('card-picker', 'cards')}>Add card</ha-button>
+      </section>
     `;
   }
 
-  private _renderEmbeddedCardItem(card: any, index: number, cardCount: number): TemplateResult {
+  private _renderEmbeddedCardItem(card: any, path: string): TemplateResult {
     return html`
-      <div class="sub-item">
-        <div class="sub-item-header">
-          <div class="sub-item-heading">
-            <span class="sub-item-title">Card ${index + 1}: ${card.type || 'unknown'}</span>
-          </div>
-          <div class="header-actions">
-            <ha-icon-button
-              .path=${ARROW_UP_ICON_PATH}
-              .label=${'Move card up'}
-              .disabled=${index <= 0}
-              @click=${() => this._moveArrayItem('cards', index, -1)}
-            ></ha-icon-button>
-            <ha-icon-button
-              .path=${ARROW_DOWN_ICON_PATH}
-              .label=${'Move card down'}
-              .disabled=${index >= cardCount - 1}
-              @click=${() => this._moveArrayItem('cards', index, 1)}
-            ></ha-icon-button>
-            <ha-icon-button
-              .path=${DELETE_ICON_PATH}
-              .label=${'Remove card'}
-              @click=${() => {
-                const arr = [...(this._config.cards || []) as any[]];
-                arr.splice(index, 1);
-                this._valueChanged('cards', arr.length ? arr : undefined);
-              }}
-            ></ha-icon-button>
-          </div>
-        </div>
-        <hui-card-element-editor
-          .hass=${this.hass} .value=${card}
-          @config-changed=${(ev: CustomEvent) => {
-            ev.stopPropagation();
-            if (ev.detail.error || !ev.detail.config || typeof ev.detail.config.type !== 'string'
-              || JSON.stringify(ev.detail.config) === JSON.stringify(card)) return;
-            const arr = [...(this._config.cards || []) as any[]];
-            arr[index] = ev.detail.config;
-            this._valueChanged('cards', arr);
-          }}
-        ></hui-card-element-editor>
-        <ha-button @click=${(ev: Event) => {
-          const editor = (ev.currentTarget as HTMLElement).previousElementSibling as any;
-          editor?.toggleMode?.();
-        }}>Toggle visual / YAML editor</ha-button>
-      </div>
+      <hui-card-element-editor .hass=${this.hass} .lovelace=${this.lovelace} .value=${card}
+        @GUImode-changed=${(ev: CustomEvent) => {
+          ev.stopPropagation();
+          this._cardGuiMode = ev.detail.guiMode;
+          this._cardGuiAvailable = ev.detail.guiModeAvailable;
+        }}
+        @config-changed=${(ev: CustomEvent) => {
+          ev.stopPropagation();
+          const active = this._pages[this._pages.length - 1];
+          if (active?.kind !== 'card' || active.path !== path) return;
+          if (ev.detail.guiModeAvailable !== undefined) this._cardGuiAvailable = ev.detail.guiModeAvailable;
+          if (ev.detail.error || !ev.detail.config || typeof ev.detail.config.type !== 'string'
+            || JSON.stringify(ev.detail.config) === JSON.stringify(card)) return;
+          this._valueChanged(path, clone(ev.detail.config));
+        }}
+      ></hui-card-element-editor>
+      <ha-button appearance="plain" .disabled=${!this._cardGuiAvailable} @click=${() => {
+        (this.shadowRoot?.querySelector('hui-card-element-editor') as any)?.toggleMode?.();
+      }}>${this._cardGuiMode ? 'Show code editor' : 'Show visual editor'}</ha-button>
     `;
   }
 
@@ -1593,203 +1416,30 @@ export class SpaceHubCardEditor extends LitElement {
   // ── Styles ───────────────────────────────────────────────────
 
   static styles: CSSResultGroup = css`
-    .sortable-list { display: flex; flex-direction: column; gap: 8px; }
-    .sortable-item { display: flex; align-items: flex-start; gap: 4px; min-width: 0; }
+    :host { display: block; color: var(--primary-text-color); }
+    .editor-container, .section-content { display: flex; flex-direction: column; gap: 16px; }
+    section { min-width: 0; }
+    h3 { font-size: 16px; font-weight: 500; margin: 16px 0 8px; }
+    .detail-header { display: flex; align-items: center; gap: 8px; }
+    .detail-title { margin: 0; font-size: 20px; font-weight: 500; overflow-wrap: anywhere; }
+    .detail-title:focus { outline: none; }
+    .sortable-list { display: flex; flex-direction: column; }
+    .sortable-item { display: flex; align-items: center; min-width: 0; border-bottom: 1px solid var(--divider-color); }
     .sortable-content { flex: 1; min-width: 0; }
-    .sortable-content > ha-button { width: 100%; }
-    .sortable-item > .drag-handle { flex: 0 0 40px; touch-action: none; }
-    .editor-container {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .mode-toggle {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-    ha-expansion-panel {
-      display: block;
-      margin-bottom: 4px;
-    }
-    .section-content {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 8px 0;
-    }
-    .side-by-side {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
-    .side-by-side > * {
-      flex: 1 1 220px;
-      min-width: 0;
-    }
-    .side-by-side > ha-icon-button {
-      flex: 0 0 40px;
-    }
-    .tab-bar {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-      border-bottom: 1px solid var(--divider-color, #e0e0e0);
-      padding-bottom: 4px;
-    }
-    .tab-btn {
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--secondary-text-color);
-      transition: color 0.2s, border-color 0.2s;
-    }
-    .tab-btn:hover {
-      color: var(--primary-text-color);
-    }
-    .tab-btn.active {
-      color: var(--primary-color);
-      border-bottom-color: var(--primary-color);
-      font-weight: 500;
-    }
-    .action-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-    .editor-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 16px;
-      border: 1px solid var(--divider-color, rgba(0,0,0,0.12));
-      border-radius: 8px;
-      background: none;
-      color: var(--primary-color);
-      font-size: 14px;
-      font-family: inherit;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .editor-btn:hover {
-      background: var(--secondary-background-color, rgba(0,0,0,0.04));
-    }
-    .editor-btn.active {
-      background: var(--primary-color);
-      color: var(--text-primary-color, #fff);
-      border-color: var(--primary-color);
-    }
-    .editor-btn.danger {
-      color: var(--error-color, #db4437);
-      border-color: var(--error-color, #db4437);
-    }
-    .editor-btn.danger:hover {
-      background: rgba(219, 68, 55, 0.08);
-    }
-    .editor-btn[disabled] {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-    .editor-btn[disabled]:hover {
-      background: none;
-    }
-    .sub-item {
-      border: 1px solid var(--divider-color, #e0e0e0);
-      border-radius: 8px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .sub-item-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-    }
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      flex-shrink: 0;
-    }
-    .header-actions ha-icon-button[disabled] {
-      opacity: 0.35;
-      pointer-events: none;
-    }
-    .metrics-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .metrics-section {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 4px;
-      padding-top: 10px;
-      border-top: 1px solid var(--divider-color, rgba(255, 255, 255, 0.12));
-    }
-    .metrics-section-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--primary-text-color);
-    }
-    .drag-handle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: grab;
-      color: var(--secondary-text-color);
-      touch-action: none;
-      flex-shrink: 0;
-      --mdc-icon-size: 22px;
-    }
-    .drag-handle:active {
-      cursor: grabbing;
-    }
-    .sub-item-heading {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-      flex: 1;
-    }
-    .sub-item-title {
-      font-weight: 500;
-      overflow-wrap: anywhere;
-    }
-    .sub-item-meta {
-      color: var(--secondary-text-color);
-      font-size: 12px;
-      overflow-wrap: anywhere;
-    }
-    .empty-hint {
-      color: var(--secondary-text-color);
-      font-style: italic;
-      padding: 8px 0;
-    }
-    space-hub-textfield, ha-form, ha-selector {
-      display: block;
-      width: 100%;
-    }
-    .yaml-error {
-      color: var(--error-color, #db4437);
-      padding: 8px;
-      font-size: 14px;
-    }
-    ha-formfield {
-      display: flex;
-      align-items: center;
-      padding: 4px 0;
-    }
+    .drag-handle { flex: 0 0 40px; cursor: grab; color: var(--secondary-text-color); touch-action: none; }
+    .drag-handle:active { cursor: grabbing; }
+    .list-item { display: flex; align-items: center; min-height: 56px; min-width: 0; gap: 4px; }
+    .item-heading { display: flex; flex-direction: column; flex: 1; min-width: 0; padding: 8px 0; overflow-wrap: anywhere; }
+    .item-secondary { color: var(--secondary-text-color); font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .list-item ha-icon-button { flex: 0 0 40px; }
+    .side-by-side { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; }
+    .side-by-side > * { flex: 1 1 220px; min-width: 0; }
+    .side-by-side > ha-icon-button { flex: 0 0 40px; }
+    .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .empty-hint { color: var(--secondary-text-color); margin: 0 0 8px; line-height: 1.5; }
+    space-hub-textfield, ha-form, ha-selector { display: block; width: 100%; }
+    ha-expansion-panel { display: block; }
+    ha-expansion-panel > .section-content { padding: 16px; }
+    ha-formfield { display: flex; align-items: center; padding: 4px 0; }
   `;
 }

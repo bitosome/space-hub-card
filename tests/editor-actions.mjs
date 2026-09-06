@@ -30,12 +30,20 @@ editor.hass = hass;
 editor.setConfig(config);
 document.body.append(editor);
 await editor.updateComplete;
+editor._openPage('row', 'switch_rows.0');
+editor._openPage('switch', 'switch_rows.0.row.0');
+await editor.updateComplete;
 const path = 'switch_rows.0.row.0.tap_action';
 assert.deepEqual(editor._effectiveConfirmation(path), confirmation);
 const forms = [...editor.shadowRoot.querySelectorAll('.confirmation-form')];
 assert.equal(forms.filter((form) => form.data.enabled).length, 1, 'one effective confirmation control, not competing switches');
 assert.ok(editor.shadowRoot.querySelector('.action-form').schema[0].selector.ui_action, 'native action selector');
+editor._goBack();
+editor._goBack();
+editor._openPage('card', 'cards.0');
+await editor.updateComplete;
 assert.ok(editor.shadowRoot.querySelector('hui-card-element-editor'), 'native embedded card editor');
+editor._goBack();
 assert.equal(editor.shadowRoot.querySelector('.confirmation-settings'), null, 'legacy duplicate controls removed');
 
 editor._setActionConfirmation(path, false);
@@ -68,21 +76,18 @@ for (const arrayPath of ['headers', 'switch_rows', 'switch_rows.0.row', 'headers
   assert.equal(events, count, 'invalid/no-op movement does not save');
 }
 editor.setConfig(config);
-editor._selectedSwitchRowIndex = 0;
+editor._pages = [{ kind: 'row', path: 'switch_rows.0' }];
 editor._reorderArray('switch_rows', 0, 1);
-assert.equal(editor._selectedSwitchRowIndex, 1, 'selected row follows its contents');
+assert.equal(editor._pages[0].path, 'switch_rows.1', 'open row follows its contents');
 assert.deepEqual(editor._config.switch_rows[1].cards, config.switch_rows[0].cards);
 editor.setConfig(config);
-editor._selectedSwitchRowIndex = 0;
+editor._pages = [{ kind: 'row', path: 'switch_rows.0' }];
 await editor.updateComplete;
 const sortable = editor.shadowRoot.querySelector('ha-sortable[data-path="switch_rows.0.row"]');
 sortable.dispatchEvent(new CustomEvent('item-moved', { bubbles: true, composed: true, detail: { oldIndex: 0, newIndex: 1 } }));
 assert.equal(editor._config.switch_rows[0].row[1].entity, 'lock.test', 'native sort event updates correct array');
 assert.equal(editor._config.switch_rows[1][0].entity, 'light.other', 'neighbor row unaffected');
 assert.deepEqual(config, original, 'caller-owned config never mutated');
-const beforeInvalidYaml = structuredClone(editor._config);
-editor._yamlChanged(new CustomEvent('value-changed', { detail: { isValid: false, value: { incomplete: true } } }));
-assert.deepEqual(editor._config, beforeInvalidYaml, 'invalid YAML cannot replace valid config');
 
 const card = document.createElement('space-hub-card');
 card.setConfig({ type: 'custom:space-hub-card' });

@@ -61,7 +61,7 @@
     "test:locks": "node tests/lock-transitions.mjs",
     "test:states": "node tests/telemetry-states.mjs",
     "test:availability": "node tests/button-availability.mjs",
-    "test:editor": "node tests/editor-actions.mjs",
+    "test:editor": "node tests/editor-actions.mjs && node tests/editor-navigation.mjs",
     "start": "rollup -c rollup.config.dev.js --watch",
     "build": "npm run lint && npm run rollup",
     "build:no-bump": "npm run lint && npm run rollup",

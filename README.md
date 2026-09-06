@@ -568,7 +568,7 @@ switch_rows:
 
 ### Switch Confirmation
 
-In the visual editor, expand a tile, open **Actions**, choose the gesture, and set **Require confirmation**. There is one effective setting per gesture. All actions use Home Assistant's native confirmation dialog, including translated defaults and user exemptions; there is no card-specific dialog.
+In the visual editor, use the pencil to edit a row, then a tile. Under **Actions**, open the gesture and set **Require confirmation**. There is one effective setting per gesture. All actions use Home Assistant's native confirmation dialog, including translated defaults and user exemptions; there is no card-specific dialog.
 
 Existing tile-level `confirmation` remains supported for dynamic default actions (including lock/unlock). Explicit actions use `tap_action.confirmation`, `hold_action.confirmation`, or `double_tap_action.confirmation`. An explicit `false` overrides legacy confirmation. Editing an explicit tap's confirmation removes the competing legacy setting while preserving targets, action data, and exemptions. Native action-type changes retain confirmation settings.
 
@@ -745,17 +745,22 @@ The visual editor supports:
 - AC and thermostat tile configuration.
 - Chip editing and reordering.
 - Weather metric editing and reordering.
-- Collapsible tile settings and native drag-and-drop ordering of rows and tiles.
+- Compact lists with native drag handles, edit/remove controls, and a dedicated detail screen with Back navigation.
+- Appearance and advanced settings grouped inside tile details.
 - Home Assistant action/service/target selectors and native text, number, entity, and icon controls.
 - One confirmation setting per action, including legacy/default tap settings.
 - Active and pending state overrides, including intentional empty lists.
 - Switch template indicators.
-- Native embedded-card visual editors with a visual/YAML toggle.
-- YAML mode for direct configuration.
+- Home Assistant's card picker and native embedded-card visual/YAML editors.
+- Home Assistant's standard **Show code editor** control for the full card YAML.
 
 The editor tolerates incomplete in-progress items while you are building a dashboard.
 
-Drag the handle to reorder headers, rows, tiles, badges, weather metrics, and embedded cards. Focus a handle and use the up/down arrow keys to reorder without dragging. Selected header/row contents follow their new position; reordering retains all configuration, including advanced YAML fields. Tiles reorder within their current row, not across rows.
+Use the pencil beside an item to edit it, then **Back** to return to its list. Opening settings does not change the configuration. **Add card** opens the native card picker; cancelling it does not add a placeholder.
+
+Drag the handle to reorder headers, rows, tiles, chips, weather metrics, forecast sources, and embedded cards. Focus a handle and use the up/down arrow keys to reorder without dragging. Reordering retains all configuration, including advanced YAML fields. Tiles reorder within their current row. Header tile types retain their fixed positions.
+
+To edit the whole configuration as YAML, use Home Assistant's **Show code editor** control. An embedded card's detail screen also has its own code/visual switch, which affects only that embedded card.
 
 ## Troubleshooting
 
