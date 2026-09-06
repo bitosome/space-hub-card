@@ -218,7 +218,7 @@ export function renderInteractiveChip(host: CardHost, c: ChipConfig): TemplateRe
     && (isLockTransition(state) || !!host._isSwitchPending?.(entity));
   const icon = pending ? 'mdi:loading' : getChipIcon(type, entity, state, c, isActive, isUnavailable);
   const { bg, iconColor } = pending
-    ? { bg: 'var(--warning-color, #ff9800)', iconColor: '#ffffff' }
+    ? { bg: 'transparent', iconColor: 'var(--lock-spinner-color)' }
     : getChipStyling(type, entity, state, c, isActive, isUnavailable);
 
   const chipClass = `chip${isUnavailable ? ' chip-unavailable' : ''}`;

@@ -12,11 +12,14 @@ async function checkVariant(controlButton) {
   const card = document.createElement('space-hub-card');
   card.setConfig({
     type: 'custom:space-hub-card',
-    headers: [{ main: { main_name: 'Lock test', chips: [{ type: 'lock', entity: 'lock.test' }] } }],
+    headers: [{ main: { main_name: 'Lock test', chips: [{ type: 'lock', entity: 'lock.test' }, { type: 'door', entity: 'binary_sensor.door' }] } }],
     switch_rows: [{ row: [{ type: 'lock', entity: 'lock.test', name: 'Door lock' }] }],
   });
   const setState = async (state) => {
-    card.hass = { states: { 'lock.test': { state, attributes: {}, last_updated: new Date().toISOString() } }, localize: (key) => key };
+    card.hass = { states: {
+      'lock.test': { state, attributes: {}, last_updated: new Date().toISOString() },
+      'binary_sensor.door': { state: 'off', attributes: { device_class: 'door' } },
+    }, localize: (key) => key };
     await card.updateComplete;
   };
   document.body.append(card);
@@ -28,6 +31,27 @@ async function checkVariant(controlButton) {
     assert.equal(!!card.shadowRoot.querySelector('.switch-pending-spinner'), moving, 'tile: ' + state);
     assert.equal(!!card.shadowRoot.querySelector('.chip .spinning'), moving, 'badge: ' + state);
     assert.equal(card.shadowRoot.querySelector('[role="img"]').getAttribute('aria-busy'), String(moving));
+    const badges = [...card.shadowRoot.querySelectorAll('.chip[role="img"]')];
+    assert.match(badges[1].getAttribute('style'), /#66bb6a/, 'door remains closed independently of lock state');
+    assert.equal(badges[1].querySelector('ha-icon').icon, 'mdi:door');
+    if (moving) {
+      assert.equal(badges[0].getAttribute('style'), 'background:transparent');
+      assert.equal(badges[0].querySelector('ha-icon').getAttribute('style'), 'color:var(--lock-spinner-color)');
+    }
+  }
+  for (const door of ['on', 'off', 'unknown', 'unavailable']) {
+    card.hass = { ...card.hass, states: { ...card.hass.states,
+      'lock.test': { state: 'locked', attributes: {} },
+      'binary_sensor.door': { state: door, attributes: { device_class: 'door' } },
+    } };
+    await card.updateComplete;
+    const badges = [...card.shadowRoot.querySelectorAll('.chip[role="img"]')];
+    assert.match(badges[0].getAttribute('style'), /#66bb6a/, 'lock stays locked independently of door');
+    if (door === 'on') {
+      assert.match(badges[1].getAttribute('style'), /#e53935/);
+      assert.equal(badges[1].querySelector('ha-icon').icon, 'mdi:door-open');
+    } else if (door === 'off') assert.match(badges[1].getAttribute('style'), /#66bb6a/);
+    else assert.ok(badges[1].classList.contains('chip-unavailable'), 'unknown door cannot look closed');
   }
   await setState('locked');
   card._trackPendingSwitch('lock.test', 'tap', { entity: 'lock.test', tap_action: { action: 'perform-action', perform_action: 'lock.unlock', target: { entity_id: 'lock.test' } } });

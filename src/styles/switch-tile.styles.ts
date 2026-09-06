@@ -138,7 +138,7 @@ export const switchTileStyles: CSSResultGroup = css`
   }
   .switch-pending-spinner.on { color: var(--switch-on-color); }
   .switch-pending-spinner.smart.on { color: var(--switch-smart-on-color); }
-  .switch-pending-spinner.lock { color: var(--warning-color, #ff9800); }
+  .switch-pending-spinner.lock { color: var(--lock-spinner-color); opacity: 1; }
   @keyframes switchPendingSpin {
     to { transform: rotate(360deg); }
   }
