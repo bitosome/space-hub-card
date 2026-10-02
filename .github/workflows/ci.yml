@@ -37,5 +37,7 @@ jobs:
         run: npm run test:states
       - name: Test button availability
         run: npm run test:availability
+      - name: Test tile visibility
+        run: npm run test:visibility
       - name: Test editor and confirmations
         run: npm run test:editor

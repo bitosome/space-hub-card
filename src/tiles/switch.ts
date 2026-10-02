@@ -29,7 +29,8 @@ export function renderSwitchRows(host: any, rows?: any[]): TemplateResult | type
 
 function renderSwitchRow(host: any, row: any, rowIndex: number): TemplateResult {
   const r: any = row as any;
-  const items = Array.isArray(row) ? row : (Array.isArray(r?.row) ? r.row : []);
+  const items = (Array.isArray(row) ? row : (Array.isArray(r?.row) ? r.row : []))
+    .filter((item: any) => item?.enabled !== false);
   let extraCards = Array.isArray(r?.cards) ? r.cards : (Array.isArray(r?.extra_cards) ? r.extra_cards : []);
   if (!Array.isArray(extraCards) || !extraCards.length) {
     const single = r?.card || r?.extra_card;
@@ -41,6 +42,8 @@ function renderSwitchRow(host: any, row: any, rowIndex: number): TemplateResult 
         ${extraCards.map((cfg: any, cardIndex: number) => host._renderEmbeddedRowCard(cfg, `switch-row-${rowIndex}-card-${cardIndex}`))}
       </div>`
     : nothing;
+
+  if (!items.length && cardsTpl === nothing) return html``;
 
   return html`
     <div class="switch-row-wrap">

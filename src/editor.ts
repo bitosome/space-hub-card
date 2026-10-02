@@ -192,6 +192,17 @@ export class SpaceHubCardEditor extends LitElement {
     return !!(ev.currentTarget as { checked?: boolean } | null)?.checked;
   }
 
+  private _renderEnabledToggle(path: string, enabled?: boolean): TemplateResult {
+    return html`
+      <ha-formfield label="Show tile">
+        <ha-switch
+          .checked=${enabled !== false}
+          @change=${(ev: Event) => this._valueChanged(`${path}.enabled`, this._checkedFromEvent(ev) ? undefined : false)}
+        ></ha-switch>
+      </ha-formfield>
+    `;
+  }
+
   private _reorderArray(path: string, oldIndex: number, newIndex: number, fallback: any[] = []): boolean {
     const current = this._getNestedValue(path) ?? fallback;
     if (!Array.isArray(current) || !Number.isInteger(oldIndex) || !Number.isInteger(newIndex)
@@ -627,6 +638,7 @@ export class SpaceHubCardEditor extends LitElement {
     const config = weather || {};
     return html`
         <div class="section-content">
+            ${this._renderEnabledToggle(basePath, config.enabled)}
             <div class="side-by-side">
               ${this._renderEntityField('Weather Entity', `${basePath}.entity`, config.entity, { domain: 'weather' })}
             </div>
@@ -900,6 +912,7 @@ export class SpaceHubCardEditor extends LitElement {
     const m = main || {};
     return html`
         <div class="section-content">
+            ${this._renderEnabledToggle(basePath, m.enabled)}
             <div class="side-by-side">
               <space-hub-textfield .hass=${this.hass}
                 label="Name"
@@ -1117,6 +1130,7 @@ export class SpaceHubCardEditor extends LitElement {
     const config = ac || {};
     return html`
         <div class="section-content">
+            ${this._renderEnabledToggle(basePath, config.enabled)}
             ${this._renderEntityField('Climate Entity', `${basePath}.entity`, config.entity, { domain: 'climate' })}
             ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, config.glow_mode, GLOW_MODES)}
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, config.tap_action)}
@@ -1131,6 +1145,7 @@ export class SpaceHubCardEditor extends LitElement {
     const config = thermostat || {};
     return html`
         <div class="section-content">
+            ${this._renderEnabledToggle(basePath, config.enabled)}
             ${this._renderEntityField('Climate Entity', `${basePath}.entity`, config.entity, { domain: 'climate' })}
             ${this._renderSelectField('Glow Mode', `${basePath}.glow_mode`, config.glow_mode, GLOW_MODES)}
             ${this._renderActionConfig('Tap Action', `${basePath}.tap_action`, config.tap_action)}
@@ -1172,6 +1187,7 @@ export class SpaceHubCardEditor extends LitElement {
 
     return html`
       <div class="section-content">
+        ${this._renderEnabledToggle(path, sw.enabled)}
         ${this._renderEntityField('Controlled Entity', `${path}.entity`, sw.entity)}
         ${this._renderSelectField('Type', `${path}.type`, sw.type, SWITCH_TYPES)}
         <div class="side-by-side">
