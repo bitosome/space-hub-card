@@ -56,6 +56,7 @@ interface WeatherForecastSource {
 }
 
 export interface HeaderMain {
+  enabled?: boolean;
   // Core configuration
   tap_entity?: string;
   hold_entity?: string;
@@ -74,6 +75,7 @@ export interface HeaderMain {
 }
 
 export interface HeaderAC {
+  enabled?: boolean;
   entity?: string;
   glow_mode?: string;
   tap_action?: SpaceHubActionConfig;
@@ -81,6 +83,7 @@ export interface HeaderAC {
   double_tap_action?: SpaceHubActionConfig;
 }
 export interface HeaderThermostat {
+  enabled?: boolean;
   entity?: string;
   glow_mode?: string;
   tap_action?: SpaceHubActionConfig;
@@ -89,6 +92,7 @@ export interface HeaderThermostat {
 }
 
 export interface HeaderWeather {
+  enabled?: boolean;
   entity?: string;
   forecast_sources?: Array<string | { entity?: string; name?: string }>;
   name?: string;
@@ -581,7 +585,14 @@ export class SpaceHubCard extends LitElement {
       }
     });
 
-    const switchRows = Array.isArray(config.switch_rows) ? config.switch_rows.length : 0;
+    const switchRows = Array.isArray(config.switch_rows)
+      ? config.switch_rows.filter((row: any) => {
+        const items = Array.isArray(row) ? row : (Array.isArray(row?.row) ? row.row : []);
+        const cards = Array.isArray(row?.cards) ? row.cards : (Array.isArray(row?.extra_cards) ? row.extra_cards : []);
+        return items.some((item: any) => item?.enabled !== false)
+          || cards.length > 0 || !!row?.card || !!row?.extra_card;
+      }).length
+      : 0;
     pixelHeight += switchRows * (tileHeight + rowGap);
 
     const extraCards = Array.isArray(config.cards) ? config.cards.length : 0;
@@ -597,7 +608,7 @@ export class SpaceHubCard extends LitElement {
 
   private _hasMainForCardSize(header: SpaceHubHeader): boolean {
     const main = header.main || {};
-    return !!(main && (
+    return main.enabled !== false && !!(main && (
       main.main_name || (main as any).name || main.light_group_entity || (main as any).entity ||
       main.main_icon || (main as any).icon || main.temp_sensor || main.humidity_sensor ||
       (Array.isArray(main.chips) && main.chips.length)
@@ -605,7 +616,7 @@ export class SpaceHubCard extends LitElement {
   }
 
   private _hasWeatherForCardSize(weather?: HeaderWeather): boolean {
-    return !!(weather && (
+    return weather?.enabled !== false && !!(weather && (
       weather.name || (weather as any).main_name || weather.icon || (weather as any).main_icon ||
       weather.animated_icons !== undefined || weather.show_forecast !== undefined ||
       weather.icon_set || weather.icon_pack || weather.icon_base_path || weather.icon_map ||
@@ -885,11 +896,11 @@ export class SpaceHubCard extends LitElement {
     };
     const ac = h.ac || {} as any;
     const thermostat = h.thermostat || {} as any;
-    const initialShowAC = !!ac?.entity;
-    const initialShowThermostat = !!thermostat?.entity;
+    const initialShowAC = ac?.enabled !== false && !!ac?.entity;
+    const initialShowThermostat = thermostat?.enabled !== false && !!thermostat?.entity;
     // Determine whether a main is explicitly defined (avoid injecting defaults)
-    const hasMain = !!(mainRaw && (mainRaw.main_name || mainRaw.name || mainRaw.light_group_entity || mainRaw.entity || mainRaw.main_icon || mainRaw.icon || mainRaw.temp_sensor || mainRaw.humidity_sensor || (Array.isArray(mainRaw.chips) && mainRaw.chips.length)));
-    const hasWeather = !!(weatherRaw && (
+    const hasMain = mainRaw.enabled !== false && !!(mainRaw && (mainRaw.main_name || mainRaw.name || mainRaw.light_group_entity || mainRaw.entity || mainRaw.main_icon || mainRaw.icon || mainRaw.temp_sensor || mainRaw.humidity_sensor || (Array.isArray(mainRaw.chips) && mainRaw.chips.length)));
+    const hasWeather = weatherRaw.enabled !== false && !!(weatherRaw && (
       weatherRaw.name || weatherRaw.main_name || weatherRaw.icon || weatherRaw.main_icon ||
       weatherRaw.animated_icons !== undefined || weatherRaw.show_forecast !== undefined ||
       weatherRaw.icon_set || weatherRaw.icon_pack || weatherRaw.icon_base_path || weatherRaw.icon_map ||

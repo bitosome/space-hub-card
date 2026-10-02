@@ -269,6 +269,7 @@ Weather is configured at `headers[].weather`.
 
 | Option | Type | Description |
 | --- | --- | --- |
+| `enabled` | boolean | Set to `false` to keep the weather tile configured but hide it. Hidden tiles do not trigger unavailable-entity glow. Defaults to `true`. |
 | `entity` | entity ID | Primary Home Assistant `weather` entity. Used as the default forecast source and weather more-info target. |
 | `forecast_sources` | array | Additional Home Assistant `weather` entities that can be selected in the weather tile. Each entry can be an entity string or an object with `entity` and optional `name`. |
 | `temp_sensor` | entity ID | Current local temperature sensor. |
@@ -463,6 +464,7 @@ Main tiles are configured at `headers[].main`.
 | `hold_entity` | entity ID | Default hold more-info target. Falls back to `tap_entity`. |
 | `temp_sensor` | entity ID | Temperature shown in the tile chip. |
 | `humidity_sensor` | entity ID | Humidity shown in the tile chip. |
+| `enabled` | boolean | Set to `false` to keep the tile configured but hide it. Hidden tiles do not trigger unavailable-entity glow. Defaults to `true`. |
 | `glow_mode` | string | `static`, `pulse`, or `none`. |
 | `chips` | array | Status chips. |
 | `tap_action` | object | Optional action override. |
@@ -495,6 +497,7 @@ Supported options:
 
 | Option | Type | Description |
 | --- | --- | --- |
+| `enabled` | boolean | Set to `false` to keep the tile configured but hide it. Hidden tiles do not trigger unavailable-entity glow. Defaults to `true`. |
 | `entity` | entity ID | Climate entity. |
 | `glow_mode` | string | `static`, `pulse`, or `none`. |
 | `tap_action` | object | Optional action override. |
@@ -545,6 +548,7 @@ switch_rows:
 
 | Option | Type | Description |
 | --- | --- | --- |
+| `enabled` | boolean | Set to `false` to keep the tile configured but hide it. Hidden tiles do not trigger unavailable-entity glow. Defaults to `true`. |
 | `entity` | entity ID | Controlled entity. |
 | `name` | string | Display name. |
 | `type` | string | `switch`, `smart_plug`, `lock`, `gate`, or `sliding_gate`. Gates share the lock warning colors. |
