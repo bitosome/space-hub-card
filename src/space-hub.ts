@@ -997,7 +997,7 @@ export class SpaceHubCard extends LitElement {
     const existingPromise = this._rowCardPromises.get(key);
     if (existingPromise) return existingPromise;
 
-    const creation = (async () => {
+    const creation: Promise<LovelaceCard> = (async () => {
       const helpers = await this._getCardHelpers();
       let card: LovelaceCard;
       try {
@@ -1013,16 +1013,23 @@ export class SpaceHubCard extends LitElement {
 
       card.addEventListener('ll-rebuild', (ev: Event) => {
         ev.stopPropagation();
+        // A replaced child can finish loading or emit rebuild after its config
+        // changed. It must never invalidate the replacement occupying this key.
+        if (this._rowCardElements.get(key) !== card) return;
         this._rowCardElements.delete(key);
         this._rowCardPromises.delete(key);
         const cfg = this._rowCardConfigs.get(key) || cardConfig;
         this._createRowCardElement(key, cfg).then(() => this.requestUpdate());
       });
 
-      this._rowCardElements.set(key, card);
-      this._rowCardPromises.delete(key);
       return card;
-    })();
+    })().then((card) => {
+      if (this._rowCardPromises.get(key) === creation && this._rowCardConfigs.get(key) === cardConfig) {
+        this._rowCardElements.set(key, card);
+        this._rowCardPromises.delete(key);
+      }
+      return card;
+    });
 
     this._rowCardPromises.set(key, creation);
     return creation;

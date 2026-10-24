@@ -1,5 +1,6 @@
 import { noChange } from 'lit';
-import { AttributePart, directive, Directive, DirectiveParameters } from 'lit/directive';
+import { AttributePart, directive, DirectiveParameters } from 'lit/directive';
+import { AsyncDirective } from 'lit/async-directive';
 
 export interface SpaceHubActionHandlerOptions {
   hasHold?: boolean;
@@ -16,6 +17,7 @@ interface ActionHandlerState {
   startX: number;
   startY: number;
   pointerActive: boolean;
+  pointerId?: number;
 }
 
 declare global {
@@ -48,12 +50,23 @@ const clearDoubleTapTimer = (state: ActionHandlerState): void => {
 };
 
 const dispatchAction = (element: ActionHandlerElement, action: 'tap' | 'hold' | 'double_tap'): void => {
+  if (!element.isConnected) return;
   const event = new Event('hass-action', {
     bubbles: true,
     composed: true,
   }) as Event & { detail?: { action: string } };
   event.detail = { action };
   element.dispatchEvent(event);
+};
+
+const cancelActions = (element: ActionHandlerElement): void => {
+  const state = states.get(element);
+  if (!state) return;
+  state.pointerActive = false;
+  state.pointerId = undefined;
+  state.held = false;
+  clearHoldTimer(state);
+  clearDoubleTapTimer(state);
 };
 
 export const actionHandlerBind = (element: ActionHandlerElement, options: SpaceHubActionHandlerOptions = {}): void => {
@@ -79,8 +92,14 @@ export const actionHandlerBind = (element: ActionHandlerElement, options: SpaceH
 
   element.addEventListener('pointerdown', (ev: PointerEvent) => {
     if (ev.button !== 0) return;
+    // A second finger is a gesture, not another control activation.
+    if (ev.isPrimary === false || (state.pointerActive && state.pointerId !== ev.pointerId)) {
+      cancelActions(element);
+      return;
+    }
 
     state.pointerActive = true;
+    state.pointerId = ev.pointerId;
     state.held = false;
     state.startX = ev.clientX;
     state.startY = ev.clientY;
@@ -103,28 +122,29 @@ export const actionHandlerBind = (element: ActionHandlerElement, options: SpaceH
   }, { passive: true });
 
   element.addEventListener('pointermove', (ev: PointerEvent) => {
-    if (!state.pointerActive || state.holdTimer === undefined) return;
+    if (!state.pointerActive || state.pointerId !== ev.pointerId) return;
     const dx = Math.abs(ev.clientX - state.startX);
     const dy = Math.abs(ev.clientY - state.startY);
     if (dx > HOLD_MOVE_THRESHOLD || dy > HOLD_MOVE_THRESHOLD) {
-      clearHoldTimer(state);
-      state.held = false;
+      // Cancel the entire gesture, including a hold that already elapsed.
+      // Otherwise releasing after a scroll/drag would still send a tap/hold.
+      cancelActions(element);
     }
   }, { passive: true });
 
   const cancelPointer = (): void => {
-    state.pointerActive = false;
-    state.held = false;
-    clearHoldTimer(state);
+    if (state.pointerActive) cancelActions(element);
   };
 
   element.addEventListener('pointercancel', cancelPointer);
   element.addEventListener('pointerleave', cancelPointer);
-  element.addEventListener('blur', cancelPointer);
+  element.addEventListener('lostpointercapture', cancelPointer);
+  element.addEventListener('blur', () => cancelActions(element));
 
   element.addEventListener('pointerup', (ev: PointerEvent) => {
-    if (!state.pointerActive) return;
+    if (!state.pointerActive || state.pointerId !== ev.pointerId) return;
     state.pointerActive = false;
+    state.pointerId = undefined;
     clearHoldTimer(state);
 
     if (typeof element.releasePointerCapture === 'function') {
@@ -137,6 +157,7 @@ export const actionHandlerBind = (element: ActionHandlerElement, options: SpaceH
 
     if (state.held) {
       state.held = false;
+      clearDoubleTapTimer(state);
       dispatchAction(element, 'hold');
       return;
     }
@@ -166,10 +187,17 @@ export const actionHandlerBind = (element: ActionHandlerElement, options: SpaceH
 };
 
 export const actionHandler = directive(
-  class extends Directive {
+  class extends AsyncDirective {
+    private element?: ActionHandlerElement;
+
     update(part: AttributePart, [options]: DirectiveParameters<this>) {
-      actionHandlerBind(part.element as ActionHandlerElement, options);
+      this.element = part.element as ActionHandlerElement;
+      actionHandlerBind(this.element, options);
       return noChange;
+    }
+
+    disconnected(): void {
+      if (this.element) cancelActions(this.element);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars

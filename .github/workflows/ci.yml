@@ -39,5 +39,7 @@ jobs:
         run: npm run test:availability
       - name: Test tile visibility
         run: npm run test:visibility
+      - name: Test cancelled touch gestures
+        run: npm run test:gestures
       - name: Test editor and confirmations
         run: npm run test:editor

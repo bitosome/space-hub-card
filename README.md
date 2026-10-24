@@ -13,6 +13,7 @@ The card is designed for dashboards where the first screen should show useful st
 - Switch rows with `switch`, `smart_plug`, and `lock` styles.
 - Lock tiles show a spinner throughout HA's `locking`, `unlocking`, or `opening` states, including changes initiated elsewhere. Main-tile lock badges show a spinner on a transparent background. Both use `--lock-spinner-color`, which defaults to the theme's primary text color. Stable lock states keep their usual colors without a movement animation.
 - Native Home Assistant action support for tap, hold, and double tap.
+- Scrolling, dragging, interrupted touch gestures and removed cards cancel pending control actions.
 - Switch confirmation dialogs.
 - Live switch info overlays from Home Assistant templates.
 - Embedded standard Home Assistant cards below switch rows or at the bottom of the card.
