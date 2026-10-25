@@ -1,35 +1,16 @@
 import { css, CSSResultGroup } from 'lit';
+import { glowStyles } from '@bitosome/ha-card-ui';
 
 // Design tokens (:host CSS custom properties) live in the shared, framework-agnostic
 // module so every bitosome card reuses the exact same look & feel. They are composed
 // ahead of baseStyles in the card's `static styles` array (see space-hub.ts).
-export const baseStyles: CSSResultGroup = css`
+export const baseStyles: CSSResultGroup = [glowStyles, css`
   .metrics, .metrics * { box-sizing: border-box; }
   button:focus-visible, [role=button]:focus-visible, ha-control-button:focus-visible { outline:3px solid var(--primary-color); outline-offset:-3px; }
   button, ha-control-button { min-width:44px; min-height:44px; }
   @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none!important;transition:none!important; } }
 
 
-    .tile-wrap .glow-under { 
-      position: absolute; 
-      inset: 0; 
-      pointer-events: none; 
-      z-index: 0; 
-      display:block; 
-      border-radius: var(--tile-border-radius);
-    }
-    .tile-wrap .glow-under .glow-overlay { 
-      position: absolute; 
-      inset: -10px -14px -18px -14px; 
-      border-radius: inherit; 
-      pointer-events: none; 
-      mix-blend-mode: screen; 
-      opacity: 0.9; 
-      -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 18px, rgba(0,0,0,0.9) 44px, rgba(0,0,0,1) 100%);
-      mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 18px, rgba(0,0,0,0.9) 44px, rgba(0,0,0,1) 100%);
-      -webkit-mask-repeat: no-repeat;
-      mask-repeat: no-repeat;
-    }
   ha-card {
     border-radius: var(--family-radius, var(--ha-card-border-radius, 24px));
     background: var(--ha-card-background, var(--card-background-color));
@@ -137,4 +118,4 @@ export const baseStyles: CSSResultGroup = css`
   .header-row.weather-row { align-items: start; }
 
   .clickable { cursor: pointer; }
-`;
+`];

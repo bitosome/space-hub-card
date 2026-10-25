@@ -33,6 +33,6 @@ try {
  showFamilyDialog(dialog,{opener});pointer('pointerdown',0,0);pointer('pointerup',0,0);
  assert.equal(dialog.open,true,'forms do not auto-discard on backdrop without policy');
  closeFamilyDialog(dialog);
- assert.match(dialogStyles.cssText,/100dvh/);assert.match(dialogStyles.cssText,/minmax\(0,1fr\)/);
+ assert.match(dialogStyles.cssText,/100dvh/);assert.match(dialogStyles.cssText,/minmax\(0,\s*1fr\)/);
  console.log('Shared dialog lifecycle, dismissal policy, focus and geometry checks passed');
 } finally { unlinkSync(path);win.happyDOM.abort(); }

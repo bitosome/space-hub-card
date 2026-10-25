@@ -1,3 +1,4 @@
+import { showEntityMoreInfo } from '@bitosome/ha-card-ui';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, CSSResultGroup, TemplateResult, nothing } from 'lit';
 import { until } from 'lit/directives/until.js';
@@ -1671,9 +1672,7 @@ export class SpaceHubCard extends LitElement {
 
   private _openMoreInfo(entityId?: string | null): void {
     if (!entityId) return;
-    this.dispatchEvent(new CustomEvent('hass-more-info', {
-      detail: { entityId }, bubbles: true, composed: true,
-    }));
+    showEntityMoreInfo(this, entityId);
   }
 
   private _acToggle(entityId?: string | null): void {

@@ -10,12 +10,6 @@ export const animationStyles: CSSResultGroup = css`
     to { transform: rotate(360deg); }
   }
 
-  @keyframes glowPulse { 
-    0% { box-shadow: 0 10px 20px var(--pulse-weak); } 
-    50% { box-shadow: 0 28px 56px var(--pulse-strong); } 
-    100% { box-shadow: 0 10px 20px var(--pulse-weak); } 
-  }
-  
   /* ==============================================
    * ANIMATION UTILITIES
    * ============================================== */

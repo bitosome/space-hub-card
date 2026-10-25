@@ -1,4 +1,4 @@
-import { html, nothing, TemplateResult } from 'lit';
+import { nothing, TemplateResult } from 'lit';
 import { hasUnavailableEntities } from './shared/availability';
 
 // Helpers for glow pulse colors used by tiles
@@ -50,20 +50,11 @@ export const THERMOSTAT_HEAT_PULSE: PulseColors = {
   strong: 'rgba(255,112,67,0.26)',
 };
 
-// Build a unified glow wrapper for tiles.
-// Returns an object with `style` (string) to set on the tile element and
-// `overlay` (TemplateResult | nothing) which is an animated overlay element when active.
-export type GlowMode = 'static' | 'pulse' | 'none';
-
-export function buildGlow(pulse: PulseColors | undefined, mode: GlowMode = 'static', active = false): { style: string; overlay: TemplateResult | typeof nothing } {
-  if (!pulse || mode === 'none' || !active) return { style: '', overlay: nothing };
-  const vars = `--pulse-weak: ${pulse.weak}; --pulse-strong: ${pulse.strong};`;
-  const box = `box-shadow: 0 18px 40px var(--pulse-strong, ${pulse.strong}), 0 6px 18px var(--pulse-weak, ${pulse.weak});`;
-  const animation = mode === 'pulse' ? `animation: glowPulse 2.4s ease-in-out infinite;` : '';
-  const style = `${vars} ${animation} ${box}`;
-  const overlay = html`<div class="glow-overlay" aria-hidden="true"></div>`;
-  return { style, overlay };
-}
+// Generic rendering belongs to the shared package; domain colors stay here.
+import { buildGlow } from "@bitosome/ha-card-ui";
+import type { GlowMode } from "@bitosome/ha-card-ui";
+export { buildGlow } from "@bitosome/ha-card-ui";
+export type { GlowMode } from "@bitosome/ha-card-ui";
 
 export function buildTileGlow(
   host: unknown,

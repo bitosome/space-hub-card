@@ -811,20 +811,15 @@ card_mod:
 
 ## Design System & UI Implementation
 
-Space Hub Card is the **reference implementation and single source of truth** for the shared design system used across the `bitosome` Home Assistant card family (`space-hub-card`, `real-electricity-price-card`, `smartevse-dual-charger-card`). Read this section before changing any UI so every card stays visually and structurally consistent. It is written to be followed by both humans and LLMs.
+Space Hub Card is the visual reference for the `bitosome` Home Assistant family, especially activation glows below sibling tile faces. The reusable implementation now lives in [`@bitosome/ha-card-ui`](https://github.com/bitosome/ha-card-ui), pinned to an immutable release tarball and bundled into each card.
 
 ### Source of truth
 
-- The canonical design tokens live in `src/shared/design-tokens.ts`:
-  - `DESIGN_TOKENS_CSS` — a framework-agnostic CSS string (a `:host { … }` block of CSS custom properties).
-  - `designTokens` — the same tokens wrapped as a Lit `CSSResult` for `static styles` composition.
-- Sibling cards **vendor a copy** of this file at their own `src/shared/design-tokens.ts`. Never edit those copies by hand — edit the tokens here and run:
-
-  ```bash
-  ./scripts/sync-design-tokens.sh
-  ```
-
-  This copies the canonical tokens into the sibling repos (the vendored files carry an `AUTO-SYNCED … DO NOT EDIT` banner). `smartevse-dual-charger-card` also keeps the tokens as a TypeScript module and injects `DESIGN_TOKENS_CSS` into its `<style>` block.
+- `src/shared/design-tokens.ts` and `card-primitives.ts` are compatibility re-exports from `@bitosome/ha-card-ui`.
+- Edit tokens, shared components, dialog behavior and generic glow rendering in the library repository; release it, then update the pinned consumer dependency and lockfile.
+- Space Hub retains domain-specific colors, availability and action configuration. `src/glow.ts` delegates generic rendering to the package.
+- `node scripts/sync-card-design.mjs --check` audits consumer package pins. Copy-based synchronization has been retired.
+- No extra Home Assistant resource is required.
 
 ### Rules for implementing UI (follow these exactly)
 
@@ -853,7 +848,7 @@ The `:host` design tokens cover: chip styling (`--chip-*`), main-light and switc
 
 | Path | Responsibility |
 | --- | --- |
-| `src/shared/design-tokens.ts` | Canonical design tokens (source of truth) |
+| `src/shared/design-tokens.ts` | Compatibility import of the pinned UI library |
 | `src/shared/state.ts` | Shared entity-state helpers |
 | `src/styles/base.styles.ts` | Base layout + tile system CSS |
 | `src/styles/*.styles.ts` | Per-tile styles |
@@ -861,7 +856,7 @@ The `:host` design tokens cover: chip styling (`--chip-*`), main-light and switc
 | `src/chips.ts` | Chip renderers |
 | `src/glow.ts` | Glow / pulse system |
 | `src/action-config.ts`, `src/action-handler-directive.ts` | Action config + gesture directive |
-| `scripts/sync-design-tokens.sh` | Sync tokens into sibling cards |
+| `scripts/sync-card-design.mjs --check` | Audit shared library pins |
 
 ## Development
 
@@ -897,14 +892,6 @@ dist/space-hub-card.js
 
 ## Shared card presentation
 
-Space Hub owns the versioned `src/shared/card-primitives.ts` presentation module,
-shared design tokens and `scripts/card-design-consumers.json` manifest. Run
-`node scripts/sync-card-design.mjs` to vendor the design into the listed sibling
-card checkouts; use `--check` to verify bytes/provenance or `--consumer=name` for
-a bounded migration. Consumers bundle their copy; no runtime sibling import or
-additional Home Assistant resource is required. Device policy stays in each card.
+Version 2.1.0 consumes `@bitosome/ha-card-ui` 1.0.0. Space Hub's original two-layer activation glow and pulse geometry are now implemented once in that library; every consumer bundles its pinned version. Native entity more-info uses the common adapter. Tile actions, gate and lock policy, availability, editor configuration and native HA interactions remain in this project.
 
-Version 2.0.85 introduces this shared foundation, restores visible keyboard focus
-on native tile controls, aligns the fallback shell radius, and respects reduced
-motion throughout tile effects. Existing action configuration and state mappings
-are preserved. Run `npm run test:design` for the shared native-dialog lifecycle.
+Run the existing build and interaction suites plus `npm run test:design`. Change shared UI in the library, not in compatibility re-export files. No additional dashboard resource is needed.

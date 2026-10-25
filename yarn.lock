@@ -256,6 +256,11 @@
     "@babel/helper-validator-identifier" "^7.14.9"
     to-fast-properties "^2.0.0"
 
+"@bitosome/ha-card-ui@https://github.com/bitosome/ha-card-ui/releases/download/v1.0.0/bitosome-ha-card-ui-1.0.0.tgz":
+  version "1.0.0"
+  resolved "https://github.com/bitosome/ha-card-ui/releases/download/v1.0.0/bitosome-ha-card-ui-1.0.0.tgz"
+  integrity sha512-B1gLK31mzsWynleUQx81YRITSM2xKRPxkGQdGo3EmENAWqeKzGSE3oz+pWXAdOlOLSJLKEQBsA6Xcb+7vcZ8PA==
+
 "@eslint/eslintrc@^0.4.3":
   version "0.4.3"
   resolved "https://registry.npmjs.org/@eslint/eslintrc/-/eslintrc-0.4.3.tgz"
@@ -2131,7 +2136,7 @@ lit-html@^2.2.0, lit-html@^2.8.0:
   dependencies:
     "@types/trusted-types" "^2.0.2"
 
-lit@^2.0.0, lit@^2.0.0-rc.3:
+lit@^2.0.0, "lit@^2.0.0 || ^3.0.0", lit@^2.0.0-rc.3:
   version "2.2.0"
   resolved "https://registry.npmjs.org/lit/-/lit-2.2.0.tgz"
   integrity sha512-FDyxUuczo6cJJY/2Bkgfh1872U4ikUvmK1Cb6+lYC1CW+QOo8CaWXCpvPKFzYsz0ojUxoruBLVrECc7VI2f1dQ==
