@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "source": "bitosome/space-hub-card",
+  "files": ["design-tokens.ts", "card-primitives.ts"],
+  "consumers": [
+    "real-electricity-price-card", "smartevse-dual-charger-card", "currnet-monitor-card",
+    "nibe-dashboard", "vallox-autopilot", "volvo-cars-card", "robot-vacuum-cleaner-card",
+    "coffee-tracker", "advanced-camera-card"
+  ]
+}
