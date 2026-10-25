@@ -894,3 +894,17 @@ dist/space-hub-card.js
 - Built with Lit and Home Assistant custom-card helpers.
 - Animated Meteocons weather icons are bundled locally from `basmilius/meteocons`.
 - Third-party notices are listed in `THIRD_PARTY_NOTICES.md`.
+
+## Shared card presentation
+
+Space Hub owns the versioned `src/shared/card-primitives.ts` presentation module,
+shared design tokens and `scripts/card-design-consumers.json` manifest. Run
+`node scripts/sync-card-design.mjs` to vendor the design into the listed sibling
+card checkouts; use `--check` to verify bytes/provenance or `--consumer=name` for
+a bounded migration. Consumers bundle their copy; no runtime sibling import or
+additional Home Assistant resource is required. Device policy stays in each card.
+
+Version 2.0.85 introduces this shared foundation, restores visible keyboard focus
+on native tile controls, aligns the fallback shell radius, and respects reduced
+motion throughout tile effects. Existing action configuration and state mappings
+are preserved. Run `npm run test:design` for the shared native-dialog lifecycle.

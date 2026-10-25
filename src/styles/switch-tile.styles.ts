@@ -41,8 +41,7 @@ export const switchTileStyles: CSSResultGroup = css`
   clip-path: inset(0 round var(--tile-border-radius));
     outline: none; 
   }
-  .switch-tile-btn::part(button):focus,
-  .switch-tile-btn::part(button):focus-visible { outline: none; }
+  .switch-tile-btn::part(button):focus-visible { outline:3px solid var(--primary-color); outline-offset:-3px; }
   /* Ensure any pseudo overlays inherit the rounding */
   .switch-tile-btn::before,
   .switch-tile-btn::after,

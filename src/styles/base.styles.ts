@@ -5,6 +5,10 @@ import { css, CSSResultGroup } from 'lit';
 // ahead of baseStyles in the card's `static styles` array (see space-hub.ts).
 export const baseStyles: CSSResultGroup = css`
   .metrics, .metrics * { box-sizing: border-box; }
+  button:focus-visible, [role=button]:focus-visible, ha-control-button:focus-visible { outline:3px solid var(--primary-color); outline-offset:-3px; }
+  button, ha-control-button { min-width:44px; min-height:44px; }
+  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none!important;transition:none!important; } }
+
 
     .tile-wrap .glow-under { 
       position: absolute; 
@@ -27,7 +31,7 @@ export const baseStyles: CSSResultGroup = css`
       mask-repeat: no-repeat;
     }
   ha-card {
-    border-radius: var(--ha-card-border-radius, 16px);
+    border-radius: var(--family-radius, var(--ha-card-border-radius, 24px));
     background: var(--ha-card-background, var(--card-background-color));
     box-shadow: 0 10px 30px var(--panel-shadow-color);
     padding: var(--tile-padding-large);
