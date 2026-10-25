@@ -5,6 +5,16 @@
  */
 import { css, html, TemplateResult } from 'lit';
 
+// Older HA helper DOM typings omit the native dialog API. This merges with
+// modern lib.dom declarations without changing the browser implementation.
+declare global {
+  interface HTMLDialogElement {
+    open: boolean;
+    showModal(): void;
+    close(returnValue?: string): void;
+  }
+}
+
 export const CARD_DESIGN_VERSION = '1.0.0';
 export const UI_ICONS = {
   close: 'mdi:close', settings: 'mdi:cog-outline', details: 'mdi:information-outline',
