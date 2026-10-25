@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import { readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import ts from 'typescript';
+import { Window } from 'happy-dom';
+const win = new Window({url:'http://localhost'});
+for (const key of ['window','document','Document','HTMLElement','HTMLDialogElement','customElements','CSSStyleSheet','Event','PointerEvent']) Object.defineProperty(globalThis,key,{value:win[key],configurable:true});
+const path = new URL('../.card-design-test.mjs',import.meta.url);
+const code = ts.transpileModule(readFileSync(new URL('../src/shared/card-primitives.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ES2020,target:ts.ScriptTarget.ES2020}}).outputText;
+writeFileSync(path,code);
+try {
+ const { showFamilyDialog,closeFamilyDialog,disposeFamilyDialog,UI_ICONS,dialogStyles }=await import(path.href);
+ assert.equal(UI_ICONS.close,'mdi:close');assert.equal(UI_ICONS.settings,'mdi:cog-outline');
+ const opener=document.createElement('button');document.body.append(opener);opener.focus();
+ const dialog=document.createElement('dialog');document.body.append(dialog);
+ let shows=0, closes=0, dismissals=0;
+ dialog.showModal=()=>{shows++;dialog.open=true;};
+ dialog.close=()=>{closes++;dialog.open=false;dialog.dispatchEvent(new Event('close'));};
+ dialog.getBoundingClientRect=()=>({left:20,top:20,right:100,bottom:100});
+ const options={opener,onBackdrop:()=>{dismissals++;closeFamilyDialog(dialog);}};
+ showFamilyDialog(dialog,options);showFamilyDialog(dialog,options);
+ assert.equal(shows,1,'telemetry updates do not reopen dialog or steal focus');
+ const pointer=(name,x,y)=>dialog.dispatchEvent(new PointerEvent(name,{clientX:x,clientY:y}));
+ pointer('pointerdown',30,30);pointer('pointerup',0,0);
+ assert.equal(dismissals,0,'drag from content onto backdrop cannot dismiss');
+ pointer('pointerdown',0,0);dialog.dispatchEvent(new Event('pointercancel'));pointer('pointerup',0,0);
+ assert.equal(dismissals,0,'cancelled touch cannot dismiss');
+ pointer('pointerdown',0,0);pointer('pointerup',0,0);
+ assert.equal(dismissals,1);assert.equal(document.activeElement,opener);
+ showFamilyDialog(dialog,options);disposeFamilyDialog(dialog);
+ pointer('pointerdown',0,0);pointer('pointerup',0,0);
+ assert.equal(dismissals,1,'listeners removed on disconnect');
+ assert.equal(closes,2);
+ showFamilyDialog(dialog,{opener});pointer('pointerdown',0,0);pointer('pointerup',0,0);
+ assert.equal(dialog.open,true,'forms do not auto-discard on backdrop without policy');
+ closeFamilyDialog(dialog);
+ assert.match(dialogStyles.cssText,/100dvh/);assert.match(dialogStyles.cssText,/minmax\(0,1fr\)/);
+ console.log('Shared dialog lifecycle, dismissal policy, focus and geometry checks passed');
+} finally { unlinkSync(path);win.happyDOM.abort(); }

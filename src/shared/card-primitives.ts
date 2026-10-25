@@ -35,10 +35,10 @@ export const familyStyles = css`
   .family-icon-button ha-icon { width:22px;height:22px;--mdc-icon-size:22px;flex:0 0 22px; }
   .family-icon-button:focus-visible,.family-action:focus-visible,.family-chip:is(button):focus-visible { outline:3px solid var(--primary-color);outline-offset:3px; }
   .family-icon-button:disabled,.family-action:disabled { opacity:.45;cursor:default; }
-  .family-action { display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 14px;border:0;border-radius:var(--chip-border-radius,999px);background:color-mix(in srgb,var(--primary-text-color) 7%,transparent);color:var(--primary-text-color);font:600 13px/1.4 var(--family-font);cursor:pointer;touch-action:manipulation; }
+  .family-action { display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 14px;border:0;border-radius:var(--chip-border-radius,999px);background:color-mix(in srgb,var(--primary-text-color) 7%,transparent);color:var(--primary-text-color);font:inherit;font-family:var(--family-font);font-size:13px;font-weight:600;line-height:1.4;cursor:pointer;touch-action:manipulation; }
   .family-action ha-icon { width:22px;height:22px;--mdc-icon-size:22px;flex:0 0 22px; }
   .family-action.primary { background:var(--primary-color);color:var(--text-primary-color,var(--primary-background-color)); }
-  .family-chip { display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:4px 8px;border-radius:var(--chip-border-radius,999px);background:var(--chip-background-color);font:500 12px/1.4 var(--family-font);overflow-wrap:anywhere; }
+  .family-chip { display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:4px 8px;border-radius:var(--chip-border-radius,999px);background:var(--chip-background-color);font:inherit;font-family:var(--family-font);font-size:12px;font-weight:500;line-height:1.4;overflow-wrap:anywhere; }
   button.family-chip { min-height:44px;cursor:pointer; }
   .family-surface { position:relative;z-index:1;background:var(--family-tile);border-radius:var(--tile-border-radius,12px);box-shadow:var(--tile-shadow-default); }
   @media(hover:hover) { .family-icon-button:not(:disabled):hover { background:color-mix(in srgb,var(--primary-text-color) 6%,transparent); } }
