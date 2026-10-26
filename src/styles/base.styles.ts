@@ -19,7 +19,8 @@ export const baseStyles: CSSResultGroup = [glowStyles, css`
     color: var(--primary-text-color);
     transition: filter 0.12s ease, box-shadow 0.12s ease;
     position: relative;
-    overflow: visible;
+    /* Glows may fill tile gutters but must never spill onto another HA card. */
+    overflow: clip;
   }
   /* Single stacking context for all tiles so every glow stays strictly below
    * every tile surface (a tile's glow can never paint over an adjacent tile). */
