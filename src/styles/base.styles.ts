@@ -94,6 +94,13 @@ export const baseStyles: CSSResultGroup = [glowStyles, css`
     width: 100%;
   }
 
+  /* Embedded cards are foreground surfaces too. Keep Space Hub's glows below
+   * their hosts without clipping focus outlines or altering card internals. */
+  .embedded-card {
+    position: relative;
+    z-index: 1;
+  }
+
   .center-xy { position: static; transform: none; display:flex; align-items:center; justify-content:center; pointer-events:none; user-select:none; line-height:0; }
 
   .ac-fan, .thermostat-icon { 

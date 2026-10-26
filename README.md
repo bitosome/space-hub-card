@@ -892,6 +892,6 @@ dist/space-hub-card.js
 
 ## Shared card presentation
 
-Version 2.1.0 consumes `@bitosome/ha-card-ui` 1.0.0. Space Hub's original two-layer activation glow and pulse geometry are now implemented once in that library; every consumer bundles its pinned version. Native entity more-info uses the common adapter. Tile actions, gate and lock policy, availability, editor configuration and native HA interactions remain in this project.
+Version 2.1.1 consumes `@bitosome/ha-card-ui` 1.0.1. Space Hub's original two-layer activation glow and pulse geometry are now implemented once in that library; every consumer bundles its pinned version. Embedded card hosts share the foreground layer so neighboring tile glows remain behind their surfaces. Native entity more-info uses the common adapter. Tile actions, gate and lock policy, availability, editor configuration and native HA interactions remain in this project.
 
 Run the existing build and interaction suites plus `npm run test:design`. Change shared UI in the library, not in compatibility re-export files. No additional dashboard resource is needed.

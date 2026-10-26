@@ -1,6 +1,6 @@
 {
   "name": "space-hub-card",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Lovelace space-hub-card",
   "keywords": [
     "home-assistant",
@@ -15,7 +15,7 @@
   "author": "Ian Richardson <iantrich@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@bitosome/ha-card-ui": "https://github.com/bitosome/ha-card-ui/releases/download/v1.0.0/bitosome-ha-card-ui-1.0.0.tgz",
+    "@bitosome/ha-card-ui": "https://github.com/bitosome/ha-card-ui/releases/download/v1.0.1/bitosome-ha-card-ui-1.0.1.tgz",
     "@lit-labs/scoped-registry-mixin": "^1.0.0",
     "@material/mwc-formfield": "^0.25.3",
     "@material/mwc-list": "^0.25.3",
