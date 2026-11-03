@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { html, nothing, svg, TemplateResult } from 'lit';
+import { html, nothing, TemplateResult } from 'lit';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
-import { formatHassNumber, stateChip } from '@bitosome/ha-card-ui';
+import { chartFrame, chartLegend, chartReadout, formatHassNumber, formatHassTime, hassTimeZone, stateChip } from '@bitosome/ha-card-ui';
+import type {
+  ChartAxisOptions,
+  ChartModel,
+  ChartPoint,
+  ChartSeries,
+  FamilyChartController,
+  TimeSeriesChartOptions,
+} from '@bitosome/ha-card-ui';
 import { actionHandler } from '../action-handler-directive';
 import { renderInteractiveChip } from '../chips';
 import { buildTileGlow, STALE_GLOW } from '../glow';
@@ -9,6 +17,8 @@ import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
 
 const DEFAULT_GRAPH_HORIZONTAL_LINES = 5;
+const HOUR_MS = 60 * 60 * 1000;
+const RAIN_COLOR = 'var(--space-hub-rain-color, #38c7f3)';
 
 interface WeatherTileConfig {
   entity?: string;
@@ -136,39 +146,21 @@ type ForecastFieldKey =
   | 'uv_index'
   | 'cloud_coverage';
 
-interface ForecastGraphPoint {
+interface ForecastValue {
   item: ForecastItem;
   value: number;
-  x: number;
-  y: number;
-  index: number;
-  timestamp?: number;
 }
 
+type ForecastPoint = ChartPoint<ForecastItem>;
+
 interface ConditionsIconSlot {
-  point: ForecastGraphPoint;
-  x: number;
+  item: ForecastItem;
+  t: number;
 }
 
 interface DayTemperatureStats {
-  low?: ForecastGraphPoint;
-  high?: ForecastGraphPoint;
-}
-
-interface ConditionsChartBox {
-  width: number;
-  height: number;
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-}
-
-interface ConditionsRawPoint {
-  item: ForecastItem;
-  index: number;
-  value: number;
-  timestamp?: number;
+  low?: ForecastValue;
+  high?: ForecastValue;
 }
 
 const BAD_STATES = new Set(['', 'unknown', 'unavailable']);
@@ -627,29 +619,10 @@ function normalizeForecast(forecast: unknown): ForecastItem[] {
     }));
 }
 
-function homeAssistantTimeOptions(host: any): { locale: string | undefined; options: Intl.DateTimeFormatOptions } {
-  const locale = host?.hass?.locale;
-  const timeFormat = String(locale?.time_format || '').toLowerCase();
-  const options: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
-  if (timeFormat === '12') options.hour12 = true;
-  if (timeFormat === '24') options.hour12 = false;
-  return { locale: locale?.language, options };
-}
-
+// Same clock, language and time zone as the graph labels (HA profile and server zone).
 function forecastTime(host: any, item: ForecastItem): string {
-  if (!item.datetime) return '';
-  const date = new Date(item.datetime);
-  if (Number.isNaN(date.getTime())) return '';
-  const { locale, options } = homeAssistantTimeOptions(host);
-  return new Intl.DateTimeFormat(locale, options).format(date);
-}
-
-function forecastDateTime(host: any, item: ForecastItem): string {
-  const date = dateLabel(host, item.datetime);
-  const time = forecastTime(host, item);
-  if (!date) return time;
-  if (!time) return date;
-  return `${date} ${time}`;
+  if (forecastTimestamp(item) === undefined) return '';
+  return formatHassTime(host?.hass, item.datetime);
 }
 
 function normalizeForecastFields(raw: string[] | string | undefined): ForecastFieldKey[] {
@@ -664,9 +637,16 @@ function normalizeForecastFields(raw: string[] | string | undefined): ForecastFi
   return normalized.length ? normalized : DEFAULT_FORECAST_FIELDS;
 }
 
-function forecastGraphValue(item: ForecastItem, field: ForecastFieldKey): number | undefined {
-  const value = Number(item[field]);
+// Forecasts arrive as JSON, so a missing value is null (or an empty string); Number()
+// would read both as 0. Only real numbers count.
+function forecastNumber(raw: unknown): number | undefined {
+  if (raw === null || raw === undefined || (typeof raw === 'string' && !raw.trim())) return undefined;
+  const value = Number(raw);
   return Number.isFinite(value) ? value : undefined;
+}
+
+function forecastGraphValue(item: ForecastItem, field: ForecastFieldKey): number | undefined {
+  return forecastNumber(item[field]);
 }
 
 function forecastTimestamp(item: ForecastItem): number | undefined {
@@ -675,64 +655,56 @@ function forecastTimestamp(item: ForecastItem): number | undefined {
   return Number.isFinite(time) ? time : undefined;
 }
 
-function conditionsScale(field: ForecastFieldKey, values: number[]): { min: number; max: number } {
-  if (field === 'precipitation_probability') return { min: 0, max: 100 };
-  let min = Math.min(...values);
-  let max = Math.max(...values);
-  if (field === 'temperature') {
-    const range = Math.max(max - min, 1);
-    const padding = Math.max(range * 0.06, 0.6);
-    min = Math.floor(min - padding);
-    max = Math.ceil(max + padding);
-  } else {
-    const padding = Math.max((max - min) * 0.18, 1);
-    min = Math.max(0, min - padding);
-    max += padding;
-  }
-  if (max <= min) max = min + 1;
-  return { min, max };
+// Chart points in time order. A missing value stays null, so the shared chart breaks
+// the line there instead of bridging the hour or drawing it as zero.
+function forecastPoints(items: ForecastItem[], field: ForecastFieldKey): ForecastPoint[] {
+  return items
+    .reduce<ForecastPoint[]>((acc, item) => {
+      const t = forecastTimestamp(item);
+      if (t !== undefined) acc.push({ t, v: forecastGraphValue(item, field) ?? null, data: item });
+      return acc;
+    }, [])
+    .sort((a, b) => a.t - b.t);
 }
 
-function buildConditionsPoints(items: ForecastItem[], field: ForecastFieldKey, box: ConditionsChartBox): { points: ForecastGraphPoint[]; min: number; max: number } {
-  const raw = items.reduce<ConditionsRawPoint[]>((acc, item, index) => {
-    const value = forecastGraphValue(item, field);
-    if (value === undefined) return acc;
-    const timestamp = forecastTimestamp(item);
-    const point: ConditionsRawPoint = { item, index, value };
-    if (timestamp !== undefined) point.timestamp = timestamp;
-    acc.push(point);
-    return acc;
-  }, []);
-  if (!raw.length) return { points: [], min: 0, max: 1 };
-  const hasTimeScale = raw.every((point) => Number.isFinite(point.timestamp));
-  const ordered = hasTimeScale
-    ? [...raw].sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
-    : raw;
-  const firstTime = hasTimeScale ? Number(ordered[0].timestamp) : 0;
-  const lastTime = hasTimeScale ? Number(ordered[ordered.length - 1].timestamp) : 0;
-  const timeRange = lastTime - firstTime;
-  const values = raw.map((point) => point.value);
-  const { min, max } = conditionsScale(field, values);
-  const chartWidth = box.width - box.left - box.right;
-  const chartHeight = box.height - box.top - box.bottom;
-  const points = ordered.map((point, pointIndex) => {
-    const x = hasTimeScale && timeRange > 0
-      ? box.left + ((Number(point.timestamp) - firstTime) / timeRange) * chartWidth
-      : (ordered.length === 1 ? box.left + chartWidth / 2 : box.left + (pointIndex / (ordered.length - 1)) * chartWidth);
-    const y = box.top + ((max - point.value) / (max - min)) * chartHeight;
-    return { ...point, x, y };
+function finiteForecastPoints(points: ForecastPoint[]): ForecastPoint[] {
+  return points.filter((point) => point.v !== null);
+}
+
+// A graph needs two values; a forecast without the field (many integrations have no
+// precipitation chance) hides that graph instead of showing an empty frame.
+function hasGraphData(points: ForecastPoint[]): boolean {
+  return finiteForecastPoints(points).length >= 2;
+}
+
+// A step between forecast entries is a gap when it is over 1.5 times the steps on both
+// sides of it (a dropped entry). A forecast that changes resolution part-way (met.no:
+// hourly, then 6-hourly) repeats its longer step, so the coarser tail stays one line.
+function forecastGapSteps(points: ForecastPoint[]): boolean[] {
+  const steps = points.slice(1).map((point, index) => point.t - points[index].t);
+  return steps.map((step, index) => {
+    const neighbours = [steps[index - 1], steps[index + 1]].filter((other): other is number => other !== undefined && other > 0);
+    return neighbours.length === 2 && neighbours.every((other) => step > other * 1.5);
   });
-  return { points, min, max };
 }
 
-function conditionsTickIndexes(length: number): number[] {
-  if (length <= 0) return [];
-  return Array.from(new Set([
-    0,
-    Math.floor((length - 1) / 3),
-    Math.floor(((length - 1) * 2) / 3),
-    length - 1,
-  ])).filter((index) => index >= 0 && index < length);
+// Series points with a null after each gap step, so the shared chart breaks the line there.
+function forecastSeriesPoints(points: ForecastPoint[]): ForecastPoint[] {
+  const gaps = forecastGapSteps(points);
+  return points.flatMap((point, index) => (
+    gaps[index] ? [point, { t: (point.t + points[index + 1].t) / 2, v: null }] : [point]
+  ));
+}
+
+// 1.5 times the longest regular step (hourly: 90 min). Gaps are already nulls; this keeps
+// a coarser forecast tail joined and limits how far a synced value may be from the cursor.
+function forecastMaxGapMs(points: ForecastPoint[]): number {
+  const gaps = forecastGapSteps(points);
+  const steps = points
+    .slice(1)
+    .map((point, index) => point.t - points[index].t)
+    .filter((step, index) => step > 0 && !gaps[index]);
+  return (steps.length ? Math.max(...steps) : HOUR_MS) * 1.5;
 }
 
 function temperatureIconCount(config: WeatherTileConfig): number {
@@ -741,91 +713,68 @@ function temperatureIconCount(config: WeatherTileConfig): number {
   return Math.max(0, Math.min(72, Math.floor(raw)));
 }
 
-function conditionsIconSlots(points: ForecastGraphPoint[], maxIcons: number): ConditionsIconSlot[] {
+// Up to maxIcons condition icons spread evenly over the forecast time span; each shows
+// the condition of the forecast point nearest its time.
+function conditionsIconSlots(points: ForecastPoint[], maxIcons: number): ConditionsIconSlot[] {
   if (maxIcons <= 0 || !points.length) return [];
-  if (points.length <= maxIcons) return points.map((point) => ({ point, x: point.x }));
+  const slot = (point: ForecastPoint, t = point.t): ConditionsIconSlot => ({ item: point.data as ForecastItem, t });
+  if (points.length <= maxIcons) return points.map((point) => slot(point));
 
-  const iconCount = Math.min(maxIcons, points.length);
-  const firstX = points[0].x;
-  const lastX = points[points.length - 1].x;
-  const span = lastX - firstX;
+  const first = points[0].t;
+  const span = points[points.length - 1].t - first;
   if (!Number.isFinite(span) || span <= 0) return [];
 
-  const nearestPoint = (targetX: number) => points.reduce((best, point) => (
-    Math.abs(point.x - targetX) < Math.abs(best.x - targetX) ? point : best
+  const nearestPoint = (t: number) => points.reduce((best, point) => (
+    Math.abs(point.t - t) < Math.abs(best.t - t) ? point : best
   ), points[0]);
 
-  if (iconCount === 1) {
-    const x = firstX + span / 2;
-    return [{ point: nearestPoint(x), x }];
+  if (maxIcons === 1) {
+    const t = first + span / 2;
+    return [slot(nearestPoint(t), t)];
   }
 
-  return Array.from({ length: iconCount }, (_, index) => {
-    const x = firstX + (index / (iconCount - 1)) * span;
-    return { point: nearestPoint(x), x };
+  return Array.from({ length: maxIcons }, (_, index) => {
+    const t = first + (index / (maxIcons - 1)) * span;
+    return slot(nearestPoint(t), t);
   });
 }
 
-function safeIdPart(value: string): string {
-  return value.replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
-}
-
-function smoothPath(points: ForecastGraphPoint[]): string {
-  if (!points.length) return '';
-  if (points.length === 1) return `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
-  let path = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
-  for (let index = 0; index < points.length - 1; index += 1) {
-    const current = points[index];
-    const next = points[index + 1];
-    const previous = points[index - 1] || current;
-    const after = points[index + 2] || next;
-    const cp1x = current.x + (next.x - previous.x) / 6;
-    const cp1y = current.y + (next.y - previous.y) / 6;
-    const cp2x = next.x - (after.x - current.x) / 6;
-    const cp2y = next.y - (after.y - current.y) / 6;
-    path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${next.x.toFixed(2)} ${next.y.toFixed(2)}`;
-  }
-  return path;
-}
-
-function areaPath(points: ForecastGraphPoint[], baseline: number): string {
-  if (!points.length) return '';
-  const first = points[0];
-  const last = points[points.length - 1];
-  return `${smoothPath(points)} L ${last.x.toFixed(2)} ${baseline.toFixed(2)} L ${first.x.toFixed(2)} ${baseline.toFixed(2)} Z`;
-}
-
-function dayKey(value?: string): string {
+// Days follow the HA time zone, the same one the graph labels and low/high times use.
+function dayKey(host: any, value?: string): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: hassTimeZone(host?.hass),
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const part = (type: string) => parts.find((entry) => entry.type === type)?.value || '';
+  return `${part('year')}-${part('month')}-${part('day')}`;
 }
 
 function dayLabel(host: any, value?: string): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat(host?.hass?.locale?.language, { weekday: 'long' }).format(date);
+  return new Intl.DateTimeFormat(host?.hass?.locale?.language, { weekday: 'long', timeZone: hassTimeZone(host?.hass) }).format(date);
 }
 
 function dateLabel(host: any, value?: string): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat(host?.hass?.locale?.language, { day: 'numeric', month: 'long' }).format(date);
+  return new Intl.DateTimeFormat(host?.hass?.locale?.language, { day: 'numeric', month: 'long', timeZone: hassTimeZone(host?.hass) }).format(date);
 }
 
-function hourlyTemperatureStats(items: ForecastItem[]): Map<string, DayTemperatureStats> {
+function hourlyTemperatureStats(host: any, items: ForecastItem[]): Map<string, DayTemperatureStats> {
   const stats = new Map<string, DayTemperatureStats>();
-  items.forEach((item, index) => {
-    const key = dayKey(item.datetime);
+  items.forEach((item) => {
+    const key = dayKey(host, item.datetime);
     const value = forecastGraphValue(item, 'temperature');
     if (!key || value === undefined) return;
-    const point: ForecastGraphPoint = { item, value, x: 0, y: 0, index };
+    const point: ForecastValue = { item, value };
     const existing = stats.get(key) || {};
     if (!existing.low || value < existing.low.value) existing.low = point;
     if (!existing.high || value > existing.high.value) existing.high = point;
@@ -835,8 +784,7 @@ function hourlyTemperatureStats(items: ForecastItem[]): Map<string, DayTemperatu
 }
 
 function dailyTemperatureValue(item: ForecastItem, key: 'temperature' | 'templow'): number | undefined {
-  const value = Number(item[key]);
-  return Number.isFinite(value) ? value : undefined;
+  return forecastNumber(item[key]);
 }
 
 function dailyTemperatureRange(dailyItems: ForecastItem[], hourlyItems: ForecastItem[]): { min: number; max: number } {
@@ -881,9 +829,9 @@ function forecastGraphMode(config: WeatherTileConfig): ForecastGraphMode {
 function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: ForecastItem[], hourlyItems: ForecastItem[]): TemplateResult | typeof nothing {
   const rows = dailyItems.slice(0, 7);
   if (!rows.length) return nothing;
-  const hourlyStats = hourlyTemperatureStats(hourlyItems);
+  const hourlyStats = hourlyTemperatureStats(host, hourlyItems);
   const { min, max } = dailyTemperatureRange(rows, hourlyItems);
-  const today = dayKey(new Date().toISOString());
+  const today = dayKey(host, new Date().toISOString());
   const currentTemp = currentTemperatureValue(host, config);
 
   return html`
@@ -892,7 +840,7 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
         <span>Daily Forecast</span>
       </div>
       ${rows.map((item) => {
-        const key = dayKey(item.datetime);
+        const key = dayKey(host, item.datetime);
         const stats = hourlyStats.get(key);
         const low = dailyTemperatureValue(item, 'templow') ?? stats?.low?.value;
         const high = dailyTemperatureValue(item, 'temperature') ?? stats?.high?.value;
@@ -901,8 +849,8 @@ function renderDailyForecast(host: any, config: WeatherTileConfig, dailyItems: F
         const right = rangePercent(high, min, max);
         const width = Math.max(4, right - left);
         const condition = String(item.condition || '');
-        const rainProbability = Number(item.precipitation_probability);
-        const rainProbabilityLabel = Number.isFinite(rainProbability) ? `Rain ${Math.round(rainProbability)}%` : '';
+        const rainProbability = forecastNumber(item.precipitation_probability);
+        const rainProbabilityLabel = rainProbability !== undefined ? `Rain ${Math.round(rainProbability)}%` : '';
         const currentLeft = key === today && currentTemp !== undefined ? rangePercent(currentTemp, min, max) : undefined;
         return html`
           <div class="weather-daily-row">
@@ -948,17 +896,6 @@ function stopTileAction(ev: Event): void {
   ev.stopPropagation();
 }
 
-function stopConditionsPointer(ev: PointerEvent): void {
-  ev.preventDefault();
-  ev.stopPropagation();
-  const target = ev.currentTarget as Element | null;
-  try {
-    if (target?.hasPointerCapture?.(ev.pointerId)) target.releasePointerCapture(ev.pointerId);
-  } catch {
-    // Some WebViews throw if capture has already been released.
-  }
-}
-
 function openMoreInfo(host: any, ev: Event, entityId?: string): void {
   ev.preventDefault();
   ev.stopPropagation();
@@ -983,397 +920,173 @@ function selectForecastSourceFromKeyboard(host: any, ev: KeyboardEvent, key?: st
   selectForecastSource(host, ev, key, entityId);
 }
 
-function selectConditionsPoint(host: any, ev: PointerEvent, keys: string[], points: ForecastGraphPoint[], box: ConditionsChartBox): void {
-  ev.preventDefault();
-  ev.stopPropagation();
-  if (ev.type === 'pointermove' && ev.pointerType !== 'mouse' && ev.buttons === 0) return;
-  if (!points.length || typeof host?._setWeatherForecastGraphSelection !== 'function') return;
-  const target = ev.currentTarget as Element | null;
-  if (ev.type === 'pointerdown') {
-    try {
-      target?.setPointerCapture?.(ev.pointerId);
-    } catch {
-      // Pointer capture is best-effort in the Home Assistant mobile WebView.
-    }
-  }
-  const rect = (ev.currentTarget as HTMLElement).getBoundingClientRect();
-  if (!rect.width) return;
-  const elementRatio = (ev.clientX - rect.left) / rect.width;
-  const targetX = Math.max(0, Math.min(box.width, elementRatio * box.width));
-  const index = points.reduce((bestIndex, point, pointIndex) => {
-    const best = points[bestIndex];
-    return Math.abs(point.x - targetX) < Math.abs(best.x - targetX) ? pointIndex : bestIndex;
-  }, 0);
-  keys.forEach((k) => host._setWeatherForecastGraphSelection(k, index));
+// Whole degrees; -0.4 reads 0°, not -0°.
+function formatDegrees(host: any, value: number): string {
+  return `${formatHassNumber(host?.hass, Math.round(value) || 0, { digits: 0 })}°`;
 }
 
-function nearestConditionsPointIndex(points: ForecastGraphPoint[]): number {
-  const now = Date.now();
-  let bestIndex = 0;
-  let bestDistance = Number.POSITIVE_INFINITY;
-  points.forEach((point, index) => {
-    const time = point.item.datetime ? new Date(point.item.datetime).getTime() : Number.NaN;
-    if (!Number.isFinite(time)) return;
-    const distance = Math.abs(time - now);
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      bestIndex = index;
-    }
+// HA locale digits; the percent sign attaches without a space, like degrees (the family rule).
+function formatPercent(host: any, value: number): string {
+  return `${formatHassNumber(host?.hass, Math.round(value) || 0, { digits: 0 })}%`;
+}
+
+function temperatureSeries(host: any, points: ForecastPoint[], maxGapMs: number): ChartSeries<ForecastItem> {
+  return {
+    id: 'temperature',
+    label: 'Temperature',
+    points,
+    curve: 'smooth',
+    maxGapMs,
+    colorAt: (point) => temperatureColor(point.v as number),
+    colorBlend: 'smooth',
+    extremes: true,
+    format: (value) => formatDegrees(host, value),
+  };
+}
+
+function precipitationSeries(host: any, points: ForecastPoint[], maxGapMs: number, axis: 'primary' | 'secondary' = 'primary'): ChartSeries<ForecastItem> {
+  return {
+    id: 'precipitation',
+    label: 'Chance of precipitation',
+    points,
+    curve: 'smooth',
+    maxGapMs,
+    axis,
+    color: RAIN_COLOR,
+    format: (value) => formatPercent(host, value),
+  };
+}
+
+function temperatureAxis(host: any): ChartAxisOptions {
+  return { pad: 0, minSpan: 1, integer: true, format: (value) => formatDegrees(host, value) };
+}
+
+function precipitationAxis(host: any): ChartAxisOptions {
+  return { min: 0, max: 100, format: (value) => formatPercent(host, value) };
+}
+
+function conditionsChartOptions(
+  host: any,
+  config: WeatherTileConfig,
+  chart: Pick<TimeSeriesChartOptions<ForecastItem>, 'id' | 'label' | 'series' | 'axes' | 'selectionGroup'>,
+): TimeSeriesChartOptions<ForecastItem> {
+  return {
+    ...chart,
+    hass: host?.hass,
+    height: conditionsGraphHeight(config),
+    lines: conditionsHorizontalLineCount(config),
+  };
+}
+
+// Head readout: selected time and values, plus the selected hour's condition icon.
+function renderConditionsReadout(host: any, config: WeatherTileConfig, model: ChartModel<ForecastItem>, withIcon: boolean): unknown {
+  const item = model.selection?.values.find((value) => value.point)?.point?.data;
+  const condition = String(item?.condition || '');
+  const icon = withIcon && item
+    ? renderWeatherIcon(
+      config,
+      conditionMeteocon(condition),
+      `weather-conditions-selected-icon weather-condition-${conditionClass(condition)}`,
+      conditionLabel(condition),
+      'inline',
+    )
+    : nothing;
+  return chartReadout(model, { hass: host?.hass, extra: icon });
+}
+
+// Icon strip above the plot, aligned to the chart's time scale.
+function renderConditionsIcons(config: WeatherTileConfig, model: ChartModel<ForecastItem>, points: ForecastPoint[]): TemplateResult | typeof nothing {
+  const slots = conditionsIconSlots(finiteForecastPoints(points), temperatureIconCount(config));
+  if (!slots.length) return nothing;
+  return html`
+    <div class="weather-conditions-icons">
+      ${slots.map((slot) => {
+        const condition = String(slot.item.condition || '');
+        return html`
+          <span class="weather-conditions-icon-slot" style=${`left:${model.xPercent(slot.t).toFixed(2)}%;`}>
+            ${renderWeatherIcon(
+              config,
+              conditionMeteocon(condition),
+              `weather-conditions-icon weather-condition-${conditionClass(condition)}`,
+              conditionLabel(condition),
+            )}
+          </span>
+        `;
+      })}
+    </div>
+  `;
+}
+
+function renderConditionsTemperature(host: any, config: WeatherTileConfig, items: ForecastItem[], id: string, selectionGroup: string): TemplateResult | typeof nothing {
+  const charts: FamilyChartController | undefined = host?._charts;
+  const points = forecastPoints(items, 'temperature');
+  if (!charts || !hasGraphData(points)) return nothing;
+  const view = charts.render(conditionsChartOptions(host, config, {
+    id,
+    label: 'Temperature forecast graph',
+    selectionGroup,
+    series: [temperatureSeries(host, forecastSeriesPoints(points), forecastMaxGapMs(points))],
+    axes: { primary: temperatureAxis(host) },
+  }));
+  return chartFrame({
+    className: 'weather-conditions-graph weather-conditions-temp',
+    title: 'Temperature',
+    readout: renderConditionsReadout(host, config, view.model, true),
+    above: renderConditionsIcons(config, view.model, points),
+    body: view.svg,
   });
-  return bestIndex;
 }
 
-function conditionsSelectedPoint(host: any, key: string, points: ForecastGraphPoint[]): ForecastGraphPoint {
-  const selectedIndexRaw = typeof host?._getWeatherForecastGraphSelection === 'function'
-    ? host._getWeatherForecastGraphSelection(key)
-    : undefined;
-  const defaultIndex = nearestConditionsPointIndex(points);
-  const selectedIndex = Math.max(0, Math.min(points.length - 1, Number.isFinite(Number(selectedIndexRaw)) ? Number(selectedIndexRaw) : defaultIndex));
-  return points[selectedIndex] || points[0];
-}
-
-function nearestPointByTimestamp(points: ForecastGraphPoint[], timestamp?: number, fallbackIndex = 0): ForecastGraphPoint | undefined {
-  if (!points.length) return undefined;
-  if (!Number.isFinite(timestamp)) return points[Math.max(0, Math.min(points.length - 1, fallbackIndex))];
-  return points.reduce((best, point) => {
-    const bestTime = Number(best.timestamp);
-    const pointTime = Number(point.timestamp);
-    if (!Number.isFinite(pointTime)) return best;
-    if (!Number.isFinite(bestTime)) return point;
-    const bestDistance = Math.abs(bestTime - Number(timestamp));
-    const pointDistance = Math.abs(pointTime - Number(timestamp));
-    return pointDistance < bestDistance ? point : best;
-  }, points[0]);
-}
-
-function renderConditionsGrid(host: any, box: ConditionsChartBox, ticks: number[], points: ForecastGraphPoint[], horizontalLines: number): TemplateResult[] {
-  const baseline = box.height - box.bottom;
-  const lineCount = Math.max(2, horizontalLines);
-  return [
-    ...Array.from({ length: lineCount }, (_, index) => {
-      const y = box.top + (index / (lineCount - 1)) * (baseline - box.top);
-      return svg`<line class="weather-conditions-grid-line" x1=${box.left} x2=${box.width - box.right} y1=${y} y2=${y}></line>`;
-    }),
-    ...ticks.map((index) => {
-      const point = points[index];
-      const edgeClass = index === 0
-        ? ' weather-conditions-time-label-start'
-        : index === points.length - 1
-          ? ' weather-conditions-time-label-end'
-          : '';
-      return svg`
-        <line class="weather-conditions-time-line" x1=${point.x} x2=${point.x} y1=${box.top} y2=${baseline}></line>
-        <text class=${`weather-conditions-time-label${edgeClass}`} x=${point.x} y=${box.height - 6}>${forecastDateTime(host, point.item)}</text>
-      `;
-    }),
-  ];
-}
-
-function renderConditionsAxisLabels(
-  box: ConditionsChartBox,
-  horizontalLines: number,
-  formatValue: (ratio: number) => string,
-  className = 'weather-conditions-axis',
-  x = box.width - 2,
-): TemplateResult[] {
-  const baseline = box.height - box.bottom;
-  const lineCount = Math.max(2, horizontalLines);
-  return Array.from({ length: lineCount }, (_, index) => {
-    const ratio = 1 - (index / (lineCount - 1));
-    const y = box.top + (index / (lineCount - 1)) * (baseline - box.top);
-    return svg`<text class=${className} x=${x} y=${y}>${formatValue(ratio)}</text>`;
+function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, items: ForecastItem[], id: string, selectionGroup: string): TemplateResult | typeof nothing {
+  const charts: FamilyChartController | undefined = host?._charts;
+  const points = forecastPoints(items, 'precipitation_probability');
+  if (!charts || !hasGraphData(points)) return nothing;
+  const view = charts.render(conditionsChartOptions(host, config, {
+    id,
+    label: 'Chance of precipitation forecast graph',
+    selectionGroup,
+    series: [precipitationSeries(host, forecastSeriesPoints(points), forecastMaxGapMs(points))],
+    axes: { primary: precipitationAxis(host) },
+  }));
+  return chartFrame({
+    className: 'weather-conditions-graph weather-conditions-rain',
+    title: 'Chance of Precipitation',
+    readout: renderConditionsReadout(host, config, view.model, false),
+    body: view.svg,
   });
 }
 
-function renderConditionsTemperature(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string, syncKeys: string[]): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 8, right: 24, top: 15, bottom: 24 };
-  const { points, min, max } = buildConditionsPoints(items, 'temperature', box);
-  if (points.length < 2) return nothing;
-
-  const baseline = box.height - box.bottom;
-  const selected = conditionsSelectedPoint(host, key, points);
-  const minPoint = points.reduce((best, point) => point.value < best.value ? point : best, points[0]);
-  const maxPoint = points.reduce((best, point) => point.value > best.value ? point : best, points[0]);
-  const ticks = conditionsTickIndexes(points.length);
-  const icons = conditionsIconSlots(points, temperatureIconCount(config));
-  const horizontalLines = conditionsHorizontalLineCount(config);
-  const path = smoothPath(points);
-  const fillPath = areaPath(points, baseline);
-  const safeKey = safeIdPart(key);
-  const lineGradient = `weather-conditions-temp-line-${safeKey}`;
-  const fillGradient = `weather-conditions-temp-fill-${safeKey}`;
-  const selectedCondition = String(selected.item.condition || '');
-
-  return html`
-    <section class="weather-conditions-card weather-conditions-temp">
-      <div class="weather-conditions-head">
-        <div class="weather-conditions-title">
-          <span>Temperature</span>
-        </div>
-        <div class="weather-conditions-selected">
-          <span>${forecastDateTime(host, selected.item)}</span>
-          <strong>${selected.value.toFixed(0)}°</strong>
-          ${renderWeatherIcon(
-            config,
-            conditionMeteocon(selectedCondition),
-            `weather-conditions-selected-icon weather-condition-${conditionClass(selectedCondition)}`,
-            conditionLabel(selectedCondition),
-            'inline',
-          )}
-        </div>
-      </div>
-
-      ${icons.length ? html`
-        <div class="weather-conditions-icons">
-          ${icons.map((slot) => {
-            const condition = String(slot.point.item.condition || '');
-            const leftPct = (slot.x / box.width) * 100;
-            return html`
-              <span class="weather-conditions-icon-slot" style=${`left:${leftPct.toFixed(2)}%;`}>
-                ${renderWeatherIcon(
-                  config,
-                  conditionMeteocon(condition),
-                  `weather-conditions-icon weather-condition-${conditionClass(condition)}`,
-                  conditionLabel(condition),
-                )}
-              </span>
-            `;
-          })}
-        </div>
-      ` : nothing}
-
-      <div class="weather-conditions-chart-frame">
-        <svg
-          class="weather-conditions-chart"
-          viewBox=${`0 0 ${box.width} ${box.height}`}
-          preserveAspectRatio="none"
-          role="img"
-          aria-label="Temperature forecast graph"
-          @pointerdown=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
-          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
-          @pointerup=${stopConditionsPointer}
-          @pointercancel=${stopConditionsPointer}
-        >
-          <defs>
-            <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stop-color="rgba(255, 179, 28, 0.66)"></stop>
-              <stop offset="52%" stop-color="rgba(255, 179, 28, 0.24)"></stop>
-              <stop offset="100%" stop-color="rgba(47, 185, 221, 0.38)"></stop>
-            </linearGradient>
-            <linearGradient id=${lineGradient} x1=${box.left} x2=${box.width - box.right} y1="0" y2="0" gradientUnits="userSpaceOnUse">
-              ${points.map((point, index) => svg`
-                <stop offset=${`${(index / (points.length - 1)) * 100}%`} stop-color=${temperatureColor(point.value)}></stop>
-              `)}
-            </linearGradient>
-          </defs>
-          ${renderConditionsGrid(host, box, ticks, points, horizontalLines)}
-          <path class="weather-conditions-area" d=${fillPath} fill=${`url(#${fillGradient})`}></path>
-          <path class="weather-conditions-line-shadow" d=${path}></path>
-          <path class="weather-conditions-temp-line" d=${path} stroke=${`url(#${lineGradient})`}></path>
-          <text class="weather-conditions-extreme" x=${minPoint.x} y=${Math.max(12, minPoint.y - 9)}>L</text>
-          <text class="weather-conditions-extreme" x=${maxPoint.x} y=${Math.max(12, maxPoint.y - 9)}>H</text>
-          <line class="weather-conditions-selected-line" x1=${selected.x} x2=${selected.x} y1=${box.top} y2=${baseline}></line>
-          ${renderConditionsAxisLabels(box, horizontalLines, (ratio) => `${(min + ((max - min) * ratio)).toFixed(0)}°`)}
-        </svg>
-        <span
-          class="weather-conditions-selected-dot"
-          style=${`left:${((selected.x / box.width) * 100).toFixed(2)}%;top:${((selected.y / box.height) * 100).toFixed(2)}%;`}
-        ></span>
-      </div>
-    </section>
-  `;
-}
-
-function renderConditionsPrecipitation(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string, syncKeys: string[]): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 8, right: 24, top: 15, bottom: 24 };
-  const { points } = buildConditionsPoints(items, 'precipitation_probability', box);
-  if (points.length < 2) return nothing;
-
-  const baseline = box.height - box.bottom;
-  const selected = conditionsSelectedPoint(host, key, points);
-  const ticks = conditionsTickIndexes(points.length);
-  const horizontalLines = conditionsHorizontalLineCount(config);
-  const path = smoothPath(points);
-  const fillPath = areaPath(points, baseline);
-  const safeKey = safeIdPart(key);
-  const fillGradient = `weather-conditions-rain-fill-${safeKey}`;
-
-  return html`
-    <section class="weather-conditions-card weather-conditions-rain">
-      <div class="weather-conditions-head">
-        <div class="weather-conditions-title">
-          <span>Chance of Precipitation</span>
-        </div>
-        <div class="weather-conditions-selected">
-          <span>${forecastDateTime(host, selected.item)}</span>
-          <strong>${Math.round(selected.value)}%</strong>
-        </div>
-      </div>
-      <div class="weather-conditions-chart-frame">
-        <svg
-          class="weather-conditions-chart"
-          viewBox=${`0 0 ${box.width} ${box.height}`}
-          preserveAspectRatio="none"
-          role="img"
-          aria-label="Chance of precipitation forecast graph"
-          @pointerdown=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
-          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, syncKeys, points, box)}
-          @pointerup=${stopConditionsPointer}
-          @pointercancel=${stopConditionsPointer}
-        >
-          <defs>
-            <linearGradient id=${fillGradient} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stop-color="rgba(56, 199, 243, 0.48)"></stop>
-              <stop offset="100%" stop-color="rgba(56, 199, 243, 0.10)"></stop>
-            </linearGradient>
-          </defs>
-          ${renderConditionsGrid(host, box, ticks, points, horizontalLines)}
-          <path class="weather-conditions-rain-area" d=${fillPath} fill=${`url(#${fillGradient})`}></path>
-          <path class="weather-conditions-line-shadow" d=${path}></path>
-          <path class="weather-conditions-rain-line" d=${path}></path>
-          <line class="weather-conditions-selected-line" x1=${selected.x} x2=${selected.x} y1=${box.top} y2=${baseline}></line>
-          ${renderConditionsAxisLabels(box, horizontalLines, (ratio) => `${Math.round(100 * ratio)}%`)}
-        </svg>
-        <span
-          class="weather-conditions-selected-dot"
-          style=${`left:${((selected.x / box.width) * 100).toFixed(2)}%;top:${((selected.y / box.height) * 100).toFixed(2)}%;`}
-        ></span>
-      </div>
-    </section>
-  `;
-}
-
-function renderConditionsCombined(host: any, config: WeatherTileConfig, items: ForecastItem[], key: string): TemplateResult | typeof nothing {
-  const box: ConditionsChartBox = { width: 360, height: conditionsGraphHeight(config), left: 30, right: 24, top: 15, bottom: 24 };
-  const tempData = buildConditionsPoints(items, 'temperature', box);
-  const rainData = buildConditionsPoints(items, 'precipitation_probability', box);
-  const tempPoints = tempData.points;
-  const rainPoints = rainData.points;
-  const hasTemp = tempPoints.length >= 2;
-  const hasRain = rainPoints.length >= 2;
-  if (!hasTemp && !hasRain) return nothing;
-
-  const selectPoints = hasTemp ? tempPoints : rainPoints;
-  const selectedBase = conditionsSelectedPoint(host, key, selectPoints);
-  const selectedTemp = hasTemp ? nearestPointByTimestamp(tempPoints, selectedBase.timestamp, selectedBase.index) : undefined;
-  const selectedRain = hasRain ? nearestPointByTimestamp(rainPoints, selectedBase.timestamp, selectedBase.index) : undefined;
-  const selected = selectedTemp || selectedRain || selectedBase;
-  const selectedItem = selectedTemp?.item || selectedRain?.item || selectedBase.item;
-  const selectedCondition = String(selectedItem.condition || '');
-  const baseline = box.height - box.bottom;
-  const ticks = conditionsTickIndexes(selectPoints.length);
-  const horizontalLines = conditionsHorizontalLineCount(config);
-  const safeKey = safeIdPart(key);
-  const tempLine = `weather-conditions-combined-temp-line-${safeKey}`;
-  const tempFill = `weather-conditions-combined-temp-fill-${safeKey}`;
-  const rainFill = `weather-conditions-combined-rain-fill-${safeKey}`;
-  const tempPath = hasTemp ? smoothPath(tempPoints) : '';
-  const rainPath = hasRain ? smoothPath(rainPoints) : '';
-  const tempArea = hasTemp ? areaPath(tempPoints, baseline) : '';
-  const rainArea = hasRain ? areaPath(rainPoints, baseline) : '';
-  const minPoint = hasTemp ? tempPoints.reduce((best, point) => point.value < best.value ? point : best, tempPoints[0]) : undefined;
-  const maxPoint = hasTemp ? tempPoints.reduce((best, point) => point.value > best.value ? point : best, tempPoints[0]) : undefined;
-  const icons = hasTemp ? conditionsIconSlots(tempPoints, temperatureIconCount(config)) : [];
-
-  return html`
-    <section class="weather-conditions-card weather-conditions-combined">
-      <div class="weather-conditions-head">
-        <div class="weather-conditions-title"><span>Temperature & Precipitation</span></div>
-        <div class="weather-conditions-selected weather-conditions-combined-selected">
-          <span>${forecastDateTime(host, selectedItem)}</span>
-          ${selectedTemp ? html`<strong>${selectedTemp.value.toFixed(0)}°</strong>` : nothing}
-          ${selectedRain ? html`<strong class="weather-conditions-selected-rain">${Math.round(selectedRain.value)}%</strong>` : nothing}
-          ${renderWeatherIcon(config, conditionMeteocon(selectedCondition), `weather-conditions-selected-icon weather-condition-${conditionClass(selectedCondition)}`, conditionLabel(selectedCondition), 'inline')}
-        </div>
-      </div>
-      ${icons.length ? html`
-        <div class="weather-conditions-icons">
-          ${icons.map((slot) => {
-            const condition = String(slot.point.item.condition || '');
-            return html`
-              <span class="weather-conditions-icon-slot" style=${`left:${((slot.x / box.width) * 100).toFixed(2)}%;`}>
-                ${renderWeatherIcon(config, conditionMeteocon(condition), `weather-conditions-icon weather-condition-${conditionClass(condition)}`, conditionLabel(condition))}
-              </span>
-            `;
-          })}
-        </div>
-      ` : nothing}
-      <div class="weather-conditions-chart-frame">
-        <svg
-          class="weather-conditions-chart"
-          viewBox=${`0 0 ${box.width} ${box.height}`}
-          preserveAspectRatio="none"
-          role="img"
-          aria-label="Temperature and precipitation forecast graph"
-          @pointerdown=${(ev: PointerEvent) => selectConditionsPoint(host, ev, [key], selectPoints, box)}
-          @pointermove=${(ev: PointerEvent) => selectConditionsPoint(host, ev, [key], selectPoints, box)}
-          @pointerup=${stopConditionsPointer}
-          @pointercancel=${stopConditionsPointer}
-        >
-          <defs>
-            ${hasTemp ? svg`
-              <linearGradient id=${tempFill} x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="rgba(255, 179, 28, 0.56)"></stop>
-                <stop offset="54%" stop-color="rgba(255, 179, 28, 0.20)"></stop>
-                <stop offset="100%" stop-color="rgba(47, 185, 221, 0.34)"></stop>
-              </linearGradient>
-              <linearGradient id=${tempLine} x1=${box.left} x2=${box.width - box.right} y1="0" y2="0" gradientUnits="userSpaceOnUse">
-                ${tempPoints.map((point, index) => svg`
-                  <stop offset=${`${(index / (tempPoints.length - 1)) * 100}%`} stop-color=${temperatureColor(point.value)}></stop>
-                `)}
-              </linearGradient>
-            ` : nothing}
-            ${hasRain ? svg`
-              <linearGradient id=${rainFill} x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="rgba(56, 199, 243, 0.44)"></stop>
-                <stop offset="100%" stop-color="rgba(56, 199, 243, 0.08)"></stop>
-              </linearGradient>
-            ` : nothing}
-          </defs>
-          ${renderConditionsGrid(host, box, ticks, selectPoints, horizontalLines)}
-          ${hasRain ? svg`<path class="weather-conditions-rain-area weather-conditions-combined-rain-area" d=${rainArea} fill=${`url(#${rainFill})`}></path>` : nothing}
-          ${hasTemp ? svg`<path class="weather-conditions-area" d=${tempArea} fill=${`url(#${tempFill})`}></path>` : nothing}
-          ${hasRain ? svg`<path class="weather-conditions-line-shadow weather-conditions-rain-shadow" d=${rainPath}></path>` : nothing}
-          ${hasRain ? svg`<path class="weather-conditions-rain-line" d=${rainPath}></path>` : nothing}
-          ${hasTemp ? svg`<path class="weather-conditions-line-shadow" d=${tempPath}></path>` : nothing}
-          ${hasTemp ? svg`<path class="weather-conditions-temp-line" d=${tempPath} stroke=${`url(#${tempLine})`}></path>` : nothing}
-          ${minPoint ? svg`<text class="weather-conditions-extreme" x=${minPoint.x} y=${Math.max(12, minPoint.y - 9)}>L</text>` : nothing}
-          ${maxPoint ? svg`<text class="weather-conditions-extreme" x=${maxPoint.x} y=${Math.max(12, maxPoint.y - 9)}>H</text>` : nothing}
-          <line class="weather-conditions-selected-line" x1=${selected.x} x2=${selected.x} y1=${box.top} y2=${baseline}></line>
-          ${hasTemp ? renderConditionsAxisLabels(
-            box,
-            horizontalLines,
-            (ratio) => `${(tempData.min + ((tempData.max - tempData.min) * ratio)).toFixed(0)}°`,
-          ) : nothing}
-          ${hasRain ? renderConditionsAxisLabels(
-            box,
-            horizontalLines,
-            (ratio) => `${Math.round(100 * ratio)}%`,
-            'weather-conditions-axis weather-conditions-axis-rain weather-conditions-axis-left',
-            2,
-          ) : nothing}
-        </svg>
-        ${selectedTemp ? html`
-          <span
-            class="weather-conditions-selected-dot"
-            style=${`left:${((selectedTemp.x / box.width) * 100).toFixed(2)}%;top:${((selectedTemp.y / box.height) * 100).toFixed(2)}%;`}
-          ></span>
-        ` : nothing}
-        ${selectedRain ? html`
-          <span
-            class="weather-conditions-selected-dot"
-            style=${`left:${((selectedRain.x / box.width) * 100).toFixed(2)}%;top:${((selectedRain.y / box.height) * 100).toFixed(2)}%;`}
-          ></span>
-        ` : nothing}
-      </div>
-    </section>
-  `;
+// One graph: temperature on the right axis, precipitation chance on the left in its own colour.
+// With both series, the shared legend names them (temperature as its colour scale).
+function renderConditionsCombined(host: any, config: WeatherTileConfig, items: ForecastItem[], id: string): TemplateResult | typeof nothing {
+  const charts: FamilyChartController | undefined = host?._charts;
+  const tempPoints = forecastPoints(items, 'temperature');
+  const rainPoints = forecastPoints(items, 'precipitation_probability');
+  const hasTemp = hasGraphData(tempPoints);
+  const hasRain = hasGraphData(rainPoints);
+  if (!charts || (!hasTemp && !hasRain)) return nothing;
+  const maxGapMs = forecastMaxGapMs(hasTemp ? tempPoints : rainPoints);
+  const series: ChartSeries<ForecastItem>[] = [];
+  if (hasTemp) series.push(temperatureSeries(host, forecastSeriesPoints(tempPoints), maxGapMs));
+  if (hasRain) series.push(precipitationSeries(host, forecastSeriesPoints(rainPoints), maxGapMs, 'secondary'));
+  const view = charts.render(conditionsChartOptions(host, config, {
+    id,
+    label: 'Temperature and precipitation forecast graph',
+    series,
+    axes: { primary: temperatureAxis(host), secondary: precipitationAxis(host) },
+  }));
+  return chartFrame({
+    className: 'weather-conditions-graph weather-conditions-combined',
+    title: 'Temperature & Precipitation',
+    readout: renderConditionsReadout(host, config, view.model, true),
+    legend: series.length > 1 ? chartLegend(series) : nothing,
+    above: hasTemp ? renderConditionsIcons(config, view.model, tempPoints) : nothing,
+    body: view.svg,
+  });
 }
 
 function renderWeatherConditionsPanel(host: any, config: WeatherTileConfig, items: ForecastItem[], fields: ForecastFieldKey[], key: string, syncGraphs: boolean): TemplateResult | typeof nothing {
   if (items.length < 2) return nothing;
-  const tempKey = `${key}-temperature`;
-  const precipKey = `${key}-precipitation`;
   if (forecastGraphMode(config) === 'combined' && (fields.includes('temperature') || fields.includes('precipitation_probability'))) {
     const combined = renderConditionsCombined(host, config, items, `${key}-combined`);
     if (combined === nothing) return nothing;
@@ -1383,12 +1096,15 @@ function renderWeatherConditionsPanel(host: any, config: WeatherTileConfig, item
       </div>
     `;
   }
-  const syncKeys = syncGraphs ? [tempKey, precipKey] : null;
+  const tempKey = `${key}-temperature`;
+  const precipKey = `${key}-precipitation`;
+  // Synced graphs share one selected time; otherwise each graph keeps its own.
+  const syncGroup = `${key}-sync`;
   const temperature = fields.includes('temperature')
-    ? renderConditionsTemperature(host, config, items, tempKey, syncKeys || [tempKey])
+    ? renderConditionsTemperature(host, config, items, tempKey, syncGraphs ? syncGroup : tempKey)
     : nothing;
   const precipitation = fields.includes('precipitation_probability')
-    ? renderConditionsPrecipitation(host, config, items, precipKey, syncKeys || [precipKey])
+    ? renderConditionsPrecipitation(host, config, items, precipKey, syncGraphs ? syncGroup : precipKey)
     : nothing;
   if (temperature === nothing && precipitation === nothing) return nothing;
   return html`
@@ -1429,7 +1145,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const chips = Array.isArray(config.chips) ? config.chips : [];
   const tempSize = configNumber(config.temp_size ?? config.temperature_size, 18, 56);
   const iconSize = configNumber(config.icon_size, 28, 160);
-  const graphHeight = configNumber(config.graph_height, 82, 260);
   const iconOffsetX = Number(config.icon_offset_x);
   const iconOffsetY = Number(config.icon_offset_y);
   const conditionsIconSize = configNumber(config.conditions_icon_size, 8, 48);
@@ -1454,7 +1169,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     temperatureReadoutIconSize ? `--weather-conditions-selected-icon-size:${temperatureReadoutIconSize}px;` : '',
     temperatureReadoutIconScale ? `--weather-conditions-selected-icon-scale:${temperatureReadoutIconScale};` : '',
     dailyIconSize ? `--weather-daily-icon-size:${dailyIconSize}px;` : '',
-    graphHeight ? `--weather-graph-height:${graphHeight}px;` : '',
     `--weather-metric-columns:${metricColumns};`,
   ].filter(Boolean);
   const heightStyle = styleParts.join('');

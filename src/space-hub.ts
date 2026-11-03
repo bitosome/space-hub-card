@@ -1,4 +1,11 @@
-import { formatHassNumber, isAvailableValue, showEntityMoreInfo } from '@bitosome/ha-card-ui';
+import {
+  CHART_FRAME_CHROME_PX,
+  CHART_LEGEND_PX,
+  FamilyChartController,
+  formatHassNumber,
+  isAvailableValue,
+  showEntityMoreInfo,
+} from '@bitosome/ha-card-ui';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, CSSResultGroup, TemplateResult, nothing } from 'lit';
 import { until } from 'lit/directives/until.js';
@@ -19,7 +26,7 @@ import { renderACTile } from './tiles/ac';
 import { renderThermostatTile } from './tiles/thermostat';
 import { renderSwitchRows } from './tiles/switch';
 import { designTokens } from './shared/design-tokens';
-import { componentStyles, familyStyles } from './shared/card-primitives';
+import { chartStyles, componentStyles, familyStyles } from './shared/card-primitives';
 import { baseStyles } from './styles/base.styles';
 import { chipStyles } from './styles/chip.styles';
 import { animationStyles } from './styles/animation.styles';
@@ -210,9 +217,10 @@ export class SpaceHubCard extends LitElement {
 
   @state() private _config!: SpaceHubConfig;
   @state() private _visiblePendingSwitches = new Set<string>();
-  @state() private _weatherForecastGraphSelections = new Map<string, number>();
   @state() private _weatherForecastSourceSelections = new Map<string, string>();
 
+  // Forecast graphs: measured widths and the selected time per graph (or per synced pair).
+  public _charts = new FamilyChartController(this);
   private _helpersPromise?: Promise<any>;
   private _rowCardElements = new Map<string, LovelaceCard>();
   private _rowCardConfigs = new Map<string, LovelaceCardConfig>();
@@ -646,12 +654,22 @@ export class SpaceHubCard extends LitElement {
     const metricColumns = Math.max(1, Math.min(4, Math.round(this._positiveNumber(weather.metric_columns) || 3)));
     const metricCount = this._weatherMetricCountForCardSize(weather);
     const metricRows = metricCount > 0 ? Math.ceil(metricCount / metricColumns) : 0;
-    const fieldGraphCount = this._weatherForecastFieldCountForCardSize(weather);
+    const fields = this._weatherForecastFieldsForCardSize(weather);
+    const combined = String(weather.forecast_graph_mode || '').toLowerCase() === 'combined';
     const graphCount = weather.show_forecast === false || !weather.entity
       ? 0
-      : (String(weather.forecast_graph_mode || '').toLowerCase() === 'combined' ? Math.min(1, fieldGraphCount) : fieldGraphCount);
+      : (combined ? Math.min(1, fields.size) : fields.size);
+    // The condition icon strip (icon + 5px frame gap) sits above the temperature graph.
+    const iconCountRaw = Number(weather.temperature_icon_count);
+    const iconCount = Number.isFinite(iconCountRaw) ? Math.floor(iconCountRaw) : 8;
+    const hasIconStrip = graphCount > 0 && (combined || fields.has('temperature')) && iconCount > 0;
+    const iconStrip = hasIconStrip
+      ? Math.max(8, Math.min(48, this._positiveNumber(weather.conditions_icon_size) || 15)) + 5
+      : 0;
+    // The combined graph with both series adds the shared legend row.
+    const legendRow = graphCount > 0 && combined && fields.size > 1 ? CHART_LEGEND_PX : 0;
     const graphHeightEstimate = graphCount > 0
-      ? (graphCount * (graphHeight + 64)) + ((graphCount - 1) * 8)
+      ? (graphCount * (graphHeight + CHART_FRAME_CHROME_PX)) + iconStrip + legendRow + ((graphCount - 1) * 8)
       : 0;
     const dailyForecastHeight = graphCount > 0 ? 250 : 0;
     const contentHeightEstimate =
@@ -689,7 +707,7 @@ export class SpaceHubCard extends LitElement {
     return count;
   }
 
-  private _weatherForecastFieldCountForCardSize(weather: HeaderWeather): number {
+  private _weatherForecastFieldsForCardSize(weather: HeaderWeather): Set<string> {
     const aliases: Record<string, string> = {
       temp: 'temperature',
       temperature: 'temperature',
@@ -707,13 +725,14 @@ export class SpaceHubCard extends LitElement {
       const field = aliases[String(value || '').trim().toLowerCase().replace(/[-\s]/g, '_')];
       if (field) fields.add(field);
     });
-    return fields.size || 2;
+    return fields.size ? fields : new Set(['temperature', 'precipitation_probability']);
   }
 
   static styles: CSSResultGroup = [
     designTokens,
     familyStyles,
     componentStyles,
+    chartStyles,
     baseStyles,
     chipStyles,
     animationStyles,
@@ -952,18 +971,6 @@ export class SpaceHubCard extends LitElement {
         ${showThermostat ? renderThermostatTile(this, thermostat as any) : nothing}
       </div>` : nothing}
     `;
-  }
-
-  public _getWeatherForecastGraphSelection(key?: string): number | undefined {
-    return key ? this._weatherForecastGraphSelections.get(key) : undefined;
-  }
-
-  public _setWeatherForecastGraphSelection(key: string | undefined, index: number): void {
-    if (!key || !Number.isFinite(index)) return;
-    if (this._weatherForecastGraphSelections.get(key) === index) return;
-    const next = new Map(this._weatherForecastGraphSelections);
-    next.set(key, index);
-    this._weatherForecastGraphSelections = next;
   }
 
   // Renders an arbitrary Lovelace card beneath a switch row, reusing helpers for creation.

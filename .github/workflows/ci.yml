@@ -46,3 +46,5 @@ jobs:
         run: npm run test:gestures
       - name: Test editor and confirmations
         run: npm run test:editor
+      - name: Test weather graphs
+        run: npm run test:weather

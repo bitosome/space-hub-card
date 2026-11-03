@@ -42,7 +42,7 @@ Current weather tile features:
 - Apple Weather-style temperature graph.
 - Apple Weather-style precipitation probability graph.
 - Optional combined temperature and precipitation graph.
-- Synced graph selectors.
+- Synced graph selectors, with pointer and keyboard scrubbing and a now marker.
 - Full date and time labels on graphs.
 - Configurable forecast graph hours.
 - Configurable graph height.
@@ -335,7 +335,9 @@ Accepted aliases:
 - Temperature: `temp`, `temperature`
 - Precipitation probability: `rain_chance`, `precipitation_probability`, `precip_probability`, `probability`, `pop`
 
-The graph labels use the Home Assistant locale and time format. If Home Assistant is set to 24-hour time, graph labels use 24-hour time. If Home Assistant is set to 12-hour time, graph labels use 12-hour time.
+The graph labels use the Home Assistant locale, time format and time zone setting. If Home Assistant is set to 24-hour time, graph labels use 24-hour time. If Home Assistant is set to 12-hour time, graph labels use 12-hour time. With the profile time zone set to the server zone, the graph labels, the daily forecast days and its low/high times all use the server zone.
+
+The graphs use the shared family chart from `@bitosome/ha-card-ui`. Hover or drag across a graph, or focus it and use the arrow keys, Page Up/Down, Home and End, to read another hour; Escape returns to the current hour. A vertical swipe on a graph scrolls the dashboard. Hours with no forecast value (a missing or `null` value) show as gaps. A forecast that changes resolution part-way, such as hourly and then 6-hourly, stays one line. Hovering previews an hour; moving the pointer away returns to the picked hour, or to now. With `sync_graphs`, the graphs share the selected time; if one graph has no value at that hour, its cursor stays at that time and its readout shows `–`. In combined mode a legend names both series.
 
 ### Weather Display Options
 
@@ -724,6 +726,8 @@ The card follows Home Assistant theme variables where possible. Useful overrides
 | `--card-background-color` | Fallback base background. |
 | `--space-hub-tile-background` | Explicit weather tile surface background. |
 | `--tile-border-radius` | Tile radius. Defaults to `--ha-card-border-radius`. |
+| `--space-hub-rain-color` | Weather precipitation graph line and area; in combined mode also its left axis labels and readout value. Defaults to `#38c7f3`. |
+| `--family-chart-*` | Shared forecast graph hooks from `@bitosome/ha-card-ui`: `--family-chart-background`, `-grid`, `-text`, `-now`, `-shadow` and `-radius` (defaults to `--tile-border-radius` minus 4px inside the weather tile). |
 | `--chip-background-color` | Default chip background. |
 | `--switch-on-yellow` | Active switch color. |
 | `--switch-on-green` | Smart plug active color. |
@@ -892,7 +896,7 @@ dist/space-hub-card.js
 
 ## Shared card presentation
 
-Version 2.2.0 consumes `@bitosome/ha-card-ui` 1.4.0. Space Hub's original two-layer activation glow and pulse geometry are now implemented once in that library; every consumer bundles its pinned version. Embedded card hosts share the foreground layer so neighboring tile glows remain behind their surfaces. Native entity more-info uses the common adapter. Pending switches and lock chips use the shared busy indicator, chips and fault states use the shared status colour aliases (so HA theme colours apply), and room and weather readings use the HA profile's number format. Tile actions, gate and lock policy, availability, editor configuration and native HA interactions remain in this project.
+Version 2.3.0 consumes `@bitosome/ha-card-ui` 1.7.0; the hourly weather graphs use its shared time-series chart. Space Hub's original two-layer activation glow and pulse geometry are now implemented once in that library; every consumer bundles its pinned version. Embedded card hosts share the foreground layer so neighboring tile glows remain behind their surfaces. Native entity more-info uses the common adapter. Pending switches and lock chips use the shared busy indicator, chips and fault states use the shared status colour aliases (so HA theme colours apply), and room and weather readings use the HA profile's number format. Tile actions, gate and lock policy, availability, editor configuration and native HA interactions remain in this project.
 
 Glows remain visible between tiles and stop at the outer card boundary, protecting adjacent dashboard cards. The card's padding preserves tile focus outlines. Embedded cards that open floating menus must use Home Assistant overlays or native top-layer dialogs/popovers; ordinary positioned content cannot overflow the card boundary.
 

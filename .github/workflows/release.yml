@@ -46,6 +46,8 @@ jobs:
         run: npm run test:gestures
       - name: Test editor and confirmations
         run: npm run test:editor
+      - name: Test weather graphs
+        run: npm run test:weather
         
       - name: Create Release
         uses: softprops/action-gh-release@v2.6.1

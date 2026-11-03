@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.3.0 — 2026-11-03
+
+Consumes `@bitosome/ha-card-ui` 1.7.0 (shared time-series chart), up from 1.4.0.
+
+- The hourly Temperature, Chance of Precipitation and combined graphs use the shared family chart, the same one as the electricity price and printer power charts. The private chart code, selection state and about 200 lines of chart CSS are gone.
+- Graph text is no longer stretched sideways: labels are 11px at every card width and the graph is exactly `graph_height` tall. Time labels read for example "Nov 3, 14:00" in the HA locale and thin out to fit the width instead of four fixed ticks. Temperature labels are whole-degree steps; the right axis widens to fit them.
+- The graph background follows the theme (a primary-colour tint) instead of a fixed sky-blue gradient. The temperature area fades the temperature colours instead of an amber-to-cyan fill. The selection cursor and dot follow the theme text colour instead of white.
+- New: a now marker, keyboard scrubbing (arrow keys, Page Up/Down, Home, End; Escape returns to the current hour) and gaps where the forecast has no value instead of a line drawn across them. A `null` forecast value is now a gap instead of 0, and a forecast with no real values for a field hides that graph. A forecast that changes resolution part-way (hourly, then 6-hourly) stays one line. With `sync_graphs` the two graphs share the selected time, not an index; a graph with no value at that time keeps its cursor there and reads `–`. A mouse hover previews an hour and returns to the picked hour (or now) when the pointer leaves.
+- A vertical swipe on a graph now scrolls the dashboard; a horizontal drag still scrubs.
+- Precipitation axis labels and the readout use the HA profile's number format, for example `40%`, like the other percentages on the card.
+- The daily forecast's days and low/high times follow the HA time zone setting, the same as the graph labels; with the profile set to server time they used the browser zone before. A `null` daily temperature or precipitation chance is no longer shown as 0. The readout no longer shows -0°.
+- The condition icon strip and the selected-hour icon stay; the icons line up with the graph's time scale. The precipitation colour can be themed with `--space-hub-rain-color`, and the graph frame with the shared `--family-chart-*` hooks. Combined mode shows the shared legend (temperature as its colour scale, precipitation in the rain colour).
+- The card-size estimate uses the shared chart frame height (`CHART_FRAME_CHROME_PX`, plus the icon strip): it reserves 8px less for a graph with the icon strip and 28px less for one without, plus the shared legend row height (`CHART_LEGEND_PX`, 21px) for the combined graph's legend.
+
 ## 2.2.0 — 2026-11-03
 
 Consumes `@bitosome/ha-card-ui` 1.4.0.

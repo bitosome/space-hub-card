@@ -25,7 +25,6 @@ export const weatherTileStyles: CSSResultGroup = css`
     --weather-temp-size: 31px;
     --weather-icon-size: 42px;
     --weather-icon-bg-size: 58px;
-    --weather-graph-height: 118px;
     --control-button-border-radius: var(--tile-border-radius);
   }
 
@@ -298,96 +297,14 @@ export const weatherTileStyles: CSSResultGroup = css`
     gap: 8px;
     overflow: hidden;
     pointer-events: auto;
-  }
-
-  .weather-conditions-card {
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-    display: grid;
-    align-content: start;
-    gap: 5px;
-    padding: 7px 8px 6px;
-    border-radius: calc(var(--tile-border-radius) - 4px);
-    background: linear-gradient(180deg, rgba(3, 169, 244, 0.13), rgba(3, 169, 244, 0.055));
-    color: var(--secondary-text-color);
-    overflow: hidden;
-    touch-action: pan-y;
-  }
-
-  .weather-conditions-temp {
-    min-height: calc(var(--weather-graph-height) + 54px);
-  }
-
-  .weather-conditions-rain {
-    min-height: calc(var(--weather-graph-height) + 36px);
-  }
-
-  .weather-conditions-combined {
-    min-height: calc(var(--weather-graph-height) + 54px);
-  }
-
-  .weather-conditions-head {
-    min-width: 0;
-    min-height: 18px;
-    display: flex;
-    align-items: start;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .weather-conditions-title,
-  .weather-conditions-selected,
-  .weather-conditions-subtitle {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .weather-conditions-title {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--primary-text-color);
-    font-size: 12px;
-    line-height: 1.15;
-    font-weight: 850;
-  }
-
-  .weather-conditions-selected {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: end;
-    gap: 5px;
-    max-width: min(58%, 172px);
-    color: var(--secondary-text-color);
-    font-size: 9px;
-    line-height: 1;
-    font-weight: 750;
-  }
-
-  .weather-conditions-selected strong {
-    color: var(--primary-text-color);
-    font-size: 14px;
-    line-height: 1;
-    font-weight: 850;
-  }
-
-  .weather-conditions-combined-selected {
-    max-width: min(72%, 232px);
-  }
-
-  .weather-conditions-selected .weather-conditions-selected-rain {
-    color: #38c7f3;
-    font-size: 14px;
-    line-height: 1;
-    font-weight: 850;
+    /* The shared chart frame (chartStyles) draws the graph card; inside the tile its
+       corners follow the daily forecast panel. */
+    --family-chart-radius: calc(var(--tile-border-radius) - 4px);
   }
 
   .weather-conditions-selected-icon {
     flex: 0 0 auto;
+    align-self: center;
     width: var(--weather-conditions-selected-icon-size, 15px);
     height: var(--weather-conditions-selected-icon-size, 15px);
     --mdc-icon-size: var(--weather-conditions-selected-icon-size, 15px);
@@ -396,14 +313,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     transform-origin: 50% 50%;
   }
 
-  .weather-conditions-subtitle {
-    margin-top: -2px;
-    font-size: 10px;
-    line-height: 1.1;
-    font-weight: 700;
-    color: var(--secondary-text-color);
-  }
-
+  /* Condition icons above the temperature graph, placed with the chart's xPercent. */
   .weather-conditions-icons {
     position: relative;
     width: 100%;
@@ -411,6 +321,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     height: var(--weather-conditions-icon-size, 15px);
     box-sizing: border-box;
     color: var(--state-weather-sunny-color, #f6a000);
+    pointer-events: none;
   }
 
   .weather-conditions-icon-slot {
@@ -430,157 +341,6 @@ export const weatherTileStyles: CSSResultGroup = css`
     color: inherit;
     transform: scale(var(--weather-conditions-icon-scale, 1));
     transform-origin: 50% 50%;
-  }
-
-  .weather-conditions-chart-frame {
-    position: relative;
-    width: 100%;
-    min-width: 0;
-    height: var(--weather-graph-height);
-    overflow: visible;
-  }
-
-  .weather-conditions-chart {
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    display: block;
-    cursor: pointer;
-    touch-action: none;
-    overflow: hidden;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  .weather-conditions-chart text {
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  .weather-conditions-temp .weather-conditions-chart {
-    height: 100%;
-  }
-
-  .weather-conditions-rain .weather-conditions-chart {
-    height: 100%;
-  }
-
-  .weather-conditions-grid-line,
-  .weather-conditions-time-line {
-    stroke: color-mix(in srgb, var(--primary-text-color) 13%, transparent);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .weather-conditions-time-line {
-    stroke-dasharray: 3 3;
-  }
-
-  .weather-conditions-area,
-  .weather-conditions-rain-area {
-    opacity: 0.96;
-  }
-
-  .weather-conditions-line-shadow {
-    fill: none;
-    stroke: rgba(0, 0, 0, 0.24);
-    stroke-width: 7;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .weather-conditions-temp-line,
-  .weather-conditions-rain-line {
-    fill: none;
-    stroke-width: 4.3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .weather-conditions-rain-line {
-    stroke: #38c7f3;
-  }
-
-  .weather-conditions-rain-shadow {
-    stroke-width: 5;
-    opacity: 0.78;
-  }
-
-  .weather-conditions-selected-line {
-    stroke: rgba(255, 255, 255, 0.36);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .weather-conditions-selected-dot {
-    position: absolute;
-    z-index: 3;
-    width: 15px;
-    height: 15px;
-    min-width: 15px;
-    min-height: 15px;
-    box-sizing: border-box;
-    aspect-ratio: 1 / 1;
-    border: 1px solid rgba(255, 255, 255, 0.54);
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.28);
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-  }
-
-  .weather-conditions-selected-dot::after {
-    content: "";
-    position: absolute;
-    inset: 4px;
-    border-radius: 50%;
-    background: var(--primary-text-color);
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
-  }
-
-  .weather-conditions-axis,
-  .weather-conditions-time-label,
-  .weather-conditions-extreme {
-    fill: var(--secondary-text-color);
-    font-size: 9px;
-    font-weight: 750;
-    text-anchor: middle;
-    dominant-baseline: middle;
-    pointer-events: none;
-  }
-
-  .weather-conditions-axis {
-    text-anchor: end;
-  }
-
-  .weather-conditions-axis-rain {
-    fill: #38c7f3;
-    opacity: 0.9;
-  }
-
-  .weather-conditions-axis-left {
-    text-anchor: start;
-  }
-
-  .weather-conditions-time-label {
-    font-size: 7.6px;
-  }
-
-  .weather-conditions-time-label-start {
-    text-anchor: start;
-  }
-
-  .weather-conditions-time-label-end {
-    text-anchor: end;
-  }
-
-  .weather-conditions-extreme {
-    fill: var(--primary-text-color);
-    font-size: 11px;
-    font-weight: 850;
   }
 
   .weather-daily-forecast {
