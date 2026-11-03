@@ -55,7 +55,7 @@ export const baseStyles: CSSResultGroup = [glowStyles, css`
    * (z-index:0) resolve within the shared .root stacking context so a glow
    * never renders on top of a neighbouring tile. */
   .tile-wrap { position: relative; width: 100%; height: var(--tile-h); display:block; }
-  .tile-wrap.tile-unavailable { --tile-fault-color: var(--status-alert-color); }
+  .tile-wrap.tile-unavailable { --tile-fault-color: var(--family-error); }
   
   .square::part(button) { width: 100%; height: 100%; padding: 0; margin: 0; box-sizing: border-box; border-radius: var(--tile-border-radius); overflow: hidden; clip-path: inset(0 round var(--tile-border-radius)); background-clip: padding-box; }
 

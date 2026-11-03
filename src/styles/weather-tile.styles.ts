@@ -14,11 +14,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     height: auto;
     align-self: start;
     border-radius: var(--tile-border-radius);
-    background: var(--space-hub-tile-background, rgba(255, 255, 255, 0.04));
-    background: var(
-      --space-hub-tile-background,
-      color-mix(in srgb, var(--ha-card-background, var(--card-background-color)) 96%, var(--primary-text-color) 4%)
-    );
+    background: var(--space-hub-tile-background, var(--family-tile));
     backdrop-filter: blur(10px);
     box-shadow: var(--tile-shadow-default);
     overflow: hidden;
@@ -56,10 +52,6 @@ export const weatherTileStyles: CSSResultGroup = css`
     filter: none;
   }
 
-  .weather-tile-wrap.weather-tile-stale {
-    box-shadow: var(--tile-shadow-default), 0 0 22px 4px rgba(244, 67, 54, 0.55);
-  }
-
   .weather-tile::part(button) {
     width: 100%;
     height: auto;
@@ -95,12 +87,13 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-clickable:hover {
-    background: rgba(3, 169, 244, 0.12);
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
   }
 
+  /* Outline rather than box-shadow, so active metrics keep a visible ring. */
   .weather-clickable:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--primary-color, #03a9f4);
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
   }
 
   .weather-top {
@@ -190,7 +183,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     gap: 3px;
     padding: 2px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.055);
+    background: color-mix(in srgb, var(--primary-text-color) 6%, transparent);
     box-sizing: border-box;
     overflow: hidden;
   }
@@ -219,18 +212,19 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-source-option:hover {
-    background: rgba(3, 169, 244, 0.12);
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
   }
 
   .weather-source-option.active {
-    background: rgba(3, 169, 244, 0.24);
+    background: color-mix(in srgb, var(--primary-color) 24%, transparent);
     color: var(--primary-text-color);
-    box-shadow: inset 0 0 0 1px rgba(3, 169, 244, 0.28);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 28%, transparent);
   }
 
+  /* The picker clips overflow, so the ring sits inside the option. */
   .weather-source-option:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--primary-color, #03a9f4);
+    outline: 3px solid var(--primary-color);
+    outline-offset: -3px;
   }
 
   .weather-primary {
@@ -243,12 +237,22 @@ export const weatherTileStyles: CSSResultGroup = css`
     padding-top: 1px;
   }
 
+  /* 44px targets: text sits on the shared baseline at the bottom of each target. */
+  .weather-temp,
+  .weather-humidity {
+    display: inline-flex;
+    align-items: flex-end;
+    min-width: 44px;
+    min-height: 44px;
+    box-sizing: border-box;
+    margin: 0 -3px;
+  }
+
   .weather-temp {
     font-size: var(--weather-temp-size);
     line-height: 1;
     font-weight: 700;
     padding: 2px 3px;
-    margin: -2px -3px;
   }
 
   .weather-humidity {
@@ -257,7 +261,6 @@ export const weatherTileStyles: CSSResultGroup = css`
     font-weight: 700;
     color: var(--secondary-text-color);
     padding: 2px 3px;
-    margin: -2px -3px;
   }
 
   .weather-feels {
@@ -270,8 +273,13 @@ export const weatherTileStyles: CSSResultGroup = css`
     font-size: 11px;
     line-height: 1.1;
     font-weight: 650;
-    padding: 1px 3px;
-    margin: -1px -3px 0;
+    /* Vertical padding makes a 44px target around the single line. */
+    padding: calc((44px - 1.1em) / 2) 3px;
+    margin: 0 -3px;
+  }
+
+  .weather-stale {
+    justify-self: start;
   }
 
   .weather-grid {
@@ -460,7 +468,7 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-conditions-grid-line,
   .weather-conditions-time-line {
-    stroke: rgba(255, 255, 255, 0.13);
+    stroke: color-mix(in srgb, var(--primary-text-color) 13%, transparent);
     stroke-width: 1;
     vector-effect: non-scaling-stroke;
   }
@@ -606,7 +614,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     grid-template-columns: minmax(58px, 0.9fr) minmax(34px, 0.52fr) minmax(30px, auto) minmax(56px, 1fr) minmax(30px, auto);
     align-items: center;
     gap: 4px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
   }
 
   .weather-daily-forecast-heading + .weather-daily-row {
@@ -694,7 +702,7 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-daily-track {
     inset-inline: 0;
-    background: rgba(255, 255, 255, 0.12);
+    background: color-mix(in srgb, var(--primary-text-color) 12%, transparent);
   }
 
   .weather-daily-segment {
@@ -715,7 +723,8 @@ export const weatherTileStyles: CSSResultGroup = css`
 
   .weather-metric {
     min-width: 0;
-    min-height: 29px;
+    min-height: 44px;
+    box-sizing: border-box;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: auto auto;
@@ -729,7 +738,7 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-metric.weather-clickable:hover {
-    background: rgba(3, 169, 244, 0.16);
+    background: color-mix(in srgb, var(--primary-color) 16%, transparent);
   }
 
   .weather-metric.active {
@@ -743,7 +752,7 @@ export const weatherTileStyles: CSSResultGroup = css`
   }
 
   .weather-metric.active .weather-metric-value {
-    color: #d6f3ff;
+    color: var(--primary-text-color);
   }
 
   .weather-metric ha-icon,
@@ -776,25 +785,28 @@ export const weatherTileStyles: CSSResultGroup = css`
     color: var(--primary-text-color);
   }
 
+  /* Adjacent 44px chip targets touch without overlapping; the corner offset
+   * keeps the chip itself where the tile padding put it. */
   .weather-chips-bottom-right {
     position: absolute;
-    right: var(--tile-padding);
-    bottom: var(--tile-padding);
+    right: max(0px, calc(var(--tile-padding) - (44px - var(--chip-size, 28px)) / 2));
+    bottom: max(0px, calc(var(--tile-padding) - (44px - var(--chip-size, 28px)) / 2));
     z-index: var(--chip-z-index);
     display: inline-flex;
     flex-direction: row-reverse;
     align-items: center;
     justify-content: flex-start;
-    gap: var(--chip-gap);
+    gap: 0;
     flex-wrap: wrap;
     max-width: calc(100% - 16px);
   }
 
   .weather-chip-hit {
-    display: inline-flex;
+    display: inline-grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
     line-height: 0;
-    padding: 2px;
-    margin: -2px;
   }
 
 `;

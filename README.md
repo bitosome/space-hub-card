@@ -353,7 +353,7 @@ The graph labels use the Home Assistant locale and time format. If Home Assistan
 | `icon_offset_x` | number | `0` | Main icon horizontal offset in pixels. |
 | `icon_offset_y` | number | `0` | Main icon vertical offset in pixels. |
 | `metric_columns` | number | `3` | Sensor grid columns, clamped to `1..4`. |
-| `stale_minutes` | number | disabled | Add stale glow when weather/current sensor data is older than this many minutes. |
+| `stale_minutes` | number | disabled | Add a warning glow and a "Data stale" label when weather/current sensor data is older than this many minutes. |
 | `metrics` | array | automatic | Custom metric grid. If omitted, metrics are built from known weather sensors. |
 | `chips` | array | `[]` | Optional compact chips in the lower-right corner of the weather tile. |
 
@@ -892,7 +892,7 @@ dist/space-hub-card.js
 
 ## Shared card presentation
 
-Version 2.1.2 consumes `@bitosome/ha-card-ui` 1.0.1. Space Hub's original two-layer activation glow and pulse geometry are now implemented once in that library; every consumer bundles its pinned version. Embedded card hosts share the foreground layer so neighboring tile glows remain behind their surfaces. Native entity more-info uses the common adapter. Tile actions, gate and lock policy, availability, editor configuration and native HA interactions remain in this project.
+Version 2.2.0 consumes `@bitosome/ha-card-ui` 1.4.0. Space Hub's original two-layer activation glow and pulse geometry are now implemented once in that library; every consumer bundles its pinned version. Embedded card hosts share the foreground layer so neighboring tile glows remain behind their surfaces. Native entity more-info uses the common adapter. Pending switches and lock chips use the shared busy indicator, chips and fault states use the shared status colour aliases (so HA theme colours apply), and room and weather readings use the HA profile's number format. Tile actions, gate and lock policy, availability, editor configuration and native HA interactions remain in this project.
 
 Glows remain visible between tiles and stop at the outer card boundary, protecting adjacent dashboard cards. The card's padding preserves tile focus outlines. Embedded cards that open floating menus must use Home Assistant overlays or native top-layer dialogs/popovers; ordinary positioned content cannot overflow the card boundary.
 

@@ -28,15 +28,16 @@ async function checkVariant(controlButton) {
     await setState(state);
     const moving = ['unlocking', 'locking', 'opening'].includes(state);
     assert.equal(card._isSwitchPending('lock.test'), moving, state);
-    assert.equal(!!card.shadowRoot.querySelector('.switch-pending-spinner'), moving, 'tile: ' + state);
-    assert.equal(!!card.shadowRoot.querySelector('.chip .spinning'), moving, 'badge: ' + state);
+    assert.equal(!!card.shadowRoot.querySelector('.switch-pending-spinner .family-pending-indicator'), moving, 'tile: ' + state);
+    assert.equal(!!card.shadowRoot.querySelector('.chip .family-pending-indicator'), moving, 'badge: ' + state);
+    assert.equal(!!card.shadowRoot.querySelector('.spinning, [icon="mdi:loading"]'), false, 'no private spinner: ' + state);
     assert.equal(card.shadowRoot.querySelector('[role="img"]').getAttribute('aria-busy'), String(moving));
     const badges = [...card.shadowRoot.querySelectorAll('.chip[role="img"]')];
-    assert.match(badges[1].getAttribute('style'), /#66bb6a/, 'door remains closed independently of lock state');
+    assert.match(badges[1].getAttribute('style'), /--family-success/, 'door remains closed independently of lock state');
     assert.equal(badges[1].querySelector('ha-icon').icon, 'mdi:door');
     if (moving) {
-      assert.equal(badges[0].getAttribute('style'), 'background:transparent');
-      assert.equal(badges[0].querySelector('ha-icon').getAttribute('style'), 'color:var(--lock-spinner-color)');
+      assert.equal(badges[0].getAttribute('style'), 'background:transparent;color:var(--lock-spinner-color)');
+      assert.equal(badges[0].querySelector('ha-icon'), null, 'shared indicator replaces the lock icon');
     }
   }
   for (const door of ['on', 'off', 'unknown', 'unavailable']) {
@@ -46,11 +47,11 @@ async function checkVariant(controlButton) {
     } };
     await card.updateComplete;
     const badges = [...card.shadowRoot.querySelectorAll('.chip[role="img"]')];
-    assert.match(badges[0].getAttribute('style'), /#66bb6a/, 'lock stays locked independently of door');
+    assert.match(badges[0].getAttribute('style'), /--family-success/, 'lock stays locked independently of door');
     if (door === 'on') {
-      assert.match(badges[1].getAttribute('style'), /#e53935/);
+      assert.match(badges[1].getAttribute('style'), /--family-error/);
       assert.equal(badges[1].querySelector('ha-icon').icon, 'mdi:door-open');
-    } else if (door === 'off') assert.match(badges[1].getAttribute('style'), /#66bb6a/);
+    } else if (door === 'off') assert.match(badges[1].getAttribute('style'), /--family-success/);
     else assert.ok(badges[1].classList.contains('chip-unavailable'), 'unknown door cannot look closed');
   }
   await setState('locked');
@@ -102,7 +103,7 @@ async function checkGateColors() {
     const badges = [...root.querySelectorAll('.chip[role="img"]')];
     if (gate !== 'unavailable') {
       assert.equal(badges[0].getAttribute('style'), badges[1].getAttribute('style'), 'lock and gate badge colors match');
-      assert.match(badges[0].getAttribute('style'), active ? /#e53935/ : /#66bb6a/);
+      assert.match(badges[0].getAttribute('style'), active ? /--family-error/ : /--family-success/);
     }
     if (gate === 'closed') {
       root.querySelector('.switch-tile-btn, .tile-wrap.switch-tile').dispatchEvent(new CustomEvent('hass-action', { detail: { action: 'tap' } }));

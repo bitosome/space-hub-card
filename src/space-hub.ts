@@ -1,4 +1,4 @@
-import { showEntityMoreInfo } from '@bitosome/ha-card-ui';
+import { formatHassNumber, isAvailableValue, showEntityMoreInfo } from '@bitosome/ha-card-ui';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, CSSResultGroup, TemplateResult, nothing } from 'lit';
 import { until } from 'lit/directives/until.js';
@@ -19,7 +19,7 @@ import { renderACTile } from './tiles/ac';
 import { renderThermostatTile } from './tiles/thermostat';
 import { renderSwitchRows } from './tiles/switch';
 import { designTokens } from './shared/design-tokens';
-import { familyStyles } from './shared/card-primitives';
+import { componentStyles, familyStyles } from './shared/card-primitives';
 import { baseStyles } from './styles/base.styles';
 import { chipStyles } from './styles/chip.styles';
 import { animationStyles } from './styles/animation.styles';
@@ -713,6 +713,7 @@ export class SpaceHubCard extends LitElement {
   static styles: CSSResultGroup = [
     designTokens,
     familyStyles,
+    componentStyles,
     baseStyles,
     chipStyles,
     animationStyles,
@@ -1650,14 +1651,14 @@ export class SpaceHubCard extends LitElement {
     if (!entityId || !this.hass) return '—' + (suffix || '');
     const st = this.hass.states[entityId];
     if (!st || st.state === '' || st.state === 'unknown' || st.state === 'unavailable') return '—' + (suffix || '');
-    const n = Number(st.state);
-    return Number.isFinite(n) ? n.toFixed(digits) + (suffix || '') : String(st.state) + (suffix || '');
+    // HA profile language and number format; callers pass the quantity's precision.
+    const value = isAvailableValue(st.state) ? formatHassNumber(this.hass, st.state, { digits }) : String(st.state);
+    return value + (suffix || '');
   }
 
   private _fmtNumber(v: any, digits: number): string {
     if (v === undefined || v === null || v === '' || v === 'unknown' || v === 'unavailable') return '—';
-    const n = Number(v);
-    return Number.isFinite(n) ? n.toFixed(digits) : String(v);
+    return isAvailableValue(v) ? formatHassNumber(this.hass, v, { digits }) : String(v);
   }
 
   private _acChip(mode: string): { icon: string } {

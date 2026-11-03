@@ -22,7 +22,7 @@ export const acTileStyles: CSSResultGroup = css`
   .ac-chip.ac-mode-default { background: var(--ac-chip-bg-default); }
   .ac-chip.ac-status-unavailable {
     background: var(--chip-unavailable-background, rgba(0,0,0,0.12));
-    color: var(--status-alert-color);
+    color: var(--family-error);
   }
 
   .ac-fan { color: var(--ac-fan-color-default); }

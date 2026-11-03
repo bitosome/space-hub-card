@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, svg, TemplateResult } from 'lit';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
+import { formatHassNumber, stateChip } from '@bitosome/ha-card-ui';
 import { actionHandler } from '../action-handler-directive';
 import { renderInteractiveChip } from '../chips';
-import { buildTileGlow } from '../glow';
+import { buildTileGlow, STALE_GLOW } from '../glow';
 import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
 
@@ -270,12 +271,13 @@ function numericState(host: any, entityId?: string): number | undefined {
   return Number.isFinite(value) ? value : undefined;
 }
 
-function formatNumber(value: string | number | undefined, digits: number, compact = false): string {
+// Same precision per quantity as the room tiles, in the HA profile's number format.
+function formatNumber(host: any, value: string | number | undefined, digits: number, compact = false): string {
   if (value === undefined || value === null || value === '') return '—';
   const n = Number(value);
   if (!Number.isFinite(n)) return String(value);
-  if (compact && Math.abs(n) >= 1000) return `${(n / 1000).toFixed(1)}k`;
-  return n.toFixed(digits);
+  if (compact && Math.abs(n) >= 1000) return `${formatHassNumber(host?.hass, n / 1000, { digits: 1 })}k`;
+  return formatHassNumber(host?.hass, n, { digits });
 }
 
 function formatEntity(host: any, entityId: string | undefined, digits: number, compact = false): string {
@@ -283,7 +285,7 @@ function formatEntity(host: any, entityId: string | undefined, digits: number, c
   const value = cleanState(st);
   if (!value) return '—';
   const unit = st?.attributes?.unit_of_measurement || '';
-  const formatted = formatNumber(value, digits, compact);
+  const formatted = formatNumber(host, value, digits, compact);
   return unit ? `${formatted} ${unit}` : formatted;
 }
 
@@ -295,7 +297,7 @@ function formatEntityAuto(host: any, entityId: string | undefined): string {
   const num = Number(value);
   if (!Number.isFinite(num)) return unit ? `${value} ${unit}` : value;
   const digits = Number.isInteger(num) ? 0 : 1;
-  const formatted = formatNumber(num, digits);
+  const formatted = formatNumber(host, num, digits);
   return unit ? `${formatted} ${unit}` : formatted;
 }
 
@@ -326,18 +328,18 @@ function formatUvMetric(host: any, entityId?: string): { value: string; color?: 
   const index = numericState(host, entityId);
   if (index === undefined) return { value: '—' };
   const risk = uvRisk(index);
-  const formatted = Number.isInteger(index) ? index.toFixed(0) : index.toFixed(1);
+  const formatted = formatNumber(host, index, Number.isInteger(index) ? 0 : 1);
   return { value: `${formatted} · ${risk.label}`, color: risk.color };
 }
 
 function formatTemperature(host: any, entityId?: string): string {
   const value = numericState(host, entityId);
-  return value === undefined ? '—°' : `${value.toFixed(1)}°`;
+  return value === undefined ? '—°' : `${formatNumber(host, value, 1)}°`;
 }
 
 function formatHumidity(host: any, entityId?: string): string {
   const value = numericState(host, entityId);
-  return value === undefined ? '—%' : `${value.toFixed(0)}%`;
+  return value === undefined ? '—%' : `${formatNumber(host, value, 0)}%`;
 }
 
 function configNumber(raw: unknown, min: number, max: number): number | undefined {
@@ -1440,7 +1442,8 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     ? Math.max(1, Math.min(4, Math.round(metricColumnsRaw)))
     : DEFAULT_METRIC_COLUMNS;
   const stale = isWeatherStale(host, config);
-  const { style: glowStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, config, undefined, 'none', false);
+  // Stale data shows a warning-tone glow plus a text label; unavailable still wins.
+  const { style: glowStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, config, STALE_GLOW, 'static', stale);
   const styleParts = [
     tempSize ? `--weather-temp-size:${tempSize}px;` : '',
     iconSize ? `--weather-icon-size:${iconSize}px;--weather-icon-bg-size:${iconSize + 16}px;` : '',
@@ -1516,6 +1519,9 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 @click=${(ev: Event) => openMoreInfo(host, ev, config.feels_like_sensor)}
                 @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.feels_like_sensor)}
               >Feels like ${feels}</div>
+              ${stale
+                ? stateChip({ label: 'Data stale', icon: 'mdi:clock-alert-outline', tone: 'warning', className: 'weather-stale' })
+                : nothing}
             </div>
             <div class="weather-icon-wrap" aria-hidden="true">
               ${config.icon

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
+import { pendingIndicator } from '@bitosome/ha-card-ui';
 import { actionHandler } from '../action-handler-directive';
 import { buildTileGlow, LOCK_GLOW, STATIC_GLOW, SMART_PLUG_GLOW } from '../glow';
 
@@ -110,7 +111,7 @@ export function renderSwitchTile(host: any, sw: any): TemplateResult {
   const pending = matchesStates(sw?.pending_states)
     || (typeof host?._isSwitchPending === 'function' ? host._isSwitchPending(tap) : false);
   const pendingSpinner = pending
-    ? html`<span class=${joinClasses('switch-pending-spinner', typeClass, stateClass)} aria-hidden="true"></span>`
+    ? html`<span class=${joinClasses('switch-pending-spinner', typeClass, stateClass)} aria-hidden="true">${pendingIndicator()}</span>`
     : nothing;
   const tileClass = joinClasses('switch-tile', typeClass, stateClass, pending && 'pending');
 

@@ -30,6 +30,13 @@ export const chipStyles: CSSResultGroup = css`
     color: var(--secondary-text-color); 
   }
 
+  /* Lock movement: the shared pendingIndicator() at the chip icon size. */
+  .chip .family-pending-indicator {
+    width: var(--chip-icon-size);
+    height: var(--chip-icon-size);
+    flex-basis: var(--chip-icon-size);
+  }
+
   .chip-unavailable {
     background: var(--chip-unavailable-background, rgba(0,0,0,0.12)) !important;
     opacity: 0.88;

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import type { HomeAssistant } from 'custom-card-helpers';
+import { pendingIndicator } from '@bitosome/ha-card-ui';
 import { isEntityActive, isLockType, isLockTransition } from './shared/state';
 
 // ==============================================
@@ -44,6 +45,14 @@ interface ChipConfig {
 // ==============================================
 
 const DEFAULT_UNAVAILABLE_ICON = 'mdi:alert-circle-outline';
+
+// Shared status aliases (familyStyles) so HA theme colours reach the chips too.
+const SUCCESS = 'var(--family-success)';
+const ERROR = 'var(--family-error)';
+const ACTIVE = 'var(--family-active)';
+// Same token as the smart plug switch tile and its green glow.
+const SMART_PLUG_ON = 'var(--switch-smart-on-color)';
+const ICON_ON = 'var(--status-icon-on-color)';
 
 type ChipAppearance = { bg: string; iconColor: string };
 
@@ -129,37 +138,37 @@ function getChipStyling(
 
   if (isLockType(type, entity)) {
     const base = isActive
-      ? { bg: '#66bb6a', iconColor: '#ffffff' }
+      ? { bg: SUCCESS, iconColor: ICON_ON }
       : ['unlocked', 'open'].includes(state)
-        ? { bg: '#e53935', iconColor: '#ffffff' }
+        ? { bg: ERROR, iconColor: ICON_ON }
         : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
     return applyStylingOverrides(base, config, isActive);
   }
   
   if (type === 'door' || type === 'sliding_gate' || type === 'gate') {
     const base = isActive
-      ? { bg: '#e53935', iconColor: '#ffffff' }
-      : { bg: '#66bb6a', iconColor: '#ffffff' };
+      ? { bg: ERROR, iconColor: ICON_ON }
+      : { bg: SUCCESS, iconColor: ICON_ON };
     return applyStylingOverrides(base, config, isActive);
   }
   
   if (type === 'presence') {
     const hasPresence = state === 'on';
     const base = hasPresence
-      ? { bg: '#42a5f5', iconColor: '#ffffff' } // Presence detected
+      ? { bg: ACTIVE, iconColor: ICON_ON } // Presence detected
       : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' }; // No presence
     return applyStylingOverrides(base, config, hasPresence);
   }
 
   if (type === 'smart_plug') {
     const base = isActive
-      ? { bg: '#ff9800', iconColor: '#ffffff' }
+      ? { bg: SMART_PLUG_ON, iconColor: ICON_ON }
       : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
     return applyStylingOverrides(base, config, isActive);
   }
 
   const base = isActive
-    ? { bg: '#42a5f5', iconColor: '#ffffff' }
+    ? { bg: ACTIVE, iconColor: ICON_ON }
     : { bg: 'var(--chip-background-color)', iconColor: 'var(--secondary-text-color)' };
   return applyStylingOverrides(base, config, isActive);
 }
@@ -174,8 +183,8 @@ function getChipStyling(
 export function renderTemperatureHumidityChip(host: CardHost, tempEntity?: string, humidityEntity?: string): TemplateResult | typeof nothing {
   if (!tempEntity && !humidityEntity) return nothing;
   
-  const temperatureValue = typeof host?._fmt2 === 'function' ? host._fmt2(tempEntity, 2, '°') : '—°';
-  const humidityValue = typeof host?._fmt2 === 'function' ? host._fmt2(humidityEntity, 2, '%') : '—%';
+  const temperatureValue = typeof host?._fmt2 === 'function' ? host._fmt2(tempEntity, 1, '°') : '—°';
+  const humidityValue = typeof host?._fmt2 === 'function' ? host._fmt2(humidityEntity, 0, '%') : '—%';
   
   return html`
     <div class="chip chip-temperature-humidity" data-role="chip">
@@ -216,27 +225,30 @@ export function renderInteractiveChip(host: CardHost, c: ChipConfig): TemplateRe
 
   const pending = !isUnavailable && isLockType(type, entity)
     && (isLockTransition(state) || !!host._isSwitchPending?.(entity));
-  const icon = pending ? 'mdi:loading' : getChipIcon(type, entity, state, c, isActive, isUnavailable);
+  const icon = getChipIcon(type, entity, state, c, isActive, isUnavailable);
   const { bg, iconColor } = pending
     ? { bg: 'transparent', iconColor: 'var(--lock-spinner-color)' }
     : getChipStyling(type, entity, state, c, isActive, isUnavailable);
 
-  const chipClass = `chip${isUnavailable ? ' chip-unavailable' : ''}`;
-  const iconClass = isUnavailable ? 'icon-unavailable' : (pending ? 'spinning' : '');
+  const chipClass = `chip${isUnavailable ? ' chip-unavailable' : ''}${pending ? ' chip-pending' : ''}`;
+  const iconClass = isUnavailable ? 'icon-unavailable' : '';
   const readableState = pending && !isLockTransition(state) ? 'pending' : (entityState?.state ?? 'unavailable');
   const ariaLabel = type ? `${type} ${readableState}` : readableState;
 
+  // Lock movement uses the same shared busy marker as the switch tiles.
   return html`
     <div
       class=${chipClass}
-      style=${`background:${bg}`}
+      style=${pending ? `background:${bg};color:${iconColor}` : `background:${bg}`}
       title=${readableState}
       data-state=${state || 'unavailable'}
       role="img"
       aria-label=${ariaLabel}
       aria-busy=${pending ? 'true' : 'false'}
     >
-      <ha-icon .icon=${icon} class=${iconClass} style=${`color:${iconColor}`}></ha-icon>
+      ${pending
+        ? pendingIndicator()
+        : html`<ha-icon .icon=${icon} class=${iconClass} style=${`color:${iconColor}`}></ha-icon>`}
     </div>
   `;
 }

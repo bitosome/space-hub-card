@@ -30,7 +30,7 @@ async function checkVariant(controlButton) {
   for (const state of ['docked', 'starting', 'cleaning_here', 'cleaning_elsewhere', 'washing_mop', 'docked_pending', 'paused', 'returning', 'error', 'unknown', 'unavailable', 'on']) {
     await setState(state);
     assert.equal(!!card.shadowRoot.querySelector('.switch-name.on'), state === 'cleaning_here', 'active: ' + state);
-    assert.equal(!!card.shadowRoot.querySelector('.switch-pending-spinner'), state === 'starting', 'pending: ' + state);
+    assert.equal(!!card.shadowRoot.querySelector('.switch-pending-spinner .family-pending-indicator'), state === 'starting', 'pending: ' + state);
     assert.equal(card.shadowRoot.querySelector('[role="button"]').getAttribute('aria-busy'), String(state === 'starting'));
   }
   setConfig({ ...tile, active_states: [], pending_states: [] });

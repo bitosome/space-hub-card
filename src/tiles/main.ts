@@ -7,8 +7,8 @@ import { buildTileGlow, STATIC_GLOW } from '../glow';
 export function renderMainTile(host: any, h: any): TemplateResult {
   const icon = h?.icon || 'mdi:sofa-outline';
   const name = h?.name || '';
-  const temperatureValue = typeof host?._fmt2 === 'function' ? host._fmt2(h?.temp_sensor, 2, '°') : '—°';
-  const humidityValue = typeof host?._fmt2 === 'function' ? host._fmt2(h?.humidity_sensor, 2, '%') : '—%';
+  const temperatureValue = typeof host?._fmt2 === 'function' ? host._fmt2(h?.temp_sensor, 1, '°') : '—°';
+  const humidityValue = typeof host?._fmt2 === 'function' ? host._fmt2(h?.humidity_sensor, 0, '%') : '—%';
   const hasDbl = !!(h?.double_tap_action || host?._config?.double_tap_action);
   const hasBulb = !!h?.light_group_entity;
   const ctrl = h?.light_group_entity || h?.tap_entity || h?.entity;

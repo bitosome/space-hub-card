@@ -119,26 +119,23 @@ export const switchTileStyles: CSSResultGroup = css`
   .switch-info.on { color: var(--switch-on-color); }
   .switch-info.smart.on { color: var(--switch-smart-on-color); }
   .switch-info.lock.on { color: var(--switch-lock-unlocked-color); }
+  /* Shared pendingIndicator(), positioned and sized for the tile corner. */
   .switch-pending-spinner {
     position: absolute;
     right: 8px;
     bottom: 8px;
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(128, 128, 128, 0.32);
-    border-top-color: currentColor;
-    border-radius: 50%;
-    box-sizing: border-box;
+    display: flex;
     color: var(--secondary-text-color);
     opacity: 0.82;
     pointer-events: none;
     z-index: 5;
-    animation: switchPendingSpin 0.8s linear infinite;
+  }
+  .switch-pending-spinner .family-pending-indicator {
+    width: 14px;
+    height: 14px;
+    flex-basis: 14px;
   }
   .switch-pending-spinner.on { color: var(--switch-on-color); }
   .switch-pending-spinner.smart.on { color: var(--switch-smart-on-color); }
   .switch-pending-spinner.lock { color: var(--lock-spinner-color); opacity: 1; }
-  @keyframes switchPendingSpin {
-    to { transform: rotate(360deg); }
-  }
 `;
