@@ -18,6 +18,9 @@ assert.doesNotMatch(css, /switchPendingSpin/, 'no private switch spinner');
 assert.match(css, /\.weather-metric \{[^}]*min-height: 44px/, 'weather metrics are 44px targets');
 assert.match(css, /\.weather-chip-hit \{[^}]*min-height: 44px/, 'weather chips are 44px targets');
 assert.match(css, /\.weather-clickable:focus-visible \{[^}]*outline: 3px solid/, '3px focus outline on weather readouts');
+assert.match(css, /--weather-chip-inset: max\(5px,/, 'chip targets stay inside the clipped tile corner');
+assert.match(css, /\.weather-chip-hit:focus-visible > \.chip \{[^}]*outline: 3px solid/, 'chip focus ring drawn on the visible chip');
+assert.match(css, /\.weather-content\.weather-content-chips \{[^}]*padding-bottom/, 'chip strip row is reserved below the content');
 
 const card = document.createElement('space-hub-card');
 document.body.append(card);

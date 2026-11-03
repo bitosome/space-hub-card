@@ -785,12 +785,17 @@ export const weatherTileStyles: CSSResultGroup = css`
     color: var(--primary-text-color);
   }
 
-  /* Adjacent 44px chip targets touch without overlapping; the corner offset
-   * keeps the chip itself where the tile padding put it. */
+  /* Adjacent 44px chip targets touch without overlapping. The strip stays
+   * 5px inside the rounded, clipped tile edge, so no target corner is trimmed;
+   * the chip (icon + 2px chip padding) sits centred in its target. */
+  .weather-tile-wrap {
+    --weather-chip-inset: max(5px, calc(var(--tile-padding) - (44px - var(--chip-icon-size, 14px) - 4px) / 2));
+  }
+
   .weather-chips-bottom-right {
     position: absolute;
-    right: max(0px, calc(var(--tile-padding) - (44px - var(--chip-size, 28px)) / 2));
-    bottom: max(0px, calc(var(--tile-padding) - (44px - var(--chip-size, 28px)) / 2));
+    right: var(--weather-chip-inset);
+    bottom: var(--weather-chip-inset);
     z-index: var(--chip-z-index);
     display: inline-flex;
     flex-direction: row-reverse;
@@ -801,12 +806,28 @@ export const weatherTileStyles: CSSResultGroup = css`
     max-width: calc(100% - 16px);
   }
 
+  /* Reserve the strip's row so chip targets never sit over the last metrics
+   * or forecast row. */
+  .weather-content.weather-content-chips {
+    padding-bottom: calc(var(--weather-chip-inset) + 44px);
+  }
+
   .weather-chip-hit {
     display: inline-grid;
     place-items: center;
     min-width: 44px;
     min-height: 44px;
     line-height: 0;
+  }
+
+  /* The ring surrounds the visible chip, which keeps it inside the tile clip. */
+  .weather-chip-hit.weather-clickable:focus-visible {
+    outline: none;
+  }
+
+  .weather-chip-hit:focus-visible > .chip {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
   }
 
 `;

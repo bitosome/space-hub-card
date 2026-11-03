@@ -1484,7 +1484,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
       <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
       <div class=${`weather-tile-wrap${stale ? ' weather-tile-stale' : ''}`} style=${heightStyle}>
         <div class="weather-tile">
-          <div class="weather-content">
+          <div class=${`weather-content${chips.length ? ' weather-content-chips' : ''}`}>
           <div class="weather-top">
             <div class="weather-heading">
               <div class="weather-primary">
