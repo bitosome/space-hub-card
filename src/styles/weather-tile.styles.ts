@@ -187,6 +187,30 @@ export const weatherTileStyles: CSSResultGroup = css`
     overflow: hidden;
   }
 
+  .weather-source-row {
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .weather-forecast-outage {
+    min-width: 0;
+  }
+
+  /* A source that stopped updating keeps its label and gets a warning dot. */
+  .weather-source-down::after {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-left: 4px;
+    border-radius: 50%;
+    vertical-align: middle;
+    background: var(--family-warning);
+  }
+
   .weather-forecast-source-picker {
     margin-top: 1px;
     margin-bottom: -1px;

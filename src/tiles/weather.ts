@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
-import { chartFrame, chartLegend, chartReadout, formatHassNumber, formatHassTime, hassTimeZone, stateChip } from '@bitosome/ha-card-ui';
+import { chartFrame, chartLegend, chartReadout, formatHassDate, formatHassDateTime, formatHassNumber, formatHassTime, hassTimeZone, stateChip } from '@bitosome/ha-card-ui';
 import type {
   ChartAxisOptions,
   ChartModel,
@@ -13,6 +13,7 @@ import type {
 import { actionHandler } from '../action-handler-directive';
 import { renderInteractiveChip } from '../chips';
 import { buildTileGlow, STALE_GLOW } from '../glow';
+import { isEntityUnavailable } from '../shared/availability';
 import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
 
@@ -908,6 +909,22 @@ function openMoreInfoFromKeyboard(host: any, ev: KeyboardEvent, entityId?: strin
   openMoreInfo(host, ev, entityId);
 }
 
+// Extra forecast sources are optional, so they never raise the tile fault glow:
+// the primary weather entity and the station sensors still do.
+function weatherFaultConfig(config: WeatherTileConfig): WeatherTileConfig {
+  return { ...config, forecast_sources: undefined, selected_forecast_entity: undefined, forecast_entity: undefined };
+}
+
+// "since 06:24" today, "since 4 Nov, 21:19" on an earlier day.
+function forecastOutageSince(host: any, entityId?: string): string {
+  const changed = stateObj(host, entityId)?.last_changed;
+  const at = changed ? new Date(changed) : undefined;
+  if (!at || Number.isNaN(at.getTime())) return '';
+  const sameDay = formatHassDate(host?.hass, at) === formatHassDate(host?.hass, new Date());
+  const time = sameDay ? formatHassTime(host?.hass, at) : formatHassDateTime(host?.hass, at, { year: false });
+  return time ? `since ${time}` : '';
+}
+
 function selectForecastSource(host: any, ev: Event, key?: string, entityId?: string): void {
   ev.preventDefault();
   ev.stopPropagation();
@@ -1158,7 +1175,13 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
     : DEFAULT_METRIC_COLUMNS;
   const stale = isWeatherStale(host, config);
   // Stale data shows a warning-tone glow plus a text label; unavailable still wins.
-  const { style: glowStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, config, STALE_GLOW, 'static', stale);
+  const { style: glowStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, weatherFaultConfig(config), STALE_GLOW, 'static', stale);
+  // An unavailable source keeps the last forecast it sent, so show that forecast and say it is not updating.
+  const forecastOutage = config.show_forecast !== false && isEntityUnavailable(host, forecastEntity);
+  const forecastOutageLabel = forecastSources.length > 1
+    ? `${forecastSources.find((source) => source.entity === forecastEntity)?.name || friendlyName(host, forecastEntity)} forecast not updating`
+    : 'Forecast not updating';
+  const forecastOutageSinceText = forecastOutage ? forecastOutageSince(host, forecastEntity) : '';
   const styleParts = [
     tempSize ? `--weather-temp-size:${tempSize}px;` : '',
     iconSize ? `--weather-icon-size:${iconSize}px;--weather-icon-bg-size:${iconSize + 16}px;` : '',
@@ -1177,13 +1200,19 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
       ${forecastSources.map((source) => {
         const active = source.entity === forecastEntity;
         const label = source.name || friendlyName(host, source.entity);
+        const down = isEntityUnavailable(host, source.entity);
+        const since = down ? forecastOutageSince(host, source.entity) : '';
+        const title = down
+          ? `Use ${label} forecast (not updating${since ? ` ${since}` : ''})`
+          : `Use ${label} forecast`;
         return html`
           <button
-            class=${`weather-source-option${active ? ' active' : ''}`}
+            class=${`weather-source-option${active ? ' active' : ''}${down ? ' weather-source-down' : ''}`}
             type="button"
             role="tab"
             aria-selected=${active ? 'true' : 'false'}
-            title=${`Use ${label} forecast`}
+            aria-label=${down ? `${label}, not updating` : label}
+            title=${title}
             @pointerdown=${stopTileAction}
             @click=${(ev: Event) => selectForecastSource(host, ev, config.forecast_source_key, source.entity)}
             @keyup=${(ev: KeyboardEvent) => selectForecastSourceFromKeyboard(host, ev, config.forecast_source_key, source.entity)}
@@ -1268,7 +1297,22 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             `)}
           </div>
 
-          ${forecastSourcePicker}
+          ${forecastSourcePicker !== nothing || forecastOutage
+            ? html`<div class="weather-source-row">
+                ${forecastSourcePicker}
+                ${forecastOutage
+                  ? stateChip({
+                      label: forecastOutageLabel,
+                      icon: 'mdi:cloud-alert-outline',
+                      tone: 'warning',
+                      secondary: forecastOutageSinceText || undefined,
+                      // stateChip appends the secondary time to the spoken label.
+                      ariaLabel: `${forecastOutageLabel}, showing the last forecast received`,
+                      className: 'weather-forecast-outage',
+                    })
+                  : nothing}
+              </div>`
+            : nothing}
           ${conditionsPanel}
           ${dailyForecast}
           </div>

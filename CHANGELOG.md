@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.1 — 2026-11-05
+
+- An extra weather source in `forecast_sources` that goes unavailable (for example Met.no answering 503 for one location) no longer puts the red unavailable pulse on the whole weather tile. The primary `entity` and the station sensors still do.
+- The source picker marks a source that is not updating with a warning dot, and its tooltip and spoken name say since when. When that source is selected, a warning chip reads "<source> forecast not updating · since 06:24" and the tile keeps showing the last forecast Home Assistant sent for it.
+
 ## 2.3.0 — 2026-11-03
 
 Consumes `@bitosome/ha-card-ui` 1.7.0 (shared time-series chart), up from 1.4.0.

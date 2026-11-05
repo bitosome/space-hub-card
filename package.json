@@ -1,6 +1,6 @@
 {
   "name": "space-hub-card",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Lovelace space-hub-card",
   "keywords": [
     "home-assistant",
@@ -71,7 +71,7 @@
     "lint": "eslint src/*.ts",
     "rollup": "rollup -c",
     "test:design": "node tests/card-design.mjs",
-    "test:weather": "node tests/weather-graphs.mjs"
+    "test:weather": "node tests/weather-graphs.mjs && node tests/weather-sources.mjs"
   },
   "overrides": {
     "rollup-plugin-typescript2": {
