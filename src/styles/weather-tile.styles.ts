@@ -173,65 +173,63 @@ export const weatherTileStyles: CSSResultGroup = css`
     color: var(--secondary-text-color);
   }
 
+  /* Segmented source picker: full width, equal columns, 44px targets. */
   .weather-source-picker {
-    width: fit-content;
-    max-width: 100%;
+    width: 100%;
     min-width: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 2px;
-    border-radius: 8px;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding: 3px;
+    border-radius: var(--tile-border-radius, 12px);
     background: color-mix(in srgb, var(--primary-text-color) 6%, transparent);
     box-sizing: border-box;
-    overflow: hidden;
-  }
-
-  .weather-source-row {
-    min-width: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .weather-forecast-outage {
-    min-width: 0;
-  }
-
-  /* A source that stopped updating keeps its label and gets a warning dot. */
-  .weather-source-down::after {
-    content: '';
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    margin-left: 4px;
-    border-radius: 50%;
-    vertical-align: middle;
-    background: var(--family-warning);
-  }
-
-  .weather-forecast-source-picker {
-    margin-top: 1px;
-    margin-bottom: -1px;
   }
 
   .weather-source-option {
+    position: relative;
     min-width: 0;
-    max-width: 92px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     border: 0;
-    border-radius: 6px;
-    padding: 3px 7px;
+    border-radius: calc(var(--tile-border-radius, 12px) - 3px);
+    padding: 4px 8px;
     background: transparent;
     color: var(--secondary-text-color);
     font: inherit;
-    font-size: 10px;
-    line-height: 1.1;
-    font-weight: 750;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 13px;
+    line-height: 1.2;
+    font-weight: 600;
     cursor: pointer;
+  }
+
+  /* Narrow columns wrap the name onto a second line before it truncates. */
+  .weather-source-label {
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    text-align: center;
+    line-height: 1.15;
+  }
+
+  /* A source that stopped updating keeps its label and gets a warning dot. */
+  /* Pinned in the corner so it never takes width from the name. */
+  .weather-source-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--family-warning);
   }
 
   .weather-source-option:hover {
@@ -244,7 +242,7 @@ export const weatherTileStyles: CSSResultGroup = css`
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 28%, transparent);
   }
 
-  /* The picker clips overflow, so the ring sits inside the option. */
+  /* The ring sits inside the option, clear of its neighbour. */
   .weather-source-option:focus-visible {
     outline: 3px solid var(--primary-color);
     outline-offset: -3px;

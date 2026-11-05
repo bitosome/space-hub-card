@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, nothing, TemplateResult } from 'lit';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
-import { chartFrame, chartLegend, chartReadout, formatHassDate, formatHassDateTime, formatHassNumber, formatHassTime, hassTimeZone, stateChip } from '@bitosome/ha-card-ui';
+import { chartFrame, chartLegend, chartReadout, formatHassDate, formatHassDateTime, formatHassNumber, formatHassTime, hassTimeZone, notice, stateChip } from '@bitosome/ha-card-ui';
 import type {
   ChartAxisOptions,
   ChartModel,
@@ -1178,9 +1178,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const { style: glowStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, weatherFaultConfig(config), STALE_GLOW, 'static', stale);
   // An unavailable source keeps the last forecast it sent, so show that forecast and say it is not updating.
   const forecastOutage = config.show_forecast !== false && isEntityUnavailable(host, forecastEntity);
-  const forecastOutageLabel = forecastSources.length > 1
-    ? `${forecastSources.find((source) => source.entity === forecastEntity)?.name || friendlyName(host, forecastEntity)} forecast not updating`
-    : 'Forecast not updating';
+  const forecastOutageName = forecastSources.find((source) => source.entity === forecastEntity)?.name || friendlyName(host, forecastEntity);
   const forecastOutageSinceText = forecastOutage ? forecastOutageSince(host, forecastEntity) : '';
   const styleParts = [
     tempSize ? `--weather-temp-size:${tempSize}px;` : '',
@@ -1216,7 +1214,9 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             @pointerdown=${stopTileAction}
             @click=${(ev: Event) => selectForecastSource(host, ev, config.forecast_source_key, source.entity)}
             @keyup=${(ev: KeyboardEvent) => selectForecastSourceFromKeyboard(host, ev, config.forecast_source_key, source.entity)}
-          >${label}</button>
+          ><span class="weather-source-label">${label}</span>${down
+            ? html`<span class="weather-source-dot" aria-hidden="true"></span>`
+            : nothing}</button>
         `;
       })}
     </div>
@@ -1297,21 +1297,16 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             `)}
           </div>
 
-          ${forecastSourcePicker !== nothing || forecastOutage
-            ? html`<div class="weather-source-row">
-                ${forecastSourcePicker}
-                ${forecastOutage
-                  ? stateChip({
-                      label: forecastOutageLabel,
-                      icon: 'mdi:cloud-alert-outline',
-                      tone: 'warning',
-                      secondary: forecastOutageSinceText || undefined,
-                      // stateChip appends the secondary time to the spoken label.
-                      ariaLabel: `${forecastOutageLabel}, showing the last forecast received`,
-                      className: 'weather-forecast-outage',
-                    })
-                  : nothing}
-              </div>`
+          ${forecastSourcePicker}
+          ${forecastOutage
+            ? notice({
+                tone: 'warning',
+                icon: 'mdi:cloud-alert-outline',
+                title: 'Forecast not updating',
+                message: `${forecastOutageName} has not updated${forecastOutageSinceText ? ` ${forecastOutageSinceText}` : ''}. Showing the last forecast received.`,
+                role: 'status',
+                className: 'weather-forecast-outage',
+              })
             : nothing}
           ${conditionsPanel}
           ${dailyForecast}

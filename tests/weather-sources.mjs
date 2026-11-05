@@ -84,10 +84,13 @@ const option = (root, label) => [...root.querySelectorAll('.weather-source-optio
   await settle(card);
   assert.equal(fault(root), false, 'selecting the down source still does not raise the fault glow');
   const chip = outageChip(root);
-  assert.ok(chip, 'the selected down source shows a warning chip');
-  assert.match(chip.textContent, /Tallinn forecast not updating/);
-  assert.match(chip.textContent, /since \d{2}:\d{2}/);
-  assert.match(chip.querySelector('.family-visually-hidden')?.textContent || '', /^Tallinn forecast not updating, showing the last forecast received, since \d{2}:\d{2}$/);
+  assert.ok(chip, 'the selected down source shows a warning notice');
+  assert.ok(chip.classList.contains('family-notice'), 'it is the shared full-width notice');
+  assert.equal(chip.dataset.tone, 'warning');
+  assert.equal(chip.getAttribute('role'), 'status');
+  assert.equal(chip.querySelector('.family-notice-title')?.textContent, 'Forecast not updating');
+  assert.match(chip.querySelector('.family-notice-message')?.textContent || '', /^Tallinn has not updated since \d{2}:\d{2}\. Showing the last forecast received\.$/);
+  assert.ok(tallinn.querySelector('.weather-source-label') && tallinn.querySelector('.weather-source-dot'), 'the dot sits outside the truncating label');
   const readout = root.querySelector('svg.family-chart[data-chart-id]');
   assert.ok(readout, 'the last forecast received is still drawn');
   card.remove();

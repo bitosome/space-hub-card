@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.2 — 2026-11-05
+
+- The "forecast not updating" message is now the shared warning notice across the full width of the tile: "Forecast not updating. Forecast Tallinn has not updated since 06:24. Showing the last forecast received." It replaces the chip, which repeated "forecast" when the source name already contained it.
+- The forecast source picker spans the full width in equal columns with 13px labels and 44px touch targets, instead of 10px labels capped at 92px that cut off names such as "Forecast Tallinn". In narrow columns a name wraps onto a second line before it truncates. The not-updating dot sits in the button corner, so it no longer takes width from the name.
+
 ## 2.3.1 — 2026-11-05
 
 - An extra weather source in `forecast_sources` that goes unavailable (for example Met.no answering 503 for one location) no longer puts the red unavailable pulse on the whole weather tile. The primary `entity` and the station sensors still do.
