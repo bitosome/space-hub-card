@@ -272,7 +272,7 @@ Weather is configured at `headers[].weather`.
 | --- | --- | --- |
 | `enabled` | boolean | Set to `false` to keep the weather tile configured but hide it. Hidden tiles do not trigger unavailable-entity glow. Defaults to `true`. |
 | `entity` | entity ID | Primary Home Assistant `weather` entity. Used as the default forecast source and weather more-info target. |
-| `forecast_sources` | array | Additional Home Assistant `weather` entities that can be selected in the weather tile. Each entry can be an entity string or an object with `entity` and optional `name`. An unavailable extra source does not trigger the unavailable-entity glow; it gets a warning dot in the picker and, when selected, a "Forecast not updating" notice above its last forecast. |
+| `forecast_sources` | array | Additional Home Assistant `weather` entities that can be selected in the weather tile. Each entry can be an entity string or an object with `entity` and optional `name`. An unavailable forecast source, primary or extra, does not trigger the unavailable-entity glow. It gets a warning dot in the picker and, when selected, a warning notice above its last forecast. Unavailable station sensors still trigger the glow. |
 | `temp_sensor` | entity ID | Current local temperature sensor. |
 | `humidity_sensor` | entity ID | Current local humidity sensor. |
 | `feels_like_sensor` | entity ID | Local feels-like temperature sensor. |

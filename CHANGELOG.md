@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.3 — 2026-11-05
+
+- The primary weather `entity` going unavailable no longer puts the red unavailable pulse on the weather tile either. Forecast outages, primary or extra, get the warning notice and the picker dot instead; the station sensors still raise the red pulse.
+- The forecast notice drops its "Forecast not updating" title. The message alone reads "Forecast Home has not updated since 08:46. Showing the last forecast received."
+
 ## 2.3.2 — 2026-11-05
 
 - The "forecast not updating" message is now the shared warning notice across the full width of the tile: "Forecast not updating. Forecast Tallinn has not updated since 06:24. Showing the last forecast received." It replaces the chip, which repeated "forecast" when the source name already contained it.

@@ -909,10 +909,10 @@ function openMoreInfoFromKeyboard(host: any, ev: KeyboardEvent, entityId?: strin
   openMoreInfo(host, ev, entityId);
 }
 
-// Extra forecast sources are optional, so they never raise the tile fault glow:
-// the primary weather entity and the station sensors still do.
+// Forecast entities (primary and extra) never raise the tile fault glow: an outage
+// keeps the last forecast and gets its own notice. Station sensors still do.
 function weatherFaultConfig(config: WeatherTileConfig): WeatherTileConfig {
-  return { ...config, forecast_sources: undefined, selected_forecast_entity: undefined, forecast_entity: undefined };
+  return { ...config, entity: undefined, forecast_sources: undefined, selected_forecast_entity: undefined, forecast_entity: undefined };
 }
 
 // "since 06:24" today, "since 4 Nov, 21:19" on an earlier day.
@@ -1302,7 +1302,6 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
             ? notice({
                 tone: 'warning',
                 icon: 'mdi:cloud-alert-outline',
-                title: 'Forecast not updating',
                 message: `${forecastOutageName} has not updated${forecastOutageSinceText ? ` ${forecastOutageSinceText}` : ''}. Showing the last forecast received.`,
                 role: 'status',
                 className: 'weather-forecast-outage',

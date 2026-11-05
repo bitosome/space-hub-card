@@ -78,7 +78,7 @@ const option = (root, label) => [...root.querySelectorAll('.weather-source-optio
   assert.ok(tallinn.classList.contains('weather-source-down'), 'the down source is marked in the picker');
   assert.equal(tallinn.getAttribute('aria-label'), 'Tallinn, not updating');
   assert.match(tallinn.getAttribute('title'), /not updating since \d{2}:\d{2}/);
-  assert.equal(option(root, 'Weather')?.classList.contains('weather-source-down') ?? false, false);
+  assert.equal(option(root, 'Home').classList.contains('weather-source-down'), false);
 
   tallinn.click();
   await settle(card);
@@ -88,7 +88,7 @@ const option = (root, label) => [...root.querySelectorAll('.weather-source-optio
   assert.ok(chip.classList.contains('family-notice'), 'it is the shared full-width notice');
   assert.equal(chip.dataset.tone, 'warning');
   assert.equal(chip.getAttribute('role'), 'status');
-  assert.equal(chip.querySelector('.family-notice-title')?.textContent, 'Forecast not updating');
+  assert.equal(chip.querySelector('.family-notice-title'), null, 'no title: the message says it all');
   assert.match(chip.querySelector('.family-notice-message')?.textContent || '', /^Tallinn has not updated since \d{2}:\d{2}\. Showing the last forecast received\.$/);
   assert.ok(tallinn.querySelector('.weather-source-label') && tallinn.querySelector('.weather-source-dot'), 'the dot sits outside the truncating label');
   const readout = root.querySelector('svg.family-chart[data-chart-id]');
@@ -99,8 +99,9 @@ const option = (root, label) => [...root.querySelectorAll('.weather-source-optio
 // The primary weather entity and the station sensors are still real faults.
 {
   const { card, root } = await mount({ home: 'unavailable' });
-  assert.equal(fault(root), true, 'an unavailable primary weather entity still raises the fault glow');
-  assert.ok(outageChip(root), 'and the selected (primary) source says it is not updating');
+  assert.equal(fault(root), false, 'an unavailable primary weather entity does not raise the fault glow either');
+  assert.match(outageChip(root)?.querySelector('.family-notice-message')?.textContent || '', /^Home has not updated since \d{2}:\d{2}\. Showing the last forecast received\.$/, 'the notice covers the primary source');
+  assert.ok(option(root, 'Home').querySelector('.weather-source-dot'), 'and the picker marks it');
   card.remove();
 }
 {
@@ -116,5 +117,5 @@ const option = (root, label) => [...root.querySelectorAll('.weather-source-optio
   card.remove();
 }
 
-console.log('PASS: extra forecast sources never raise the tile fault glow; a down source is marked and its last forecast stays visible');
+console.log('PASS: forecast sources (primary and extra) never raise the tile fault glow, station sensors still do; a down source is marked and its last forecast stays visible');
 await win.happyDOM.close();
