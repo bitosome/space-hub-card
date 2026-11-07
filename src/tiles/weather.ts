@@ -12,7 +12,6 @@ import type {
 } from '@bitosome/ha-card-ui';
 import { actionHandler } from '../action-handler-directive';
 import { renderInteractiveChip } from '../chips';
-import { buildTileGlow, STALE_GLOW } from '../glow';
 import { isEntityUnavailable } from '../shared/availability';
 import { METEOCON_ICONS } from '../assets/meteocons';
 import type { MeteoconIconKey } from '../assets/meteocons';
@@ -238,17 +237,26 @@ function friendlyName(host: any, entityId?: string): string {
     .replace(/\b\w/g, (letter) => letter.toUpperCase()) || 'Forecast';
 }
 
-function isWeatherStale(host: any, config: WeatherTileConfig): boolean {
-  const minutes = Number(config.stale_minutes);
-  if (!Number.isFinite(minutes) || minutes <= 0) return false;
-  const ids = [config.entity, config.temp_sensor, config.humidity_sensor, config.feels_like_sensor].filter(Boolean);
+// Station data is stale when no station sensor has reported for `stale_minutes`.
+// `last_reported` moves on every report, also when the value is unchanged, so a
+// steady overnight reading is not mistaken for a silent station. The forecast
+// entity is not a station reading (it has its own outage notice), so it only
+// counts when no station sensor is configured.
+function weatherLastReport(host: any, config: WeatherTileConfig): number {
+  const station = [config.temp_sensor, config.humidity_sensor, config.feels_like_sensor].filter(Boolean);
+  const ids = station.length ? station : [config.entity].filter(Boolean);
   let newest = 0;
   ids.forEach((id) => {
     const st = stateObj(host, id);
-    const t = st?.last_updated ? Date.parse(st.last_updated) : NaN;
+    const t = Date.parse(st?.last_reported || st?.last_updated || '');
     if (Number.isFinite(t)) newest = Math.max(newest, t);
   });
-  if (!newest) return false;
+  return newest;
+}
+
+function isWeatherStale(config: WeatherTileConfig, newest: number): boolean {
+  const minutes = Number(config.stale_minutes);
+  if (!Number.isFinite(minutes) || minutes <= 0 || !newest) return false;
   return Date.now() - newest > minutes * 60000;
 }
 
@@ -909,20 +917,17 @@ function openMoreInfoFromKeyboard(host: any, ev: KeyboardEvent, entityId?: strin
   openMoreInfo(host, ev, entityId);
 }
 
-// Forecast entities (primary and extra) never raise the tile fault glow: an outage
-// keeps the last forecast and gets its own notice. Station sensors still do.
-function weatherFaultConfig(config: WeatherTileConfig): WeatherTileConfig {
-  return { ...config, entity: undefined, forecast_sources: undefined, selected_forecast_entity: undefined, forecast_entity: undefined };
-}
-
 // "since 06:24" today, "since 4 Nov, 21:19" on an earlier day.
-function forecastOutageSince(host: any, entityId?: string): string {
-  const changed = stateObj(host, entityId)?.last_changed;
-  const at = changed ? new Date(changed) : undefined;
+function sinceText(host: any, value: string | number | undefined): string {
+  const at = value === undefined || value === '' ? undefined : new Date(value);
   if (!at || Number.isNaN(at.getTime())) return '';
   const sameDay = formatHassDate(host?.hass, at) === formatHassDate(host?.hass, new Date());
   const time = sameDay ? formatHassTime(host?.hass, at) : formatHassDateTime(host?.hass, at, { year: false });
   return time ? `since ${time}` : '';
+}
+
+function forecastOutageSince(host: any, entityId?: string): string {
+  return sinceText(host, stateObj(host, entityId)?.last_changed);
 }
 
 function selectForecastSource(host: any, ev: Event, key?: string, entityId?: string): void {
@@ -1173,9 +1178,11 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   const metricColumns = Number.isFinite(metricColumnsRaw) && metricColumnsRaw > 0
     ? Math.max(1, Math.min(4, Math.round(metricColumnsRaw)))
     : DEFAULT_METRIC_COLUMNS;
-  const stale = isWeatherStale(host, config);
-  // Stale data shows a warning-tone glow plus a text label; unavailable still wins.
-  const { style: glowStyle, overlay: glowOverlay, unavailable } = buildTileGlow(host, weatherFaultConfig(config), STALE_GLOW, 'static', stale);
+  // The weather tile has no glow: stale station data and forecast outages are
+  // stated in text, and an unavailable reading shows as a dash in its own place.
+  const lastReport = weatherLastReport(host, config);
+  const stale = isWeatherStale(config, lastReport);
+  const staleSince = stale ? sinceText(host, lastReport) : '';
   // An unavailable source keeps the last forecast it sent, so show that forecast and say it is not updating.
   const forecastOutage = config.show_forecast !== false && isEntityUnavailable(host, forecastEntity);
   const forecastOutageName = forecastSources.find((source) => source.entity === forecastEntity)?.name || friendlyName(host, forecastEntity);
@@ -1223,8 +1230,7 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
   ` : nothing;
 
   return html`
-    <div class=${`tile-wrap weather-tile-container${unavailable ? ' tile-unavailable' : ''}`}>
-      <div class="glow-under" style=${glowStyle}>${glowOverlay}</div>
+    <div class="tile-wrap weather-tile-container">
       <div class=${`weather-tile-wrap${stale ? ' weather-tile-stale' : ''}`} style=${heightStyle}>
         <div class="weather-tile">
           <div class=${`weather-content${chips.length ? ' weather-content-chips' : ''}`}>
@@ -1263,7 +1269,14 @@ export function renderWeatherTile(host: any, config: WeatherTileConfig): Templat
                 @keyup=${(ev: KeyboardEvent) => openMoreInfoFromKeyboard(host, ev, config.feels_like_sensor)}
               >Feels like ${feels}</div>
               ${stale
-                ? stateChip({ label: 'Data stale', icon: 'mdi:clock-alert-outline', tone: 'warning', className: 'weather-stale' })
+                ? stateChip({
+                    label: 'Data stale',
+                    icon: 'mdi:clock-alert-outline',
+                    tone: 'warning',
+                    secondary: staleSince || undefined,
+                    ariaLabel: 'Station data stale',
+                    className: 'weather-stale',
+                  })
                 : nothing}
             </div>
             <div class="weather-icon-wrap" aria-hidden="true">

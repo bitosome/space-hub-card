@@ -65,7 +65,8 @@ async function mount({ home = 'cloudy', tallinn = 'cloudy', temp = '7.4' } = {})
 }
 
 const settle = async (card) => { await card.updateComplete; await new Promise((r) => setTimeout(r, 0)); await card.updateComplete; };
-const fault = (root) => !!root.querySelector('.weather-tile-container.tile-unavailable');
+// The weather tile never glows: no fault class and no glow layer, whatever is down.
+const fault = (root) => !!root.querySelector('.weather-tile-container.tile-unavailable, .weather-tile-container > .glow-under');
 const outageChip = (root) => root.querySelector('.weather-forecast-outage');
 const option = (root, label) => [...root.querySelectorAll('.weather-source-option')].find((el) => el.textContent.trim() === label);
 
@@ -96,7 +97,7 @@ const option = (root, label) => [...root.querySelectorAll('.weather-source-optio
   card.remove();
 }
 
-// The primary weather entity and the station sensors are still real faults.
+// The primary weather entity is a forecast outage too: notice, no glow.
 {
   const { card, root } = await mount({ home: 'unavailable' });
   assert.equal(fault(root), false, 'an unavailable primary weather entity does not raise the fault glow either');
@@ -106,7 +107,8 @@ const option = (root, label) => [...root.querySelectorAll('.weather-source-optio
 }
 {
   const { card, root } = await mount({ temp: 'unavailable' });
-  assert.equal(fault(root), true, 'an unavailable station sensor still raises the fault glow');
+  assert.equal(fault(root), false, 'an unavailable station sensor does not make the tile glow');
+  assert.equal(root.querySelector('.weather-temp').textContent.trim(), '—°', 'the reading itself shows it is missing');
   card.remove();
 }
 {
@@ -117,5 +119,5 @@ const option = (root, label) => [...root.querySelectorAll('.weather-source-optio
   card.remove();
 }
 
-console.log('PASS: forecast sources (primary and extra) never raise the tile fault glow, station sensors still do; a down source is marked and its last forecast stays visible');
+console.log('PASS: the weather tile never glows (forecast or station outages); a down source is marked and its last forecast stays visible');
 await win.happyDOM.close();

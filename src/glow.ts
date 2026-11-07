@@ -32,12 +32,6 @@ export const UNAVAILABLE_GLOW: PulseColors = {
   strong: 'var(--unavail-strong, rgba(255,59,48,0.36))',
 };
 
-// Stale weather data: the shared warning tone, so HA themes can recolour it.
-export const STALE_GLOW: PulseColors = {
-  weak: 'color-mix(in srgb, var(--family-warning) 16%, transparent)',
-  strong: 'color-mix(in srgb, var(--family-warning) 30%, transparent)',
-};
-
 // Map AC hvac mode to pulse colors
 export function acPulseColors(modeRaw: string | undefined): PulseColors {
   const mode = (modeRaw || '').toLowerCase();

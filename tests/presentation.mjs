@@ -26,20 +26,20 @@ const card = document.createElement('space-hub-card');
 document.body.append(card);
 const fresh = new Date().toISOString();
 const old = new Date(Date.now() - 3 * 3600000).toISOString();
-const states = (updated) => ({
+const states = (updated, reported = updated, forecastUpdated = updated) => ({
   'sensor.room_temp': { state: '21.4567', attributes: {}, last_updated: fresh },
   'sensor.room_humidity': { state: '48.62', attributes: {}, last_updated: fresh },
   'sensor.lux': { state: '1234.4', attributes: {}, last_updated: fresh },
-  'sensor.out_temp': { state: '4.25', attributes: {}, last_updated: updated },
-  'sensor.out_humidity': { state: '81.6', attributes: {}, last_updated: updated },
-  'sensor.feels': { state: '1.94', attributes: {}, last_updated: updated },
-  'weather.home': { state: 'cloudy', attributes: {}, last_updated: updated },
+  'sensor.out_temp': { state: '4.25', attributes: {}, last_updated: updated, last_reported: reported },
+  'sensor.out_humidity': { state: '81.6', attributes: {}, last_updated: updated, last_reported: reported },
+  'sensor.feels': { state: '1.94', attributes: {}, last_updated: updated, last_reported: reported },
+  'weather.home': { state: 'cloudy', attributes: {}, last_updated: forecastUpdated },
   'binary_sensor.presence': { state: 'on', attributes: {} },
   'switch.plug': { state: 'on', attributes: {} },
 });
-const setHass = async (updated, numberFormat) => {
+const setHass = async (updated, numberFormat, reported = updated, forecastUpdated = updated) => {
   card.hass = {
-    states: states(updated),
+    states: states(updated, reported, forecastUpdated),
     locale: numberFormat ? { language: 'en', number_format: numberFormat } : undefined,
     localize: (key) => key,
   };
@@ -69,21 +69,34 @@ assert.match(badges[0].getAttribute('style'), /--family-active/, 'presence uses 
 assert.match(badges[1].getAttribute('style'), /--switch-smart-on-color/, 'smart plug chip matches the smart plug tile and glow');
 assert.doesNotMatch(badges.map((badge) => badge.outerHTML).join(''), /#[0-9a-f]{6}/i, 'no private hex in chips');
 assert.equal(root.querySelector('.weather-stale'), null, 'fresh data has no stale label');
-assert.equal(root.querySelector('.weather-tile-container > .glow-under').getAttribute('style'), '', 'fresh data has no glow');
+assert.equal(root.querySelector('.weather-tile-container > .glow-under'), null, 'the weather tile has no glow layer');
 
 await setHass(fresh, 'decimal_comma');
 root = card.shadowRoot;
 assert.equal(root.querySelector('.temperature-value').textContent.trim(), '21,5°', 'HA profile number format');
 assert.equal(root.querySelector('.weather-temp').textContent.trim(), '4,3°');
 
-await setHass(old);
+// A steady overnight reading: values unchanged for hours, but the station keeps reporting.
+await setHass(old, undefined, fresh);
+root = card.shadowRoot;
+assert.equal(root.querySelector('.weather-stale'), null, 'unchanged values that are still being reported are not stale');
+
+// The hourly forecast entity is not station data; an old forecast alone is not stale station data.
+await setHass(fresh, undefined, fresh, old);
+root = card.shadowRoot;
+assert.equal(root.querySelector('.weather-stale'), null, 'an old forecast entity does not mark station data stale');
+
+// The station stopped reporting.
+await setHass(old, undefined, old, fresh);
 root = card.shadowRoot;
 const stale = root.querySelector('.weather-stale');
 assert.ok(stale, 'stale data has a visible label');
 assert.equal(stale.dataset.tone, 'warning');
-assert.equal(stale.textContent.trim(), 'Data stale');
-assert.match(root.querySelector('.weather-tile-container > .glow-under').getAttribute('style'), /--family-warning/, 'stale glow uses the warning tone');
+assert.match(stale.querySelector('.family-chip-text').textContent.replace(/\s+/g, ' ').trim(), /^Data stale\s*since \d{1,2}:\d{2}/, 'the label says since when');
+assert.match(stale.querySelector('.family-visually-hidden').textContent, /^Station data stale, since /);
+assert.equal(root.querySelector('.weather-tile-container > .glow-under'), null, 'stale data does not make the tile glow');
+assert.equal(root.querySelector('.weather-tile-container.tile-unavailable'), null);
 
 card.remove();
-console.log('PASS: shared indicator styles, status aliases, per-quantity HA number formatting, stale label and glow, 44px weather targets');
+console.log('PASS: shared indicator styles, status aliases, per-quantity HA number formatting, stale label from last_reported with its time and no weather glow, 44px weather targets');
 await win.happyDOM.close();

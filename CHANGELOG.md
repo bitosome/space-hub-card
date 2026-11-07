@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.4 — 2026-11-07
+
+- The weather tile has no glow: no amber glow for stale station data and no red pulse for an unavailable station sensor. Problems are stated in text instead: the "Data stale" label, the forecast notice, and a dash for a missing reading. Other tiles keep their glows.
+- `stale_minutes` now follows the station sensors' `last_reported`, which moves on every report even when the value is unchanged. It used `last_updated`, which only moves on a change, so a steady overnight reading could look stale. The hourly forecast entity counts only when no station sensor is configured. The label shows when the data stopped, for example "Data stale · since 19:23".
+
 ## 2.3.3 — 2026-11-05
 
 - The primary weather `entity` going unavailable no longer puts the red unavailable pulse on the weather tile either. Forecast outages, primary or extra, get the warning notice and the picker dot instead; the station sensors still raise the red pulse.

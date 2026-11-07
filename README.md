@@ -272,7 +272,7 @@ Weather is configured at `headers[].weather`.
 | --- | --- | --- |
 | `enabled` | boolean | Set to `false` to keep the weather tile configured but hide it. Hidden tiles do not trigger unavailable-entity glow. Defaults to `true`. |
 | `entity` | entity ID | Primary Home Assistant `weather` entity. Used as the default forecast source and weather more-info target. |
-| `forecast_sources` | array | Additional Home Assistant `weather` entities that can be selected in the weather tile. Each entry can be an entity string or an object with `entity` and optional `name`. An unavailable forecast source, primary or extra, does not trigger the unavailable-entity glow. It gets a warning dot in the picker and, when selected, a warning notice above its last forecast. Unavailable station sensors still trigger the glow. |
+| `forecast_sources` | array | Additional Home Assistant `weather` entities that can be selected in the weather tile. Each entry can be an entity string or an object with `entity` and optional `name`. An unavailable forecast source, primary or extra, gets a warning dot in the picker and, when selected, a warning notice above its last forecast. The weather tile has no glow. |
 | `temp_sensor` | entity ID | Current local temperature sensor. |
 | `humidity_sensor` | entity ID | Current local humidity sensor. |
 | `feels_like_sensor` | entity ID | Local feels-like temperature sensor. |
@@ -355,7 +355,7 @@ The graphs use the shared family chart from `@bitosome/ha-card-ui`. Hover or dra
 | `icon_offset_x` | number | `0` | Main icon horizontal offset in pixels. |
 | `icon_offset_y` | number | `0` | Main icon vertical offset in pixels. |
 | `metric_columns` | number | `3` | Sensor grid columns, clamped to `1..4`. |
-| `stale_minutes` | number | disabled | Add a warning glow and a "Data stale" label when weather/current sensor data is older than this many minutes. |
+| `stale_minutes` | number | disabled | Show a "Data stale · since HH:MM" label when no station sensor (temperature, humidity, feels like) has reported for this many minutes. Uses `last_reported`, so unchanged readings that keep arriving are not stale. The weather tile has no glow. |
 | `metrics` | array | automatic | Custom metric grid. If omitted, metrics are built from known weather sensors. |
 | `chips` | array | `[]` | Optional compact chips in the lower-right corner of the weather tile. |
 
